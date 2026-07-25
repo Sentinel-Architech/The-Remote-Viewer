@@ -1,9 +1,9 @@
+use anyhow::{Context, Result};
+use directories::ProjectDirs;
 use heed::{EnvOpenOptions, Database};
 use heed::types::{Str, Bytes};
 use std::fs;
-use std::path::Path;
-
-const DB_PATH: &str = "/data/data/com.termux/files/home/.local/share/remote-viewer/lmdb";
+use std::path::PathBuf;
 
 pub struct StorageEngine {
     env: heed::Env,
@@ -11,34 +11,35 @@ pub struct StorageEngine {
 }
 
 impl StorageEngine {
-    pub fn new() -> Self {
-        // Ensure directory exists
-        if !Path::new(DB_PATH).exists() {
-            fs::create_dir_all(DB_PATH).expect("Failed to create LMDB directory");
-        }
+    pub fn new() -> Result<Self> {
+        let path = ProjectDirs::from("com", "sentinel", "remote-viewer")
+            .map(|p| p.data_dir().join("lmdb"))
+            .unwrap_or_else(|| PathBuf::from("./data/lmdb"));
 
-        // Initialize LMDB Environment with 1GB max map size
+        fs::create_dir_all(&path)
+            .context("Failed to create data directory")?;
+
         let env = EnvOpenOptions::new()
-            .map_size(1024 * 1024 * 1024) 
-            .max_dbs(2)
-            .open(DB_PATH)
-            .expect("Failed to open LMDB environment");
+            .map_size(512 * 1024 * 1024) // 512 MB
+            .max_dbs(4)
+            .open(&path)
+            .context("Failed to open LMDB environment")?;
 
-        let mut wtxn = env.write_txn().unwrap();
-        let telemetry_db = env.create_database(&mut wtxn, Some("telemetry")).unwrap();
-        wtxn.commit().unwrap();
+        let mut wtxn = env.write_txn()?;
+        let telemetry_db = env.create_database(&mut wtxn, Some("telemetry"))?;
+        wtxn.commit()?;
 
-        Self { env, telemetry_db }
+        Ok(Self {
+            env,
+            telemetry_db,
+        })
     }
 
-    pub fn insert_telemetry(&self, packet_hash: &str, raw_packet: &[u8]) {
-        let mut wtxn = self.env.write_txn().unwrap();
-        
-        self.telemetry_db
-            .put(&mut wtxn, &packet_hash, &raw_packet)
-            .expect("LMDB Write Failed");
-            
-        wtxn.commit().expect("LMDB Commit Failed");
-        println!("[+] Committed {} bytes to LMDB -> {}", raw_packet.len(), packet_hash);
+    pub fn insert_telemetry(&self, hash: &str, data: &[u8]) -> Result<()> {
+        let mut wtxn = self.env.write_txn()?;
+        self.telemetry_db.put(&mut wtxn, hash, data)?;
+        wtxn.commit()?;
+        tracing::info!("[+] Stored {} bytes → {}", data.len(), hash);
+        Ok(())
     }
 }
