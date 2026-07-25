@@ -1,45 +1,39 @@
-use sodiumoxide::crypto::sign;
-use serde::{Deserialize, Serialize};
-use std::time::{SystemTime, UNIX_EPOCH};
+mod storage;
+mod identity;
+mod merkle;
+mod p2p;
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct HybridLogicalClock {
-    physical_time: u64,
-    logical_counter: u32,
-}
+use std::sync::Arc;
+use tokio::sync::Mutex;
+use anyhow::Result;
 
-impl HybridLogicalClock {
-    pub fn new() -> Self {
-        let start = SystemTime::now();
-        let physical_time = start.duration_since(UNIX_EPOCH).unwrap().as_millis() as u64;
-        Self {
-            physical_time,
-            logical_counter: 0,
+#[tokio::main]
+async fn main() -> Result<()> {
+    tracing_subscriber::fmt::init();
+    sodiumoxide::init().map_err(|_| anyhow::anyhow!("Failed to init sodiumoxide"))?;
+
+    tracing::info!("[*] Initializing The Remote Viewer...");
+
+    let storage = Arc::new(storage::StorageEngine::new()?);
+    tracing::info!("[+] Storage online");
+
+    let mut wot = identity::WebOfTrust::new();
+    wot.provision_node(&[0u8; 32]); // placeholder key
+    let _wot = Arc::new(Mutex::new(wot));
+
+    let merkle = Arc::new(Mutex::new(merkle::StateMerkleTree::new()));
+
+    // Start P2P gossip
+    let merkle_clone = merkle.clone();
+    tokio::spawn(async move {
+        if let Err(e) = p2p::start_gossip_daemon(merkle_clone).await {
+            tracing::error!("P2P error: {}", e);
         }
-    }
+    });
 
-    pub fn tick(&mut self) {
-        let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as u64;
-        if now > self.physical_time {
-            self.physical_time = now;
-            self.logical_counter = 0;
-        } else {
-            self.logical_counter += 1;
-        }
-    }
-}
+    tracing::info!("[+] All systems online (sovereign mode)");
 
-fn main() {
-    sodiumoxide::init().unwrap();
-    let (pk, sk) = sign::gen_keypair();
-    
-    let mut hlc = HybridLogicalClock::new();
-    hlc.tick();
-
-    let message = format!("telemetry_payload_node_alpha_{}", hlc.physical_time);
-    let signature = sign::sign(message.as_bytes(), &sk);
-
-    println!("[*] Daemon online. Node Public Key: {:?}", pk);
-    println!("[*] Generated HLC Timestamp: {:?}", hlc);
-    println!("[+] Signed telemetry packet securely via libsodium.");
+    tokio::signal::ctrl_c().await?;
+    tracing::info!("[*] Shutting down gracefully");
+    Ok(())
 }
