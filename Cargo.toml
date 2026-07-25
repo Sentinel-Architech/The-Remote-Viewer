@@ -2,5 +2,7 @@
 name = "the-remote-viewer"
 version = "0.1.0"
 edition = "2021"
+description = "A decentralized application utility"
+license = "MIT"
 
 [dependencies]
