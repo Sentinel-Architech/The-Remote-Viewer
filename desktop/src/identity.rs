@@ -17,21 +17,27 @@ impl WebOfTrust {
             let mut key_array = [0u8; sign::PUBLICKEYBYTES];
             key_array.copy_from_slice(public_key);
             self.trusted_keys.insert(key_array);
-            println!("[*] Provisioned new trusted node key in WoT");
+            tracing::info!("[*] Provisioned new trusted node in Web of Trust");
         }
     }
 
-    pub fn verify_packet(&self, payload: &[u8], signature_bytes: &[u8], public_key_bytes: &[u8]) -> bool {
-        if signature_bytes.len() != sign::SIGNATUREBYTES || public_key_bytes.len() != sign::PUBLICKEYBYTES {
+    pub fn verify_packet(
+        &self,
+        payload: &[u8],
+        signature_bytes: &[u8],
+        public_key_bytes: &[u8],
+    ) -> bool {
+        if signature_bytes.len() != sign::SIGNATUREBYTES
+            || public_key_bytes.len() != sign::PUBLICKEYBYTES
+        {
             return false;
         }
 
         let mut key_array = [0u8; sign::PUBLICKEYBYTES];
         key_array.copy_from_slice(public_key_bytes);
 
-        // 1. Is this node in our offline registry?
         if !self.trusted_keys.contains(&key_array) {
-            println!("[!] REJECTED: Public key not found in local Web of Trust");
+            tracing::warn!("[!] REJECTED: Public key not in Web of Trust");
             return false;
         }
 
@@ -40,10 +46,9 @@ impl WebOfTrust {
         sig_array.copy_from_slice(signature_bytes);
         let sig = sign::Signature(sig_array);
 
-        // 2. Is the signature cryptographically valid for this payload?
         let is_valid = sign::verify_detached(&sig, payload, &pk);
         if !is_valid {
-            println!("[!] REJECTED: Cryptographic signature mismatch");
+            tracing::warn!("[!] REJECTED: Invalid signature");
         }
 
         is_valid
