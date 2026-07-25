@@ -4,6 +4,10 @@ mod merkle;
 mod p2p;
 mod token;
 
+use std::sync::Arc;
+use tokio::sync::Mutex;
+use anyhow::Result;
+
 #[tokio::main]
 async fn main() -> Result<()> {
     // Logging
@@ -25,6 +29,9 @@ async fn main() -> Result<()> {
 
     // Merkle state tree
     let merkle = Arc::new(Mutex::new(merkle::StateMerkleTree::new()));
+
+    // AR Token ledger (corporate-free)
+    let _token_ledger = token::ArTokenLedger::new();
 
     // Start P2P gossip daemon
     let merkle_for_p2p = merkle.clone();
