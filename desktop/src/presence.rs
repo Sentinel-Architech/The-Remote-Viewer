@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 use tracing::{info, warn};
-
+mod presence;
 /// Simple local Proof-of-Presence tracker
 /// This version uses timed presence windows.
 /// Later we can add real BLE / spatial signals.
