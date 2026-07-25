@@ -1,0 +1,29 @@
+[package]
+name = "desktop"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "The Remote Viewer desktop orchestrator"
+
+[[bin]]
+name = "remote-viewer"
+path = "src/main.rs"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+sodiumoxide = "0.2"
+sha2 = "0.10"
+hex = "0.4"
+heed = "0.20"
+anyhow = "1"
+thiserror = "1"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+directories = "5"          # for portable data paths
+
+# Optional – enable later with --features zk
+# ark-bn254 = "0.4"
+# ark-groth16 = "0.4"
+# ark-snark = "0.4"
