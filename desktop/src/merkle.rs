@@ -1,41 +1,32 @@
 use sha2::{Sha256, Digest};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 pub struct StateMerkleTree {
     pub root_hash: String,
-    leaves: HashMap<String, Vec<u8>>, // Hash -> Raw Telemetry Packet
+    leaves: BTreeMap<String, Vec<u8>>,
 }
 
 impl StateMerkleTree {
     pub fn new() -> Self {
         Self {
             root_hash: String::new(),
-            leaves: HashMap::new(),
+            leaves: BTreeMap::new(),
         }
     }
 
-    pub fn insert_packet(&mut self, packet_data: &[u8]) {
-        // Hash the incoming packet
+    pub fn insert_packet(&mut self, data: &[u8]) -> String {
         let mut hasher = Sha256::new();
-        hasher.update(packet_data);
-        let packet_hash = hex::encode(hasher.finalize());
+        hasher.update(data);
+        let hash = hex::encode(hasher.finalize());
 
-        // Store the leaf
-        self.leaves.insert(packet_hash.clone(), packet_data.to_vec());
-
-        // Recalculate root (Simplified: In a real implementation, 
-        // you would rebuild the binary tree structure here).
+        self.leaves.insert(hash.clone(), data.to_vec());
         self.recalculate_root();
+        hash
     }
 
     fn recalculate_root(&mut self) {
-        // A naive root calculation for demonstration: hashing all leaf hashes together.
-        // A true Merkle tree requires a structured binary pair-hashing.
-        let mut all_hashes: Vec<String> = self.leaves.keys().cloned().collect();
-        all_hashes.sort(); 
-
         let mut hasher = Sha256::new();
-        for h in all_hashes {
+        for h in self.leaves.keys() {
             hasher.update(h.as_bytes());
         }
         self.root_hash = hex::encode(hasher.finalize());
