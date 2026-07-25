@@ -3,9 +3,6 @@ mod identity;
 mod merkle;
 mod p2p;
 mod token;
-use std::sync::Arc;
-use tokio::sync::Mutex;
-use anyhow::Result;
 
 #[tokio::main]
 async fn main() -> Result<()> {
