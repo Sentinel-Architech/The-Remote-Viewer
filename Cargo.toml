@@ -2,7 +2,6 @@
 resolver = "2"
 members = [
     "desktop",
-    # later you can add "src" as a library crate if you want
 ]
 
 [workspace.package]
