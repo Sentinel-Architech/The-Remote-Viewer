@@ -1,71 +1,91 @@
 # The Remote Viewer — Tokenomics & Financial Design
-**Sovereign Edition**  
-Version 0.1 (Aligned with local-first, zero-trust principles)
+**Sovereign • Corporate-Free • Legally Cautious Edition**  
+Version 0.2
 
-## Core Philosophy
-This is **not** a surveillance-capitalism token.  
-No aggressive inflation, no forced extraction, no data selling.  
-The economic layer exists only to:
-- Reward real contribution (edge nodes, verification, coverage)
-- Enable optional premium features without compromising privacy
-- Support decentralized governance
+> Disclaimer: This is not legal advice. This document describes design intent only.  
+> Any real-world launch involving tokens or rewards should be reviewed by qualified legal counsel.
 
-## AR Token (Access & Resonance Token)
+## Core Principles
 
-| Property              | Detail                              |
-|-----------------------|-------------------------------------|
-| Name                  | AR Token                            |
-| Ticker                | $AR                                 |
-| Type                  | Utility + Governance                |
-| Max Supply            | Fixed (no infinite inflation)       |
-| Minting               | Only through verified contribution  |
-| Primary Use           | Governance, premium features, node rewards |
+1. **Corporate-Free**
+   - No corporate pre-mine
+   - No venture capital or investor allocation
+   - No company-controlled treasury or admin mint keys
+   - No entity can unilaterally change supply or freeze funds
 
-### Token Utility
-1. **Governance** — Voting power on protocol upgrades and parameters
-2. **Node Rewards** — Earned by running reliable edge nodes
-3. **Premium Features** — Optional unlocks (advanced analytics, priority support, hardware kits)
-4. **Staking (light)** — Optional locking for higher governance weight + boost multipliers
+2. **Local-First & Zero-Trust**
+   - Value and rewards begin on the user’s own device
+   - Minimal reliance on centralized custodians
 
-## DePIN Flywheel
+3. **Legally Cautious Design**
+   - $AR is a utility and contribution-reward token
+   - It is **not** a bank deposit
+   - It is **not** presented as an investment contract
+   - No promises of profit from the efforts of others
+   - No FDIC insurance claims (FDIC only covers actual bank deposits)
+   - No interest, yield, or passive income marketing
+   - Rewards are earned only through verifiable work
 
-Users earn $AR by providing real value to the network:
+## AR Token ($AR)
 
-| Action                        | Reward Type          | Notes                              |
-|-------------------------------|----------------------|------------------------------------|
-| Running a reliable edge node  | Continuous           | Uptime + correct state verification |
-| Providing coverage / presence | Proof-of-Presence    | Spatial + BLE / LiDAR verification |
-| Storing & serving encrypted data | Proof-of-Storage  | Local-first, user-controlled       |
-| Verifying Merkle roots / state | Validation rewards | Helps network consensus            |
+| Property             | Detail                                      |
+|----------------------|---------------------------------------------|
+| Name                 | AR Token (Access & Resonance)               |
+| Type                 | Utility + Governance + Contribution Reward  |
+| Supply Model         | Fixed or contribution-capped (no open inflation) |
+| Minting              | Only through verified network contribution  |
+| Corporate Allocation | 0%                                          |
 
-**Anti-Sybil measures:**
-- Web-of-Trust identity required
-- Hardware attestation (where possible)
-- Gradual reward unlocking (no instant farming)
+### Allowed Uses
+- Governance signaling
+- Rewarding real work (node uptime, state verification, presence, storage)
+- Optional unlock of premium local features
+- Light staking for governance weight only (no yield promises)
+
+### Explicitly Not Allowed
+- Marketing as an investment
+- Promising price appreciation
+- Offering interest or passive returns
+- Presenting balances as FDIC-insured deposits
+
+## DePIN Reward Flywheel
+
+Rewards are given only for measurable contribution:
+
+- Running a reliable edge node
+- Providing verifiable presence / coverage
+- Correctly verifying Merkle state
+- Providing useful encrypted storage capacity
+
+Anti-Sybil protections:
+- Web-of-Trust identity
+- Gradual reward unlocking
+- Hardware/software attestation where possible
+
+## Governance
+Hybrid model:
+- Token weight
+- Web-of-Trust reputation
+- Time-locks on sensitive changes
+
+No single corporate entity can control governance.
 
 ## In-App Shop
-- Completely optional
-- No tracking, no behavioral ads
-- Accepts $AR + possibly other private payment methods later
-- Products: premium modules, physical hardware kits, support tiers
+- Fully optional
+- No behavioral tracking
+- Accepts $AR (and later other privacy-preserving methods)
+- Sells software modules or hardware kits only
 
-## Smart Contracts & Governance
-- Minimal on-chain footprint
-- Prefer local verification + occasional settlement
-- Hybrid governance: Token weight + Web-of-Trust reputation
-- Emergency controls protected by multi-sig / time-lock
-
-## Revenue Philosophy
-The project should be sustainable without extracting user data or attention.
-Possible sustainable paths:
+## Sustainability (Non-Extractive)
+Possible funding paths that do not sell user data:
 - Optional premium features
-- Hardware sales
+- Hardware kits
 - Enterprise sovereign deployments
-- Grants / public goods funding
+- Grants and public-goods funding
 
 ---
 
-**Next steps after this document:**
-1. Basic AR Token reward logic (Rust)
-2. DePIN scoring engine
-3. Simple governance module
+**Next technical steps**
+1. Local AR Token ledger (Rust)
+2. Contribution → reward engine
+3. Basic governance signaling module
