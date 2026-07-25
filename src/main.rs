@@ -10,10 +10,8 @@ use anyhow::Result;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Logging
     tracing_subscriber::fmt::init();
 
-    // Init crypto
     sodiumoxide::init().map_err(|_| anyhow::anyhow!("Failed to initialize sodiumoxide"))?;
 
     tracing::info!("[*] Initializing The Remote Viewer (sovereign mode)...");
@@ -24,16 +22,16 @@ async fn main() -> Result<()> {
 
     // Web of Trust
     let mut wot = identity::WebOfTrust::new();
-    wot.provision_node(&[0u8; 32]); // placeholder master key – replace later
+    wot.provision_node(&[0u8; 32]);
     let _wot = Arc::new(Mutex::new(wot));
 
-    // Merkle state tree
+    // Merkle tree
     let merkle = Arc::new(Mutex::new(merkle::StateMerkleTree::new()));
 
-    // AR Token ledger (corporate-free)
-    let _token_ledger = token::ArTokenLedger::new();
+    // AR Token ledger (shared)
+    let token_ledger = Arc::new(Mutex::new(token::ArTokenLedger::new()));
 
-    // Start P2P gossip daemon
+    // Start P2P
     let merkle_for_p2p = merkle.clone();
     tokio::spawn(async move {
         if let Err(e) = p2p::start_gossip_daemon(merkle_for_p2p).await {
@@ -41,9 +39,21 @@ async fn main() -> Result<()> {
         }
     });
 
-    tracing::info!("[+] All core subsystems online");
+    // Simple periodic contribution reward (example)
+    let token_for_rewards = token_ledger.clone();
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(60));
+        loop {
+            interval.tick().await;
 
-    // Keep running
+            // Example: reward this node for being online and participating
+            let mut ledger = token_for_rewards.lock().await;
+            ledger.reward("local-node", 10, "uptime + participation");
+        }
+    });
+
+    tracing::info!("[+] All core subsystems online (rewards active)");
+
     tokio::signal::ctrl_c().await?;
     tracing::info!("[*] Shutting down gracefully");
     Ok(())
