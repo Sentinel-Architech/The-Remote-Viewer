@@ -1,0 +1,17 @@
+# Private creator royalties & secrets
+.env
+.env.local
+.env.*.local
+**/secrets/
+
+# Dependencies & build
+node_modules/
+dist/
+build/
+.expo/
+
+# OS / IDE
+.DS_Store
+*.log
+.idea/
+.vscode/
