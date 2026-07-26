@@ -4,7 +4,8 @@
 **Chain:** Solana  
 **Wallet surface:** Phantom (receive any Solana token)  
 **Control model:** Single admin (originator-controlled) for this generation  
-**Depends on:** Membership / NFT product rules; does **not** alter Identity Layer, Vault, or Destroy = Restart
+**Depends on:** Membership / NFT product rules; does **not** alter Identity Layer, Vault, or Destroy = Restart  
+**Shop routing detail:** See `15-TRV-Shop-Token-Converter-Treasury.md`
 
 ---
 
@@ -14,6 +15,7 @@ The Community Pool is the **on-chain operational treasury** for The Remote Viewe
 
 - Forum / community maintenance
 - Native NFT mint gas support and highest-tier gas-fee waiver funding
+- **15% of net TRV Shop crypto proceeds** (after identity discounts) via the Token Converter
 - Other explicitly approved community or protocol costs
 
 It is **not**:
@@ -61,11 +63,12 @@ Operational security (offline seed, hardware wallet, limited device exposure) is
 
 ### 4.1 Inflows (automated where implemented)
 
-When native NFT or shop flows are live:
+When native NFT or shop flows are live (see `15-TRV-Shop-Token-Converter-Treasury.md`):
 
-1. **Configured percentage** of eligible on-chain proceeds is directed to the Community Pool address above (exact % set in product/commerce config; membership docs may define policy targets such as maintenance + mint gas).
-2. Client or checkout messaging states that a portion supports community maintenance and mint infrastructure.
-3. Failed transfers surface a clear error; they must not fall back to storing user funds on TRV servers.
+1. **15% of net shop crypto proceeds** (after locked membership/Founding discounts) is directed to this Community Pool address; **85%** is ops/merchant share.
+2. Voluntary “support the pool” line items route **100%** here.
+3. Client or checkout messaging states that a portion supports community maintenance and mint infrastructure.
+4. Failed transfers surface a clear error; they must not fall back to storing user funds on TRV servers.
 
 ### 4.2 Outflows (policy-gated, admin-executed)
 
@@ -80,7 +83,7 @@ TRV **never** signs pool transactions with a server-held copy of the admin seed.
 ### 4.3 Identity discounts stay off-chain
 
 - **17.76% American citizen membership discount** and **Founding Sovereign** benefits are enforced via the Identity Layer (ZK / attestations), not by rewriting Solana transfer amounts inside Phantom unless a later explicit on-chain program is locked.
-- **2.50% Founding discount on native TRV shop** is a commerce rule; settlement may still route the community share to this pool.
+- **2.50% Founding discount on native TRV shop** is a commerce rule; settlement still routes the community share to this pool per the Token Converter treasury split.
 
 ---
 
@@ -95,7 +98,7 @@ Use clear, non-alarmist copy along these lines:
 “This address receives SOL and Solana tokens for the TRV Community Pool. Only send assets you intend as pool support. TRV does not hold your personal wallet keys.”
 
 **NFT / checkout:**  
-“A portion of eligible purchases may be routed to the Community Pool to fund maintenance and mint infrastructure.”
+“A portion of eligible purchases (15% of net shop crypto after discounts) is routed to the TRV Community Pool to fund maintenance and mint infrastructure.”
 
 **Admin transparency (recommended):**  
 Publish the public address and, when practical, point to a Solana explorer link. Do not publish seed material.
@@ -114,7 +117,7 @@ Publish the public address and, when practical, point to a Solana explorer link.
 
 ## 7. Config Surface (Implementation)
 
-Suggested single source of truth for clients:
+Suggested single source of truth for clients (shop fields expanded in `15-TRV-Shop-Token-Converter-Treasury.md`):
 
 ```json
 {
@@ -124,11 +127,15 @@ Suggested single source of truth for clients:
     "walletLabel": "Phantom",
     "controlModel": "single_admin",
     "identityBurnAffectsPool": false
+  },
+  "trvShop": {
+    "treasurySplit": {
+      "communityPoolPercent": 15,
+      "opsPercent": 85
+    }
   }
 }
 ```
-
-Wire NFT/shop fee routing to this address in commerce modules when those modules ship. Until then, the address is the declared receive destination for voluntary and future automated inflows.
 
 ---
 
