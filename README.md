@@ -26,6 +26,7 @@ These principles are permanent and non-negotiable:
 - **Founding Sovereign Viewer** — Lifetime highest tier + permanent recognition for those personally invited by the originator.
 - **American Citizen Benefit** — 17.76% membership discount via zero-knowledge proof of citizenship.
 - **Implementation Roadmap** — Phased execution plan that protects every locked principle at each stage.
+- **Phase 2 Privacy Design** — Formal technical design for selective disclosure (SD-JWT + BBS+), ZK attribute proofs, Bitstring Status List, and anti-over-request controls.
 
 Full details of all locked principles are maintained in the [`docs/locked/`](docs/locked/) directory.
 
@@ -44,7 +45,7 @@ Identity & Sovereignty implementation order (see [`docs/locked/07-Implementation
 
 1. **Phase 0** — Foundation & guardrails (wallet decision, library choices, legal-hold boundary)
 2. **Phase 1** — Core identity primitives (DID, VC, OpenID4VCI/VP)
-3. **Phase 2** — Privacy & selective disclosure (SD-JWT, BBS+, ZK attribute proofs)
+3. **Phase 2** — Privacy & selective disclosure (SD-JWT, BBS+, ZK attribute proofs) — formal design in [`docs/locked/08-Phase2-Privacy-Technical-Design.md`](docs/locked/08-Phase2-Privacy-Technical-Design.md)
 4. **Phase 3** — Key management, backup & recovery (hardware keys, user-controlled recovery only)
 5. **Phase 4** — EUDI compatibility & high-assurance credentials (Founding Sovereign + citizenship attestations)
 6. **Phase 5** — Offline, multi-device & continuity (no central identity server)
