@@ -33,8 +33,24 @@ Full details of all locked principles are maintained in the [`docs/locked/`](doc
 ### Security Notice
 This project is used for defensive security research. All access and interactions are logged and monitored. By using or interacting with this project, you consent to such monitoring.
 
-### Getting Started
-*Coming soon*
+### Getting Started (Scaffold Only)
+
+Client **scaffolds** (structure only — **not secure**, no identity crypto yet):
+
+- [`apps/`](apps/) — overview and non-goals
+- [`apps/web/`](apps/web/) — Vite + React + TypeScript web shell
+- [`apps/mobile/`](apps/mobile/) — Expo + React Native mobile shell
+- [`apps/shared/`](apps/shared/) — shared placeholder types only
+
+```bash
+# Web
+cd apps/web && npm install && npm run dev
+
+# Mobile
+cd apps/mobile && npm install && npm start
+```
+
+These clients display an explicit “scaffold only” notice. They do **not** implement DIDs, VCs, selective disclosure, keys, or Destroy = Restart. Real implementation follows [`docs/locked/07-Implementation-Roadmap.md`](docs/locked/07-Implementation-Roadmap.md).
 
 
 ★★★★★★★★†
