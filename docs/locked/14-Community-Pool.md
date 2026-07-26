@@ -11,11 +11,12 @@
 
 ## 1. Purpose
 
-The Community Pool is the **on-chain operational treasury** for The Remote Viewer community functions, including (as product rules allow):
+The Community Pool is the **on-chain operational treasury** for The Remote Viewer community functions, including:
 
 - Forum / community maintenance
 - Native NFT mint gas support and highest-tier gas-fee waiver funding
-- **60% of net TRV Shop crypto proceeds** (after identity discounts) via the Token Converter
+- **90% of net TRV Shop crypto proceeds** (after identity discounts) via the Token Converter
+- Voluntary 100% pool donations / tips
 - Other explicitly approved community or protocol costs
 
 It is **not**:
@@ -23,7 +24,7 @@ It is **not**:
 - A user identity wallet  
 - Part of the Hybrid DID/VC stack  
 - Subject to user **Destroy = Restart**  
-- A place to store identity keys, Vault data, or credentials  
+- The creator’s private receive wallet (creator share is separate and not published here)  
 
 Identity burn never moves or empties this pool.
 
@@ -36,11 +37,9 @@ Identity burn never moves or empties this pool.
 ```
 
 - **Network:** Solana mainnet (unless a separate devnet address is published later)
-- **Receive:** Any Solana token (SOL and SPL tokens supported by the wallet)
-- **Display:** Safe to show in-app, in docs, and in QR receive flows
+- **Receive:** Any Solana token (SOL and SPL as supported)
+- **Display:** Safe to show in-app, docs, and QR receive flows
 - **Secrets:** Seed phrase / private keys are **never** committed to the repository, logs, or client bundles
-
-If this address is rotated, this document must be revised and the old address marked retired.
 
 ---
 
@@ -49,75 +48,64 @@ If this address is rotated, this document must be revised and the old address ma
 | Item | Rule |
 |------|------|
 | Authority | Single admin (project originator) controls spending and key material for this generation |
-| Future multi-sig / DAO | Allowed as a later locked revision; not required now |
+| Future multi-sig / DAO | Allowed as a later locked revision |
 | User burn | Has **no** effect on pool keys or balances |
-| Support claims | Users cannot demand pool funds via identity recovery or burn flows |
-
-Operational security (offline seed, hardware wallet, limited device exposure) is the admin’s responsibility. Product code must not embed admin private keys.
+| Support claims | Users cannot demand pool funds via identity recovery or burn |
 
 ---
 
-## 4. Automatic Phantom / Solana Wire (Product Logic)
+## 4. Automatic Wire (Product Logic)
 
-“Automatic wire” means **application-level routing and UX**, not custody of the admin key inside TRV servers.
+### 4.1 Inflows
 
-### 4.1 Inflows (automated where implemented)
+From `15-TRV-Shop-Token-Converter-Treasury.md`:
 
-When native NFT or shop flows are live (see `15-TRV-Shop-Token-Converter-Treasury.md`):
+1. **90% of net shop crypto** (after locked discounts) → this Community Pool address.  
+2. **10% of net shop crypto** → creator address in **private** deploy config (not listed in this file).  
+3. Voluntary “support the pool” items → **100%** here.  
+4. Failed transfers must not fall back to storing user funds on TRV servers.
 
-1. **60% of net shop crypto proceeds** (after locked membership/Founding discounts) is directed to this Community Pool address; **40%** is ops/merchant share.
-2. Voluntary “support the pool” line items route **100%** here.
-3. Client or checkout messaging states that a portion supports community maintenance and mint infrastructure.
-4. Failed transfers surface a clear error; they must not fall back to storing user funds on TRV servers.
-
-### 4.2 Outflows (policy-gated, admin-executed)
+### 4.2 Outflows
 
 | Use | Mechanism |
 |-----|-----------|
-| Highest paid tier gas waiver | Pool sponsors mint gas per loyalty rules; execution is admin or designated relayer using pool funds — not user identity keys |
-| Forum / infra maintenance | Manual or scripted admin payouts from pool |
-| Other | Only if added by locked policy update |
+| Highest-tier mint gas waiver | From pool; admin or designated relayer — not user identity keys |
+| Forum / infra maintenance | Admin payouts from pool |
 
-TRV **never** signs pool transactions with a server-held copy of the admin seed. Signing stays in Phantom / hardware under admin control, or a future dedicated relayer key documented separately.
+TRV **never** signs pool transactions with a server-held copy of the admin seed.
 
-### 4.3 Identity discounts stay off-chain
+### 4.3 Identity discounts
 
-- **17.76% American citizen membership discount** and **Founding Sovereign** benefits are enforced via the Identity Layer (ZK / attestations), not by rewriting Solana transfer amounts inside Phantom unless a later explicit on-chain program is locked.
-- **2.50% Founding discount on native TRV shop** is a commerce rule; settlement still routes the community share to this pool per the Token Converter treasury split.
+Enforced via Identity Layer before the 10/90 split. Not implemented by rewriting pool balances after burn.
 
 ---
 
 ## 5. Disclosure (User-Facing)
 
-Use clear, non-alarmist copy along these lines:
+**Short:**  
+“Community Pool (Solana): operational treasury for forum maintenance and NFT mint support. Separate from your identity wallet. Destroy = Restart does not move these funds.”
 
-**Short (settings / about):**  
-“Community Pool (Solana): operational treasury for forum maintenance and NFT mint support. Separate from your identity wallet. Your Destroy = Restart action does not move these funds.”
+**Checkout:**  
+“90% of net eligible shop crypto (after discounts) goes to the Community Pool; 10% to the creator. TRV never holds your seed.”
 
-**Receive / donate:**  
-“This address receives SOL and Solana tokens for the TRV Community Pool. Only send assets you intend as pool support. TRV does not hold your personal wallet keys.”
+**Donate:**  
+Use only the published Community Pool address below. Support will never ask for your seed phrase.
 
-**NFT / checkout:**  
-“60% of net eligible shop crypto (after discounts) is routed to the TRV Community Pool to fund maintenance and mint infrastructure; 40% is ops.”
-
-**Admin transparency (recommended):**  
-Publish the public address and, when practical, point to a Solana explorer link. Do not publish seed material.
+**Pool:**  
+`555y97LMoygGAWUWFngbprr5oMHFJsQqoFAbrHi5e8nt`
 
 ---
 
 ## 6. Security & Compliance Boundaries
 
-1. **Class A identity data** never lands in the pool wallet by design.  
-2. **No seed in git, CI, or mobile app binary.**  
-3. **Single admin** accepts concentration risk; document upgrade path to multi-sig when ready.  
-4. **Legal / tax:** Pool activity is operational finance of the project entity — counsel as needed; not solved by identity docs.  
-5. **Scam surface:** Official address is only the one in this file (and UI that reads from the same config). Warn users that support will never ask for seed phrases.
+1. Class A identity data never lands in the pool wallet.  
+2. No seed in git, CI, or app binary.  
+3. Creator address stays out of public docs; pool address is the public treasury endpoint.  
+4. Legal/tax of pool and creator inflows: project/ops responsibility with counsel as needed.
 
 ---
 
-## 7. Config Surface (Implementation)
-
-Suggested single source of truth for clients (shop fields expanded in `15-TRV-Shop-Token-Converter-Treasury.md`):
+## 7. Config Surface
 
 ```json
 {
@@ -130,8 +118,10 @@ Suggested single source of truth for clients (shop fields expanded in `15-TRV-Sh
   },
   "trvShop": {
     "treasurySplit": {
-      "communityPoolPercent": 60,
-      "opsPercent": 40
+      "creatorPercent": 10,
+      "communityPoolPercent": 90,
+      "creatorAddressEnvVar": "TRV_CREATOR_SOLANA_ADDRESS",
+      "creatorAddressPublic": false
     }
   }
 }
@@ -141,8 +131,6 @@ Suggested single source of truth for clients (shop fields expanded in `15-TRV-Sh
 
 ## 8. Final Statement
 
-**Solana Community Pool, Phantom-compatible, single-admin controlled.**
-
-Public address is publishable. Keys stay with the admin. Identity and Vault stay separate. Automation routes value to the pool — it does not custody the pool’s private key inside TRV.
-
+**Public Community Pool for the commons. Private creator receive for the 10% share.**  
+**90% pool · 10% creator on net shop proceeds.**  
 **Treasury is not identity. Burn the path, not the pool.**
