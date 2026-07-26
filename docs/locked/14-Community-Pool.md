@@ -15,7 +15,7 @@ The Community Pool is the **on-chain operational treasury** for The Remote Viewe
 
 - Forum / community maintenance
 - Native NFT mint gas support and highest-tier gas-fee waiver funding
-- **15% of net TRV Shop crypto proceeds** (after identity discounts) via the Token Converter
+- **60% of net TRV Shop crypto proceeds** (after identity discounts) via the Token Converter
 - Other explicitly approved community or protocol costs
 
 It is **not**:
@@ -65,7 +65,7 @@ Operational security (offline seed, hardware wallet, limited device exposure) is
 
 When native NFT or shop flows are live (see `15-TRV-Shop-Token-Converter-Treasury.md`):
 
-1. **15% of net shop crypto proceeds** (after locked membership/Founding discounts) is directed to this Community Pool address; **85%** is ops/merchant share.
+1. **60% of net shop crypto proceeds** (after locked membership/Founding discounts) is directed to this Community Pool address; **40%** is ops/merchant share.
 2. Voluntary “support the pool” line items route **100%** here.
 3. Client or checkout messaging states that a portion supports community maintenance and mint infrastructure.
 4. Failed transfers surface a clear error; they must not fall back to storing user funds on TRV servers.
@@ -98,7 +98,7 @@ Use clear, non-alarmist copy along these lines:
 “This address receives SOL and Solana tokens for the TRV Community Pool. Only send assets you intend as pool support. TRV does not hold your personal wallet keys.”
 
 **NFT / checkout:**  
-“A portion of eligible purchases (15% of net shop crypto after discounts) is routed to the TRV Community Pool to fund maintenance and mint infrastructure.”
+“60% of net eligible shop crypto (after discounts) is routed to the TRV Community Pool to fund maintenance and mint infrastructure; 40% is ops.”
 
 **Admin transparency (recommended):**  
 Publish the public address and, when practical, point to a Solana explorer link. Do not publish seed material.
@@ -130,8 +130,8 @@ Suggested single source of truth for clients (shop fields expanded in `15-TRV-Sh
   },
   "trvShop": {
     "treasurySplit": {
-      "communityPoolPercent": 15,
-      "opsPercent": 85
+      "communityPoolPercent": 60,
+      "opsPercent": 40
     }
   }
 }

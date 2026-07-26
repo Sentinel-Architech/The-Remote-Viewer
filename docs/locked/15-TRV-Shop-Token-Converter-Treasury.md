@@ -1,6 +1,6 @@
 # TRV Shop Token Converter & Treasury (Locked)
 
-**Status:** Locked — July 25, 2026  
+**Status:** Locked — July 25, 2026 (split revised same day)  
 **Chain:** Solana  
 **Community Pool:** `555y97LMoygGAWUWFngbprr5oMHFJsQqoFAbrHi5e8nt` (Phantom / single admin)  
 **Depends on:** `05-Membership-Benefits.md`, `14-Community-Pool.md`, Identity Layer discount rules  
@@ -59,8 +59,8 @@ All percentages below apply to the **net amount actually received** after member
 
 | Bucket | Share of net shop crypto proceeds | Destination |
 |--------|-----------------------------------|-------------|
-| **Community Pool** | **15%** | `555y97LMoygGAWUWFngbprr5oMHFJsQqoFAbrHi5e8nt` |
-| **Ops / merchant** | **85%** | Merchant receive address (or pool with off-chain ops ledger if not yet split) |
+| **Community Pool** | **60%** | `555y97LMoygGAWUWFngbprr5oMHFJsQqoFAbrHi5e8nt` |
+| **Ops / merchant** | **40%** | Merchant receive address (or pool with off-chain ops ledger if not yet split) |
 
 **Community Pool uses (from this inflow):** forum/community maintenance, NFT mint gas reserves, highest-tier gas-fee waiver funding, other costs explicitly allowed in `14-Community-Pool.md`.
 
@@ -76,7 +76,7 @@ When the cart includes a **native NFT mint**:
 
 ### 4.3 Voluntary tips / donations
 
-Optional “support the pool” line items route **100%** to the Community Pool address and are not subject to the 15/85 split.
+Optional “support the pool” line items route **100%** to the Community Pool address and are not subject to the 60/40 split.
 
 ---
 
@@ -113,8 +113,8 @@ Discounts are **identity-layer** (attestations). They are not implemented by ask
         ▼
 [User confirms in Phantom / wallet adapter]
         │
-        ├──► Transfer Community Pool share → 555y97LMoygGAWUWFngbprr5oMHFJsQqoFAbrHi5e8nt
-        └──► Transfer ops share → merchant address (or temporary all-to-pool + ledger)
+        ├──► Transfer Community Pool share (60%) → 555y97LMoygGAWUWFngbprr5oMHFJsQqoFAbrHi5e8nt
+        └──► Transfer ops share (40%) → merchant address (or temporary all-to-pool + ledger)
         │
         ▼
 [Fulfill digital good / queue mint / membership entitlement on identity path]
@@ -179,8 +179,8 @@ Publish explorer link for the Community Pool in UI where transparency is shown.
       "quoteTtlSeconds": 30
     },
     "treasurySplit": {
-      "communityPoolPercent": 15,
-      "opsPercent": 85,
+      "communityPoolPercent": 60,
+      "opsPercent": 40,
       "merchantAddress": null
     },
     "discounts": {
@@ -202,7 +202,7 @@ Publish explorer link for the Community Pool in UI where transparency is shown.
 ## 11. User-Facing Disclosure (Shop / Converter)
 
 **Checkout:**  
-“Prices may be paid in SOL (or listed Solana tokens). Final amount is shown before you approve in your wallet. A portion of eligible purchases is routed to the TRV Community Pool for maintenance and mint infrastructure. TRV never holds your wallet seed.”
+“Prices may be paid in SOL (or listed Solana tokens). Final amount is shown before you approve in your wallet. 60% of net eligible shop crypto (after discounts) is routed to the TRV Community Pool for maintenance and mint infrastructure; 40% is ops. TRV never holds your wallet seed.”
 
 **Discounts:**  
 “Membership and Founding discounts apply only when your verified attestations are present. They attach to your identity path and end if that path is destroyed.”
@@ -229,5 +229,5 @@ Publish explorer link for the Community Pool in UI where transparency is shown.
 **Token Converter prices and collects. Treasury split funds the pool and ops. Identity only proves discounts. Phantom signs; TRV does not custody seeds.**
 
 Community Pool: `555y97LMoygGAWUWFngbprr5oMHFJsQqoFAbrHi5e8nt`  
-Default net split: **15% pool / 85% ops**  
+Default net split: **60% pool / 40% ops**  
 Burn the path — not the treasury.
