@@ -1,0 +1,14 @@
+{
+  "name": "@trv/shared",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Shared types and interfaces for The Remote Viewer clients (scaffold only)",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

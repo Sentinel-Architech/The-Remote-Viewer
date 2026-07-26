@@ -1,0 +1,23 @@
+{
+  "name": "@trv/mobile",
+  "version": "0.0.1",
+  "private": true,
+  "description": "The Remote Viewer mobile client — SCAFFOLD ONLY. No security claims.",
+  "main": "expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "expo": "~51.0.0",
+    "expo-status-bar": "~1.12.1",
+    "react": "18.2.0",
+    "react-native": "0.74.5"
+  },
+  "devDependencies": {
+    "@types/react": "~18.2.79",
+    "typescript": "^5.4.0"
+  }
+}

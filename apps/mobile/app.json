@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "The Remote Viewer (Scaffold)",
+    "slug": "the-remote-viewer-scaffold",
+    "version": "0.0.1",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0a0a0a"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.trv.scaffold"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0a0a0a"
+      },
+      "package": "com.trv.scaffold"
+    }
+  }
+}

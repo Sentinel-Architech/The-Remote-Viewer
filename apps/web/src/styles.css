@@ -1,0 +1,91 @@
+:root {
+  color-scheme: dark;
+  --bg: #0a0a0a;
+  --fg: #e8e8e8;
+  --muted: #9a9a9a;
+  --accent: #39ff14;
+  --warn: #ff6b35;
+  --border: #222;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.5;
+}
+
+.shell {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+}
+
+.header h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.75rem;
+  letter-spacing: 0.02em;
+}
+
+.badge {
+  display: inline-block;
+  margin: 0;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid var(--warn);
+  color: var(--warn);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.main section {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.notice {
+  border: 1px solid var(--warn);
+  padding: 1rem 1.1rem;
+  border-radius: 6px;
+  background: #1a120e;
+}
+
+.notice h2 {
+  margin-top: 0;
+  color: var(--warn);
+  font-size: 1.1rem;
+}
+
+ul, ol {
+  padding-left: 1.2rem;
+}
+
+.docs code,
+code {
+  font-size: 0.85em;
+  color: var(--accent);
+}
+
+.footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.footer p {
+  margin: 0.25rem 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+}
+
+.footer .sub {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
