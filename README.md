@@ -20,6 +20,7 @@
 These principles are permanent and non-negotiable:
 
 - **Identity Layer** — High-assurance, privacy-preserving identity using W3C DIDs, Verifiable Credentials, EUDI Wallet compatibility, and zero-knowledge proofs. No centralized personal data storage.
+- **Identity Technical Stack** — Concrete standards, key management, recovery, revocation, offline support, multi-device continuity, anti-phishing, post-quantum readiness, and explicit non-goals.
 - **Vault Motto** — *YOU CHOOSE TO BURN FOR YOUR PROTECTION*
 - **Absolute Rule** — *Destroy = Restart from Square One*
 - **Founding Sovereign Viewer** — Lifetime highest tier + permanent recognition for those personally invited by the originator.
