@@ -6,14 +6,6 @@
 
 <br>
 
-</div>
-
-<br>
-
-</div>
-
-<br>
-
 **The Remote Viewer** is a local-first, zero-trust decentralized application focused on data sovereignty and secure remote access.
 
 ### Features
@@ -22,6 +14,18 @@
 - Spatial authentication via LiDAR and BLE
 - Peer-to-peer networking with libp2p
 - Fully local-first architecture
+
+### Core Locked Principles
+
+These principles are permanent and non-negotiable:
+
+- **Identity Layer** — High-assurance, privacy-preserving identity using W3C DIDs, Verifiable Credentials, EUDI Wallet compatibility, and zero-knowledge proofs. No centralized personal data storage.
+- **Vault Motto** — *YOU CHOOSE TO BURN FOR YOUR PROTECTION*
+- **Absolute Rule** — *Destroy = Restart from Square One*
+- **Founding Sovereign Viewer** — Lifetime highest tier + permanent recognition for those personally invited by the originator.
+- **American Citizen Benefit** — 17.76% membership discount via zero-knowledge proof of citizenship.
+
+Full details of all locked principles are maintained in the [`docs/locked/`](docs/locked/) directory.
 
 ### Security Notice
 This project is used for defensive security research. All access and interactions are logged and monitored. By using or interacting with this project, you consent to such monitoring.
