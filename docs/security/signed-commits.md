@@ -1,7 +1,10 @@
 # Signed Commits — Threat Models & Locked Docs
 
 **Status:** Draft policy — July 27, 2026  
+**Project standard:** **SSH commit signing only**  
 **Goal:** Integrity of security documentation (threat models, Ghost Tax, locked principles). A signature proves the commit came from a key you control; it does not encrypt the docs.
+
+GPG/OpenPGP signing is **not** the project standard. Do not configure `gpg.format openpgp` for this repository unless you are recovering an exceptional external requirement. Stay on SSH (§2).
 
 ---
 
@@ -20,21 +23,16 @@ Unsigned history on `docs/security/` and `docs/locked/` can be rewritten or inje
 
 **Recommended for all commits** on this repo once signing works.
 
-**Choose one primary method:** SSH signing (§2) *or* GPG/OpenPGP (§3). Do not mix formats on the same machine without knowing which `gpg.format` is active.
-
 ---
 
-## 2. Prefer SSH signing (simplest, strong enough)
+## 2. SSH signing (project standard)
 
-Git 2.34+ supports **SSH commit signing**. One key can auth to GitHub *and* sign commits if you choose (or use a dedicated signing key).
+Git 2.34+ supports **SSH commit signing**. Use a **dedicated** Ed25519 key for signing (recommended), not shared with random SSH logins.
 
-### 2.1 Create or reuse an Ed25519 key
+### 2.1 Create an Ed25519 signing key
 
 ```bash
-# Dedicated signing key (recommended)
 ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_git_signing -C "trv-git-signing"
-
-# Or reuse existing GitHub auth key path if you accept that coupling
 ```
 
 ### 2.2 Register the public key on GitHub as a **Signing** key
@@ -44,17 +42,25 @@ ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_git_signing -C "trv-git-signing"
 3. Key type: **Signing Key** (not only Authentication)  
 4. Paste contents of `~/.ssh/id_ed25519_git_signing.pub`
 
-### 2.3 Configure git
+### 2.3 Configure git (global or this repo only)
+
+**Global:**
 
 ```bash
 git config --global gpg.format ssh
 git config --global user.signingkey ~/.ssh/id_ed25519_git_signing.pub
-
-# Sign every commit by default
 git config --global commit.gpgsign true
-
-# Optional: sign tags
 git config --global tag.gpgsign true
+```
+
+**This repo only:**
+
+```bash
+cd /path/to/The-Remote-Viewer
+git config gpg.format ssh
+git config user.signingkey ~/.ssh/id_ed25519_git_signing.pub
+git config commit.gpgsign true
+git config tag.gpgsign true
 ```
 
 Allowed signers file (local verification):
@@ -71,318 +77,93 @@ Format of each line in `allowed_signers`:
 you@example.com ssh-ed25519 AAAA... comment
 ```
 
+Use a **verified GitHub email** as `user.email` so commits show **Verified**.
+
 ### 2.4 Commit
 
 ```bash
-# With commit.gpgsign=true, normal commits are signed
 git commit -m "docs(security): update threat model"
-
-# Explicit one-off
+# or explicit:
 git commit -S -m "docs(security): update threat model"
 
 git log --show-signature -1
 ```
 
-On GitHub, the commit should show **Verified** once the signing key is uploaded and the committer email matches a verified GitHub email.
+On GitHub, the commit should show **Verified**.
 
----
-
-## 3. GPG / OpenPGP signing alternative
-
-Use **GPG** when you already run OpenPGP, want hardware-token (YubiKey) signing, or need signatures that interoperate outside GitHub’s SSH signing model.
-
-### 3.1 When to choose GPG over SSH
-
-| Prefer GPG if… | Prefer SSH if… |
-|----------------|----------------|
-| You already have a maintained OpenPGP identity | You want the fewest moving parts |
-| Signing key lives on a **smartcard / YubiKey** | Git 2.34+ and SSH keys are enough |
-| You sign tags, mail, or releases with the same key | You only care about GitHub **Verified** commits |
-| Org policy mandates OpenPGP | Termux / minimal hosts where GPG agent is painful |
-
-Both are fine for threat-model integrity. **Pick one** and stick to it for this repo.
-
-### 3.2 Install tools
+### 2.5 Ensure you are not on GPG format
 
 ```bash
-# Debian/Ubuntu
-sudo apt install gnupg
+git config --show-origin --get gpg.format
+# expected for this project: ssh
 
-# Fedora
-sudo dnf install gnupg2
-
-# macOS (Homebrew)
-brew install gnupg
-
-# Termux
-pkg install gnupg
-```
-
-Confirm:
-
-```bash
-gpg --version
-```
-
-### 3.3 Generate a signing key
-
-Interactive (recommended for first time):
-
-```bash
-gpg --full-generate-key
-```
-
-Suggested choices:
-
-- Kind: **(9) ECC** → **Curve 25519** (or RSA 4096 if required by policy)  
-- Use: **Sign** (or default full capabilities if you accept a general-purpose key)  
-- Validity: e.g. **2y** (rotate; don’t invent “forever” without a reason)  
-- Real name + email: **email must match a verified GitHub email**  
-- Passphrase: strong; store recovery material offline — **never in the repo**
-
-Batch-style example (Ed25519, adjust email):
-
-```bash
-gpg --batch --pinentry-mode loopback --passphrase 'USE_A_REAL_PASSPHRASE' --quick-gen-key \
-  'Sentinel Architect <you@example.com>' ed25519 sign 2y
-```
-
-Prefer interactive so the passphrase is not left in shell history.
-
-List keys:
-
-```bash
-gpg --list-secret-keys --keyid-format LONG
-```
-
-Example output fragment:
-
-```text
-sec   ed25519/ABCDEF0123456789 2026-07-27 [SC] [expires: 2028-07-27]
-      Fingerprint=....
-uid                 [ultimate] Sentinel Architect <you@example.com>
-```
-
-Use either the **key ID** (`ABCDEF0123456789`) or full **fingerprint** as `user.signingkey`.
-
-### 3.4 Export and register on GitHub
-
-```bash
-# Armor public key for GitHub
-gpg --armor --export YOUR_KEY_ID_OR_FINGERPRINT
-```
-
-1. GitHub → **Settings** → **SSH and GPG keys**  
-2. **New GPG key**  
-3. Paste the entire armored block (`-----BEGIN PGP PUBLIC KEY BLOCK-----` …)  
-4. Save  
-
-GitHub matches the commit’s **committer email** to a UID on the GPG key and to a **verified** email on your account. Mismatch ⇒ unsigned / unverified.
-
-### 3.5 Configure git for GPG
-
-```bash
-# Use OpenPGP (not SSH format)
-git config --global gpg.format openpgp
-
-# Key ID or full fingerprint from gpg --list-secret-keys
-git config --global user.signingkey YOUR_KEY_ID_OR_FINGERPRINT
-
-git config --global commit.gpgsign true
-git config --global tag.gpgsign true
-
-# If signing fails with "failed to write commit object" / pinentry issues:
-export GPG_TTY=$(tty)
-echo 'export GPG_TTY=$(tty)' >> ~/.bashrc   # or ~/.zshrc
-```
-
-Optional: explicit program path
-
-```bash
-git config --global gpg.program gpg
-# Windows sometimes needs:
-# git config --global gpg.program "C:/Program Files (x86)/GnuPG/bin/gpg.exe"
-```
-
-Repo-only (does not affect other clones):
-
-```bash
-cd /path/to/The-Remote-Viewer
-git config gpg.format openpgp
-git config user.signingkey YOUR_KEY_ID_OR_FINGERPRINT
-git config commit.gpgsign true
-```
-
-### 3.6 Commit and verify locally
-
-```bash
-git commit -S -m "docs(security): update threat model"
-# or rely on commit.gpgsign=true without -S
-
-git log --show-signature -1
-git verify-commit HEAD
-```
-
-Good signature looks like `gpg: Good signature from "..."`.
-
-### 3.7 Agent, passphrase, and session unlock
-
-```bash
-# Cache passphrase for a session (seconds)
-echo "default-cache-ttl 3600" >> ~/.gnupg/gpg-agent.conf
-echo "max-cache-ttl 28800" >> ~/.gnupg/gpg-agent.conf
-gpgconf --kill gpg-agent
-```
-
-Unlock once:
-
-```bash
-echo | gpg --sign --armor > /dev/null
-```
-
-### 3.8 Hardware token (optional)
-
-If the secret key is on a **YubiKey** (OpenPGP applet):
-
-1. Move/generate key on card per Yubico/GnuPG docs.  
-2. `gpg --card-status` should show the signing key.  
-3. Same `user.signingkey` + `commit.gpgsign true`.  
-4. PIN entry happens on touch/PIN; commits fail closed if the token is absent.
-
-This is the strongest **GPG** operational posture for signing threat-model history.
-
-### 3.9 Backup and revocation
-
-```bash
-# Private key backup — encrypt and store offline (not in git)
-gpg --export-secret-keys --armor YOUR_KEY_ID > secret-backup.asc
-# Then encrypt secret-backup.asc with a separate mechanism and delete plaintext
-
-# Public key only (safe to store more widely)
-gpg --armor --export YOUR_KEY_ID > public.asc
-```
-
-If the key is compromised: **revoke**, publish revocation to where you distribute the public key, generate a new key, update GitHub GPG keys, and rotate `user.signingkey`.
-
-### 3.10 Switching from SSH signing back to GPG (or the reverse)
-
-```bash
-# To GPG
-git config --global gpg.format openpgp
-git config --global user.signingkey YOUR_GPG_KEY_ID
-
-# To SSH
+# If it says openpgp, switch back:
 git config --global gpg.format ssh
 git config --global user.signingkey ~/.ssh/id_ed25519_git_signing.pub
 ```
 
-Confirm with a test commit and the GitHub **Verified** badge before enabling branch rules.
+---
 
-### 3.11 Common GPG failures
+## 3. GPG — not used (reference only)
 
-| Symptom | Fix |
-|---------|-----|
-| `gpg failed to sign the data` | `export GPG_TTY=$(tty)`; ensure `gpg.program` is correct |
-| `secret key not available` | Wrong `user.signingkey`; check `gpg --list-secret-keys` |
-| GitHub shows Unverified | Email on commit ≠ key UID / GitHub verified email |
-| Works locally, not in GUI | GUI apps lack `GPG_TTY` / pinentry; sign from terminal or configure pinentry |
-| Termux pinentry issues | Use recent `gnupg`, set `GPG_TTY`, or prefer SSH signing on mobile |
+This project **stays with SSH signing**. GPG steps are omitted on purpose so clones do not drift.
+
+If an external party only accepts OpenPGP, handle that outside this repo’s standard workflow; do not change `gpg.format` for day-to-day TRV commits.
 
 ---
 
-## 4. Repo-local enforcement (this clone)
-
-From repo root, without changing your other projects:
-
-**SSH:**
-
-```bash
-cd /path/to/The-Remote-Viewer
-git config commit.gpgsign true
-git config gpg.format ssh
-git config user.signingkey ~/.ssh/id_ed25519_git_signing.pub
-```
-
-**GPG:**
-
-```bash
-cd /path/to/The-Remote-Viewer
-git config commit.gpgsign true
-git config gpg.format openpgp
-git config user.signingkey YOUR_KEY_ID_OR_FINGERPRINT
-```
-
-Optional **pre-commit hook** (warns if signing is off):
+## 4. Repo-local soft hook (optional)
 
 ```bash
 mkdir -p .git/hooks
 cat > .git/hooks/pre-commit << 'EOF'
 #!/usr/bin/env bash
 if [ "$(git config --bool commit.gpgsign)" != "true" ]; then
-  echo "WARNING: commit.gpgsign is not true. Threat model commits should be signed." >&2
+  echo "WARNING: commit.gpgsign is not true. Threat model commits should be signed (SSH)." >&2
   echo "See docs/security/signed-commits.md" >&2
+fi
+fmt=$(git config --get gpg.format || echo openpgp)
+if [ "$fmt" != "ssh" ]; then
+  echo "WARNING: gpg.format is '$fmt' (expected ssh for this project)." >&2
 fi
 exit 0
 EOF
 chmod +x .git/hooks/pre-commit
 ```
 
-Hooks are **not** shared via git by default (`.git/hooks`). Each clone opts in.
+Hooks live under `.git/hooks` and are **not** cloned automatically.
 
 ---
 
-## 5. GitHub enforcement (branch protection / rulesets)
-
-Do this in the GitHub UI (requires admin on the repo):
-
-### 5.1 Ruleset (preferred)
+## 5. GitHub enforcement
 
 1. **Settings** → **Rules** → **Rulesets** → **New branch ruleset**  
 2. Name: `signed-commits-main`  
-3. Target: `main` (and optionally `feature/**` later)  
-4. Enable:  
-   - **Require signed commits**  
-   - **Block force pushes**  
-   - **Require a pull request** (recommended)  
-5. Save
+3. Target: `main`  
+4. Enable **Require signed commits**, block force pushes, prefer require PR  
+5. Save **after** a test SSH-signed commit shows **Verified**
 
-### 5.2 Classic branch protection
-
-1. **Settings** → **Branches** → **Add rule**  
-2. Branch name pattern: `main`  
-3. Enable **Require signed commits**  
-4. Save
-
-**Note:** After this is on, **unsigned** pushes to `main` fail — including some bot or web-UI edits unless those actors also sign. Plan for that before enabling on `main`.
-
-GitHub accepts **either** SSH-signed or GPG-signed commits as long as the corresponding public key is registered and the email matches.
-
-### 5.3 Path-focused discipline (policy)
-
-GitHub cannot easily say “only `docs/security` must be signed” in classic rules; **require signed commits for the whole branch**, and treat security docs as the reason. Alternatively keep signing required on `main` only and always merge security doc changes via PR.
+Classic path: **Settings** → **Branches** → protect `main` → **Require signed commits**.
 
 ---
 
-## 6. Verify others’ commits
+## 6. Verify
 
 ```bash
 git log --show-signature docs/security/
 git verify-commit HEAD
 ```
 
-On GitHub: green **Verified** badge on the commit.
-
-For GPG, import the author’s public key before local `Good signature` verification.
+GitHub: green **Verified** badge.
 
 ---
 
-## 7. GrapheneOS / Termux notes
+## 7. GrapheneOS / Termux
 
-- Install a recent **git** (SSH signing needs 2.34+).  
-- **SSH signing** is usually easier on mobile than full GPG pinentry.  
-- If using GPG on Termux: `pkg install gnupg`, set `GPG_TTY=$(tty)`, strong passphrase, offline encrypted backup of secret key.  
-- Prefer a **signing-only** key not reused for random SSH logins.  
-- Never commit private keys, `*.asc` secret exports, or `gpg-agent` sockets.
+- Git **2.34+** for SSH signing  
+- Dedicated `id_ed25519_git_signing` with passphrase  
+- Backup private key offline (encrypted); never commit it  
+- Avoid GPG pinentry complexity on mobile — SSH is the standard here  
 
 ---
 
@@ -397,29 +178,20 @@ For GPG, import the author’s public key before local `Good signature` verifica
 
 ---
 
-## 9. Checklist (enable in order)
+## 9. Checklist (SSH only)
 
-**SSH path**
-
-- [ ] Generate Ed25519 signing key  
-- [ ] Add public key to GitHub as **Signing** key  
-- [ ] `gpg.format ssh` + `commit.gpgsign true`  
+- [ ] `ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_git_signing`  
+- [ ] GitHub → **Signing Key** with the `.pub`  
+- [ ] `gpg.format ssh` + `user.signingkey` + `commit.gpgsign true`  
 - [ ] Test commit → **Verified**  
 - [ ] Ruleset: require signed commits on `main`  
-
-**GPG path**
-
-- [ ] Install GnuPG; generate Ed25519 (or RSA 4096) sign key  
-- [ ] Export public key; add under GitHub **GPG keys**  
-- [ ] `gpg.format openpgp` + `user.signingkey` + `commit.gpgsign true`  
-- [ ] `GPG_TTY` set; test commit → **Verified**  
-- [ ] Offline encrypted backup of secret key; ruleset on `main`  
+- [ ] Confirm `gpg.format` is **not** `openpgp`  
 
 ---
 
 ## 10. Related
 
-- `docs/security/threat-model.md` — system threat model  
-- `docs/security/ghost-tax.md` — Ghost Tax definition  
-- `docs/locked/` — non-negotiable principles  
-- `SECURITY.md` — project security contact / posture  
+- `docs/security/threat-model.md`  
+- `docs/security/ghost-tax.md`  
+- `docs/locked/`  
+- `SECURITY.md`  
