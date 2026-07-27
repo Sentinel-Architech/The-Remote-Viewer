@@ -20,7 +20,8 @@ We publish goals, constraints, limitations, and scaffold code so the community c
 - Product rules: local-first, zero-trust, no platform custody  
 - **Destroy = Restart** — loss of key material means square one  
 - Stack direction: GrapheneOS-friendly mobile edge, local `did:key`, optional P2P  
-- **Install-anywhere / no device blacklist** — sideload and store alike; capability tiers, not exclusion (`docs/public/INSTALL.md`)  
+- **Install-anywhere / no device blacklist** — sideload, Obtainium, store; capability tiers (`docs/public/INSTALL.md`)  
+- **Release hygiene** so Obtainium and sideload stay viable (`docs/public/RELEASE-HYGIENE.md`)  
 - Honest status tables (scaffold vs implemented)  
 - Known engineering hazards (e.g. React Native CSPRNG / `getRandomValues`)  
 - Biometrics as **optional local unlock only** — not recovery, not network identity (`docs/security/biometrics.md`)  
@@ -45,7 +46,7 @@ If it lands in git by mistake: **rotate**, remove, treat history as burned for t
 2. **Non-goals are explicit** — custody and recovery theater are out  
 3. **Mobile crypto is documented** — RN does not magically have Web Crypto  
 4. **Auth honesty** — biometrics unlock local keys; they do not resurrect burned identity  
-5. **Install honesty** — no Play Integrity hostage for core use; no OEM-only club  
+5. **Install honesty** — no Play Integrity hostage for core use; no OEM-only club; Obtainium first-class  
 6. **Community invite is specific** — local-key builders, not generic hype  
 7. **Repo link is stable** — https://github.com/Sentinel-Archetecht/The-Remote-Viewer  
 
@@ -59,6 +60,7 @@ If it lands in git by mistake: **rotate**, remove, treat history as burned for t
 - P2P designs that don’t reintroduce a custodial hub  
 - Honest biometric / PAD residual risk (presentation vs injection)  
 - Edge and signal-tier participation without fake vault claims  
+- Release/Obtainium packaging feedback  
 
 ## What we will decline as a default path
 
@@ -82,7 +84,9 @@ When in doubt: publish the **constraint**, not the **key**.
 
 | Doc | Role |
 |-----|------|
-| `docs/public/INSTALL.md` | Install-anywhere and tiered device acceptance |
+| `docs/public/INSTALL.md` | Install-anywhere, tiers, Obtainium |
+| `docs/public/RELEASE-HYGIENE.md` | APK / signature / Obtainium publish rules |
+| `docs/distribution/obtainium-config.example.json` | Config template |
 | `docs/security/biometrics.md` | Biometrics + PAD posture |
 | `docs/security/threat-model.md` | System threat model (draft) |
 | `docs/security/secrets.md` | Secrets policy |

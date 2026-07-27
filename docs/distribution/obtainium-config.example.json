@@ -1,0 +1,29 @@
+{
+  "_comment": "Example Obtainium-oriented metadata for The Remote Viewer. Not a live apps.obtainium.imranr.dev entry until a public APK exists. Adjust fields when publishing.",
+  "appName": "The Remote Viewer",
+  "author": "Sentinel-Archetecht",
+  "appSourceUrl": "https://github.com/Sentinel-Archetecht/The-Remote-Viewer",
+  "overrideSource": "GitHub",
+  "recommendedSettings": {
+    "includePrereleases": false,
+    "verifyLatestTag": true,
+    "apkFilterRegEx": "arm64|universal|trv",
+    "fallbackToOlderReleases": true
+  },
+  "about": "Local-first, zero-trust mobile client direction. On-device identity; no platform custody. Install-anywhere; Play Integrity not required for core use.",
+  "packageId": "REPLACE_WITH_APPLICATION_ID",
+  "categories": ["security", "privacy", "offline"],
+  "userInstructions": [
+    "Install Obtainium from F-Droid or GitHub.",
+    "Add app with URL https://github.com/Sentinel-Archetecht/The-Remote-Viewer",
+    "Leave Include prereleases off unless testing betas.",
+    "Use APK filter if multiple ABI assets are present.",
+    "Verify SHA-256 from the GitHub Release notes when provided."
+  ],
+  "badgeHint": "https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png",
+  "relatedDocs": [
+    "docs/public/INSTALL.md",
+    "docs/public/RELEASE-HYGIENE.md",
+    "docs/public/POSTURE.md"
+  ]
+}
