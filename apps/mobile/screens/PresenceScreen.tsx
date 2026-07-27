@@ -1,101 +1,108 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert, ScrollView } from 'react-native';
 import {
-  createPresenceProof,
-  getCurrentProof,
-  destroyPresence,
-  PresenceProof,
-} from '../services/presence';
+  createDidKey,
+  getCurrentDidKey,
+  destroyDidKey,
+  DidKeyIdentity,
+} from '../services/presence'; // or correct path
 
 export default function PresenceScreen() {
-  const [proof, setProof] = useState<PresenceProof | null>(null);
-  const [secondsLeft, setSecondsLeft] = useState(0);
+  const [identity, setIdentity] = useState<DidKeyIdentity | null>(null);
 
   const refresh = async () => {
-    const current = await getCurrentProof();
-    setProof(current);
-    if (current) {
-      setSecondsLeft(Math.max(0, Math.floor((current.expiresAt - Date.now()) / 1000)));
-    } else {
-      setSecondsLeft(0);
-    }
+    const current = await getCurrentDidKey();
+    setIdentity(current);
   };
 
   useEffect(() => {
     refresh();
-    const interval = setInterval(refresh, 1000);
-    return () => clearInterval(interval);
   }, []);
 
   const handleCreate = async () => {
-    await createPresenceProof(60);
-    await refresh();
+    const newIdentity = await createDidKey();
+    setIdentity(newIdentity);
   };
 
   const handleDestroy = async () => {
-    await destroyPresence();
-    await refresh();
-    Alert.alert('Destroyed', 'Presence proof and keys have been wiped. Restart from square one.');
+    await destroyDidKey();
+    setIdentity(null);
+    Alert.alert(
+      'Destroyed',
+      'did:key identity and private key have been permanently wiped.\nRestart from Square One.'
+    );
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Presence Proof</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>did:key Identity</Text>
 
-      {proof ? (
+      {identity ? (
         <>
-          <Text style={styles.active}>Presence Active</Text>
-          <Text style={styles.timer}>{secondsLeft}s remaining</Text>
-          <Text style={styles.mono}>Pub: {proof.publicKey.slice(0, 16)}...</Text>
+          <Text style={styles.active}>Identity Active</Text>
+          <Text style={styles.label}>DID</Text>
+          <Text selectable style={styles.did}>{identity.did}</Text>
+          <Text style={styles.label}>Public Key (hex)</Text>
+          <Text selectable style={styles.mono}>{identity.publicKeyHex}</Text>
         </>
       ) : (
-        <Text style={styles.inactive}>No valid presence</Text>
+        <Text style={styles.inactive}>No identity – Start from Square One</Text>
       )}
 
       <View style={styles.buttons}>
-        <Button title="Generate Presence (60s)" onPress={handleCreate} />
-        <View style={{ height: 16 }} />
-        <Button title="Destroy Presence" color="#c0392b" onPress={handleDestroy} />
+        {!identity ? (
+          <Button title="Create did:key Identity" onPress={handleCreate} />
+        ) : (
+          <Button title="Destroy Identity" color="#c0392b" onPress={handleDestroy} />
+        )}
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
     backgroundColor: '#0a0a0a',
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 32,
   },
   active: {
-    fontSize: 22,
+    fontSize: 20,
     color: '#2ecc71',
-    marginBottom: 8,
+    marginBottom: 20,
   },
   inactive: {
-    fontSize: 22,
+    fontSize: 20,
     color: '#e74c3c',
-    marginBottom: 8,
+    marginBottom: 40,
   },
-  timer: {
-    fontSize: 18,
+  label: {
+    color: '#888',
+    marginTop: 16,
+    marginBottom: 4,
+  },
+  did: {
     color: '#fff',
-    marginBottom: 12,
+    fontSize: 13,
+    textAlign: 'center',
+    marginBottom: 8,
   },
   mono: {
     fontFamily: 'monospace',
     color: '#aaa',
-    marginBottom: 40,
+    fontSize: 12,
+    textAlign: 'center',
   },
   buttons: {
     width: '100%',
+    marginTop: 40,
   },
 });
