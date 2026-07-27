@@ -5,7 +5,7 @@ import {
   getCurrentProof,
   destroyPresence,
   PresenceProof,
-} from '../services/presence';
+} from '../src/services/presence';
 
 export default function PresenceScreen() {
   const [proof, setProof] = useState<PresenceProof | null>(null);
