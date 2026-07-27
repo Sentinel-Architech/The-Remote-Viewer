@@ -1,68 +1,81 @@
 import * as ed from '@noble/ed25519';
 import * as SecureStore from 'expo-secure-store';
-import * as Crypto from 'expo-crypto';
+import { base58btc } from 'multiformats/bases/base58';
 
-const KEY_PRIVATE = 'presence_private_key';
-const KEY_PROOF = 'presence_proof';
+// Multicodec for Ed25519 public key
+const ED25519_MULTICODEC = new Uint8Array([0xed, 0x01]);
 
-export type PresenceProof = {
-  publicKey: string;
-  signature: string;
-  timestamp: number;
-  expiresAt: number;
+const STORAGE_PRIVATE = 'did_key_private';
+const STORAGE_DID = 'did_key_id';
+
+export type DidKeyIdentity = {
+  did: string;
+  publicKeyHex: string;
+  createdAt: number;
 };
 
-async function getOrCreateKeyPair() {
-  let privateKeyHex = await SecureStore.getItemAsync(KEY_PRIVATE);
+/**
+ * Create a new did:key identity (Ed25519)
+ */
+export async function createDidKey(): Promise<DidKeyIdentity> {
+  const privateKey = ed.utils.randomPrivateKey();
+  const publicKey = await ed.getPublicKeyAsync(privateKey);
 
-  if (!privateKeyHex) {
-    const privateKey = ed.utils.randomPrivateKey();
-    privateKeyHex = Buffer.from(privateKey).toString('hex');
-    await SecureStore.setItemAsync(KEY_PRIVATE, privateKeyHex);
-  }
+  // Build did:key
+  const multicodecKey = new Uint8Array(ED25519_MULTICODEC.length + publicKey.length);
+  multicodecKey.set(ED25519_MULTICODEC, 0);
+  multicodecKey.set(publicKey, ED25519_MULTICODEC.length);
 
-  const privateKey = Buffer.from(privateKeyHex, 'hex');
-  const publicKey = await ed.getPublicKey(privateKey);
+  const did = `did:key:${base58btc.encode(multicodecKey)}`;
+
+  // Store securely
+  await SecureStore.setItemAsync(STORAGE_PRIVATE, Buffer.from(privateKey).toString('hex'));
+  await SecureStore.setItemAsync(STORAGE_DID, did);
 
   return {
-    privateKey,
-    publicKey: Buffer.from(publicKey).toString('hex'),
+    did,
+    publicKeyHex: Buffer.from(publicKey).toString('hex'),
+    createdAt: Date.now(),
   };
 }
 
-export async function createPresenceProof(durationSeconds = 60): Promise<PresenceProof> {
-  const { privateKey, publicKey } = await getOrCreateKeyPair();
-  const timestamp = Date.now();
-  const expiresAt = timestamp + durationSeconds * 1000;
+/**
+ * Get current did:key identity (if any)
+ */
+export async function getCurrentDidKey(): Promise<DidKeyIdentity | null> {
+  const did = await SecureStore.getItemAsync(STORAGE_DID);
+  const privateKeyHex = await SecureStore.getItemAsync(STORAGE_PRIVATE);
 
-  const message = `presence:${timestamp}:${expiresAt}`;
+  if (!did || !privateKeyHex) return null;
+
+  const privateKey = Buffer.from(privateKeyHex, 'hex');
+  const publicKey = await ed.getPublicKeyAsync(privateKey);
+
+  return {
+    did,
+    publicKeyHex: Buffer.from(publicKey).toString('hex'),
+    createdAt: 0, // we don't store creation time permanently for privacy
+  };
+}
+
+/**
+ * Destroy = Restart from Square One
+ */
+export async function destroyDidKey() {
+  await SecureStore.deleteItemAsync(STORAGE_PRIVATE);
+  await SecureStore.deleteItemAsync(STORAGE_DID);
+}
+
+/**
+ * Sign a message with the current did:key
+ */
+export async function signWithDidKey(message: string): Promise<string | null> {
+  const privateKeyHex = await SecureStore.getItemAsync(STORAGE_PRIVATE);
+  if (!privateKeyHex) return null;
+
+  const privateKey = Buffer.from(privateKeyHex, 'hex');
   const messageBytes = new TextEncoder().encode(message);
-  const signature = await ed.sign(messageBytes, privateKey);
+  const signature = await ed.signAsync(messageBytes, privateKey);
 
-  const proof: PresenceProof = {
-    publicKey,
-    signature: Buffer.from(signature).toString('hex'),
-    timestamp,
-    expiresAt,
-  };
-
-  await SecureStore.setItemAsync(KEY_PROOF, JSON.stringify(proof));
-  return proof;
-}
-
-export async function getCurrentProof(): Promise<PresenceProof | null> {
-  const raw = await SecureStore.getItemAsync(KEY_PROOF);
-  if (!raw) return null;
-
-  const proof: PresenceProof = JSON.parse(raw);
-  if (Date.now() > proof.expiresAt) {
-    await destroyPresence();
-    return null;
-  }
-  return proof;
-}
-
-export async function destroyPresence() {
-  await SecureStore.deleteItemAsync(KEY_PRIVATE);
-  await SecureStore.deleteItemAsync(KEY_PROOF);
+  return Buffer.from(signature).toString('hex');
 }
