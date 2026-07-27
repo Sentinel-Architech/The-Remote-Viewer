@@ -17,17 +17,23 @@ The Remote Viewer is a decentralized application focused on true digital soverei
 - Post-quantum cryptography and hardware-backed security primitives  
 - User-controlled “Destroy = Restart” recovery model  
 
-## What’s Implemented Today
+## ## What’s Implemented Today
 
-| Component          | Status          | Notes                                      |
-|--------------------|-----------------|--------------------------------------------|
-| Web client         | Scaffold        | Vite + React + TypeScript                  |
-| Mobile client      | Scaffold        | Expo + React Native                        |
-| Shared types       | Placeholder     |                                            |
-| Core protocol      | Not started     |                                            |
-| Identity / Crypto  | Not started     | See roadmap                                |
-| P2P / Networking   | Not started     |                                            |
+| Component              | Status     | Notes                                      |
+|------------------------|------------|--------------------------------------------|
+| Mobile Presence Proof  | Working    | First real vertical slice (local only)     |
+| Web client             | Scaffold   | Vite + React + TypeScript                  |
+| Mobile client          | Scaffold   | Expo + React Native + Presence screen      |
+| Core protocol / Identity | Not started | See roadmap                              |
+| P2P / Networking       | Not started |                                            |
 
+### Mobile Presence Proof (New)
+A local-only presence system that:
+- Generates a short-lived signed presence proof
+- Shows live countdown
+- Includes a one-tap **Destroy Presence** that wipes keys and proof (“Restart from square one”)
+
+Located in `apps/mobile`. Still early and not production-ready.
 ## Quick Start (Scaffold Only)
 
 ```bash
