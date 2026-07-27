@@ -1,0 +1,41 @@
+{
+  "_comment": "Maintainer-oriented Obtainium notes. Catalog file shape: obtainium-catalog.example.json. Package identity frozen in ANDROID-IDENTITY.md.",
+  "appName": "The Remote Viewer",
+  "author": "Sentinel-Archetecht",
+  "appSourceUrl": "https://github.com/Sentinel-Archetecht/The-Remote-Viewer",
+  "overrideSource": "GitHub",
+  "recommendedSettings": {
+    "includePrereleases": false,
+    "verifyLatestTag": true,
+    "fallbackToOlderReleases": true,
+    "apkFilterRegEx": "arm64|universal|trv",
+    "autoApkFilterByArch": true,
+    "invertAPKFilter": false
+  },
+  "about": "Local-first, zero-trust mobile client direction. On-device identity; no platform custody. Install-anywhere; Play Integrity not required for core use.",
+  "packageId": "com.sentinelarchetecht.theremoteviewer",
+  "categories": ["security", "privacy"],
+  "userInstructions": [
+    "Install Obtainium from F-Droid or GitHub.",
+    "Add app with URL https://github.com/Sentinel-Archetecht/The-Remote-Viewer",
+    "Leave Include prereleases off unless testing betas.",
+    "Use APK filter if multiple ABI assets are present.",
+    "Verify SHA-256 from the GitHub Release notes when provided."
+  ],
+  "crowdsource": {
+    "guide": "docs/distribution/OBTAINIUM-CROWDSOURCE.md",
+    "catalogTemplate": "docs/distribution/obtainium-catalog.example.json",
+    "identity": "docs/distribution/ANDROID-IDENTITY.md",
+    "upstream": "https://github.com/ImranR98/apps.obtainium.imranr.dev",
+    "criteria": "https://github.com/ImranR98/apps.obtainium.imranr.dev/blob/main/APP_CRITERIA.md",
+    "submitWhen": "Official signed APK is on GitHub Releases"
+  },
+  "badgeHint": "https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png",
+  "relatedDocs": [
+    "docs/public/INSTALL.md",
+    "docs/public/RELEASE-HYGIENE.md",
+    "docs/public/POSTURE.md",
+    "docs/distribution/OBTAINIUM-CROWDSOURCE.md",
+    "docs/distribution/ANDROID-IDENTITY.md"
+  ]
+}
