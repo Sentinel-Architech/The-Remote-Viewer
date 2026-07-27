@@ -4,7 +4,7 @@ use tracing::{info, warn};
 
 /// Local-first Web of Trust + Identity foundation
 /// 
-/// Rules (locked principles):
+/// Rules (from locked principles):
 /// - Keys live only on this device
 /// - No central authority
 /// - Destroy = Restart from Square One
@@ -75,24 +75,4 @@ impl WebOfTrust {
         valid
     }
 
-    /// Generate a new Ed25519 keypair (for future Phase 1 DID use)
-    pub fn generate_keypair() -> (sign::PublicKey, sign::SecretKey) {
-        sign::gen_keypair()
-    }
-
-    /// Placeholder — real DID creation comes in Phase 1
-    pub fn set_local_did_placeholder(&mut self, did: String) {
-        self.local_did = Some(did);
-        info!("[*] Local DID placeholder set (scaffold only)");
-    }
-
-    pub fn local_did(&self) -> Option<&str> {
-        self.local_did.as_deref()
-    }
-}
-
-impl Default for WebOfTrust {
-    fn default() -> Self {
-        Self::new()
-    }
-}
+   
