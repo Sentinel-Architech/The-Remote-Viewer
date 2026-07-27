@@ -127,4 +127,15 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginTop: 4,
   },
+});    textAlign: "center",
+    color: "#e8e8e8",
+    fontSize: 12,
+    letterSpacing: 1,
+  },
+  sub: {
+    textAlign: "center",
+    color: "#9a9a9a",
+    fontSize: 11,
+    marginTop: 4,
+  },
 });
