@@ -1,7 +1,7 @@
 # System Threat Model — The Remote Viewer / Sentinel Protocol
 
 **Status:** Draft — July 27, 2026  
-**Scope:** End-to-end system (device, P2P, presence auth, edge learning, chain, supply chain)  
+**Scope:** End-to-end system (device, P2P, presence auth, edge learning, chain, supply chain, GENIUS-aligned payments)  
 **Complements (does not replace):** `docs/locked/10-Threat-Model-Key-Loss.md`  
 **Depends on:** Vault Principles, Destroy = Restart, Identity Layer, Wallet Architecture
 
@@ -33,10 +33,14 @@ See `docs/locked/10-Threat-Model-Key-Loss.md` for the full key-loss model.
 | **P2P** | libp2p (or equivalent), noise/encryption, DHT discovery, relay |
 | **Edge AI** | On-device models; optional federated updates (gradients / LoRA deltas only) |
 | **Chain** | Governance / storage / identity contracts; TRV token utility |
+| **Payments / stable value** | Optional settlement via GENIUS-aligned permitted payment stablecoins (PPSI); TRV utility separate from payment stablecoin claims |
+| **Compliance hooks** | “Ghost Tax” and related fees for unverified / high-anonymity paths; local-first monitoring design (no platform key custody) |
 | **Storage** | User-controlled IPFS/Arweave pins; no platform custody of plaintext vault content |
 | **Dev / supply** | GitHub private repo, ESP-IDF, Rust/JS deps, Termux packages |
 
 **Out of scope for this doc:** third-party wallet key recovery; national SIGINT against all of GrapheneOS/hardware vendors as a class (noted as residual).
+
+**Regulatory note:** References to the Guiding and Establishing National Innovation for U.S. Stablecoins Act (**GENIUS Act**) describe *design intent and threat-relevant constraints*. This file is not legal advice and does not assert that any particular deployment is licensed, registered, or compliant.
 
 ---
 
@@ -54,6 +58,9 @@ See `docs/locked/10-Threat-Model-Key-Loss.md` for the full key-loss model.
 | A8 | Source code & build pipeline | I: high | Supply-chain integrity |
 | A9 | ESP32 firmware & channel to phone | I + C: medium–high | Scoped role; compromise should not equal full key extract |
 | A10 | Reputation / POSE-style signals | I: medium | Gameable; must not become a social credit score |
+| A11 | Payment / stablecoin settlement path | C + I: high | If used: reserves, issuer trust, and user balances are in scope |
+| A12 | Compliance posture & audit artifacts | I: high | Ability to show GENIUS-oriented controls without holding user keys |
+| A13 | Ghost Tax / fee policy integrity | I: medium | Misconfiguration or evasion undermines stated Section 9-style incentives |
 
 ---
 
@@ -70,8 +77,11 @@ See `docs/locked/10-Threat-Model-Key-Loss.md` for the full key-loss model.
 | ADV-7 | Compromised maintainer / CI | Push malicious code or deps | Backdoor clients |
 | ADV-8 | Contract / economic attacker | Smart-contract bugs, governance capture | Drain, freeze, rewrite rules |
 | ADV-9 | Nation-state (limited) | Targeted malware, supply pressure | High value targets only; not “defeat NSA” claim |
+| ADV-10 | Illicit-finance abuse of the network | Structured transactions, mixers, mule patterns | Laundering or sanctions evasion via TRV rails |
+| ADV-11 | Regulatory / enforcement pressure | Subpoena, exam, enforcement action | Force KYC, logs, or key production |
+| ADV-12 | Fraudulent “compliance theater” | Fake PPSI claims, false reserve attestations | Extract deposits or legitimacy |
 
-**Design stance vs ADV-6 (platform side):** architecture must not create secrets the operator can hand over to restore a user’s vault or keys. User coercion is a residual human risk, not solved by software alone.
+**Design stance vs ADV-6 / ADV-11 (platform side):** architecture must not create secrets the operator can hand over to restore a user’s vault or keys. Where GENIUS-oriented monitoring is required for a *payment* path, prefer **local / protocol-level signals and PPSI-issued assets** over platform custody of private keys.
 
 ---
 
@@ -98,10 +108,17 @@ See `docs/locked/10-Threat-Model-Key-Loss.md` for the full key-loss model.
                               │  Chain / IPFS (public)     │
                               │  Integrity via crypto;     │
                               │  availability not assured  │
+                              └───────────┬───────────────┘
+                                          │
+                              ┌───────────▼───────────────┐
+                              │  Payment edge (optional)   │
+                              │  PPSI stablecoin / GENIUS  │
+                              │  Issuer + reserves outside │
+                              │  TRV key custody boundary  │
                               └───────────────────────────┘
 ```
 
-**Rule:** Anything outside the device TCB is untrusted until verified (signatures, pinning, E2E session keys, contract addresses).
+**Rule:** Anything outside the device TCB is untrusted until verified (signatures, pinning, E2E session keys, contract addresses). Payment stablecoin **issuer** trust is a separate boundary from TRV identity keys.
 
 ---
 
@@ -164,24 +181,58 @@ See `docs/locked/10-Threat-Model-Key-Loss.md` for the full key-loss model.
 
 | Threat | Mitigation | Residual |
 |--------|------------|----------|
-| Contract bug | Minimize privileged roles; timelock; audits before mainnet; upgrade path governed |
-| Governance capture | Quorum, delay, clear proposal types; avoid admin god-key in production |
-| Economic griefing | Rate limits, deposits, explicit fee design (e.g. Ghost Tax) documented as policy |
+| Contract bug | Minimize privileged roles; timelock; audits before mainnet; upgrade path governed | Novel exploit class |
+| Governance capture | Quorum, delay, clear proposal types; avoid admin god-key in production | Low participation |
+| Economic griefing | Rate limits, deposits, explicit fee design (e.g. Ghost Tax) documented as policy | Policy evasion |
 
 ### 6.8 Supply chain & repo (ADV-7)
 
 | Threat | Mitigation | Residual |
 |--------|------------|----------|
-| Dependency confusion / malicious crate/npm | Lockfiles; pin versions; review new deps |
-| Compromised CI token | Least-privilege tokens; no production keys in CI |
-| Insider push | Branch protection; PR review when second pair of eyes exists; signed commits optional |
+| Dependency confusion / malicious crate/npm | Lockfiles; pin versions; review new deps | Zero-day in pinned dep |
+| Compromised CI token | Least-privilege tokens; no production keys in CI | Human error |
+| Insider push | Branch protection; PR review when second pair of eyes exists; signed commits optional | Solo maintainer periods |
 
-### 6.9 Legal / operator pressure (ADV-6)
+### 6.9 Legal / operator pressure (ADV-6, ADV-11)
 
 | Threat | Mitigation | Residual |
 |--------|------------|----------|
 | Demand to produce user keys | **Impossible by design** if no platform keys (locked) | Operator lying / future backdoor — resisted by locked docs |
 | Demand for logs / metadata | Minimize collection; retention schedules in locked docs | Compulsory process on what *does* exist |
+| Demand for payment-path records | Keep payment compliance artifacts on the **PPSI / payment edge**, not inside the vault key hierarchy | Scope creep into identity keys |
+
+### 6.10 GENIUS Act / payment & illicit-finance surface (ADV-10, ADV-11, ADV-12)
+
+The GENIUS Act (U.S. federal framework for **payment stablecoins**) is threat-relevant only where TRV touches **payment stable value**, issuance, or “digital asset service provider”–like behavior. Utility-token governance and pure messaging are not automatically the same regulatory surface — but product language and architecture must not blur them.
+
+#### Threats
+
+| Threat | Mitigation | Residual |
+|--------|------------|----------|
+| **Illicit use of TRV rails** (ADV-10) | Protocol-level friction for unverified high-risk paths (“Ghost Tax” / tiered anonymity fee); rate limits; optional LiDAR/spatial or POSE-style verification as *user-chosen* elevation — not a hidden social score | Determined laundering via other rails |
+| **Section 9–style pressure for “innovative” detection** | Prefer **on-device / protocol signals** and PPSI-side monitoring over platform decryption of E2E content; never satisfy detection by holding user vault keys | Regulators may still demand more data than architecture holds |
+| **False claim of GENIUS compliance** (ADV-12) | No public claim of being a PPSI or of “GENIUS-certified” status without actual issuer status, reserves, and counsel review; separate **utility TRV** from **payment stablecoin** in docs and UI | Marketing drift |
+| **Reserve / issuer failure** | If settlement uses a PPSI stablecoin: document issuer, redemption path, and that TRV does not re-hypothecate user stablecoin as if TRV were the issuer | Issuer insolvency; bank-run dynamics |
+| **Ghost Tax bypass** | Enforce fee policy in consensus or payment gateway logic; treat client-only fees as advisory only | Client forks / alternate UIs |
+| **KYC feature creep into vault keys** | Spatial / presence verification must remain separable from key custody; verification attestations must not require exporting master keys | Product pressure to “just store ID on server” |
+| **Bankruptcy / priority claims (GENIUS holder protections)** | If TRV ever holds customer payment stablecoins, custody structure must match legal advice; default posture: **do not custody** payment stablecoin reserves on TRV books | Accidental custody via poor UX |
+
+#### Design rules (GENIUS-oriented)
+
+1. **Split planes:** Identity/vault keys ≠ payment stablecoin reserves ≠ TRV utility token.  
+2. **No compliance-via-custody:** Monitoring and fee policy must not justify platform recovery keys.  
+3. **Honest product copy:** “GENIUS-aligned design” ≠ “licensed PPSI.”  
+4. **Ghost Tax is policy, not privacy theater:** Document purpose (friction + resource for higher-risk paths), calculation, and what data it does *not* collect.  
+5. **Counsel gate:** Any mainnet payment stablecoin integration, public reserve claim, or “service provider” positioning requires external legal review before launch — treat as a release blocker, not a blog post.
+
+#### Mapping to existing concepts
+
+| Concept | Threat-model role |
+|---------|-------------------|
+| Ghost Tax | Economic control against anonymous high-risk payment paths; must be enforceable, not cosmetic |
+| LiDAR / spatial handshake | Optional verification elevation; local processing preferred; not TRAIGA-prohibited social scoring |
+| PPSI stablecoins | External trust boundary for payment settlement |
+| TRV token | Utility / governance — do not market as payment stablecoin |
 
 ---
 
@@ -196,7 +247,7 @@ When chain, DHT, and internet are unavailable, the **minimum viable sovereign su
 5. Optional: BLE presence between user’s own devices if radios up  
 
 **Must not require network:** vault open, burn, local identity display.  
-**May degrade:** messaging, FL, governance voting, mint/transfer.
+**May degrade:** messaging, FL, governance voting, mint/transfer, **GENIUS payment settlement**, Ghost Tax collection (queue or fail closed for payment actions).
 
 If offline behavior is not testable, it is not a real guarantee.
 
@@ -210,6 +261,7 @@ If offline behavior is not testable, it is not a real guarantee.
 | User lost all keys and recovery | Identity path ended; new path = square one |
 | User confirmed burn | Path ended; recovery must not resurrect that path |
 | Platform asked to “reset account” | **Refuse by architecture** |
+| Regulator asks for user private keys | **None to give** if non-custodial design holds |
 
 Full detail: `docs/locked/10-Threat-Model-Key-Loss.md`.
 
@@ -223,6 +275,7 @@ Full detail: `docs/locked/10-Threat-Model-Key-Loss.md`.
 - Integrity of identity path bound to user-held keys  
 - Non-custodial operation: platform cannot restore burned or key-lost paths  
 - Honest failure: loss without recovery is final  
+- Clear separation of **utility TRV** from any **payment stablecoin** path  
 
 ### We do **not** claim
 
@@ -231,6 +284,8 @@ Full detail: `docs/locked/10-Threat-Model-Key-Loss.md`.
 - Metadata anonymity on public P2P/IP networks without additional anonymity layers  
 - That steganography alone hides keys from a skilled forensic analyst  
 - That BLE proximity is unforgeable under lab RF conditions  
+- That the project is a licensed PPSI, GENIUS-certified, or approved digital asset service provider  
+- That Ghost Tax alone satisfies any particular regulator’s examination  
 
 ---
 
@@ -240,11 +295,14 @@ Ordered by leverage for a solo / small-team build:
 
 1. **Key & vault UX honesty** — recovery offer, loss/burn copy, no fake “reset”  
 2. **Re-auth gates** — export, recovery display, burn confirm  
-3. **P2E message path** — one vertical slice: identity key → E2E message → verify  
+3. **P2P message path** — one vertical slice: identity key → E2E message → verify  
 4. **BLE as factor only** — presence never sole unlock for vault  
 5. **Model/firmware pinning** — hashes in release notes; signed ESP32 images  
 6. **FL opt-in + signed updates** — default off until aggregation policy exists  
 7. **Contract threat review** before any mainnet token or governance  
+8. **GENIUS plane split** — UI/docs language: TRV utility vs payment stablecoin; no accidental custody  
+9. **Ghost Tax spec** — formula, enforcement locus (chain vs gateway), data *not* collected  
+10. **Legal gate** — counsel review before any public PPSI/reserve/compliance claim  
 
 ---
 
@@ -257,19 +315,23 @@ Ordered by leverage for a solo / small-team build:
 | `docs/locked/03-Destroy-Equals-Restart.md` | Finality rule |
 | `docs/locked/09-Wallet-Architecture.md` | Wallet boundaries |
 | `docs/locked/11-Legal-Hold-Data-Minimization.md` | Retention / legal hold |
+| `docs/concepts/legal-gap-analysis.md` | Legal / regulatory gap notes |
+| `docs/concepts/sentinel-paradigm.md` | SDE / GENIUS / TRAIGA research framing |
 | `docs/concepts/attack-detection.md` | Detection concepts |
 | `docs/concepts/presence-based.md` | BLE / presence design |
 | `docs/concepts/edge-federated-learning.md` | FL sketch |
+| `docs/concepts/tokenomics.md` | TRV utility economics |
 | `SECURITY.md` | Reporting / project security posture |
 
 ---
 
 ## 12. Maintenance
 
-- Update this file when a new surface ships (new radio, new chain, new FL path).  
+- Update this file when a new surface ships (new radio, new chain, new FL path, **payment stablecoin integration**).  
 - Do not mark mitigations “done” without a test or review note.  
-- Locked docs win on conflict with this draft.
+- Locked docs win on conflict with this draft.  
+- GENIUS-related claims in README or marketing must match §6.10 design rules.
 
 ---
 
-*Draft for Phase 0 guardrails. Promote sections to `docs/locked/` only after explicit lock decision.*
+*Draft for Phase 0 guardrails. Promote sections to `docs/locked/` only after explicit lock decision. Not legal advice.*
