@@ -20,6 +20,7 @@ We publish goals, constraints, limitations, and scaffold code so the community c
 - Product rules: local-first, zero-trust, no platform custody  
 - **Destroy = Restart** — loss of key material means square one  
 - Stack direction: GrapheneOS-friendly mobile edge, local `did:key`, optional P2P  
+- **Install-anywhere / no device blacklist** — sideload and store alike; capability tiers, not exclusion (`docs/public/INSTALL.md`)  
 - Honest status tables (scaffold vs implemented)  
 - Known engineering hazards (e.g. React Native CSPRNG / `getRandomValues`)  
 - Biometrics as **optional local unlock only** — not recovery, not network identity (`docs/security/biometrics.md`)  
@@ -44,8 +45,9 @@ If it lands in git by mistake: **rotate**, remove, treat history as burned for t
 2. **Non-goals are explicit** — custody and recovery theater are out  
 3. **Mobile crypto is documented** — RN does not magically have Web Crypto  
 4. **Auth honesty** — biometrics unlock local keys; they do not resurrect burned identity  
-5. **Community invite is specific** — local-key builders, not generic hype  
-6. **Repo link is stable** — https://github.com/Sentinel-Archetecht/The-Remote-Viewer  
+5. **Install honesty** — no Play Integrity hostage for core use; no OEM-only club  
+6. **Community invite is specific** — local-key builders, not generic hype  
+7. **Repo link is stable** — https://github.com/Sentinel-Archetecht/The-Remote-Viewer  
 
 ---
 
@@ -56,6 +58,7 @@ If it lands in git by mistake: **rotate**, remove, treat history as burned for t
 - GrapheneOS deployment constraints  
 - P2P designs that don’t reintroduce a custodial hub  
 - Honest biometric / PAD residual risk (presentation vs injection)  
+- Edge and signal-tier participation without fake vault claims  
 
 ## What we will decline as a default path
 
@@ -63,6 +66,7 @@ If it lands in git by mistake: **rotate**, remove, treat history as burned for t
 - KYC-as-core-protocol without a separate, explicit plane  
 - Security marketing ahead of implementation  
 - App-level cloud “liveness” as a substitute for on-device keys  
+- Device blacklists or Integrity-only install gates  
 
 ---
 
@@ -74,10 +78,11 @@ When in doubt: publish the **constraint**, not the **key**.
 
 ---
 
-## Related public-facing security notes
+## Related public-facing notes
 
 | Doc | Role |
 |-----|------|
+| `docs/public/INSTALL.md` | Install-anywhere and tiered device acceptance |
 | `docs/security/biometrics.md` | Biometrics + PAD posture |
 | `docs/security/threat-model.md` | System threat model (draft) |
 | `docs/security/secrets.md` | Secrets policy |
