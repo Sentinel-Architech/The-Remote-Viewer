@@ -122,6 +122,21 @@ See `docs/locked/10-Threat-Model-Key-Loss.md` for the full key-loss model.
 
 ---
 
+## 5.1 Sensitive operation tiers (local client)
+
+Auth gates scale with impact. Details: `docs/security/auth-bound-keys.md`.
+
+| Tier | Examples | Required local control |
+|------|----------|------------------------|
+| **T0** | Show truncated DID, scaffold chrome | None |
+| **T1** | Read non-secret metadata, list journals | Optional session |
+| **T2** | Sign presence, decrypt vault body, use identity key | Class 3 biometric **or** device credential; prefer auth-bound key / per-op or short window |
+| **T3** | Destroy identity, export recovery material, show full seed/export | Per-operation auth + explicit confirm; never biometric-only without device-credential path |
+
+**Policy:** BLE / spatial presence may contribute to **session elevation** but never replaces T2/T3 knowledge or device credential requirements.
+
+---
+
 ## 6. Attack surfaces and mitigations
 
 ### 6.1 Device compromise (ADV-1, ADV-2)
@@ -129,7 +144,7 @@ See `docs/locked/10-Threat-Model-Key-Loss.md` for the full key-loss model.
 | Threat | Mitigation | Residual |
 |--------|------------|----------|
 | Stolen phone, locked | GrapheneOS, strong lock, hardware-backed keys, remote wipe via user tools | Weak PIN; lab extraction |
-| Stolen phone, unlocked | Re-auth for export / high-value ops; short session lifetime | Coercion; brief unlock window |
+| Stolen phone, unlocked | T2/T3 re-auth; short session lifetime | Coercion; brief unlock window |
 | Biometric spoof / presentation attack | Prefer Class 3 OS biometrics; knowledge factor as primary; see `docs/security/biometrics.md` | Physical molds; coercion |
 | Malicious APK / sideload | Prefer known sources; GrapheneOS hardening; no raw keys in logs | User installs malware anyway |
 | Cloud backup of secrets | Forbid unencrypted key/vault backup to vendor cloud | User overrides via OS settings |
@@ -296,15 +311,17 @@ Full detail: `docs/locked/10-Threat-Model-Key-Loss.md`.
 Ordered by leverage for a solo / small-team build:
 
 1. **Key & vault UX honesty** — recovery offer, loss/burn copy, no fake “reset”  
-2. **Re-auth gates** — export, recovery display, burn confirm (knowledge factor and/or Class 3 biometric as *local* gate only)  
-3. **P2P message path** — one vertical slice: identity key → E2E message → verify  
-4. **BLE as factor only** — presence never sole unlock for vault  
-5. **Model/firmware pinning** — hashes in release notes; signed ESP32 images  
-6. **FL opt-in + signed updates** — default off until aggregation policy exists  
-7. **Contract threat review** before any mainnet token or governance  
-8. **GENIUS plane split** — UI/docs language: TRV utility vs payment stablecoin; no accidental custody  
-9. **Ghost Tax spec** — formula, enforcement locus (chain vs gateway), data *not* collected  
-10. **Legal gate** — counsel review before any public PPSI/reserve/compliance claim  
+2. **T2/T3 re-auth gates** — auth-bound keys where possible; export / burn / recovery display  
+3. **did:key create reliability** — CSPRNG via expo-crypto; no silent failures  
+4. **P2P message path** — one vertical slice: identity key → E2E message → verify  
+5. **BLE as factor only** — presence never sole unlock for vault  
+6. **Model/firmware pinning** — hashes in release notes; signed ESP32 images  
+7. **FL opt-in + signed updates** — default off until aggregation policy exists  
+8. **Contract threat review** before any mainnet token or governance  
+9. **GENIUS plane split** — UI/docs language: TRV utility vs payment stablecoin; no accidental custody  
+10. **Ghost Tax spec** — formula, enforcement locus, data *not* collected  
+11. **Legal gate** — counsel review before any public PPSI/reserve/compliance claim  
+12. **Attestation** — only when a concrete peer/verifier exists (`docs/security/attestation.md`)  
 
 ---
 
@@ -317,9 +334,12 @@ Ordered by leverage for a solo / small-team build:
 | `docs/locked/03-Destroy-Equals-Restart.md` | Finality rule |
 | `docs/locked/09-Wallet-Architecture.md` | Wallet boundaries |
 | `docs/locked/11-Legal-Hold-Data-Minimization.md` | Retention / legal hold |
-| `docs/security/biometrics.md` | Biometrics as local unlock; PAD vs injection; GrapheneOS notes |
+| `docs/security/biometrics.md` | Biometrics as local unlock; PAD; spoofing |
+| `docs/security/auth-bound-keys.md` | Keystore auth-binding policy |
+| `docs/security/attestation.md` | Hardware attestation orientation |
 | `docs/security/secrets.md` | What must never live in git |
 | `docs/security/signed-commits.md` | Commit signing posture |
+| `docs/concepts/passkey-vs-did-key.md` | Identity plane decision memo |
 | `docs/concepts/legal-gap-analysis.md` | Legal / regulatory gap notes |
 | `docs/concepts/sentinel-paradigm.md` | SDE / GENIUS / TRAIGA research framing |
 | `docs/concepts/attack-detection.md` | Detection concepts |
