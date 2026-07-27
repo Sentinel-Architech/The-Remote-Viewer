@@ -1,0 +1,22 @@
+{
+  "_comment": "Catalog-shaped example for apps.obtainium.imranr.dev data/apps/com.sentinelarchetecht.theremoteviewer.json. Submit only after an official APK is on GitHub Releases. additionalSettings is a STRING.",
+  "configs": [
+    {
+      "id": "com.sentinelarchetecht.theremoteviewer",
+      "url": "https://github.com/Sentinel-Archetecht/The-Remote-Viewer",
+      "author": "Sentinel-Archetecht",
+      "name": "The Remote Viewer",
+      "preferredApkIndex": 0,
+      "altLabel": null,
+      "additionalSettings": "{\"includePrereleases\":false,\"fallbackToOlderReleases\":true,\"filterReleaseTitlesByRegEx\":\"\",\"filterReleaseNotesByRegEx\":\"\",\"verifyLatestTag\":true,\"dontSortReleasesList\":false,\"useLatestAssetDateAsReleaseDate\":false,\"trackOnly\":false,\"versionExtractionRegEx\":\"\",\"matchGroupToUse\":\"\",\"versionDetection\":true,\"releaseDateAsVersion\":false,\"useVersionCodeAsOSVersion\":false,\"apkFilterRegEx\":\"arm64|universal|trv\",\"invertAPKFilter\":false,\"autoApkFilterByArch\":true,\"appName\":\"\",\"shizukuPretendToBeGooglePlay\":false,\"exemptFromBackgroundUpdates\":false,\"skipUpdateNotifications\":false,\"about\":\"Local-first zero-trust client. On-device identity; no platform custody.\"}"
+    }
+  ],
+  "icon": null,
+  "categories": [
+    "security",
+    "privacy"
+  ],
+  "description": {
+    "en": "Local-first, zero-trust mobile client. On-device identity; destroy equals restart; Play Integrity not required for core use. Official builds via GitHub Releases."
+  }
+}
