@@ -29,7 +29,7 @@ See `docs/locked/10-Threat-Model-Key-Loss.md` for the full key-loss model.
 |-------|--------------------------------|
 | **Client device** | Pixel 7 + GrapheneOS + Termux; optional desktop/web clients |
 | **Local secrets** | Device-bound keys, optional steganographic vault (“Sentinel’s Sword”), encrypted local stores |
-| **Presence / MFA** | Bluetooth LE beacons, proximity / co-location checks; optional ESP32 edge hardware |
+| **Presence / MFA** | Bluetooth LE beacons, proximity / co-location checks; optional ESP32 edge hardware; optional OS biometrics as *local unlock gate only* (see `docs/security/biometrics.md`) |
 | **P2P** | libp2p (or equivalent), noise/encryption, DHT discovery, relay |
 | **Edge AI** | On-device models; optional federated updates (gradients / LoRA deltas only) |
 | **Chain** | Governance / storage / identity contracts; TRV token utility |
@@ -130,6 +130,7 @@ See `docs/locked/10-Threat-Model-Key-Loss.md` for the full key-loss model.
 |--------|------------|----------|
 | Stolen phone, locked | GrapheneOS, strong lock, hardware-backed keys, remote wipe via user tools | Weak PIN; lab extraction |
 | Stolen phone, unlocked | Re-auth for export / high-value ops; short session lifetime | Coercion; brief unlock window |
+| Biometric spoof / presentation attack | Prefer Class 3 OS biometrics; knowledge factor as primary; see `docs/security/biometrics.md` | Physical molds; coercion |
 | Malicious APK / sideload | Prefer known sources; GrapheneOS hardening; no raw keys in logs | User installs malware anyway |
 | Cloud backup of secrets | Forbid unencrypted key/vault backup to vendor cloud | User overrides via OS settings |
 
@@ -141,7 +142,7 @@ See `docs/locked/10-Threat-Model-Key-Loss.md` for the full key-loss model.
 | RSSI spoof / amplifier | Multi-factor (proximity + human confirm + device bind); never BLE-alone for full auth | Determined RF attacker |
 | Fake co-location | Correlate multiple signals; rate-limit auth elevation | Lab-grade RF |
 
-**Policy:** BLE proximity is a *factor*, not sole authenticator for vault unlock or key export.
+**Policy:** BLE proximity is a *factor*, not sole authenticator for vault unlock or key export. OS biometrics (if used) are likewise a *local unlock gate*, not network identity — `docs/security/biometrics.md`.
 
 ### 6.3 P2P communication (ADV-3, ADV-4, ADV-5)
 
@@ -284,6 +285,7 @@ Full detail: `docs/locked/10-Threat-Model-Key-Loss.md`.
 - Metadata anonymity on public P2P/IP networks without additional anonymity layers  
 - That steganography alone hides keys from a skilled forensic analyst  
 - That BLE proximity is unforgeable under lab RF conditions  
+- That biometrics or PAD make coercion or physical spoofing impossible (see `docs/security/biometrics.md`)  
 - That the project is a licensed PPSI, GENIUS-certified, or approved digital asset service provider  
 - That Ghost Tax alone satisfies any particular regulator’s examination  
 
@@ -294,7 +296,7 @@ Full detail: `docs/locked/10-Threat-Model-Key-Loss.md`.
 Ordered by leverage for a solo / small-team build:
 
 1. **Key & vault UX honesty** — recovery offer, loss/burn copy, no fake “reset”  
-2. **Re-auth gates** — export, recovery display, burn confirm  
+2. **Re-auth gates** — export, recovery display, burn confirm (knowledge factor and/or Class 3 biometric as *local* gate only)  
 3. **P2P message path** — one vertical slice: identity key → E2E message → verify  
 4. **BLE as factor only** — presence never sole unlock for vault  
 5. **Model/firmware pinning** — hashes in release notes; signed ESP32 images  
@@ -315,12 +317,16 @@ Ordered by leverage for a solo / small-team build:
 | `docs/locked/03-Destroy-Equals-Restart.md` | Finality rule |
 | `docs/locked/09-Wallet-Architecture.md` | Wallet boundaries |
 | `docs/locked/11-Legal-Hold-Data-Minimization.md` | Retention / legal hold |
+| `docs/security/biometrics.md` | Biometrics as local unlock; PAD vs injection; GrapheneOS notes |
+| `docs/security/secrets.md` | What must never live in git |
+| `docs/security/signed-commits.md` | Commit signing posture |
 | `docs/concepts/legal-gap-analysis.md` | Legal / regulatory gap notes |
 | `docs/concepts/sentinel-paradigm.md` | SDE / GENIUS / TRAIGA research framing |
 | `docs/concepts/attack-detection.md` | Detection concepts |
 | `docs/concepts/presence-based.md` | BLE / presence design |
 | `docs/concepts/edge-federated-learning.md` | FL sketch |
 | `docs/concepts/tokenomics.md` | TRV utility economics |
+| `docs/public/POSTURE.md` | Transparency without secrets |
 | `SECURITY.md` | Reporting / project security posture |
 
 ---
