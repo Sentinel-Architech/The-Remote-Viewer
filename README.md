@@ -1,51 +1,42 @@
 # The Remote Viewer
 
-**Sentinel Security Protocol** — True digital sovereignty.  
-Faraday-grade isolation • Autonomous math verification • Physical-reality anchoring  
-No tracking • No backdoors • No extraction  
+**Local-first • Zero-trust • Sovereign**
 
-Your device becomes an impenetrable sovereign vault.  
-The architectural reversal of surveillance capitalism.
+The Remote Viewer is a decentralized application focused on true digital sovereignty. It aims to turn your device into a self-contained, high-assurance vault with Faraday-grade isolation, autonomous verification, and no reliance on centralized services.
 
----
+> **Current Status (July 2026)**  
+> This repository is in early development.  
+> Web and mobile clients are **scaffolds only** — they are not secure and do not yet implement identity, cryptography, or vault features.  
+> Real implementation follows the locked principles and roadmap in [`docs/locked/`](docs/locked/).
 
-### Status
+## Vision
 
-This project is in active development.  
-Client applications are currently **scaffolds only** (not secure, no identity cryptography yet).
+- No tracking, no backdoors, no data extraction  
+- Local-first architecture with optional peer-to-peer networking  
+- High-assurance identity using W3C DIDs, Verifiable Credentials, and zero-knowledge proofs  
+- Post-quantum cryptography and hardware-backed security primitives  
+- User-controlled “Destroy = Restart” recovery model  
 
----
+## What’s Implemented Today
 
-### Features (Target)
+| Component          | Status          | Notes                                      |
+|--------------------|-----------------|--------------------------------------------|
+| Web client         | Scaffold        | Vite + React + TypeScript                  |
+| Mobile client      | Scaffold        | Expo + React Native                        |
+| Shared types       | Placeholder     |                                            |
+| Core protocol      | Not started     |                                            |
+| Identity / Crypto  | Not started     | See roadmap                                |
+| P2P / Networking   | Not started     |                                            |
 
-- Post-quantum cryptography (Dilithium + Kyber)
-- Kernel-level security (eBPF + TPM 2.0)
-- Spatial authentication (LiDAR + BLE)
-- Peer-to-peer networking (libp2p)
-- Fully local-first, zero-trust architecture
-
----
-
-### Core Locked Principles
-
-These principles are permanent and non-negotiable:
-
-- **Identity Layer** — High-assurance, privacy-preserving identity using W3C DIDs, Verifiable Credentials, EUDI Wallet compatibility, and zero-knowledge proofs. No centralized personal data storage.
-- **Identity Technical Stack** — Concrete standards, key management, recovery, revocation, offline support, multi-device continuity, anti-phishing, and post-quantum readiness.
-- **Vault Motto** — *YOU CHOOSE TO BURN FOR YOUR PROTECTION*
-- **Absolute Rule** — *Destroy = Restart from Square One*
-- **Founding Sovereign Viewer** — Lifetime highest tier + permanent recognition for those personally invited by the originator.
-- **American Citizen Benefit** — 17.76% membership discount via zero-knowledge proof of citizenship.
-
-Full details live in the [`docs/locked/`](docs/locked/) directory.
-
----
-
-### Getting Started (Scaffold Only)
+## Quick Start (Scaffold Only)
 
 ```bash
-# Web scaffold
-cd apps/web && npm install && npm run dev
+# Web
+cd apps/web
+npm install
+npm run dev
 
-# Mobile scaffold
-cd apps/mobile && npm install && npm start
+# Mobile
+cd apps/mobile
+npm install
+npm start
