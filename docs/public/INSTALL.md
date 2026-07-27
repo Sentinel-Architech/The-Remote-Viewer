@@ -53,12 +53,14 @@ Platform OS may still refuse a broken or unsigned package. That is OS integrity,
 |---------|------|--------|
 | **GitHub Releases** | Primary transparent APK + checksums | Intent — attach APK when mobile builds ship |
 | **Obtainium** | Sideload updates without a store | Fully specified below |
+| **Obtainium crowdsource catalog** | One-click config after APK exists | Template ready — submit only with official APK |
 | Manual sideload | Download APK + verify hash | Always allowed |
 | Optional store (Play, etc.) | Convenience | Never the only door |
 | GrapheneOS App Store | Welcome when client is real enough | Never exclusive |
 | F-Droid / IzzyOnDroid / own fdroid repo | Optional later | Not required for install-anywhere |
 
-Release discipline for all of the above: `docs/public/RELEASE-HYGIENE.md`.
+Release discipline: `docs/public/RELEASE-HYGIENE.md`  
+Crowdsource process: `docs/distribution/OBTAINIUM-CROWDSOURCE.md`
 
 ---
 
@@ -88,13 +90,14 @@ When official APKs are published on GitHub Releases:
 
 **Signature rule:** Updates only work if every release is signed with the **same** app signing key. Do not mix Play-signed and sideload-signed lineages for the same package id without understanding that Android will refuse the update.
 
-### One-tap / shared config (when available)
+### Crowdsource / one-tap config
 
-- Crowdsourced configs: [apps.obtainium.imranr.dev](https://apps.obtainium.imranr.dev)  
-- Example config template in-repo: `docs/distribution/obtainium-config.example.json`  
-- Optional README badge: Obtainium’s “Get it on Obtainium” graphic once a public config or release URL is live  
+- Guide: `docs/distribution/OBTAINIUM-CROWDSOURCE.md`  
+- Catalog template: `docs/distribution/obtainium-catalog.example.json`  
+- Site: [apps.obtainium.imranr.dev](https://apps.obtainium.imranr.dev)  
+- After upstream merge: use their “Add to Obtainium” / redirect links and optional badge  
 
-Until the first public APK exists, Obtainium will not find an installable asset—that is expected for scaffold-only status.
+Until the first public APK exists, Obtainium will not find an installable asset—and a crowdsource PR should not be opened.
 
 ### GitHub API rate limits
 
@@ -148,6 +151,8 @@ Lack of those enhancements **must not** block install or basic local use.
 
 > Obtainium + GitHub Releases is a first-class update path for Android clients without a store.
 
+> Crowdsourced Obtainium configs will use the official GitHub source only, after a public APK ships.
+
 > Any device that can power on may participate at the highest tier it can support—from full sovereign client, to edge sensor, to simple signal bearer.
 
 > Pixel + GrapheneOS is recommended for stronger local guarantees, not required to download or join.
@@ -157,7 +162,9 @@ Lack of those enhancements **must not** block install or basic local use.
 ## Related
 
 - `docs/public/RELEASE-HYGIENE.md` — how we publish APKs so Obtainium works  
-- `docs/distribution/obtainium-config.example.json` — config template  
+- `docs/distribution/OBTAINIUM-CROWDSOURCE.md` — catalog submission process  
+- `docs/distribution/obtainium-catalog.example.json` — upstream file shape  
+- `docs/distribution/obtainium-config.example.json` — maintainer notes  
 - `docs/public/POSTURE.md` — transparency without secrets  
 - `docs/security/auth-bound-keys.md` — capability-scaled key protection  
 - `docs/security/attestation.md` — optional hardware proofs  

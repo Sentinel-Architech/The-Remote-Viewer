@@ -1,5 +1,5 @@
 {
-  "_comment": "Example Obtainium-oriented metadata for The Remote Viewer. Not a live apps.obtainium.imranr.dev entry until a public APK exists. Adjust fields when publishing.",
+  "_comment": "Maintainer-oriented Obtainium notes for The Remote Viewer. For the crowdsource catalog file shape, use obtainium-catalog.example.json. Not a live apps.obtainium.imranr.dev entry until a public APK exists.",
   "appName": "The Remote Viewer",
   "author": "Sentinel-Archetecht",
   "appSourceUrl": "https://github.com/Sentinel-Archetecht/The-Remote-Viewer",
@@ -7,12 +7,14 @@
   "recommendedSettings": {
     "includePrereleases": false,
     "verifyLatestTag": true,
+    "fallbackToOlderReleases": true,
     "apkFilterRegEx": "arm64|universal|trv",
-    "fallbackToOlderReleases": true
+    "autoApkFilterByArch": true,
+    "invertAPKFilter": false
   },
   "about": "Local-first, zero-trust mobile client direction. On-device identity; no platform custody. Install-anywhere; Play Integrity not required for core use.",
   "packageId": "REPLACE_WITH_APPLICATION_ID",
-  "categories": ["security", "privacy", "offline"],
+  "categories": ["security", "privacy"],
   "userInstructions": [
     "Install Obtainium from F-Droid or GitHub.",
     "Add app with URL https://github.com/Sentinel-Archetecht/The-Remote-Viewer",
@@ -20,10 +22,18 @@
     "Use APK filter if multiple ABI assets are present.",
     "Verify SHA-256 from the GitHub Release notes when provided."
   ],
+  "crowdsource": {
+    "guide": "docs/distribution/OBTAINIUM-CROWDSOURCE.md",
+    "catalogTemplate": "docs/distribution/obtainium-catalog.example.json",
+    "upstream": "https://github.com/ImranR98/apps.obtainium.imranr.dev",
+    "criteria": "https://github.com/ImranR98/apps.obtainium.imranr.dev/blob/main/APP_CRITERIA.md",
+    "submitWhen": "Official signed APK is on GitHub Releases"
+  },
   "badgeHint": "https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png",
   "relatedDocs": [
     "docs/public/INSTALL.md",
     "docs/public/RELEASE-HYGIENE.md",
-    "docs/public/POSTURE.md"
+    "docs/public/POSTURE.md",
+    "docs/distribution/OBTAINIUM-CROWDSOURCE.md"
   ]
 }
