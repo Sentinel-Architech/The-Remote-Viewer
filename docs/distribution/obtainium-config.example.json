@@ -1,5 +1,5 @@
 {
-  "_comment": "Maintainer-oriented Obtainium notes for The Remote Viewer. For the crowdsource catalog file shape, use obtainium-catalog.example.json. Not a live apps.obtainium.imranr.dev entry until a public APK exists.",
+  "_comment": "Maintainer-oriented Obtainium notes. Catalog file shape: obtainium-catalog.example.json. Package identity frozen in ANDROID-IDENTITY.md.",
   "appName": "The Remote Viewer",
   "author": "Sentinel-Archetecht",
   "appSourceUrl": "https://github.com/Sentinel-Archetecht/The-Remote-Viewer",
@@ -13,7 +13,7 @@
     "invertAPKFilter": false
   },
   "about": "Local-first, zero-trust mobile client direction. On-device identity; no platform custody. Install-anywhere; Play Integrity not required for core use.",
-  "packageId": "REPLACE_WITH_APPLICATION_ID",
+  "packageId": "com.sentinelarchetecht.theremoteviewer",
   "categories": ["security", "privacy"],
   "userInstructions": [
     "Install Obtainium from F-Droid or GitHub.",
@@ -25,6 +25,7 @@
   "crowdsource": {
     "guide": "docs/distribution/OBTAINIUM-CROWDSOURCE.md",
     "catalogTemplate": "docs/distribution/obtainium-catalog.example.json",
+    "identity": "docs/distribution/ANDROID-IDENTITY.md",
     "upstream": "https://github.com/ImranR98/apps.obtainium.imranr.dev",
     "criteria": "https://github.com/ImranR98/apps.obtainium.imranr.dev/blob/main/APP_CRITERIA.md",
     "submitWhen": "Official signed APK is on GitHub Releases"
@@ -34,6 +35,7 @@
     "docs/public/INSTALL.md",
     "docs/public/RELEASE-HYGIENE.md",
     "docs/public/POSTURE.md",
-    "docs/distribution/OBTAINIUM-CROWDSOURCE.md"
+    "docs/distribution/OBTAINIUM-CROWDSOURCE.md",
+    "docs/distribution/ANDROID-IDENTITY.md"
   ]
 }

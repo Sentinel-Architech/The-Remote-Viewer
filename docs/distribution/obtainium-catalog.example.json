@@ -1,8 +1,8 @@
 {
-  "_comment": "Catalog-shaped example for apps.obtainium.imranr.dev data/apps/<id>.json. Replace package id, icon, and apkFilterRegEx when a public APK exists. additionalSettings is a STRING (Obtainium deep-link / many catalog entries). Do not submit upstream until GitHub Releases hosts an official APK.",
+  "_comment": "Catalog-shaped example for apps.obtainium.imranr.dev data/apps/com.sentinelarchetecht.theremoteviewer.json. Submit only after an official APK is on GitHub Releases. additionalSettings is a STRING.",
   "configs": [
     {
-      "id": "REPLACE_WITH_APPLICATION_ID",
+      "id": "com.sentinelarchetecht.theremoteviewer",
       "url": "https://github.com/Sentinel-Archetecht/The-Remote-Viewer",
       "author": "Sentinel-Archetecht",
       "name": "The Remote Viewer",

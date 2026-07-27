@@ -2,7 +2,19 @@
 
 **Updated:** 2026-07-27  
 **Audience:** Maintainers publishing Android builds of The Remote Viewer  
-**Related:** `docs/public/INSTALL.md`
+**Related:** `docs/public/INSTALL.md`, `docs/distribution/ANDROID-IDENTITY.md`
+
+---
+
+## Frozen identity
+
+| Field | Value |
+|-------|--------|
+| applicationId | `com.sentinelarchetecht.theremoteviewer` |
+| Display name | `The Remote Viewer` |
+| Signing | One production keystore for this applicationId — never in git |
+
+See `docs/distribution/ANDROID-IDENTITY.md`.
 
 ---
 
@@ -11,7 +23,7 @@
 Make every official Android build **installable and updatable** via:
 
 - Manual sideload  
-- **Obtainium** (GitHub source)  
+- **Obtainium** (optional; GitHub source)  
 - Optional stores **without** becoming the only channel  
 
 No Play Integrity requirement for core use.
@@ -20,11 +32,11 @@ No Play Integrity requirement for core use.
 
 ## Hard rules
 
-1. **One package name** for the public TRV Android app lineage.  
+1. **applicationId** stays `com.sentinelarchetecht.theremoteviewer` for this lineage.  
 2. **One app signing key** for that package for the life of the lineage (or a documented, deliberate migration).  
 3. Every GitHub Release that is meant for users **attaches the APK(s)** as release assets—not only CI artifact links.  
 4. Publish **SHA-256** of each APK in the release body.  
-5. Publish **signing certificate SHA-256** (or link to a stable VERIFY.md) for first-install verification.  
+5. Publish **signing certificate SHA-256** (or link to a stable VERIFY note) for first-install verification.  
 6. Mark the intended production build as **Latest**; use GitHub pre-release flag for betas.  
 7. Align Android `versionName` with the release tag style (e.g. tag `v0.1.0` ↔ versionName `0.1.0` or `v0.1.0`—be consistent).  
 8. Never commit keystores, passwords, or upload keys to git (`docs/security/secrets.md`).
@@ -34,12 +46,12 @@ No Play Integrity requirement for core use.
 ## GitHub Release checklist
 
 - [ ] Tag created from the intended commit  
-- [ ] APK asset(s) uploaded (predictable names, e.g. `trv-0.1.0-arm64-v8a.apk`)  
+- [ ] APK asset(s) uploaded (predictable names, e.g. `theremoteviewer-0.1.0-arm64-v8a.apk`)  
 - [ ] SHA-256 listed in release notes  
 - [ ] Changelog / breaking notes  
 - [ ] Pre-release checkbox set correctly  
 - [ ] Latest points at stable when this is stable  
-- [ ] Obtainium smoke-test: Add repo URL → sees version + APK  
+- [ ] Optional: Obtainium smoke-test — Add repo URL → sees version + APK  
 
 ### Multiple APKs
 
@@ -65,11 +77,14 @@ Obtainium needs from the source:
 GitHub Releases with APK assets satisfy this via the API.  
 HTML-only sites are fragile; do not rely on them as primary.
 
-User-facing URL to document everywhere:
+User-facing URL:
 
 ```text
 https://github.com/Sentinel-Archetecht/The-Remote-Viewer
 ```
+
+Package id in configs: `com.sentinelarchetecht.theremoteviewer`  
+Obtainium itself remains **optional** for end users.
 
 ---
 
@@ -84,25 +99,23 @@ https://github.com/Sentinel-Archetecht/The-Remote-Viewer
 If a store listing is added later, either:
 
 - Use the **same** upload/signing strategy users can also sideload, or  
-- Document **separate package id** / lineage so Obtainium users are not broken.
+- Document **separate package id** / lineage so sideload users are not broken.
 
 ---
 
 ## First public APK (when mobile leaves pure scaffold)
 
-1. Freeze package name and generate release keystore offline.  
-2. Backup keystore under user-controlled secure storage—not the repo.  
+1. Confirm `android.package` = `com.sentinelarchetecht.theremoteviewer`.  
+2. Generate release keystore offline; back it up under user-controlled secure storage—not the repo.  
 3. Build signed release APK.  
 4. Create GitHub Release + assets + hashes.  
-5. Update `docs/public/INSTALL.md` if URLs or filter names change.  
-6. Optionally publish config to apps.obtainium.imranr.dev and add badge to README.  
-7. Optionally file GrapheneOS App Store interest when quality bar is met.
+5. Optional: Obtainium test; crowdsource PR per `docs/distribution/OBTAINIUM-CROWDSOURCE.md`.  
 
 ---
 
 ## Non-goals
 
-- Requiring users to use Obtainium (manual sideload remains valid)  
+- Requiring users to use Obtainium  
 - Blocking devices that do not use GrapheneOS  
 - Attaching debug-signed APKs as “official”  
 
