@@ -1,12 +1,15 @@
 /**
  * Local did:key identity scaffold — NOT production security.
  * Keys stay on-device via SecureStore. No platform recovery.
+ *
+ * RNG: use expo-crypto (RN has no crypto.getRandomValues by default).
  */
 import * as ed from '@noble/ed25519';
 import * as SecureStore from 'expo-secure-store';
+import * as ExpoCrypto from 'expo-crypto';
 import { sha512 } from '@noble/hashes/sha512';
 
-// noble-ed25519 expects a sync sha512 in some environments
+// noble-ed25519 expects sync sha512 in RN
 ed.etc.sha512Sync = (...m: Uint8Array[]) => sha512(ed.etc.concatBytes(...m));
 
 const KEY_PRIVATE = 'trv_did_private_key_hex';
@@ -32,14 +35,17 @@ function hexToBytes(hex: string): Uint8Array {
   return out;
 }
 
-/** Minimal base58btc (Bitcoin alphabet) for did:key multicodec payload */
+/** CSPRNG without Web Crypto — avoids getRandomValues of undefined on RN */
+function randomPrivateKey32(): Uint8Array {
+  return ExpoCrypto.getRandomBytes(32);
+}
+
 const B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 function base58btcEncode(data: Uint8Array): string {
   if (data.length === 0) return '';
-  // count leading zeros
   let zeros = 0;
   while (zeros < data.length && data[zeros] === 0) zeros++;
-  const size = ((data.length - zeros) * 138) / 100 + 1;
+  const size = Math.floor(((data.length - zeros) * 138) / 100) + 1;
   const buf = new Uint8Array(size);
   let length = 0;
   for (let i = zeros; i < data.length; i++) {
@@ -59,7 +65,6 @@ function base58btcEncode(data: Uint8Array): string {
   return str;
 }
 
-/** Ed25519 public key → did:key (multicodec 0xed 0x01 prefix) */
 function publicKeyToDidKey(publicKey: Uint8Array): string {
   const multicodec = new Uint8Array(2 + publicKey.length);
   multicodec[0] = 0xed;
@@ -70,7 +75,7 @@ function publicKeyToDidKey(publicKey: Uint8Array): string {
 
 /** Create a new did:key identity and persist private key on-device only */
 export async function createDidKeyIdentity(): Promise<DidKeyIdentity> {
-  const privateKey = ed.utils.randomPrivateKey();
+  const privateKey = randomPrivateKey32();
   const publicKey = await ed.getPublicKeyAsync(privateKey);
   const publicKeyHex = bytesToHex(publicKey);
   const did = publicKeyToDidKey(publicKey);
@@ -81,7 +86,11 @@ export async function createDidKeyIdentity(): Promise<DidKeyIdentity> {
   return { did, publicKeyHex };
 }
 
-/** Load existing identity if present */
+/** Alias used by some screen stubs */
+export async function createDidKey(): Promise<DidKeyIdentity> {
+  return createDidKeyIdentity();
+}
+
 export async function getDidKeyIdentity(): Promise<DidKeyIdentity | null> {
   const did = await SecureStore.getItemAsync(KEY_DID);
   const privateKeyHex = await SecureStore.getItemAsync(KEY_PRIVATE);
@@ -92,13 +101,19 @@ export async function getDidKeyIdentity(): Promise<DidKeyIdentity | null> {
   return { did, publicKeyHex: bytesToHex(publicKey) };
 }
 
-/** Destroy identity — square one (no platform recovery) */
+export async function getCurrentDidKey(): Promise<DidKeyIdentity | null> {
+  return getDidKeyIdentity();
+}
+
 export async function destroyDidKeyIdentity(): Promise<void> {
   await SecureStore.deleteItemAsync(KEY_PRIVATE);
   await SecureStore.deleteItemAsync(KEY_DID);
 }
 
-// --- backward-compatible names used by older PresenceScreen stubs ---
+export async function destroyDidKey(): Promise<void> {
+  return destroyDidKeyIdentity();
+}
+
 export type PresenceProof = DidKeyIdentity & {
   publicKey: string;
   signature?: string;

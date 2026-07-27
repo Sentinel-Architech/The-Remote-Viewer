@@ -3,7 +3,7 @@
 **Status:** Design posture (not an implementation claim)  
 **Audience:** Builders and reviewers of The Remote Viewer / Sentinel  
 **Updated:** 2026-07-27  
-**Related:** `docs/public/POSTURE.md`, `docs/security/threat-model.md`, `docs/security/secrets.md`, `docs/locked/10-Threat-Model-Key-Loss.md`
+**Related:** `docs/public/POSTURE.md`, `docs/security/threat-model.md`, `docs/security/secrets.md`, `docs/security/auth-bound-keys.md`, `docs/locked/10-Threat-Model-Key-Loss.md`
 
 ---
 
@@ -13,6 +13,8 @@ Biometrics are an **optional local unlock** for on-device key use.
 They are **not** identity, **not** recovery, and **not** a substitute for destroy = restart.
 
 **Spoofing does not change that rule.** Even perfect anti-spoof would not justify biometrics as root of trust or as a recovery path.
+
+For **how keys must bind to auth** (Keystore, StrongBox, timeouts), see `docs/security/auth-bound-keys.md`.
 
 ---
 
@@ -46,7 +48,7 @@ On GrapheneOS (preferred edge for TRV):
 | **Injection** | Synthetic/replay frames enter the software capture path (virtual camera, hooks, emulator) | Mostly **remote** selfie/KYC products — avoid as load-bearing for TRV |
 | **Process / policy** | Live biometric under force; hostile enrollment; unlocked session abuse | Coercion, social engineering, malware after unlock |
 
-PAD (ISO/IEC 30107) targets **presentation**. It does **not** certify resistance to **injection**. Separate industry work (e.g. CEN/TS 18099) addresses injection assurance for remote verify pipelines.
+PAD (ISO/IEC 30107) targets **presentation**. It does **not** certify resistance to **injection**. Separate industry work (e.g. CEN/TS 18099; ISO/IEC 25456 in progress) addresses injection assurance for remote verify pipelines.
 
 ---
 
@@ -84,7 +86,7 @@ PAD (ISO/IEC 30107) targets **presentation**. It does **not** certify resistance
 
 **Policy:** Voice is a poor sole factor for vault or `did:key` unlock.
 
-### Non-sensor process vectors (easy to underweight)
+### Non-sensor process vectors
 
 | Vector | Why it matters |
 |--------|----------------|
@@ -95,35 +97,30 @@ PAD (ISO/IEC 30107) targets **presentation**. It does **not** certify resistance
 | **Post-unlock malware** | Session already open; biometric gate skipped |
 | **Public biometric leakage** | Social photos → face spoofs; latents on shared surfaces |
 
+**Biology is not rotatable.** Destroy = restart revokes **keys**, not fingerprints or faces. TRV must not store server-side biometric templates.
+
 ---
 
-## Presentation attack detection (PAD)
+## Presentation attack detection (PAD) and liveness standards
 
-### Definition
+| Standard | Role |
+|----------|------|
+| ISO/IEC 30107-1/3 | PAD framework + testing/reporting (presentation @ sensor) |
+| ISO/IEC 30107-4 | Mobile local biometric PAD profile (incl. FIDO-oriented profile) |
+| CEN/TS 18099 | Injection attack detection (EU TS) |
+| ISO/IEC 25456 | IAD international standard (in development) |
+| NIST SP 800-63B | Auth policy: biometrics not secrets; SHOULD PAD; attempt limits |
 
-**PAD** (liveness / anti-spoof) tries to reject presentation artifacts at the capture device.
+Liveness detection ⊆ PAD. Lab “Level 1/2/3” are evaluation protocols — always read species, device, APCER/BPCER.
 
-| Standard | Purpose |
-|----------|---------|
-| ISO/IEC 30107-1 | Framework and terms |
-| ISO/IEC 30107-3 | Testing and reporting |
-| ISO/IEC 30107-4 | Profile for **mobile** devices with **local** biometric recognition |
-
-### Metrics (for reading claims)
-
-- **APCER** — attack presentations accepted as live (security failure)
-- **BPCER** — real presentations rejected (usability failure)
-
-Lab results are only meaningful with stated attack species, device, and local vs cloud-assisted evaluation.
-
-### TRV stance on PAD
+### TRV stance
 
 | Context | Stance |
 |---------|--------|
-| OS Class 3 fingerprint / face on Pixel + GrapheneOS | **Inherit** OEM + platform PAD; do not reimplement for system unlock |
-| App-level selfie “liveness” SDKs (often cloud) | **Avoid** as load-bearing identity |
-| Spatial / depth / LiDAR experiments | **Session presence** research only; document presentation + injection residuals |
-| Public claims | No implied PAD/IAD lab certification unless independently obtained |
+| OS Class 3 on Pixel + GrapheneOS | Inherit OEM + platform; do not reimplement |
+| App-level cloud liveness | Avoid as load-bearing identity |
+| Spatial / depth experiments | Session presence research only |
+| Public claims | No implied PAD/IAD cert unless independently obtained |
 
 ---
 
@@ -131,56 +128,45 @@ Lab results are only meaningful with stated attack species, device, and local vs
 
 | Adversary / event | Biometrics + PAD help? |
 |-------------------|-------------------------|
-| Casual theft / shoulder surfing | Yes (faster lock, less PIN entry) |
-| Physical attacker with time and sensor access | Limited — molds, path abuse, weak face unlock |
-| Coercion (ADV-6) | Poor — live biometric under force |
-| Malware after unlock (ADV-2) | No |
-| Remote deepfake / injection rings | N/A if TRV refuses remote selfie as root of trust |
-| Lost key material (destroy = restart) | No — cannot restore identity |
+| Casual theft / shoulder surfing | Yes |
+| Physical attacker with time | Limited |
+| Coercion | Poor |
+| Malware after unlock | No — need auth-bound keys |
+| Remote injection rings | N/A if no remote selfie root of trust |
+| Lost key material | No |
 
 ---
 
-## Implementation posture (when mobile identity is real)
+## Implementation posture
 
-1. Generate and store `did:key` (or successor) **on-device only**.
-2. Bind sensitive key use to **user authentication** (Class 3 biometric **or** device credential), preferably per-use or short timeout for high-impact ops (export, burn confirm, recovery display).
-3. Always offer **device credential fallback**.
-4. Never enroll biometrics as the only path to create or “recover” identity.
-5. **Enrollment hygiene:** only enroll biometrics when the user intentionally controls the device; surface OS settings rather than silent enrollment in-app.
-6. UX copy: “Unlock local identity” — not “Sign in with fingerprint to the network.”
-7. Expo/RN: `expo-local-authentication` for prompts; hardware-backed storage for material; plan native Keystore auth-binding when SecureStore limits are insufficient.
-8. GrapheneOS users: document strong primary lock + optional biometric; respect tightened attempt limits; document optional FP+PIN and duress separately.
-9. Do not ship cloud PAD/IAD SDKs as core identity.
+1. On-device `did:key` only; CSPRNG via `expo-crypto` (not Web Crypto).  
+2. Auth-bound Keystore for production wraps — `docs/security/auth-bound-keys.md`.  
+3. Device credential fallback always.  
+4. Never biometric-only create/recover.  
+5. Enrollment hygiene; prefer invalidate-on-new-biometric for wrapping keys.  
+6. UX: “Unlock local identity.”  
+7. GrapheneOS: strong primary lock, optional FP, optional FP+PIN, duress separate.  
 
 ---
 
 ## Non-goals
 
-- Biometrics as network identity
-- Cloud liveness as a substitute for local keys
-- Recovery of destroyed key material via face or fingerprint
-- Claims of “unspoofable” biometrics
-- Security marketing that outruns the scaffold
-- Treating ISO 30107 as proof against injection or coercion
+- Biometrics as network identity  
+- Cloud liveness as local-key substitute  
+- Recovery via face/fingerprint  
+- “Unspoofable” claims  
+- 30107 as proof against injection or coercion  
 
 ---
 
-## Public sentences (reuse freely)
+## Public sentences
 
 > Biometrics on The Remote Viewer are an **optional local unlock** for on-device keys. They are not identity, not recovery, and not a substitute for destroy = restart.
 
-> Spoofing vectors include physical artifacts, replay, deepfakes, and pipeline injection. TRV assumes presentation risk on local sensors and rejects remote biometric proofing as a root of trust; knowledge factors and key destruction remain authoritative.
+> Spoofing vectors include physical artifacts, replay, deepfakes, and pipeline injection. TRV assumes presentation risk on local sensors and rejects remote biometric proofing as a root of trust.
 
-> Presentation attack detection belongs primarily at the **sensor and OS** for local unlock. App-level selfie liveness is not a substitute for on-device keys.
+> Prompting for fingerprint is not the same as **auth-bound Keystore** keys. Production sensitive ops must bind crypto to Class 3 auth or device credential.
 
 ---
-
-## References (orientation)
-
-- Android authentication model (Gatekeeper, biometrics, Keystore AuthTokens)
-- GrapheneOS: two-factor fingerprint unlock, tightened fingerprint attempts, SE rate limiting, duress PIN
-- ISO/IEC 30107 series (PAD); mobile profile 30107-4
-- Presentation vs injection attack literature; injection assurance work (e.g. CEN/TS 18099)
-- Historical mobile fingerprint path attacks (e.g. BrutePrint-class research) as residual risk, not as a product claim about current Pixel+GrapheneOS
 
 This document states **constraints**. It does not claim a finished biometric product.
