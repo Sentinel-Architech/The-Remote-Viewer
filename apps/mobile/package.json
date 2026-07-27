@@ -13,18 +13,18 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "doctor": "npx expo-doctor",
-    "install:expo": "npx expo install expo-crypto expo-secure-store expo-status-bar"
+    "install:expo": "npx expo install --fix"
   },
   "dependencies": {
-    "expo": "~51.0.0",
-    "expo-crypto": "~13.0.2",
-    "expo-secure-store": "~13.0.2",
-    "expo-status-bar": "~1.12.1",
-    "react": "18.2.0",
-    "react-native": "0.74.5"
+    "expo": "~54.0.0",
+    "expo-crypto": "~15.0.0",
+    "expo-secure-store": "~15.0.0",
+    "expo-status-bar": "~2.2.0",
+    "react": "19.1.0",
+    "react-native": "0.81.4"
   },
   "devDependencies": {
-    "@types/react": "~18.2.79",
-    "typescript": "~5.3.3"
+    "@types/react": "~19.1.0",
+    "typescript": "~5.9.2"
   }
 }
