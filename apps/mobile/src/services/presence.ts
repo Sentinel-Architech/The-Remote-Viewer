@@ -1,68 +1,122 @@
+/**
+ * Local did:key identity scaffold — NOT production security.
+ * Keys stay on-device via SecureStore. No platform recovery.
+ */
 import * as ed from '@noble/ed25519';
 import * as SecureStore from 'expo-secure-store';
-import * as Crypto from 'expo-crypto';
+import { sha512 } from '@noble/hashes/sha512';
 
-const KEY_PRIVATE = 'presence_private_key';
-const KEY_PROOF = 'presence_proof';
+// noble-ed25519 expects a sync sha512 in some environments
+ed.etc.sha512Sync = (...m: Uint8Array[]) => sha512(ed.etc.concatBytes(...m));
 
-export type PresenceProof = {
-  publicKey: string;
-  signature: string;
-  timestamp: number;
-  expiresAt: number;
+const KEY_PRIVATE = 'trv_did_private_key_hex';
+const KEY_DID = 'trv_did_key_string';
+
+export type DidKeyIdentity = {
+  did: string;
+  publicKeyHex: string;
 };
 
-async function getOrCreateKeyPair() {
-  let privateKeyHex = await SecureStore.getItemAsync(KEY_PRIVATE);
-
-  if (!privateKeyHex) {
-    const privateKey = ed.utils.randomPrivateKey();
-    privateKeyHex = Buffer.from(privateKey).toString('hex');
-    await SecureStore.setItemAsync(KEY_PRIVATE, privateKeyHex);
-  }
-
-  const privateKey = Buffer.from(privateKeyHex, 'hex');
-  const publicKey = await ed.getPublicKey(privateKey);
-
-  return {
-    privateKey,
-    publicKey: Buffer.from(publicKey).toString('hex'),
-  };
+function bytesToHex(bytes: Uint8Array): string {
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
 }
 
-export async function createPresenceProof(durationSeconds = 60): Promise<PresenceProof> {
-  const { privateKey, publicKey } = await getOrCreateKeyPair();
-  const timestamp = Date.now();
-  const expiresAt = timestamp + durationSeconds * 1000;
+function hexToBytes(hex: string): Uint8Array {
+  const clean = hex.length % 2 ? '0' + hex : hex;
+  const out = new Uint8Array(clean.length / 2);
+  for (let i = 0; i < out.length; i++) {
+    out[i] = parseInt(clean.slice(i * 2, i * 2 + 2), 16);
+  }
+  return out;
+}
 
-  const message = `presence:${timestamp}:${expiresAt}`;
-  const messageBytes = new TextEncoder().encode(message);
-  const signature = await ed.sign(messageBytes, privateKey);
+/** Minimal base58btc (Bitcoin alphabet) for did:key multicodec payload */
+const B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+function base58btcEncode(data: Uint8Array): string {
+  if (data.length === 0) return '';
+  // count leading zeros
+  let zeros = 0;
+  while (zeros < data.length && data[zeros] === 0) zeros++;
+  const size = ((data.length - zeros) * 138) / 100 + 1;
+  const buf = new Uint8Array(size);
+  let length = 0;
+  for (let i = zeros; i < data.length; i++) {
+    let carry = data[i];
+    let j = 0;
+    for (let k = size - 1; k >= 0 && (carry !== 0 || j < length); k--, j++) {
+      carry += 256 * buf[k];
+      buf[k] = carry % 58;
+      carry = (carry / 58) | 0;
+    }
+    length = j;
+  }
+  let it = size - length;
+  while (it < size && buf[it] === 0) it++;
+  let str = '1'.repeat(zeros);
+  for (; it < size; it++) str += B58[buf[it]];
+  return str;
+}
 
-  const proof: PresenceProof = {
-    publicKey,
-    signature: Buffer.from(signature).toString('hex'),
-    timestamp,
-    expiresAt,
-  };
+/** Ed25519 public key → did:key (multicodec 0xed 0x01 prefix) */
+function publicKeyToDidKey(publicKey: Uint8Array): string {
+  const multicodec = new Uint8Array(2 + publicKey.length);
+  multicodec[0] = 0xed;
+  multicodec[1] = 0x01;
+  multicodec.set(publicKey, 2);
+  return `did:key:z${base58btcEncode(multicodec)}`;
+}
 
-  await SecureStore.setItemAsync(KEY_PROOF, JSON.stringify(proof));
-  return proof;
+/** Create a new did:key identity and persist private key on-device only */
+export async function createDidKeyIdentity(): Promise<DidKeyIdentity> {
+  const privateKey = ed.utils.randomPrivateKey();
+  const publicKey = await ed.getPublicKeyAsync(privateKey);
+  const publicKeyHex = bytesToHex(publicKey);
+  const did = publicKeyToDidKey(publicKey);
+
+  await SecureStore.setItemAsync(KEY_PRIVATE, bytesToHex(privateKey));
+  await SecureStore.setItemAsync(KEY_DID, did);
+
+  return { did, publicKeyHex };
+}
+
+/** Load existing identity if present */
+export async function getDidKeyIdentity(): Promise<DidKeyIdentity | null> {
+  const did = await SecureStore.getItemAsync(KEY_DID);
+  const privateKeyHex = await SecureStore.getItemAsync(KEY_PRIVATE);
+  if (!did || !privateKeyHex) return null;
+
+  const privateKey = hexToBytes(privateKeyHex);
+  const publicKey = await ed.getPublicKeyAsync(privateKey);
+  return { did, publicKeyHex: bytesToHex(publicKey) };
+}
+
+/** Destroy identity — square one (no platform recovery) */
+export async function destroyDidKeyIdentity(): Promise<void> {
+  await SecureStore.deleteItemAsync(KEY_PRIVATE);
+  await SecureStore.deleteItemAsync(KEY_DID);
+}
+
+// --- backward-compatible names used by older PresenceScreen stubs ---
+export type PresenceProof = DidKeyIdentity & {
+  publicKey: string;
+  signature?: string;
+  timestamp?: number;
+  expiresAt?: number;
+};
+
+export async function createPresenceProof(_durationSeconds = 60): Promise<PresenceProof> {
+  const id = await createDidKeyIdentity();
+  return { ...id, publicKey: id.publicKeyHex };
 }
 
 export async function getCurrentProof(): Promise<PresenceProof | null> {
-  const raw = await SecureStore.getItemAsync(KEY_PROOF);
-  if (!raw) return null;
-
-  const proof: PresenceProof = JSON.parse(raw);
-  if (Date.now() > proof.expiresAt) {
-    await destroyPresence();
-    return null;
-  }
-  return proof;
+  const id = await getDidKeyIdentity();
+  if (!id) return null;
+  return { ...id, publicKey: id.publicKeyHex };
 }
 
-export async function destroyPresence() {
-  await SecureStore.deleteItemAsync(KEY_PRIVATE);
-  await SecureStore.deleteItemAsync(KEY_PROOF);
+export async function destroyPresence(): Promise<void> {
+  await destroyDidKeyIdentity();
 }

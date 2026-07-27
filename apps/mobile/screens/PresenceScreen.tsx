@@ -1,62 +1,105 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, Alert } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, Button, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import {
-  createPresenceProof,
-  getCurrentProof,
-  destroyPresence,
-  PresenceProof,
+  createDidKeyIdentity,
+  getDidKeyIdentity,
+  destroyDidKeyIdentity,
+  DidKeyIdentity,
 } from '../src/services/presence';
 
 export default function PresenceScreen() {
-  const [proof, setProof] = useState<PresenceProof | null>(null);
-  const [secondsLeft, setSecondsLeft] = useState(0);
+  const [identity, setIdentity] = useState<DidKeyIdentity | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const refresh = async () => {
-    const current = await getCurrentProof();
-    setProof(current);
-    if (current) {
-      setSecondsLeft(Math.max(0, Math.floor((current.expiresAt - Date.now()) / 1000)));
-    } else {
-      setSecondsLeft(0);
+  const refresh = useCallback(async () => {
+    try {
+      const current = await getDidKeyIdentity();
+      setIdentity(current);
+      setError(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
     }
-  };
+  }, []);
 
   useEffect(() => {
     refresh();
-    const interval = setInterval(refresh, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  }, [refresh]);
 
   const handleCreate = async () => {
-    await createPresenceProof(60);
-    await refresh();
+    setBusy(true);
+    setError(null);
+    try {
+      const id = await createDidKeyIdentity();
+      setIdentity(id);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(msg);
+      Alert.alert('Create failed', msg);
+      console.error('createDidKeyIdentity', e);
+    } finally {
+      setBusy(false);
+    }
   };
 
   const handleDestroy = async () => {
-    await destroyPresence();
-    await refresh();
-    Alert.alert('Destroyed', 'Presence proof and keys have been wiped. Restart from square one.');
+    setBusy(true);
+    try {
+      await destroyDidKeyIdentity();
+      setIdentity(null);
+      Alert.alert(
+        'Destroyed',
+        'did:key identity and private key wiped. Restart from Square One.'
+      );
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(msg);
+      Alert.alert('Destroy failed', msg);
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Presence Proof</Text>
+      <Text style={styles.title}>did:key Identity</Text>
 
-      {proof ? (
+      {busy && <ActivityIndicator color="#39ff14" style={{ marginBottom: 16 }} />}
+
+      {identity ? (
         <>
-          <Text style={styles.active}>Presence Active</Text>
-          <Text style={styles.timer}>{secondsLeft}s remaining</Text>
-          <Text style={styles.mono}>Pub: {proof.publicKey.slice(0, 16)}...</Text>
+          <Text style={styles.active}>Identity active</Text>
+          <Text style={styles.mono} selectable>
+            {identity.did}
+          </Text>
+          <Text style={styles.hint}>Pub: {identity.publicKeyHex.slice(0, 16)}…</Text>
         </>
       ) : (
-        <Text style={styles.inactive}>No valid presence</Text>
+        <Text style={styles.inactive}>No identity — Start from Square One</Text>
       )}
 
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+
       <View style={styles.buttons}>
-        <Button title="Generate Presence (60s)" onPress={handleCreate} />
-        <View style={{ height: 16 }} />
-        <Button title="Destroy Presence" color="#c0392b" onPress={handleDestroy} />
+        {!identity ? (
+          <Button
+            title="Create did:key Identity"
+            onPress={handleCreate}
+            disabled={busy}
+          />
+        ) : (
+          <Button
+            title="Destroy Identity (Square One)"
+            color="#c0392b"
+            onPress={handleDestroy}
+            disabled={busy}
+          />
+        )}
       </View>
+
+      <Text style={styles.footer}>
+        Scaffold only. Keys on-device via SecureStore. No platform recovery.
+      </Text>
     </View>
   );
 }
@@ -70,32 +113,48 @@ const styles = StyleSheet.create({
     backgroundColor: '#0a0a0a',
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 32,
+    marginBottom: 28,
   },
   active: {
-    fontSize: 22,
+    fontSize: 20,
     color: '#2ecc71',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   inactive: {
-    fontSize: 22,
-    color: '#e74c3c',
-    marginBottom: 8,
-  },
-  timer: {
     fontSize: 18,
-    color: '#fff',
-    marginBottom: 12,
+    color: '#e74c3c',
+    marginBottom: 24,
+    textAlign: 'center',
   },
   mono: {
     fontFamily: 'monospace',
-    color: '#aaa',
-    marginBottom: 40,
+    color: '#e8e8e8',
+    fontSize: 12,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  hint: {
+    fontFamily: 'monospace',
+    color: '#888',
+    fontSize: 12,
+    marginBottom: 24,
+  },
+  error: {
+    color: '#ff6b6b',
+    marginBottom: 16,
+    textAlign: 'center',
   },
   buttons: {
     width: '100%',
+    marginTop: 8,
+  },
+  footer: {
+    marginTop: 32,
+    color: '#666',
+    fontSize: 11,
+    textAlign: 'center',
   },
 });
