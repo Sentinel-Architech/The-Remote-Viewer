@@ -1,17 +1,120 @@
-# Private creator royalties & secrets
+# =============================================================================
+# Secrets & credentials — never commit
+# =============================================================================
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+!.env*.example
+**/.env
+**/.env.local
+**/.env.*.local
 **/secrets/
+**/*secret*
+!**/*.md
 
-# Dependencies & build
+# Private keys, certs, wallets
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.asc
+!*.asc.example
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+!id_ed25519*.pub
+*_signing
+*_signing.pub
+*.wallet
+*.json.key
+**/wallet.json
+**/keypair.json
+**/authority.json
+**/deployer.json
+
+# Solana / chain local key material
+**/id.json
+**/.config/solana/id.json
+**/target/deploy/*-keypair.json
+
+# GPG secret material
+**/secring.*
+**/*secret-backup*
+
+# Stego / vault carrier working files (keep docs; ignore local forges)
+**/secret.txt
+**/vault_key*
+**/sentinel_sword_work*
+
+# =============================================================================
+# Dependencies & build artifacts
+# =============================================================================
 node_modules/
 dist/
 build/
 .expo/
+.turbo/
+.next/
+.cache/
+coverage/
+*.tsbuildinfo
 
-# OS / IDE
+# Rust
+**/target/
+**/*.rs.bk
+Cargo.lock.bak
+
+# ESP-IDF / embedded
+**/build/
+**/sdkconfig.old
+**/dependencies.lock
+**/managed_components/
+.esp-idf/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# =============================================================================
+# ML / large local artifacts
+# =============================================================================
+*.gguf
+*.ggml
+*.onnx
+*.pt
+*.pth
+*.safetensors
+*.bin
+!**/package-lock.json
+models/
+**/models/**
+checkpoints/
+
+# =============================================================================
+# OS / IDE / logs
+# =============================================================================
 .DS_Store
+Thumbs.db
 *.log
+logs/
 .idea/
 .vscode/
+*.swp
+*.swo
+
+# =============================================================================
+# Local runtime / Termux / device state
+# =============================================================================
+*.sqlite
+*.sqlite3
+*.db
+.tmp/
+tmp/
+local/
+.local/
