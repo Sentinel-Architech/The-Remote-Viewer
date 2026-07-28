@@ -13,6 +13,8 @@ Repository: [github.com/Sentinel-Archetecht/The-Remote-Viewer](https://github.co
 | **[Hobbyist — Start from nothing](#hobbyist--start-from-nothing)** | You have never worked on this kind of project. You just want to get something running and explore. |
 | **[Builder — Zero-trust / crypto](#builder--zero-trust--crypto)** | You already care about local keys, no custody, and honest loss semantics. |
 
+**Free stays free.** Optional paid pack: [TRV Posture Pack](docs/public/VENDING.md) (hybrid vending — Stripe when live).
+
 ---
 
 ## Hobbyist — Start from nothing
@@ -182,6 +184,18 @@ Not useful as a first contribution:
 - Custody or custodial recovery framed as zero-trust  
 
 Public posture: [`docs/public/POSTURE.md`](docs/public/POSTURE.md)
+
+---
+
+## Packs / vending
+
+Hybrid model: **hobbyist path free forever**; optional paid **TRV Posture Pack** ($19 target) when the Stripe link is live.
+
+Full operator notes and checklist: [`docs/public/VENDING.md`](docs/public/VENDING.md)
+
+```text
+Buy link (replace when live): https://buy.stripe.com/REPLACE_ME
+```
 
 ---
 
