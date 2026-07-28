@@ -9,8 +9,8 @@ name: Renovate
 #      + workflows on this repo. Store as repo secret: RENOVATE_TOKEN
 #   2. Disable Dependabot *version* updates in Settings → Code security
 #      (keep Dependabot security alerts if you want GitHub-native CVE PRs)
-#   3. Run this workflow once via "Run workflow" to dry-check, then enable
-#      the schedule for real PRs.
+#   3. Run this workflow once via "Run workflow" with dryRun=full, then
+#      run again with dryRun=false (or wait for Monday schedule).
 # ---------------------------------------------------------------------------
 
 on:
@@ -36,8 +36,6 @@ jobs:
   renovate:
     name: Self-hosted Renovate
     runs-on: ubuntu-latest
-    # Skip entirely if the token secret was never set
-    if: ${{ secrets.RENOVATE_TOKEN != '' }}
     permissions:
       contents: read   # checkout only; PR writes use RENOVATE_TOKEN
 
@@ -51,9 +49,7 @@ jobs:
           configurationFile: .github/renovate-config.js
           token: ${{ secrets.RENOVATE_TOKEN }}
         env:
-          # Repo rules are read from renovate.json in the repository root
           LOG_LEVEL: info
-          # Optional: set to "full" via workflow_dispatch to preview without PRs
-          RENOVATE_DRY_RUN: ${{ inputs.dryRun == 'full' && 'full' || '' }}
-          # Prefer the base branch that carries the real work
+          # workflow_dispatch dryRun=full → no PRs; schedule always real
+          RENOVATE_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dryRun == 'full' && 'full' || '' }}
           RENOVATE_BASE_BRANCHES: '["TheRemoteViewer","main"]'
