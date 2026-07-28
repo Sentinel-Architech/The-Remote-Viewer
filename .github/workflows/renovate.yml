@@ -1,0 +1,59 @@
+name: Renovate
+
+# ---------------------------------------------------------------------------
+# Self-hosted Renovate — no Mend SaaS required.
+# Runs on a schedule + manual dispatch. Needs secret RENOVATE_TOKEN.
+#
+# Setup (once):
+#   1. Create a fine-grained PAT (or classic) with contents + pull requests
+#      + workflows on this repo. Store as repo secret: RENOVATE_TOKEN
+#   2. Disable Dependabot *version* updates in Settings → Code security
+#      (keep Dependabot security alerts if you want GitHub-native CVE PRs)
+#   3. Run this workflow once via "Run workflow" to dry-check, then enable
+#      the schedule for real PRs.
+# ---------------------------------------------------------------------------
+
+on:
+  schedule:
+    # Monday 08:00 UTC ≈ early morning US East (matches renovate.json schedule)
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: 'Dry run only (log what would happen, open no PRs)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'full'
+
+concurrency:
+  group: renovate-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  renovate:
+    name: Self-hosted Renovate
+    runs-on: ubuntu-latest
+    # Skip entirely if the token secret was never set
+    if: ${{ secrets.RENOVATE_TOKEN != '' }}
+    permissions:
+      contents: read   # checkout only; PR writes use RENOVATE_TOKEN
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Self-hosted Renovate
+        uses: renovatebot/github-action@v46.0.2
+        with:
+          configurationFile: .github/renovate-config.js
+          token: ${{ secrets.RENOVATE_TOKEN }}
+        env:
+          # Repo rules are read from renovate.json in the repository root
+          LOG_LEVEL: info
+          # Optional: set to "full" via workflow_dispatch to preview without PRs
+          RENOVATE_DRY_RUN: ${{ inputs.dryRun == 'full' && 'full' || '' }}
+          # Prefer the base branch that carries the real work
+          RENOVATE_BASE_BRANCHES: '["TheRemoteViewer","main"]'
