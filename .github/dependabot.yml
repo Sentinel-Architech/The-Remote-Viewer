@@ -2,9 +2,8 @@ version: 2
 
 # ---------------------------------------------------------------------------
 # Dependabot version updates (active)
-# Renovate files remain in-tree for optional self-host later:
-#   renovate.json, .github/renovate-config.js, .github/workflows/renovate.yml
-# Do not enable both bots on the same ecosystems without coordination.
+# Schedule: every Monday at 09:00 America/New_York for all ecosystems
+# Renovate remains parked (manual-only) — do not run both as version bots.
 # ---------------------------------------------------------------------------
 
 updates:
@@ -14,6 +13,8 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+      time: "09:00"
+      timezone: "America/New_York"
     open-pull-requests-limit: 10
     labels:
       - "dependencies"
@@ -33,6 +34,8 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+      time: "09:00"
+      timezone: "America/New_York"
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
@@ -51,6 +54,8 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+      time: "09:00"
+      timezone: "America/New_York"
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
@@ -77,6 +82,8 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+      time: "09:00"
+      timezone: "America/New_York"
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
@@ -103,6 +110,8 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+      time: "09:00"
+      timezone: "America/New_York"
     open-pull-requests-limit: 3
     labels:
       - "dependencies"
