@@ -1,9 +1,10 @@
 use sodiumoxide::crypto::sign;
 use std::collections::HashSet;
 use tracing::{info, warn};
+use zeroize::Zeroize;
 
 /// Local-first Web of Trust + Identity foundation
-/// 
+///
 /// Rules (from locked principles):
 /// - Keys live only on this device
 /// - No central authority
@@ -23,7 +24,13 @@ impl WebOfTrust {
         }
     }
 
-    /// Provision a node into the local Web of Trust
+    /// Generate a fresh Ed25519 keypair.
+    /// The secret key is returned so the caller can use it once, then it must be zeroized.
+    pub fn generate_keypair() -> (sign::PublicKey, sign::SecretKey) {
+        sign::gen_keypair()
+    }
+
+    /// Provision a node into the local Web of Trust (public key only).
     pub fn provision_node(&mut self, public_key: &[u8]) {
         if public_key.len() != sign::PUBLICKEYBYTES {
             warn!("[!] Invalid public key length — rejected");
@@ -37,7 +44,12 @@ impl WebOfTrust {
         info!("[*] Node provisioned into local Web of Trust");
     }
 
-    /// Verify a signed packet against the local Web of Trust
+    /// Set a scaffold-only DID placeholder. Phase 1 will replace this with real did:key.
+    pub fn set_local_did_placeholder(&mut self, did: String) {
+        self.local_did = Some(did);
+    }
+
+    /// Verify a signed packet against the local Web of Trust.
     pub fn verify_packet(
         &self,
         payload: &[u8],
@@ -74,5 +86,9 @@ impl WebOfTrust {
 
         valid
     }
+}
 
-   
+/// Zeroize a secret key as soon as it is no longer needed.
+pub fn zeroize_secret_key(sk: &mut sign::SecretKey) {
+    sk.0.zeroize();
+}
