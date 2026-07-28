@@ -1,0 +1,39 @@
+name: Build Posture Pack
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "docs/public/**"
+      - "docs/locked/03-Destroy-Equals-Restart.md"
+      - "docs/security/running-system-threat-model.md"
+      - "docs/distribution/**"
+      - "SECURITY.md"
+      - "scripts/build-posture-pack.sh"
+      - ".github/workflows/build-posture-pack.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build ZIP
+        run: |
+          chmod +x scripts/build-posture-pack.sh
+          ./scripts/build-posture-pack.sh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trv-posture-pack
+          path: |
+            dist/trv-posture-pack.zip
+            dist/trv-posture-pack-*.zip
+            dist/trv-posture-pack.tar.gz
+          if-no-files-found: error
+          retention-days: 30
