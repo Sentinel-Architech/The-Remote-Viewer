@@ -12,10 +12,10 @@ This is a **vending machine**, not a consulting desk: pay once → get the files
 | Lane | Cost | What you get |
 |------|------|----------------|
 | **Hobbyist (free)** | $0 | Public repo, README dual-path, `docs/public/*`, scaffolds |
-| **TRV Posture Pack (paid)** | **~$19 USD** in **USDC** (preferred) or SOL | Curated pack: posture checklist, secrets hygiene, install notes, builder bridge |
+| **TRV Posture Pack (paid)** | **~$19 USD** in **USDC** (preferred) or SOL | Curated ZIP: ordered posture + install + core rules + security notes |
 | **Card later (optional)** | Same SKU | Stripe only if you ever want fiat — not required |
 
-Free never goes away. Paid is for people who want a tight pack instead of digging the whole tree.
+Free never goes away. Paid is for packaging + support signal, not secret protocol material.
 
 ---
 
@@ -23,18 +23,35 @@ Free never goes away. Paid is for people who want a tight pack instead of diggin
 
 **Name:** TRV Posture Pack  
 **Price target:** **19 USDC** (or SOL ≈ $19 at send time)  
-**Format:** single ZIP  
+**Format:** single ZIP (built by script)  
 **Delivery:** after payment confirmed on-chain (seller sends the download link)
 
-### Suggested pack contents
+### Automated build
 
-1. POSTURE one-pager  
-2. Secrets hygiene checklist  
-3. Hobbyist → Builder reading order  
-4. Install-anywhere / Obtainium notes  
-5. Honest status (scaffold ≠ secure)  
+From repo root:
 
-No private keys, seeds, or live secrets in the pack.
+```bash
+chmod +x scripts/build-posture-pack.sh
+./scripts/build-posture-pack.sh
+```
+
+Outputs (gitignored under `dist/`):
+
+- `dist/trv-posture-pack-YYYYMMDD.zip`
+- `dist/trv-posture-pack.zip` (same build, stable name)
+
+**CI:** Actions workflow **Build Posture Pack** (manual `workflow_dispatch` or on doc changes). Download the `trv-posture-pack` artifact from the run.
+
+Pack includes:
+
+1. `00-START-HERE.md` — reading order  
+2. POSTURE, INSTALL, RELEASE-HYGIENE  
+3. Destroy = Restart (locked)  
+4. SECURITY + running-system threat model  
+5. Obtainium example configs  
+6. `BUILD.txt` — UTC stamp + git commit  
+
+Script refuses to ship if obvious private-key / seed patterns appear in the archive.
 
 ---
 
@@ -68,9 +85,9 @@ CONTACT=X DM @_Archetecht  (send tx signature after payment)
 
 ### Delivery options
 
-- Private download URL  
-- DM / email the ZIP  
-- Time-limited link  
+- Private download URL for `dist/trv-posture-pack.zip`  
+- DM the file  
+- Time-limited host link  
 
 ---
 
@@ -89,7 +106,8 @@ None required for sale #1.
 ## Operator checklist
 
 - [x] Sales address published  
-- [ ] Pack ZIP built (no secrets)  
+- [x] Pack ZIP **builder** automated (`scripts/build-posture-pack.sh` + Actions)  
+- [ ] Run builder once; keep a copy of the ZIP for delivery  
 - [x] Address + price in README / this doc  
 - [x] Contact path (X DM @_Archetecht)  
 - [ ] Test: small self-transfer, practice verify + deliver  
