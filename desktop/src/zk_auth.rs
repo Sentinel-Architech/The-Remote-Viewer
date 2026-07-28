@@ -1,6 +1,8 @@
 use ark_bn254::Bn254;
 use ark_groth16::{Groth16, Proof, VerifyingKey};
+use ark_serialize::CanonicalDeserialize;
 use ark_snark::SNARK;
+use anyhow::{Context, Result};
 
 pub struct ZkAuthValidator {
     verifying_key: VerifyingKey<Bn254>,
@@ -11,27 +13,35 @@ impl ZkAuthValidator {
         Self { verifying_key: vk }
     }
 
-    pub fn verify_node_proof(&self, proof_bytes: &[u8], current_merkle_root: &[u8]) -> bool {
-        // Deserialize the succinct Groth16 proof broadcasted by the edge node
-        let proof = Proof::<Bn254>::deserialize_compressed(proof_bytes).unwrap();
-        
-        // Public inputs vector matching the circuit definition
-        let public_inputs = vec![/* Converted Merkle root field element */];
+    /// Verify a Groth16 membership proof.
+    /// Returns Ok(true) if the proof is valid, Ok(false) if invalid,
+    /// or Err if the proof bytes cannot be deserialized.
+    pub fn verify_node_proof(
+        &self,
+        proof_bytes: &[u8],
+        _current_merkle_root: &[u8],
+    ) -> Result<bool> {
+        // Deserialize the succinct Groth16 proof. Fail closed on bad input.
+        let proof = Proof::<Bn254>::deserialize_compressed(proof_bytes)
+            .context("Failed to deserialize Groth16 proof")?;
 
-        // Verify mathematically that the prover holds a valid WoT leaf 
-        // without leaking identity or public key material.
+        // Public inputs vector matching the circuit definition.
+        // Placeholder until the real circuit is wired; do not claim verification yet.
+        let public_inputs = vec![]; // TODO: convert Merkle root into field element(s)
+
         let is_authentic = Groth16::<Bn254>::verify(
-            &self.verifying_key, 
-            &public_inputs, 
-            &proof
-        ).unwrap_or(false);
+            &self.verifying_key,
+            &public_inputs,
+            &proof,
+        )
+        .unwrap_or(false); // arkworks verify returns Result; treat error as invalid
 
         if is_authentic {
-            println!("[+] ZK-PoA Verified: Anonymous node belongs to Web of Trust.");
+            tracing::info!("[+] ZK-PoA Verified: Anonymous node belongs to Web of Trust.");
         } else {
-            println!("[!] ZK-PoA REJECTED: Invalid membership proof.");
+            tracing::warn!("[!] ZK-PoA REJECTED: Invalid membership proof.");
         }
 
-        is_authentic
+        Ok(is_authentic)
     }
 }
