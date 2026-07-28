@@ -4,13 +4,95 @@
 
 Repository: [github.com/Sentinel-Archetecht/The-Remote-Viewer](https://github.com/Sentinel-Archetecht/The-Remote-Viewer)
 
+---
+
+## Two ways in
+
+| Path | Who it’s for |
+|------|----------------|
+| **[Hobbyist — Start from nothing](#hobbyist--start-from-nothing)** | You have never worked on this kind of project. You just want to get something running and explore. |
+| **[Builder — Zero-trust / crypto](#builder--zero-trust--crypto)** | You already care about local keys, no custody, and honest loss semantics. |
+
+---
+
+## Hobbyist — Start from nothing
+
+This project is still early. Most of the mobile and web clients are **scaffolds** (structural placeholders). That is fine. You can still learn the shape of the system and run the pieces that exist.
+
+### What you need
+
+- A computer (Linux, macOS, or Windows with WSL is easiest)
+- [Node.js](https://nodejs.org/) (LTS version)
+- [Rust](https://rustup.rs/) (only if you want to touch the desktop binary)
+- Git
+
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
+cd The-Remote-Viewer
+```
+
+### 2. Run the web scaffold
+
+```bash
+cd apps/web
+npm install
+npm run dev
+```
+
+Open the URL it prints (usually `http://localhost:5173`).  
+This is a basic React + Vite shell. It is not a finished product.
+
+### 3. Run the mobile scaffold (optional)
+
+```bash
+cd apps/mobile
+npm install
+npx expo start --host lan
+```
+
+Scan the QR code with Expo Go on your phone (same Wi-Fi).  
+Again: this is a scaffold, not a secure wallet yet.
+
+### 4. (Optional) Desktop binary
+
+```bash
+cd desktop
+cargo run
+```
+
+Requires Rust installed via rustup.
+
+### What is real right now?
+
+| Piece | Status |
+|-------|--------|
+| Web client | Scaffold only |
+| Mobile client | Scaffold only |
+| Desktop orchestrator | Early — can compile and run |
+| Design principles | Written and locked under `docs/locked/` |
+| Security policy | Real (`SECURITY.md`) |
+| CI (secret scan + cargo check) | Working |
+
+### Where to go next as a hobbyist
+
+1. Read `docs/public/POSTURE.md` — short explanation of what we refuse to do.  
+2. Skim `docs/locked/03-Destroy-Equals-Restart.md` — the core rule of the project.  
+3. Look at `desktop/src/` if you want to see the Rust side.  
+4. Open issues or discussions if something is confusing.
+
+You do not need to understand zero-knowledge proofs, DIDs, or GrapheneOS to start. Those come later if you want them.
+
+---
+
+## Builder — Zero-trust / crypto
+
 The Remote Viewer (TRV) is a sovereign, local-first stack oriented toward **encrypted, zero-trust** use: identity and sensitive material stay on the user’s device. The companion direction is **Sentinel**—active defense and governance concepts built on the same constraints.
 
 We optimize for people in the **decentralized, crypto, encrypted, and zero-trust** communities who reject “trust us with your keys.”
 
----
-
-## Trust posture (read this first)
+### Trust posture (read this first)
 
 | Transparent (public) | Never public |
 |----------------------|--------------|
@@ -24,9 +106,7 @@ We optimize for people in the **decentralized, crypto, encrypted, and zero-trust
 
 **Scaffold ≠ secure.** Mobile and web clients are structural foundations. They do **not** yet justify security claims. Locked principles live under `docs/locked/` and govern real implementation.
 
----
-
-## Install (policy)
+### Install policy
 
 - **No device blacklist** — capability tiers, not exclusion  
 - **Sideload and store both valid** — store is never the only door  
@@ -37,17 +117,7 @@ Full policy: [`docs/public/INSTALL.md`](docs/public/INSTALL.md)
 Release discipline: [`docs/public/RELEASE-HYGIENE.md`](docs/public/RELEASE-HYGIENE.md)  
 Obtainium config template: [`docs/distribution/obtainium-config.example.json`](docs/distribution/obtainium-config.example.json)
 
-### Obtainium (when APKs are on Releases)
-
-1. Install [Obtainium](https://github.com/ImranR98/Obtainium).  
-2. Add app → `https://github.com/Sentinel-Archetecht/The-Remote-Viewer`  
-3. Prefer **Latest** stable; filter APK by ABI if multiple assets exist.  
-
-Until a release attaches an APK, Obtainium will not offer an install asset—that matches current scaffold status.
-
----
-
-## What we are building toward
+### What we are building toward
 
 - **On-device identity** (e.g. local `did:key`) — no issuer required for the base key  
 - **Zero-trust defaults** — verify, minimize, don’t centralize custody  
@@ -56,7 +126,7 @@ Until a release attaches an APK, Obtainium will not offer an install asset—tha
 - **Optional P2P** later — not a mandatory cloud backend for identity  
 - **Tiered participation** — full client, edge MCU, signal bearer (including pager-class roles), human offline ceremony  
 
-## What we are not building
+### What we are not building
 
 - Hosted key custody or “we can reset your vault”  
 - Tracking-first analytics identity  
@@ -64,9 +134,7 @@ Until a release attaches an APK, Obtainium will not offer an install asset—tha
 - Security claims ahead of implementation  
 - Device or OEM blacklists for install  
 
----
-
-## Current status (July 2026)
+### Current status (July 2026)
 
 | Component | Status | Notes |
 |-----------|--------|--------|
@@ -74,16 +142,15 @@ Until a release attaches an APK, Obtainium will not offer an install asset—tha
 | Mobile client | Scaffold | Expo + React Native; local identity experiments |
 | Shared packages | Early | Types / treasury placeholders |
 | Locked design docs | In tree | `docs/locked/` — product rules |
-| Security notes | Draft | `docs/security/` — threat model, secrets, signing, biometrics |
+| Security notes | Draft + growing | `docs/security/` — threat model, secrets, biometrics |
 | Public install policy | Documented | Obtainium + install-anywhere |
 | Core protocol / P2P | Early / partial | Not production |
 | Public APK on Releases | Not yet | Hygiene docs ready for first ship |
+| CI | Working | Gitleaks + cargo check on every push |
 
 Honest engineering note (mobile): React Native does not provide `crypto.getRandomValues` by default. Local key generation must use a CSPRNG polyfill (`expo-crypto` / `react-native-get-random-values`) or equivalent. This is a known RN ecosystem issue, not a “feature.”
 
----
-
-## Quick start (scaffold only)
+### Quick start (scaffold only)
 
 ```bash
 # Web
@@ -92,17 +159,14 @@ cd apps/web && npm install && npm run dev
 # Mobile (prefer LAN on device; tunnel often breaks on Termux)
 cd apps/mobile && npm install
 npx expo start --host lan
+
+# Desktop
+cd desktop && cargo run
 ```
 
 Match **Expo SDK** to **Expo Go**. Do not use `npm audit fix --force` casually—it can jump major Expo versions and break the client.
 
----
-
-## For decentralized / crypto / zero-trust builders
-
-If you care about **local keys**, **no custody**, and **honest loss semantics**, this repo is meant to be legible:
-
-**https://github.com/Sentinel-Archetecht/The-Remote-Viewer**
+### For decentralized / crypto / zero-trust builders
 
 Useful critique:
 
