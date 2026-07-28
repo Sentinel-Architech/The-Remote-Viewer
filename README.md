@@ -13,7 +13,7 @@ Repository: [github.com/Sentinel-Archetecht/The-Remote-Viewer](https://github.co
 | **[Hobbyist — Start from nothing](#hobbyist--start-from-nothing)** | You have never worked on this kind of project. You just want to get something running and explore. |
 | **[Builder — Zero-trust / crypto](#builder--zero-trust--crypto)** | You already care about local keys, no custody, and honest loss semantics. |
 
-**Free stays free.** Optional paid pack: [TRV Posture Pack](docs/public/VENDING.md) via **Phantom / Solana** when the sales address is live.
+**Free stays free.** Optional paid pack: [TRV Posture Pack](docs/public/VENDING.md) via **Phantom / Solana**.
 
 ---
 
@@ -194,12 +194,11 @@ Hybrid: **hobbyist path free forever**; optional **TRV Posture Pack** (~**19 USD
 Details: [`docs/public/VENDING.md`](docs/public/VENDING.md)
 
 ```text
-Pay (Solana):  19 USDC (or SOL ≈ $19) → REPLACE_WITH_SALES_ADDRESS
+Pay (Solana):  19 USDC (or SOL ≈ $19)
+To:            HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv
 Memo:          TRV-Posture-Pack
-After pay:     send tx signature to REPLACE_WITH_CONTACT → receive ZIP
+After pay:     X DM @_Archetecht with tx signature → receive ZIP
 ```
-
-Use a **dedicated sales address**, not your main wallet.
 
 ---
 
