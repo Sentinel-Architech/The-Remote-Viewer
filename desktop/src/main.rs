@@ -19,7 +19,7 @@ async fn main() -> Result<()> {
     tracing::info!("[*] Initializing The Remote Viewer (sovereign mode)...");
 
     // 1. Storage
-    let storage = Arc::new(storage::StorageEngine::new()?);
+    let _storage = Arc::new(storage::StorageEngine::new()?);
     tracing::info!("[+] Storage engine online");
 
     // 2. Web of Trust + Identity foundation
@@ -33,7 +33,7 @@ async fn main() -> Result<()> {
     // Set a scaffold-only DID placeholder (Phase 1 will replace this)
     wot.set_local_did_placeholder("did:key:placeholder-scaffold".to_string());
 
-    let wot = Arc::new(Mutex::new(wot));
+    let _wot = Arc::new(Mutex::new(wot));
     tracing::info!("[+] Web of Trust + identity foundation online");
 
     // 3. Merkle state tree
