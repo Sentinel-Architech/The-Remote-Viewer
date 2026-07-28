@@ -8,8 +8,10 @@ name: Renovate
 #   A) GitHub App: RENOVATE_APP_ID + RENOVATE_APP_PRIVATE_KEY
 #   B) PAT fallback: RENOVATE_TOKEN (contents + pull requests + issues + workflows)
 #
-# To re-enable weekly runs later: uncomment the schedule block and disable
-# Dependabot version updates so the two bots do not double-open PRs.
+# Inputs:
+#   dryRun      full = log only (default) | false = open/update PRs
+#   logLevel    info | debug | warn
+#   baseBranch  empty = TheRemoteViewer + main | or a single branch name
 # ---------------------------------------------------------------------------
 
 on:
@@ -35,7 +37,7 @@ on:
           - 'debug'
           - 'warn'
       baseBranch:
-        description: 'Base branch to target (empty = both TheRemoteViewer and main)'
+        description: 'Base branch (leave empty for TheRemoteViewer + main)'
         required: false
         default: ''
         type: string
@@ -62,29 +64,33 @@ jobs:
           owner: ${{ github.repository_owner }}
           repositories: ${{ github.event.repository.name }}
 
-      - name: Resolve token
-        id: token
+      - name: Require credentials
+        if: steps.app-token.outcome != 'success' && secrets.RENOVATE_TOKEN == ''
         run: |
-          set -euo pipefail
-          if [ -n "${{ steps.app-token.outputs.token }}" ]; then
-            echo "Using GitHub App installation token"
-            echo "value=${{ steps.app-token.outputs.token }}" >> "$GITHUB_OUTPUT"
-          elif [ -n "${{ secrets.RENOVATE_TOKEN }}" ]; then
-            echo "Using RENOVATE_TOKEN (PAT fallback)"
-            echo "value=${{ secrets.RENOVATE_TOKEN }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "::error::No credentials. Set RENOVATE_APP_ID + RENOVATE_APP_PRIVATE_KEY, or RENOVATE_TOKEN."
-            exit 1
-          fi
+          echo "::error::No credentials configured."
+          echo "Set RENOVATE_APP_ID + RENOVATE_APP_PRIVATE_KEY, or RENOVATE_TOKEN."
+          exit 1
 
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Self-hosted Renovate
+      - name: Self-hosted Renovate (GitHub App)
+        if: steps.app-token.outcome == 'success'
         uses: renovatebot/github-action@v46.0.2
         with:
           configurationFile: .github/renovate-config.js
-          token: ${{ steps.token.outputs.value }}
+          token: ${{ steps.app-token.outputs.token }}
+        env:
+          LOG_LEVEL: ${{ inputs.logLevel }}
+          RENOVATE_DRY_RUN: ${{ inputs.dryRun == 'full' && 'full' || '' }}
+          RENOVATE_BASE_BRANCHES: ${{ inputs.baseBranch != '' && format('["{0}"]', inputs.baseBranch) || '["TheRemoteViewer","main"]' }}
+
+      - name: Self-hosted Renovate (PAT fallback)
+        if: steps.app-token.outcome != 'success'
+        uses: renovatebot/github-action@v46.0.2
+        with:
+          configurationFile: .github/renovate-config.js
+          token: ${{ secrets.RENOVATE_TOKEN }}
         env:
           LOG_LEVEL: ${{ inputs.logLevel }}
           RENOVATE_DRY_RUN: ${{ inputs.dryRun == 'full' && 'full' || '' }}
