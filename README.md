@@ -196,17 +196,14 @@ Public posture: [`docs/public/POSTURE.md`](docs/public/POSTURE.md)
 
 Hybrid: **hobbyist path free forever**; optional paid ZIPs via **Phantom** (prices are **per pack**, not per file).
 
-| Pack | Price | Memo |
+| Pack | Price | Link |
 |------|-------|------|
-| **Posture Lite** | **11 USDC** | `TRV-Posture-Lite` |
-| **Posture Pack** (full) | **25 USDC** | `TRV-Posture-Pack` |
+| **Posture Lite** | **11 USDC** | [Pay with Phantom](solana:HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv?amount=11&spl-token=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&label=The%20Remote%20Viewer&message=Posture%20Lite&memo=TRV-Posture-Lite) |
+| **Posture Pack** (full) | **25 USDC** | [Pay with Phantom](solana:HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv?amount=25&spl-token=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&label=The%20Remote%20Viewer&message=Posture%20Pack&memo=TRV-Posture-Pack) |
 
 Details (including **Solana fees / Phantom gasless**): [`docs/public/VENDING.md`](docs/public/VENDING.md)
 
-```text
-To:         HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv
-After pay:  X DM @_Archetecht with tx signature → matching ZIP
-```
+After payment, X DM `@_Archetecht` with the transaction signature → matching ZIP.
 
 Network fees are in **SOL** (usually under a cent). If you’re short SOL, Phantom may offer a **gasless** send that takes a small fee from the token instead — shown in-app before confirm; not a TRV charge.
 
