@@ -24,7 +24,7 @@ Free never goes away. Paid is for people who want a tight pack instead of diggin
 **Name:** TRV Posture Pack  
 **Price target:** **19 USDC** (or SOL ≈ $19 at send time)  
 **Format:** single ZIP  
-**Delivery:** after payment confirmed on-chain (you send the download link)
+**Delivery:** after payment confirmed on-chain (seller sends the download link)
 
 ### Suggested pack contents
 
@@ -38,49 +38,39 @@ No private keys, seeds, or live secrets in the pack.
 
 ---
 
-## Checkout with Phantom (day-one method)
+## Checkout with Phantom
 
-### 1. Sales wallet (important)
-
-- Create a **dedicated** Phantom account/address for sales (not your main bag).  
-- Write down the recovery phrase offline; never put it in git or Discord.
-
-### 2. Publish pay instructions
-
-Replace the placeholders below with your real sales address:
+### Live pay details
 
 ```text
 NETWORK=Solana mainnet-beta
 ASSET=USDC (preferred) or SOL
 AMOUNT=19 USDC   # or SOL equivalent ≈ $19
-ADDRESS=YOUR_SOLANA_SALES_ADDRESS_HERE
+ADDRESS=HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv
 MEMO=TRV-Posture-Pack
+CONTACT=X DM @_Archetecht  (send tx signature after payment)
 ```
 
 **Buyer flow:**
 
 1. Open Phantom → Send  
-2. USDC (or SOL) → your sales address  
+2. USDC (or SOL) → address above  
 3. Amount ≈ $19  
 4. Optional memo: `TRV-Posture-Pack`  
-5. Message you (X DM / email you publish) with **tx signature**  
-6. You verify on a Solana explorer → send the ZIP link  
+5. DM **@_Archetecht** on X with the **transaction signature**  
+6. Seller verifies on [Solana Explorer](https://explorer.solana.com/) / Solscan → sends ZIP link  
 
-That’s enough for the first sales. No Stripe account.
+### Verify payment (seller)
 
-### 3. Verify payment
+- Confirm: to the sales address, amount, recent timestamp  
+- Deliver once  
+- Log offline: `date | tx sig | delivered?` (not in public git)
 
-- [Solana Explorer](https://explorer.solana.com/) or Solscan  
-- Confirm: to your address, amount, recent timestamp  
-- Then deliver once — don’t resend the same link forever in public threads  
+### Delivery options
 
-### 4. Delivery
-
-- Private download URL, or  
-- Email / DM the ZIP, or  
-- Time-limited link (Dropbox, private host, etc.)  
-
-Keep a simple log offline: `date | tx sig | delivered?` — not in the public repo.
+- Private download URL  
+- DM / email the ZIP  
+- Time-limited link  
 
 ---
 
@@ -90,34 +80,21 @@ Keep a simple log offline: `date | tx sig | delivered?` — not in the public re
 |------|------|
 | **Solana Pay** transfer request URL/QR | Buyer scans; Phantom fills amount + dest |
 | **Helio / similar** | Crypto checkout pages that speak Phantom |
-| **BTCPay-style self-host** | If you expand beyond Solana |
+| **Card (Stripe)** | Only if you want fiat later |
 
-None of these are required for sale #1.
-
----
-
-## Placeholders (fill when ready)
-
-```text
-SOLANA_SALES_ADDRESS=REPLACE_ME
-PRICE=19 USDC
-CONTACT_FOR_DELIVERY=REPLACE_ME   # e.g. X handle or email
-PACK_FILE=trv-posture-pack.zip    # kept off public git if you want scarcity
-```
-
-Until `SOLANA_SALES_ADDRESS` is real, the machine is designed but not powered.
+None required for sale #1.
 
 ---
 
 ## Operator checklist
 
-- [ ] Dedicated Phantom sales address  
+- [x] Sales address published  
 - [ ] Pack ZIP built (no secrets)  
-- [ ] Address + price published (README / this doc / X bio)  
-- [ ] Contact path for tx sig → delivery  
-- [ ] Test: send $1 to yourself, practice verify + “deliver”  
+- [x] Address + price in README / this doc  
+- [x] Contact path (X DM @_Archetecht)  
+- [ ] Test: small self-transfer, practice verify + deliver  
 - [ ] Optional: Solana Pay QR  
-- [ ] Optional: Stripe later for card users  
+- [ ] Optional: pin pay block on X bio  
 
 ---
 
