@@ -14,7 +14,6 @@ on:
       - 'desktop/Cargo.toml'
       - 'README.md'
   workflow_dispatch:
-    # Manual run button — useful after a batch of local commits
 
 permissions:
   contents: write
@@ -22,7 +21,6 @@ permissions:
 jobs:
   append-log:
     runs-on: ubuntu-latest
-    # Avoid infinite loop: do not re-trigger when the only change is the log itself
     if: "!contains(github.event.head_commit.message, 'Auto-update command log')"
 
     steps:
@@ -38,8 +36,7 @@ jobs:
           LOG_FILE="docs/public/COMMAND-LOG.md"
           mkdir -p docs/public
 
-          # Collect commits that touched the watched paths (last 5, non-merge)
-          COMMITS=$(git log -5 --no-merges --pretty=format:'%h|%s|%an|%ad' --date=short -- \
+          COMMITS=$(git log -8 --no-merges --pretty=format:'%h|%s|%an|%ad' --date=short -- \
             SECURITY.md \
             .gitleaks.toml \
             .github/workflows \
@@ -62,6 +59,9 @@ jobs:
           DATE=$(date -u +%Y-%m-%d)
           ENTRY_FILE=$(mktemp)
 
+          # Secret-looking patterns — any match causes the commit to be skipped
+          SECRET_FILTER='(?i)(private.?key|secret.?key|api.?key|access.?token|auth.?token|bearer |password|passwd|mnemonic|bip39|seed phrase|gh[pousr]_|xox[baprs]-|AKIA[0-9A-Z]{16}|sk-[a-zA-Z0-9]{20,}|[0-9a-fA-F]{64,})'
+
           {
             echo ""
             echo "---"
@@ -73,8 +73,12 @@ jobs:
             echo "| Commit | Message | Author | Date |"
             echo "|--------|---------|--------|------|"
             echo "$COMMITS" | while IFS='|' read -r hash subject author date; do
-              # Skip anything that looks like it might contain secrets (defensive)
-              if echo "$subject" | grep -qiE 'key|secret|token|password|seed|mnemonic'; then
+              if echo "$subject" | grep -qE "$SECRET_FILTER"; then
+                echo "Skipping potential secret-bearing subject: $hash" >&2
+                continue
+              fi
+              # Also skip pure auto-log commits
+              if echo "$subject" | grep -qi 'auto-update command log'; then
                 continue
               fi
               echo "| \`${hash}\` | ${subject} | ${author} | ${date} |"
@@ -82,7 +86,6 @@ jobs:
             echo ""
           } > "$ENTRY_FILE"
 
-          # Append only if this exact auto-entry block is not already present
           if ! grep -q "## Auto entry — ${DATE}" "$LOG_FILE" 2>/dev/null; then
             cat "$ENTRY_FILE" >> "$LOG_FILE"
             echo "Appended new auto entry for ${DATE}"
