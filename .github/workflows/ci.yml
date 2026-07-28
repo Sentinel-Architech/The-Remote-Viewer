@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ TheRemoteViewer, main ]
+  pull_request:
+    branches: [ TheRemoteViewer, main ]
+
+jobs:
+  gitleaks:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+  cargo-check:
+    name: Cargo Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Check desktop crate
+        run: cargo check --manifest-path desktop/Cargo.toml
+
+  # Placeholder for future required checks
+  # Add more jobs here (tests, clippy, fmt) and mark them required in branch protection
