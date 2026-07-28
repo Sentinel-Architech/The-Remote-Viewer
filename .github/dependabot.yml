@@ -1,16 +1,120 @@
 version: 2
 
 # ---------------------------------------------------------------------------
-# Dependabot version updates: DISABLED
-#
-# Version bumps are handled by self-hosted Renovate:
-#   - renovate.json              (repo rules)
-#   - .github/renovate-config.js (bot identity)
-#   - .github/workflows/renovate.yml
-#
-# Keep GitHub Dependabot *security* alerts / security updates enabled in
-# Settings → Code security if you want native CVE PRs alongside Renovate.
-# Do not re-add package-ecosystem entries here or you will get duplicate PRs.
+# Dependabot version updates (active)
+# Renovate files remain in-tree for optional self-host later:
+#   renovate.json, .github/renovate-config.js, .github/workflows/renovate.yml
+# Do not enable both bots on the same ecosystems without coordination.
 # ---------------------------------------------------------------------------
 
-updates: []
+updates:
+  # Rust / Cargo workspace
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "rust"
+    commit-message:
+      prefix: "cargo"
+      include: "scope"
+    groups:
+      cargo-patch-minor:
+        update-types:
+          - "patch"
+          - "minor"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  # Web client
+  - package-ecosystem: "npm"
+    directory: "/apps/web"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "npm"
+      - "web"
+    commit-message:
+      prefix: "npm(web)"
+      include: "scope"
+    groups:
+      web-production:
+        dependency-type: "production"
+        update-types:
+          - "patch"
+          - "minor"
+      web-dev:
+        dependency-type: "development"
+        update-types:
+          - "patch"
+          - "minor"
+
+  # Mobile client
+  - package-ecosystem: "npm"
+    directory: "/apps/mobile"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "npm"
+      - "mobile"
+    commit-message:
+      prefix: "npm(mobile)"
+      include: "scope"
+    groups:
+      mobile-production:
+        dependency-type: "production"
+        update-types:
+          - "patch"
+          - "minor"
+      mobile-dev:
+        dependency-type: "development"
+        update-types:
+          - "patch"
+          - "minor"
+
+  # Shared package
+  - package-ecosystem: "npm"
+    directory: "/apps/shared"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "npm"
+      - "shared"
+    commit-message:
+      prefix: "npm(shared)"
+      include: "scope"
+    groups:
+      shared-deps:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
