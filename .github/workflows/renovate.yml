@@ -1,28 +1,31 @@
 name: Renovate
 
 # ---------------------------------------------------------------------------
-# Self-hosted Renovate via GitHub App (preferred) or PAT fallback.
+# Self-hosted Renovate authenticated as a GitHub App (recommended).
 #
-# Preferred secrets (GitHub App — short-lived installation tokens):
-#   RENOVATE_APP_ID          — App ID (or Client ID) from the app settings page
-#   RENOVATE_APP_PRIVATE_KEY — full PEM private key generated for the app
+# Secrets required:
+#   RENOVATE_APP_ID          — numeric App ID from the app's settings page
+#   RENOVATE_APP_PRIVATE_KEY — PEM private key (full file contents)
 #
-# Fallback (legacy PAT):
-#   RENOVATE_TOKEN           — fine-grained or classic PAT
+# Fallback: if you prefer a PAT instead of an App, comment out the
+# "Create GitHub App token" step and set token: ${{ secrets.RENOVATE_TOKEN }}
 #
-# App permission checklist (Repository permissions):
-#   Contents ............ Read and write
-#   Pull requests ....... Read and write
-#   Issues .............. Read and write   (Dependency Dashboard)
-#   Workflows ........... Read and write   (update .github/workflows)
-#   Checks .............. Read and write
-#   Commit statuses ..... Read and write
-#   Metadata ............ Read (always required)
-#   Administration ...... Read             (branch protection awareness)
-#   Dependabot alerts ... Read             (vulnerability PRs)
+# ---------------------------------------------------------------------------
+# GitHub App — repository permissions (least privilege for Renovate)
+# ---------------------------------------------------------------------------
+# Permission              Access        Why
+# Contents                Read & write  Branches, commits, file updates
+# Pull requests           Read & write  Open / update dependency PRs
+# Issues                  Read & write  Dependency Dashboard issue
+# Workflows               Read & write  Bump actions in .github/workflows
+# Checks                  Read & write  Status on Renovate PRs
+# Commit statuses         Read & write  Commit status API
+# Metadata                Read          Required for every GitHub App
+# Administration          Read          Read branch protection rules
+# Dependabot alerts       Read          Optional vulnerability-driven PRs
 #
-# Install the app on this repo only (or selected repos). No org-wide needed.
-# Disable webhooks on the app unless you want them — schedule is enough.
+# Installation: this repository only (not all repos).
+# Webhooks: disable (schedule + workflow_dispatch are enough).
 # ---------------------------------------------------------------------------
 
 on:
@@ -51,12 +54,10 @@ jobs:
       contents: read
 
     steps:
-      - name: Create GitHub App token
+      - name: Create GitHub App installation token
         id: app-token
-        if: ${{ vars.RENOVATE_APP_ID != '' || secrets.RENOVATE_APP_ID != '' }}
         uses: actions/create-github-app-token@v2
         with:
-          # Prefer Client ID (vars); App ID still works
           app-id: ${{ secrets.RENOVATE_APP_ID }}
           private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
@@ -69,8 +70,7 @@ jobs:
         uses: renovatebot/github-action@v46.0.2
         with:
           configurationFile: .github/renovate-config.js
-          # App token when present; otherwise PAT secret
-          token: ${{ steps.app-token.outputs.token || secrets.RENOVATE_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
         env:
           LOG_LEVEL: info
           RENOVATE_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dryRun == 'full' && 'full' || '' }}
