@@ -9,16 +9,58 @@ paths = [
   '''.*\.example\.(json|md|env)''',
   '''docs/public/.*''',
   '''docs/locked/.*''',
+  '''docs/security/running-system-threat-model\.md''',
+  '''docs/public/COMMAND-LOG\.md''',
 ]
+
+# ---------------------------------------------------------------------------
+# TRV-specific rules
+# ---------------------------------------------------------------------------
 
 [[rules]]
 id = "trv-private-key"
-description = "Possible TRV / sodiumoxide private key material"
-regex = '''(?i)(private[_-]?key|secret[_-]?key|seed|mnemonic)\s*[=:]\s*["']?[0-9a-fA-F]{32,}'''
-tags = ["key", "trv"]
+description = "Possible TRV / sodiumoxide / ed25519 private key material"
+regex = '''(?i)(private[_-]?key|secret[_-]?key|sk|seed|mnemonic|bip39)\s*[=:]\s*["']?[0-9a-fA-F]{32,}'''
+tags = ["key", "trv", "secret"]
+
+[[rules]]
+id = "trv-hex-blob"
+description = "Long hex strings that may be raw key or root material (64+ hex chars)"
+regex = '''(?:^|[^0-9a-fA-F])([0-9a-fA-F]{64,})(?:[^0-9a-fA-F]|$)'''
+tags = ["hex", "possible-key"]
+
+[[rules]]
+id = "trv-base64-key"
+description = "Base64-looking blobs near key-related keywords"
+regex = '''(?i)(private|secret|seed|key|token|mnemonic)\s*[=:]\s*["']?[A-Za-z0-9+/]{40,}={0,2}'''
+tags = ["key", "base64"]
 
 [[rules]]
 id = "generic-api-key"
-description = "Generic API key patterns"
-regex = '''(?i)(api[_-]?key|apikey|access[_-]?token|auth[_-]?token)\s*[=:]\s*["']?[A-Za-z0-9_\-]{20,}'''
+description = "Generic API key / token patterns"
+regex = '''(?i)(api[_-]?key|apikey|access[_-]?token|auth[_-]?token|bearer|authorization)\s*[=:]\s*["']?[A-Za-z0-9_\-.]{16,}'''
 tags = ["key", "api"]
+
+[[rules]]
+id = "aws-access-key"
+description = "AWS Access Key ID"
+regex = '''(?:A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}'''
+tags = ["aws", "key"]
+
+[[rules]]
+id = "github-pat"
+description = "GitHub personal access token"
+regex = '''gh[pousr]_[A-Za-z0-9_]{36,}'''
+tags = ["github", "token"]
+
+[[rules]]
+id = "slack-token"
+description = "Slack token"
+regex = '''xox[baprs]-[0-9a-zA-Z]{10,48}'''
+tags = ["slack", "token"]
+
+[[rules]]
+id = "generic-secret-assignment"
+description = "Generic secret/password assignment"
+regex = '''(?i)(password|passwd|pwd|secret|credential)\s*[=:]\s*["'][^"']{8,}["']'''
+tags = ["secret", "password"]
