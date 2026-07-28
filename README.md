@@ -193,8 +193,8 @@ Hybrid: **hobbyist path free forever**; optional paid ZIPs via **Phantom** (pric
 
 | Pack | Price | Memo |
 |------|-------|------|
-| **Posture Lite** | **9 USDC** | `TRV-Posture-Lite` |
-| **Posture Pack** (full) | **19 USDC** | `TRV-Posture-Pack` |
+| **Posture Lite** | **11 USDC** | `TRV-Posture-Lite` |
+| **Posture Pack** (full) | **25 USDC** | `TRV-Posture-Pack` |
 
 Details (including **Solana fees / Phantom gasless**): [`docs/public/VENDING.md`](docs/public/VENDING.md)
 
