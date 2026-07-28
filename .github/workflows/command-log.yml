@@ -1,8 +1,15 @@
 name: Update Command Log
 
+# ---------------------------------------------------------------------------
+# Automatically appends a dated, non-secret commit table to
+# docs/public/COMMAND-LOG.md when security / CI / docs paths change.
+# Manual narrative entries can still be written by hand above auto sections.
+# ---------------------------------------------------------------------------
+
 on:
   push:
     branches: [ TheRemoteViewer, main ]
+    # Only run when paths that matter to the security/infra log change
     paths:
       - 'SECURITY.md'
       - '.gitleaks.toml'
@@ -13,30 +20,33 @@ on:
       - 'desktop/src/**'
       - 'desktop/Cargo.toml'
       - 'README.md'
-  workflow_dispatch:
+  workflow_dispatch:   # Allow manual runs from the Actions tab
 
 permissions:
-  contents: write
+  contents: write      # Needed to commit the updated log back to the branch
 
 jobs:
   append-log:
     runs-on: ubuntu-latest
+    # Prevent infinite loop: ignore pushes that only updated the log itself
     if: "!contains(github.event.head_commit.message, 'Auto-update command log')"
 
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 10
+          fetch-depth: 10                    # Enough history for recent commits
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build log entry from recent commits
         id: entry
         run: |
+          # Fail on error, undefined vars, and pipeline failures
           set -euo pipefail
 
           LOG_FILE="docs/public/COMMAND-LOG.md"
           ENTRY_FILE=""
 
+          # Always clean up the temp file on exit (success or failure)
           cleanup() {
             if [ -n "${ENTRY_FILE}" ] && [ -f "${ENTRY_FILE}" ]; then
               rm -f "${ENTRY_FILE}"
@@ -44,14 +54,17 @@ jobs:
           }
           trap cleanup EXIT
 
-          # Ensure output directory exists
+          # Ensure the docs/public directory exists
           if ! mkdir -p docs/public; then
             echo "ERROR: failed to create docs/public" >&2
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 1
           fi
 
-          # Collect commits (tolerate empty result)
+          # ------------------------------------------------------------------
+          # Collect recent commits that touched the watched paths.
+          # Temporarily disable -e so an empty result does not abort the job.
+          # ------------------------------------------------------------------
           set +e
           COMMITS=$(git log -8 --no-merges --pretty=format:'%h|%s|%an|%ad' --date=short -- \
             SECURITY.md \
@@ -77,6 +90,7 @@ jobs:
             exit 0
           fi
 
+          # UTC date used as the section heading (one auto-entry per day)
           DATE=$(date -u +%Y-%m-%d) || {
             echo "ERROR: failed to get UTC date" >&2
             echo "skip=true" >> "$GITHUB_OUTPUT"
@@ -89,8 +103,13 @@ jobs:
             exit 1
           }
 
+          # Patterns that suggest a commit subject might contain or reference secrets.
+          # Matching subjects are excluded from the public log.
           SECRET_FILTER='(?i)(private.?key|secret.?key|api.?key|access.?token|auth.?token|bearer |password|passwd|mnemonic|bip39|seed phrase|gh[pousr]_|xox[baprs]-|AKIA[0-9A-Z]{16}|sk-[a-zA-Z0-9]{20,}|[0-9a-fA-F]{64,})'
 
+          # ------------------------------------------------------------------
+          # Build the markdown table into the temp file
+          # ------------------------------------------------------------------
           {
             echo ""
             echo "---"
@@ -104,21 +123,23 @@ jobs:
 
             ROW_COUNT=0
             while IFS='|' read -r hash subject author cdate; do
-              # Guard against malformed lines
+              # Skip malformed lines (missing hash or subject)
               if [ -z "${hash}" ] || [ -z "${subject}" ]; then
                 continue
               fi
 
+              # Drop subjects that look like they mention secrets
               if echo "${subject}" | grep -qE "${SECRET_FILTER}"; then
                 echo "Skipping potential secret-bearing subject: ${hash}" >&2
                 continue
               fi
 
+              # Drop the auto-log commits themselves
               if echo "${subject}" | grep -qi 'auto-update command log'; then
                 continue
               fi
 
-              # Escape pipe characters in subject so the markdown table stays intact
+              # Escape pipe characters so the markdown table does not break
               safe_subject=$(echo "${subject}" | sed 's/|/\\|/g')
               echo "| \`${hash}\` | ${safe_subject} | ${author} | ${cdate} |"
               ROW_COUNT=$((ROW_COUNT + 1))
@@ -126,13 +147,14 @@ jobs:
 
             echo ""
 
+            # Honest note when every candidate was filtered out
             if [ "${ROW_COUNT}" -eq 0 ]; then
               echo "_No non-secret commits to record for this window._"
               echo ""
             fi
           } > "${ENTRY_FILE}"
 
-          # Create log file if it does not exist yet
+          # Bootstrap the log file if it does not exist yet
           if [ ! -f "${LOG_FILE}" ]; then
             {
               echo "# Command & Decision Log"
@@ -147,6 +169,7 @@ jobs:
             }
           fi
 
+          # One auto-entry section per calendar day — skip if already present
           if grep -q "## Auto entry — ${DATE}" "${LOG_FILE}" 2>/dev/null; then
             echo "Entry for ${DATE} already exists — skipping append."
             echo "skip=true" >> "$GITHUB_OUTPUT"
@@ -163,6 +186,7 @@ jobs:
           echo "skip=false" >> "$GITHUB_OUTPUT"
 
       - name: Commit updated log
+        # Only runs when the previous step actually appended something
         if: steps.entry.outputs.skip != 'true'
         run: |
           set -euo pipefail
@@ -177,11 +201,13 @@ jobs:
 
           git add docs/public/COMMAND-LOG.md
 
+          # Nothing staged → nothing to do
           if git diff --staged --quiet; then
             echo "No changes to commit"
             exit 0
           fi
 
+          # [skip ci] prevents this commit from re-triggering CI / this workflow
           git commit -m "Auto-update command log [skip ci]" || {
             echo "ERROR: git commit failed" >&2
             exit 1
