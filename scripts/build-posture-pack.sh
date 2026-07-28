@@ -78,14 +78,14 @@ build_lite() {
   cat > "$stage/00-START-HERE.md" << 'EOF'
 # TRV Posture Lite
 
-Impulse pack — core posture only.
+Impulse pack — core posture only. Price target: 9 USDC (whole ZIP, not per file).
 
 ## Reading order
 
 1. `01-posture/POSTURE.md`
 2. `02-core-rules/03-Destroy-Equals-Restart.md`
 
-Upgrade: **TRV Posture Pack** (full install + security + Obtainium notes).
+Upgrade: **TRV Posture Pack** (19 USDC) for full install + security + Obtainium notes.
 
 Repo: https://github.com/Sentinel-Archetecht/The-Remote-Viewer
 EOF
@@ -115,7 +115,7 @@ build_full() {
   cat > "$stage/00-START-HERE.md" << 'EOF'
 # TRV Posture Pack
 
-Full ordered map for builders.
+Full ordered map for builders. Price target: 19 USDC (whole ZIP, not per file).
 
 ## Reading order
 
@@ -127,7 +127,7 @@ Full ordered map for builders.
 6. `04-security/running-system-threat-model.md`
 7. `05-distribution/` — Obtainium templates
 
-Lite exists at a lower price for posture-only. This pack is the full bridge.
+Lite (9 USDC) is posture-only. This pack is the full bridge.
 
 Repo: https://github.com/Sentinel-Archetecht/The-Remote-Viewer
 EOF
@@ -143,7 +143,7 @@ EOF
 
   {
     echo "pack: TRV Posture Pack"
-    echo "price_target: 29 USDC"
+    echo "price_target: 19 USDC"
     echo "built_utc: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
     echo "git_commit: $(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
   } > "$stage/BUILD.txt"
