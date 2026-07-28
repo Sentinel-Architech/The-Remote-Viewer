@@ -49,6 +49,18 @@ Outputs (gitignored under `dist/`):
 
 ## Checkout with Phantom (manual delivery — live now)
 
+### Option A — Clickable Solana Pay links (recommended)
+
+**Posture Lite (11 USDC)**  
+[Pay with Phantom](solana:HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv?amount=11&spl-token=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&label=The%20Remote%20Viewer&message=Posture%20Lite&memo=TRV-Posture-Lite)
+
+**Posture Pack (25 USDC)**  
+[Pay with Phantom](solana:HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv?amount=25&spl-token=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&label=The%20Remote%20Viewer&message=Posture%20Pack&memo=TRV-Posture-Pack)
+
+Click the link on a phone with Phantom installed → it opens the payment screen with amount + memo already filled.
+
+### Option B — Manual send
+
 ```text
 NETWORK=Solana mainnet-beta
 ADDRESS=HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv
@@ -83,7 +95,8 @@ CONTACT=X DM @_Archetecht  (send tx signature after payment)
 
 Helio Pay Links targeted at **11** / **25** when that dashboard cooperates.
 
-Stub: `scripts/watch-sales-notify.example.sh`
+Stub: `scripts/watch-sales-notify.example.sh`  
+Live watcher: `scripts/watch-sales-notify.sh`
 
 ---
 
@@ -94,6 +107,7 @@ Stub: `scripts/watch-sales-notify.example.sh`
 - [x] Prices: **11** / **25** USDC  
 - [x] Fee / gasless note  
 - [x] Packs on device (“The Remote Viewer shop”)  
+- [x] Pre-generated Solana Pay links  
 - [ ] Test small self-pay  
 - [ ] Level 1 notify (optional)  
 - [ ] Level 2 Helio links (optional)  
