@@ -194,7 +194,7 @@ Hybrid model: **hobbyist path free forever**; optional paid **TRV Posture Pack**
 Full operator notes and checklist: [`docs/public/VENDING.md`](docs/public/VENDING.md)
 
 ```text
-Buy link (replace when live): https://buy.stripe.com/REPLACE_ME
+Buy link (replace when live):https://buy.stripe.com/REPLACE_ME
 ```
 
 ---
