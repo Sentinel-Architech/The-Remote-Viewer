@@ -46,14 +46,11 @@ jobs:
         run: cargo check --manifest-path desktop/Cargo.toml
 
   # ------------------------------------------------------------------
-  # Web scaffold — npm install (not required for branch protection yet)
+  # Web scaffold (not required for branch protection yet)
   #
-  # npm ci fallback policy:
-  #   - If package-lock.json exists  → npm ci  (reproducible, preferred)
-  #   - If package-lock.json missing → npm install (scaffold-friendly fallback)
-  # Commit a lockfile when the client stabilizes so CI becomes fully reproducible.
-  # Do NOT enable setup-node cache until the lockfile is committed — missing
-  # cache-dependency-path causes "Some specified paths were not resolved".
+  # npm policy: npm ci if package-lock.json exists, else npm install.
+  # setup-node cache is off until apps/web/package-lock.json is committed
+  # (missing cache-dependency-path hard-fails the job).
   # ------------------------------------------------------------------
   web:
     name: Web (npm)
@@ -68,7 +65,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          # cache disabled until apps/web/package-lock.json is committed
 
       - name: Install dependencies
         run: |
@@ -77,26 +73,15 @@ jobs:
             npm ci
           else
             echo "NOTE: no package-lock.json — falling back to npm install"
-            echo "Commit apps/web/package-lock.json for reproducible CI and effective npm caching."
             npm install
           fi
 
-      # Stub — replace with real checks when ready:
-      # - run: npm run lint
-      # - run: npm run test
-      # - run: npm run build
       - name: Verify package installs
         run: npm ls --depth=0 || true
 
   # ------------------------------------------------------------------
-  # Mobile scaffold — npm install (not required for branch protection yet)
-  #
-  # npm ci fallback policy:
-  #   - If package-lock.json exists  → npm ci  (reproducible, preferred)
-  #   - If package-lock.json missing → npm install (scaffold-friendly fallback)
-  # Commit a lockfile when the client stabilizes so CI becomes fully reproducible.
-  # Do NOT enable setup-node cache until the lockfile is committed — missing
-  # cache-dependency-path causes "Some specified paths were not resolved".
+  # Mobile scaffold (not required for branch protection yet)
+  # Same npm policy as web; cache off until package-lock.json exists.
   # ------------------------------------------------------------------
   mobile:
     name: Mobile (npm)
@@ -111,7 +96,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          # cache disabled until apps/mobile/package-lock.json is committed
 
       - name: Install dependencies
         run: |
@@ -120,13 +104,8 @@ jobs:
             npm ci
           else
             echo "NOTE: no package-lock.json — falling back to npm install"
-            echo "Commit apps/mobile/package-lock.json for reproducible CI and effective npm caching."
             npm install
           fi
 
-      # Stub — replace with real checks when ready:
-      # - run: npx tsc --noEmit
-      # - run: npm run lint
-      # - run: npx expo-doctor
       - name: Verify package installs
         run: npm ls --depth=0 || true
