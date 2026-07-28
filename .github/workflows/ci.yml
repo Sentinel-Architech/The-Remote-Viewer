@@ -47,7 +47,12 @@ jobs:
 
   # ------------------------------------------------------------------
   # Web scaffold — npm cache stub (not required yet)
-  # Switch to `npm ci` once package-lock.json is committed.
+  #
+  # npm ci fallback policy:
+  #   - If package-lock.json exists  → npm ci  (reproducible, preferred)
+  #   - If package-lock.json missing → npm install (scaffold-friendly fallback)
+  # Commit a lockfile when the client stabilizes so CI becomes fully reproducible
+  # and the setup-node cache key is effective.
   # ------------------------------------------------------------------
   web:
     name: Web (npm)
@@ -63,15 +68,18 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          # Cache becomes effective after package-lock.json exists
+          # Cache key is derived from the lockfile; no-op until it exists
           cache-dependency-path: apps/web/package-lock.json
 
       - name: Install dependencies
         run: |
+          # Explicit npm ci fallback note (see job header comment)
           if [ -f package-lock.json ]; then
+            echo "package-lock.json found → npm ci"
             npm ci
           else
-            echo "No package-lock.json — using npm install (commit a lockfile for reproducible CI)"
+            echo "NOTE: no package-lock.json — falling back to npm install"
+            echo "Commit apps/web/package-lock.json for reproducible CI and effective npm caching."
             npm install
           fi
 
@@ -84,7 +92,12 @@ jobs:
 
   # ------------------------------------------------------------------
   # Mobile scaffold — npm cache stub (not required yet)
-  # Switch to `npm ci` once package-lock.json is committed.
+  #
+  # npm ci fallback policy:
+  #   - If package-lock.json exists  → npm ci  (reproducible, preferred)
+  #   - If package-lock.json missing → npm install (scaffold-friendly fallback)
+  # Commit a lockfile when the client stabilizes so CI becomes fully reproducible
+  # and the setup-node cache key is effective.
   # ------------------------------------------------------------------
   mobile:
     name: Mobile (npm)
@@ -104,10 +117,13 @@ jobs:
 
       - name: Install dependencies
         run: |
+          # Explicit npm ci fallback note (see job header comment)
           if [ -f package-lock.json ]; then
+            echo "package-lock.json found → npm ci"
             npm ci
           else
-            echo "No package-lock.json — using npm install (commit a lockfile for reproducible CI)"
+            echo "NOTE: no package-lock.json — falling back to npm install"
+            echo "Commit apps/mobile/package-lock.json for reproducible CI and effective npm caching."
             npm install
           fi
 
