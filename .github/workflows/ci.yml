@@ -47,7 +47,7 @@ jobs:
 
   # ------------------------------------------------------------------
   # Web scaffold — npm cache stub (not required yet)
-  # Enable stricter checks (lint/test/build) when the client is more than scaffold.
+  # Switch to `npm ci` once package-lock.json is committed.
   # ------------------------------------------------------------------
   web:
     name: Web (npm)
@@ -63,10 +63,17 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          # Cache becomes effective after package-lock.json exists
           cache-dependency-path: apps/web/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            echo "No package-lock.json — using npm install (commit a lockfile for reproducible CI)"
+            npm install
+          fi
 
       # Stub — replace with real checks when ready:
       # - run: npm run lint
@@ -77,7 +84,7 @@ jobs:
 
   # ------------------------------------------------------------------
   # Mobile scaffold — npm cache stub (not required yet)
-  # Expo/React Native checks can be added later (lint, typecheck, etc.).
+  # Switch to `npm ci` once package-lock.json is committed.
   # ------------------------------------------------------------------
   mobile:
     name: Mobile (npm)
@@ -96,7 +103,13 @@ jobs:
           cache-dependency-path: apps/mobile/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            echo "No package-lock.json — using npm install (commit a lockfile for reproducible CI)"
+            npm install
+          fi
 
       # Stub — replace with real checks when ready:
       # - run: npx tsc --noEmit
