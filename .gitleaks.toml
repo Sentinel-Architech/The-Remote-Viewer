@@ -1,5 +1,36 @@
+title = "TRV / Sentinel gitleaks config"
+
+[extend]
+# Use the default gitleaks rules as base
+useDefault = true
+
 [allowlist]
 paths = [
   '''docs/.*example.*''',
   '''.*\.example\.(json|md|env)''',
+  '''docs/public/.*''',
+  '''docs/locked/.*''',
 ]
+
+[[rules]]
+id = "trv-private-key"
+description = "Possible TRV / sodiumoxide private key material"
+regex = '''(?i)(private[_-]?key|secret[_-]?key|seed|mnemonic)\s*[=:]\s*["']?[0-9a-fA-F]{32,}'''
+tags = ["key", "trv"]
+
+[[rules]]
+id = "trv-hex-secret"
+description = "Long hex strings that may be keys or roots"
+regex = '''[0-9a-fA-F]{64,}'''
+tags = ["secret", "hex"]
+# Only flag if near a keyword
+[[rules.allowlist]]
+regexes = [
+  '''(merkle|root|hash|sha|commit|id|uuid)''',
+]
+
+[[rules]]
+id = "generic-api-key"
+description = "Generic API key patterns"
+regex = '''(?i)(api[_-]?key|apikey|access[_-]?token|auth[_-]?token)\s*[=:]\s*["']?[A-Za-z0-9_\-]{20,}'''
+tags = ["key", "api"]
