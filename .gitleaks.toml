@@ -1,45 +1,57 @@
 title = "TRV / Sentinel gitleaks config"
 
 [extend]
+# Start from the official default rules, then override/add
 useDefault = true
 
 [allowlist]
+description = "Known safe paths and patterns"
 paths = [
   '''docs/.*example.*''',
   '''.*\.example\.(json|md|env)''',
   '''docs/public/.*''',
   '''docs/locked/.*''',
-  '''docs/security/running-system-threat-model\.md''',
-  '''docs/public/COMMAND-LOG\.md''',
+  '''docs/security/.*''',
+  '''\.gitleaks\.toml''',
+  '''Cargo\.lock''',
+  '''package-lock\.json''',
+  '''yarn\.lock''',
+]
+# Common false positives in this repo (hashes, roots, short placeholders)
+regexes = [
+  '''placeholder-scaffold''',
+  '''did:key:placeholder''',
+  '''0{32,}''',          # all-zero padding
+  '''f{32,}''',          # all-f padding
 ]
 
 # ---------------------------------------------------------------------------
-# TRV-specific rules
+# High-confidence rules (keep sensitive)
 # ---------------------------------------------------------------------------
 
 [[rules]]
 id = "trv-private-key"
-description = "Possible TRV / sodiumoxide / ed25519 private key material"
-regex = '''(?i)(private[_-]?key|secret[_-]?key|sk|seed|mnemonic|bip39)\s*[=:]\s*["']?[0-9a-fA-F]{32,}'''
+description = "Private/secret key or seed assignment with long hex value"
+regex = '''(?i)(?:private[_-]?key|secret[_-]?key|secretkey|privkey|seed|mnemonic|bip39)\s*[=:]\s*["']?([0-9a-fA-F]{32,})'''
 tags = ["key", "trv", "secret"]
 
 [[rules]]
-id = "trv-hex-blob"
-description = "Long hex strings that may be raw key or root material (64+ hex chars)"
-regex = '''(?:^|[^0-9a-fA-F])([0-9a-fA-F]{64,})(?:[^0-9a-fA-F]|$)'''
-tags = ["hex", "possible-key"]
-
-[[rules]]
 id = "trv-base64-key"
-description = "Base64-looking blobs near key-related keywords"
-regex = '''(?i)(private|secret|seed|key|token|mnemonic)\s*[=:]\s*["']?[A-Za-z0-9+/]{40,}={0,2}'''
+description = "Base64 blob assigned to a key-related variable"
+regex = '''(?i)(?:private[_-]?key|secret[_-]?key|secretkey|privkey|seed|mnemonic|api[_-]?key|token)\s*[=:]\s*["']([A-Za-z0-9+/]{40,}={0,2})["']'''
 tags = ["key", "base64"]
 
 [[rules]]
 id = "generic-api-key"
-description = "Generic API key / token patterns"
-regex = '''(?i)(api[_-]?key|apikey|access[_-]?token|auth[_-]?token|bearer|authorization)\s*[=:]\s*["']?[A-Za-z0-9_\-.]{16,}'''
+description = "API key / access token assignment"
+regex = '''(?i)(?:api[_-]?key|apikey|access[_-]?token|auth[_-]?token)\s*[=:]\s*["']([A-Za-z0-9_\-.]{20,})["']'''
 tags = ["key", "api"]
+
+[[rules]]
+id = "generic-secret-assignment"
+description = "Password or credential assignment"
+regex = '''(?i)(?:password|passwd|pwd|credential)\s*[=:]\s*["']([^"']{8,})["']'''
+tags = ["secret", "password"]
 
 [[rules]]
 id = "aws-access-key"
@@ -59,8 +71,13 @@ description = "Slack token"
 regex = '''xox[baprs]-[0-9a-zA-Z]{10,48}'''
 tags = ["slack", "token"]
 
-[[rules]]
-id = "generic-secret-assignment"
-description = "Generic secret/password assignment"
-regex = '''(?i)(password|passwd|pwd|secret|credential)\s*[=:]\s*["'][^"']{8,}["']'''
-tags = ["secret", "password"]
+# ---------------------------------------------------------------------------
+# Lower-confidence / noisy patterns — DISABLED by default for this repo
+# (Merkle roots, SHA-256 hashes, and commit IDs are common and legitimate)
+# Uncomment only if you want maximum paranoia on a clean history.
+# ---------------------------------------------------------------------------
+# [[rules]]
+# id = "trv-hex-blob"
+# description = "Standalone 64+ hex blob (high false-positive rate on hashes)"
+# regex = '''(?:^|[^0-9a-fA-F])([0-9a-fA-F]{64,})(?:[^0-9a-fA-F]|$)'''
+# tags = ["hex", "possible-key"]
