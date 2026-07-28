@@ -13,7 +13,7 @@ Repository: [github.com/Sentinel-Archetecht/The-Remote-Viewer](https://github.co
 | **[Hobbyist — Start from nothing](#hobbyist--start-from-nothing)** | You have never worked on this kind of project. You just want to get something running and explore. |
 | **[Builder — Zero-trust / crypto](#builder--zero-trust--crypto)** | You already care about local keys, no custody, and honest loss semantics. |
 
-**Free stays free.** Optional paid pack: [TRV Posture Pack](docs/public/VENDING.md) via **Phantom / Solana**.
+**Free stays free.** Optional paid packs: [vending](docs/public/VENDING.md) via **Phantom / Solana**.
 
 ---
 
@@ -189,15 +189,18 @@ Public posture: [`docs/public/POSTURE.md`](docs/public/POSTURE.md)
 
 ## Packs / vending
 
-Hybrid: **hobbyist path free forever**; optional **TRV Posture Pack** (~**19 USDC** on Solana via **Phantom**).
+Hybrid: **hobbyist path free forever**; optional paid ZIPs via **Phantom** (prices are **per pack**, not per file).
+
+| Pack | Price | Memo |
+|------|-------|------|
+| **Posture Lite** | **9 USDC** | `TRV-Posture-Lite` |
+| **Posture Pack** (full) | **19 USDC** | `TRV-Posture-Pack` |
 
 Details: [`docs/public/VENDING.md`](docs/public/VENDING.md)
 
 ```text
-Pay (Solana):  19 USDC (or SOL ≈ $19)
-To:            HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv
-Memo:          TRV-Posture-Pack
-After pay:     X DM @_Archetecht with tx signature → receive ZIP
+To:         HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv
+After pay:  X DM @_Archetecht with tx signature → matching ZIP
 ```
 
 ---
