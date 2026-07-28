@@ -1,0 +1,70 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    "group:recommended"
+  ],
+  "timezone": "America/New_York",
+  "schedule": ["before 9am on Monday"],
+  "labels": ["dependencies"],
+  "minimumReleaseAge": "3 days",
+  "prConcurrentLimit": 10,
+  "prHourlyLimit": 5,
+  "rangeStrategy": "bump",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 9am on the first day of the month"]
+  },
+  "packageRules": [
+    {
+      "description": "Cargo: group non-major; majors stay individual",
+      "matchManagers": ["cargo"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "cargo minor/patch"
+    },
+    {
+      "description": "Cargo pre-1.0: 0.x→0.y is breaking — keep ungrouped",
+      "matchManagers": ["cargo"],
+      "matchCurrentVersion": "<1.0.0",
+      "matchUpdateTypes": ["minor"],
+      "groupName": null
+    },
+    {
+      "description": "npm web non-major",
+      "matchManagers": ["npm"],
+      "matchFileNames": ["apps/web/**"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "npm web non-major"
+    },
+    {
+      "description": "npm mobile non-major (Expo-sensitive)",
+      "matchManagers": ["npm"],
+      "matchFileNames": ["apps/mobile/**"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "npm mobile non-major"
+    },
+    {
+      "description": "npm shared non-major",
+      "matchManagers": ["npm"],
+      "matchFileNames": ["apps/shared/**"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "npm shared non-major"
+    },
+    {
+      "description": "GitHub Actions: single PR",
+      "matchManagers": ["github-actions"],
+      "groupName": "github-actions"
+    },
+    {
+      "description": "Majors require Dependency Dashboard approval",
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security", "dependencies"]
+  }
+}
