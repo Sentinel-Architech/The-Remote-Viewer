@@ -196,12 +196,14 @@ Hybrid: **hobbyist path free forever**; optional paid ZIPs via **Phantom** (pric
 | **Posture Lite** | **9 USDC** | `TRV-Posture-Lite` |
 | **Posture Pack** (full) | **19 USDC** | `TRV-Posture-Pack` |
 
-Details: [`docs/public/VENDING.md`](docs/public/VENDING.md)
+Details (including **Solana fees / Phantom gasless**): [`docs/public/VENDING.md`](docs/public/VENDING.md)
 
 ```text
 To:         HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv
 After pay:  X DM @_Archetecht with tx signature → matching ZIP
 ```
+
+Network fees are in **SOL** (usually under a cent). If you’re short SOL, Phantom may offer a **gasless** send that takes a small fee from the token instead — shown in-app before confirm; not a TRV charge.
 
 ---
 
