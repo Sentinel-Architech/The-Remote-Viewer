@@ -1,6 +1,7 @@
 # Digital vending (hybrid)
 
-**Model:** free hobbyist path stays open. One paid digital product. Optional crypto rail later.
+**Model:** free hobbyist path stays open. One paid digital product.  
+**Primary rail:** **Phantom (Solana)** — not Stripe.
 
 This is a **vending machine**, not a consulting desk: pay once → get the files. No custom installs per buyer.
 
@@ -11,106 +12,120 @@ This is a **vending machine**, not a consulting desk: pay once → get the files
 | Lane | Cost | What you get |
 |------|------|----------------|
 | **Hobbyist (free)** | $0 | Public repo, README dual-path, `docs/public/*`, scaffolds |
-| **TRV Posture Pack (paid)** | **$19** (starter price) | Curated pack: posture checklist, secrets hygiene, install notes, “start honest” builder notes |
-| **Crypto (optional later)** | Same SKU | Same pack via BTCPay / lightning when you add a second rail |
+| **TRV Posture Pack (paid)** | **~$19 USD** in **USDC** (preferred) or SOL | Curated pack: posture checklist, secrets hygiene, install notes, builder bridge |
+| **Card later (optional)** | Same SKU | Stripe only if you ever want fiat — not required |
 
-Free never goes away. Paid is for people who want a tight, ordered pack instead of digging the whole tree.
+Free never goes away. Paid is for people who want a tight pack instead of digging the whole tree.
 
 ---
 
 ## Product: TRV Posture Pack
 
 **Name:** TRV Posture Pack  
-**Price:** $19 USD (change anytime in Stripe)  
-**Format:** single ZIP (or PDF + short text files)  
-**Delivery:** instant after payment (success page or email link)
+**Price target:** **19 USDC** (or SOL ≈ $19 at send time)  
+**Format:** single ZIP  
+**Delivery:** after payment confirmed on-chain (you send the download link)
 
-### Suggested contents (build this ZIP)
+### Suggested pack contents
 
-1. **POSTURE one-pager** — what we refuse (custody, fake recovery, Integrity-as-gate)
-2. **Secrets hygiene checklist** — git, device, CI, allowlists
-3. **Hobbyist → Builder bridge** — ordered reading list (`POSTURE` → Destroy=Restart → install policy)
-4. **Install-anywhere notes** — Obtainium / sideload posture without claiming a finished APK
-5. **Honest status** — scaffold ≠ secure (copy aligned with README)
+1. POSTURE one-pager  
+2. Secrets hygiene checklist  
+3. Hobbyist → Builder reading order  
+4. Install-anywhere / Obtainium notes  
+5. Honest status (scaffold ≠ secure)  
 
-Do **not** put private keys, seeds, or real `.env` samples with secrets in the pack.
-
-### Pack location (your machine / private storage)
-
-- Build the ZIP offline.
-- Host download on: private URL, Stripe-hosted file, or a **private** GitHub Release asset.
-- Public repo should only hold *this* doc and the buy link — not the paid file itself if you want scarcity.
+No private keys, seeds, or live secrets in the pack.
 
 ---
 
-## Checkout (Stripe Payment Link)
+## Checkout with Phantom (day-one method)
 
-### One-time setup
+### 1. Sales wallet (important)
 
-1. Create a [Stripe](https://stripe.com) account.
-2. **Products** → Add product  
-   - Name: `TRV Posture Pack`  
-   - Price: `$19` one-time  
-3. **Payment link** → create for that price.  
-4. Set **After payment** → redirect to your success URL (below).  
-5. Paste the payment link into the placeholders in this repo (README + this file).
+- Create a **dedicated** Phantom account/address for sales (not your main bag).  
+- Write down the recovery phrase offline; never put it in git or Discord.
 
-### Placeholders (replace when live)
+### 2. Publish pay instructions
+
+Replace the placeholders below with your real sales address:
 
 ```text
-STRIPE_PAYMENT_LINK=https://buy.stripe.com/REPLACE_ME
-SUCCESS_URL=https://YOUR_DOMAIN_OR_PAGES/thanks
-DOWNLOAD_URL=https://REPLACE_ME/trv-posture-pack.zip
+NETWORK=Solana mainnet-beta
+ASSET=USDC (preferred) or SOL
+AMOUNT=19 USDC   # or SOL equivalent ≈ $19
+ADDRESS=YOUR_SOLANA_SALES_ADDRESS_HERE
+MEMO=TRV-Posture-Pack
 ```
 
-Until those are real, the machine is **designed but not powered**.
+**Buyer flow:**
 
-### Success page (minimal)
+1. Open Phantom → Send  
+2. USDC (or SOL) → your sales address  
+3. Amount ≈ $19  
+4. Optional memo: `TRV-Posture-Pack`  
+5. Message you (X DM / email you publish) with **tx signature**  
+6. You verify on a Solana explorer → send the ZIP link  
 
-After payment, user should see:
+That’s enough for the first sales. No Stripe account.
 
-- “Payment received”
-- One download button / link to the ZIP
-- Link back to the public repo (hobbyist path)
-- No account required
+### 3. Verify payment
 
-You can host success as:
+- [Solana Explorer](https://explorer.solana.com/) or Solscan  
+- Confirm: to your address, amount, recent timestamp  
+- Then deliver once — don’t resend the same link forever in public threads  
 
-- Stripe’s built-in confirmation + link in the product description, or  
-- A single static HTML page on GitHub Pages / any host, or  
-- A route under `apps/web` later
+### 4. Delivery
+
+- Private download URL, or  
+- Email / DM the ZIP, or  
+- Time-limited link (Dropbox, private host, etc.)  
+
+Keep a simple log offline: `date | tx sig | delivered?` — not in the public repo.
 
 ---
 
-## Crypto rail (later, not day one)
+## Slightly more automatic (optional later)
 
-When you want the sovereign signal:
+| Tool | Role |
+|------|------|
+| **Solana Pay** transfer request URL/QR | Buyer scans; Phantom fills amount + dest |
+| **Helio / similar** | Crypto checkout pages that speak Phantom |
+| **BTCPay-style self-host** | If you expand beyond Solana |
 
-1. Same ZIP / same price target  
-2. BTCPay Server or a published lightning/on-chain address  
-3. Manual or webhook fulfillment until volume justifies automation  
+None of these are required for sale #1.
 
-Do not block the first sale on crypto infrastructure.
+---
+
+## Placeholders (fill when ready)
+
+```text
+SOLANA_SALES_ADDRESS=REPLACE_ME
+PRICE=19 USDC
+CONTACT_FOR_DELIVERY=REPLACE_ME   # e.g. X handle or email
+PACK_FILE=trv-posture-pack.zip    # kept off public git if you want scarcity
+```
+
+Until `SOLANA_SALES_ADDRESS` is real, the machine is designed but not powered.
 
 ---
 
 ## Operator checklist
 
-- [ ] Write pack files (no secrets)
-- [ ] Zip and store privately
-- [ ] Stripe product + Payment Link
-- [ ] Success / download path works in a test payment
-- [ ] Put live link in README “Packs” section
-- [ ] Optional: pin link on X bio
-- [ ] Optional: crypto address for the same SKU
+- [ ] Dedicated Phantom sales address  
+- [ ] Pack ZIP built (no secrets)  
+- [ ] Address + price published (README / this doc / X bio)  
+- [ ] Contact path for tx sig → delivery  
+- [ ] Test: send $1 to yourself, practice verify + “deliver”  
+- [ ] Optional: Solana Pay QR  
+- [ ] Optional: Stripe later for card users  
 
 ---
 
 ## What this is not
 
-- Not a subscription (yet)
-- Not custodial recovery or “we hold your keys”
-- Not a promise that scaffolds are production-secure
-- Not support-heavy custom consulting baked into the $19
+- Not custodial recovery  
+- Not “scaffolds are production secure”  
+- Not a subscription  
+- Not unpaid custom consulting inside the $19  
 
-Support stays community/issues. The pack is documentation density, not a private Slack seat.
+Support stays issues/community. The pack is documentation density.
