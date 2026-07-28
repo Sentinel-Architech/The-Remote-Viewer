@@ -71,10 +71,21 @@ impl WebOfTrust {
             return false;
         }
 
-        let pk = sign::PublicKey(key_array);
-        let mut sig_array = [0u8; sign::SIGNATUREBYTES];
-        sig_array.copy_from_slice(signature_bytes);
-        let sig = sign::Signature(sig_array);
+        let pk = match sign::PublicKey::from_slice(public_key_bytes) {
+            Some(k) => k,
+            None => {
+                warn!("[!] Invalid public key bytes");
+                return false;
+            }
+        };
+
+        let sig = match sign::Signature::from_bytes(signature_bytes) {
+            Ok(s) => s,
+            Err(_) => {
+                warn!("[!] Invalid signature bytes");
+                return false;
+            }
+        };
 
         let valid = sign::verify_detached(&sig, payload, &pk);
 
