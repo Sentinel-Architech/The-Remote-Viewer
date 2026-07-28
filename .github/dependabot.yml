@@ -2,7 +2,7 @@ version: 2
 
 # ---------------------------------------------------------------------------
 # Dependabot version updates (active)
-# Schedule: every Monday at 09:00 America/New_York for all ecosystems
+# Schedule: every Friday at 16:20 America/New_York (4:20 PM Eastern)
 # Renovate remains parked (manual-only) — do not run both as version bots.
 # ---------------------------------------------------------------------------
 
@@ -12,8 +12,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "monday"
-      time: "09:00"
+      day: "friday"
+      time: "16:20"
       timezone: "America/New_York"
     open-pull-requests-limit: 10
     labels:
@@ -33,8 +33,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "monday"
-      time: "09:00"
+      day: "friday"
+      time: "16:20"
       timezone: "America/New_York"
     open-pull-requests-limit: 5
     labels:
@@ -53,8 +53,8 @@ updates:
     directory: "/apps/web"
     schedule:
       interval: "weekly"
-      day: "monday"
-      time: "09:00"
+      day: "friday"
+      time: "16:20"
       timezone: "America/New_York"
     open-pull-requests-limit: 5
     labels:
@@ -81,8 +81,8 @@ updates:
     directory: "/apps/mobile"
     schedule:
       interval: "weekly"
-      day: "monday"
-      time: "09:00"
+      day: "friday"
+      time: "16:20"
       timezone: "America/New_York"
     open-pull-requests-limit: 5
     labels:
@@ -109,8 +109,8 @@ updates:
     directory: "/apps/shared"
     schedule:
       interval: "weekly"
-      day: "monday"
-      time: "09:00"
+      day: "friday"
+      time: "16:20"
       timezone: "America/New_York"
     open-pull-requests-limit: 3
     labels:
