@@ -1,42 +1,27 @@
 name: Renovate
 
 # ---------------------------------------------------------------------------
-# Self-hosted Renovate authenticated as a GitHub App (recommended).
-#
-# Secrets required:
-#   RENOVATE_APP_ID          — numeric App ID from the app's settings page
-#   RENOVATE_APP_PRIVATE_KEY — PEM private key (full file contents)
-#
-# Fallback: if you prefer a PAT instead of an App, comment out the
-# "Create GitHub App token" step and set token: ${{ secrets.RENOVATE_TOKEN }}
-#
+# PARKED — Dependabot handles version updates for now.
+# Files kept: renovate.json, .github/renovate-config.js, this workflow.
+# To enable later: add RENOVATE_APP_ID + RENOVATE_APP_PRIVATE_KEY secrets,
+# then restore the schedule cron below (and turn off Dependabot version updates).
 # ---------------------------------------------------------------------------
-# GitHub App — repository permissions (least privilege for Renovate)
-# ---------------------------------------------------------------------------
-# Permission              Access        Why
-# Contents                Read & write  Branches, commits, file updates
-# Pull requests           Read & write  Open / update dependency PRs
-# Issues                  Read & write  Dependency Dashboard issue
-# Workflows               Read & write  Bump actions in .github/workflows
-# Checks                  Read & write  Status on Renovate PRs
-# Commit statuses         Read & write  Commit status API
-# Metadata                Read          Required for every GitHub App
-# Administration          Read          Read branch protection rules
-# Dependabot alerts       Read          Optional vulnerability-driven PRs
-#
-# Installation: this repository only (not all repos).
-# Webhooks: disable (schedule + workflow_dispatch are enough).
+# GitHub App permissions (when you enable):
+#   Contents, Pull requests, Issues, Workflows, Checks, Commit statuses:
+#     Read & write
+#   Metadata: Read | Administration: Read | Dependabot alerts: Read
 # ---------------------------------------------------------------------------
 
 on:
-  schedule:
-    - cron: '0 8 * * 1'
+  # schedule disabled while parked — uncomment when secrets are set:
+  # schedule:
+  #   - cron: '0 8 * * 1'
   workflow_dispatch:
     inputs:
       dryRun:
         description: 'Dry run only (log what would happen, open no PRs)'
         required: false
-        default: 'false'
+        default: 'full'
         type: choice
         options:
           - 'false'
@@ -73,5 +58,5 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
         env:
           LOG_LEVEL: info
-          RENOVATE_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dryRun == 'full' && 'full' || '' }}
+          RENOVATE_DRY_RUN: ${{ inputs.dryRun == 'full' && 'full' || '' }}
           RENOVATE_BASE_BRANCHES: '["TheRemoteViewer","main"]'
