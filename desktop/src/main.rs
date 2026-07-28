@@ -25,9 +25,10 @@ async fn main() -> Result<()> {
     // 2. Web of Trust + Identity foundation
     let mut wot = identity::WebOfTrust::new();
 
-    // Generate a real keypair instead of the old zeroed placeholder
-    let (public_key, _secret_key) = identity::WebOfTrust::generate_keypair();
+    // Generate a real keypair. Secret key is zeroized immediately after we take the public key.
+    let (public_key, mut secret_key) = identity::WebOfTrust::generate_keypair();
     wot.provision_node(public_key.as_ref());
+    identity::zeroize_secret_key(&mut secret_key); // destroy secret material as soon as possible
 
     // Set a scaffold-only DID placeholder (Phase 1 will replace this)
     wot.set_local_did_placeholder("did:key:placeholder-scaffold".to_string());
