@@ -19,11 +19,15 @@ impl StorageEngine {
         fs::create_dir_all(&path)
             .context("Failed to create data directory")?;
 
-        let env = EnvOpenOptions::new()
-            .map_size(512 * 1024 * 1024) // 512 MB
-            .max_dbs(4)
-            .open(&path)
-            .context("Failed to open LMDB environment")?;
+        // heed marks open() as unsafe because the caller must guarantee
+        // the path is valid and the process has exclusive access semantics.
+        let env = unsafe {
+            EnvOpenOptions::new()
+                .map_size(512 * 1024 * 1024) // 512 MB
+                .max_dbs(4)
+                .open(&path)
+        }
+        .context("Failed to open LMDB environment")?;
 
         let mut wtxn = env.write_txn()?;
         let telemetry_db = env.create_database(&mut wtxn, Some("telemetry"))?;
