@@ -13,7 +13,7 @@ Repository: [github.com/Sentinel-Archetecht/The-Remote-Viewer](https://github.co
 | **[Hobbyist — Start from nothing](#hobbyist--start-from-nothing)** | You have never worked on this kind of project. You just want to get something running and explore. |
 | **[Builder — Zero-trust / crypto](#builder--zero-trust--crypto)** | You already care about local keys, no custody, and honest loss semantics. |
 
-**Free stays free.** Optional paid pack: [TRV Posture Pack](docs/public/VENDING.md) (hybrid vending — Stripe when live).
+**Free stays free.** Optional paid pack: [TRV Posture Pack](docs/public/VENDING.md) via **Phantom / Solana** when the sales address is live.
 
 ---
 
@@ -189,13 +189,17 @@ Public posture: [`docs/public/POSTURE.md`](docs/public/POSTURE.md)
 
 ## Packs / vending
 
-Hybrid model: **hobbyist path free forever**; optional paid **TRV Posture Pack** ($19 target) when the Stripe link is live.
+Hybrid: **hobbyist path free forever**; optional **TRV Posture Pack** (~**19 USDC** on Solana via **Phantom**).
 
-Full operator notes and checklist: [`docs/public/VENDING.md`](docs/public/VENDING.md)
+Details: [`docs/public/VENDING.md`](docs/public/VENDING.md)
 
 ```text
-Buy link (replace when live):https://buy.stripe.com/REPLACE_ME
+Pay (Solana):  19 USDC (or SOL ≈ $19) → REPLACE_WITH_SALES_ADDRESS
+Memo:          TRV-Posture-Pack
+After pay:     send tx signature to REPLACE_WITH_CONTACT → receive ZIP
 ```
+
+Use a **dedicated sales address**, not your main wallet.
 
 ---
 
