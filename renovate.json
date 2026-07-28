@@ -13,9 +13,13 @@
   "prConcurrentLimit": 10,
   "prHourlyLimit": 5,
   "rangeStrategy": "bump",
+  "platformAutomerge": true,
+  "automergeType": "pr",
+  "automergeStrategy": "squash",
   "lockFileMaintenance": {
     "enabled": true,
-    "schedule": ["before 9am on the first day of the month"]
+    "schedule": ["before 9am on the first day of the month"],
+    "automerge": true
   },
   "packageRules": [
     {
@@ -58,13 +62,43 @@
       "groupName": "github-actions"
     },
     {
-      "description": "Majors require Dependency Dashboard approval",
+      "description": "Majors require Dependency Dashboard approval — never automerge",
       "matchUpdateTypes": ["major"],
-      "dependencyDashboardApproval": true
+      "dependencyDashboardApproval": true,
+      "automerge": false
+    },
+    {
+      "description": "Automerge patch updates after CI is green",
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    },
+    {
+      "description": "Automerge GitHub Actions non-major (grouped)",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["digest", "patch", "minor"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    },
+    {
+      "description": "Do not automerge mobile minor (Expo / RN coupling)",
+      "matchManagers": ["npm"],
+      "matchFileNames": ["apps/mobile/**"],
+      "matchUpdateTypes": ["minor"],
+      "automerge": false
+    },
+    {
+      "description": "Do not automerge cargo minor (review crypto/storage crates)",
+      "matchManagers": ["cargo"],
+      "matchUpdateTypes": ["minor"],
+      "automerge": false
     }
   ],
   "vulnerabilityAlerts": {
     "enabled": true,
-    "labels": ["security", "dependencies"]
+    "labels": ["security", "dependencies"],
+    "automerge": false
   }
 }
