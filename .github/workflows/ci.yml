@@ -46,13 +46,14 @@ jobs:
         run: cargo check --manifest-path desktop/Cargo.toml
 
   # ------------------------------------------------------------------
-  # Web scaffold — npm cache stub (not required yet)
+  # Web scaffold — npm install (not required for branch protection yet)
   #
   # npm ci fallback policy:
   #   - If package-lock.json exists  → npm ci  (reproducible, preferred)
   #   - If package-lock.json missing → npm install (scaffold-friendly fallback)
-  # Commit a lockfile when the client stabilizes so CI becomes fully reproducible
-  # and the setup-node cache key is effective.
+  # Commit a lockfile when the client stabilizes so CI becomes fully reproducible.
+  # Do NOT enable setup-node cache until the lockfile is committed — missing
+  # cache-dependency-path causes "Some specified paths were not resolved".
   # ------------------------------------------------------------------
   web:
     name: Web (npm)
@@ -67,13 +68,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          # Cache key is derived from the lockfile; no-op until it exists
-          cache-dependency-path: apps/web/package-lock.json
+          # cache disabled until apps/web/package-lock.json is committed
 
       - name: Install dependencies
         run: |
-          # Explicit npm ci fallback note (see job header comment)
           if [ -f package-lock.json ]; then
             echo "package-lock.json found → npm ci"
             npm ci
@@ -91,13 +89,14 @@ jobs:
         run: npm ls --depth=0 || true
 
   # ------------------------------------------------------------------
-  # Mobile scaffold — npm cache stub (not required yet)
+  # Mobile scaffold — npm install (not required for branch protection yet)
   #
   # npm ci fallback policy:
   #   - If package-lock.json exists  → npm ci  (reproducible, preferred)
   #   - If package-lock.json missing → npm install (scaffold-friendly fallback)
-  # Commit a lockfile when the client stabilizes so CI becomes fully reproducible
-  # and the setup-node cache key is effective.
+  # Commit a lockfile when the client stabilizes so CI becomes fully reproducible.
+  # Do NOT enable setup-node cache until the lockfile is committed — missing
+  # cache-dependency-path causes "Some specified paths were not resolved".
   # ------------------------------------------------------------------
   mobile:
     name: Mobile (npm)
@@ -112,12 +111,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: apps/mobile/package-lock.json
+          # cache disabled until apps/mobile/package-lock.json is committed
 
       - name: Install dependencies
         run: |
-          # Explicit npm ci fallback note (see job header comment)
           if [ -f package-lock.json ]; then
             echo "package-lock.json found → npm ci"
             npm ci
