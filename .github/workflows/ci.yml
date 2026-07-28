@@ -5,22 +5,31 @@ on:
     branches: [ TheRemoteViewer, main ]
   pull_request:
     branches: [ TheRemoteViewer, main ]
+  workflow_dispatch:
 
 jobs:
+  # ------------------------------------------------------------------
+  # Secret Scan (gitleaks) — required for branch protection
+  # ------------------------------------------------------------------
   gitleaks:
     name: Secret Scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0   # required so gitleaks can scan the entire history
 
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_CONFIG: .gitleaks.toml
+          GITLEAKS_ENABLE_COMMENTS: false   # keep PR noise low
 
+  # ------------------------------------------------------------------
+  # Cargo Check — required for branch protection
+  # ------------------------------------------------------------------
   cargo-check:
     name: Cargo Check
     runs-on: ubuntu-latest
@@ -36,5 +45,4 @@ jobs:
       - name: Check desktop crate
         run: cargo check --manifest-path desktop/Cargo.toml
 
-  # Placeholder for future required checks
-  # Add more jobs here (tests, clippy, fmt) and mark them required in branch protection
+  # Future required checks can be added here (clippy, test, fmt, etc.)
