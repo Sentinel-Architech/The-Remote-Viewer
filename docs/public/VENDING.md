@@ -63,6 +63,14 @@ CONTACT=X DM @_Archetecht  (send tx signature after payment)
 
 Verify on [Solana Explorer](https://explorer.solana.com/) / Solscan. Deliver once. Log offline only.
 
+### Fees (Solana / Phantom)
+
+- Network fees are paid in **SOL**, not as a % of USDC. A normal USDC send is usually **well under $0.01**.
+- Keep a little **SOL** in Phantom for fees (Phantom often suggests ~0.02 SOL on hand).
+- **First send** of USDC to an address that has never held USDC can create an Associated Token Account (~0.002 SOL rent once, on the order of tens of cents depending on SOL price). Later sends are normal tiny fees.
+- **Phantom gasless:** if you don’t have enough SOL, Phantom may still complete eligible sends by taking a small fee from the token you’re sending (for verified tokens, above a minimum size). That fee is shown in-app before you confirm; it is not a TRV charge.
+- Raw transfer to the sales address has **no platform cut** from us — only Solana (and any Phantom gasless path if used).
+
 ---
 
 ## Operator checklist
@@ -70,6 +78,7 @@ Verify on [Solana Explorer](https://explorer.solana.com/) / Solscan. Deliver onc
 - [x] Sales address published  
 - [x] Lite + Pack builder  
 - [x] Prices: **9** / **19** USDC (per pack)  
+- [x] Fee / gasless note for buyers  
 - [ ] Run builder; keep both ZIPs for delivery  
 - [x] Contact: @_Archetecht  
 - [ ] Test small self-pay  
