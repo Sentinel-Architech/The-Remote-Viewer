@@ -7,6 +7,9 @@ on:
     branches: [ TheRemoteViewer, main ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   # ------------------------------------------------------------------
   # Secret Scan (gitleaks) — required for branch protection
