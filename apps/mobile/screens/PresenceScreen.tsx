@@ -1,19 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, Alert, ScrollView } from 'react-native';
 import {
-  export async function createDidKey(): Promise<DidKeyIdentity> {
-  // 100% local secure random
-  const privateKey = new Uint8Array(32);
-  crypto.getRandomValues(privateKey);
-
-  const publicKey = await ed.getPublicKeyAsync(privateKey);
+  createDidKey,
   getCurrentDidKey,
   destroyDidKey,
+  signWithDidKey,
+  buildDidDocument,
   DidKeyIdentity,
-} from '../services/presence'; // or correct path
+} from '../services/presence';
 
 export default function PresenceScreen() {
   const [identity, setIdentity] = useState<DidKeyIdentity | null>(null);
+  const [signature, setSignature] = useState<string | null>(null);
 
   const refresh = async () => {
     const current = await getCurrentDidKey();
@@ -27,15 +25,30 @@ export default function PresenceScreen() {
   const handleCreate = async () => {
     const newIdentity = await createDidKey();
     setIdentity(newIdentity);
+    setSignature(null);
   };
 
   const handleDestroy = async () => {
     await destroyDidKey();
     setIdentity(null);
+    setSignature(null);
     Alert.alert(
       'Destroyed',
       'did:key identity and private key have been permanently wiped.\nRestart from Square One.'
     );
+  };
+
+  const handleSign = async () => {
+    const message = 'TRV presence proof ' + new Date().toISOString();
+    const sig = await signWithDidKey(message);
+    setSignature(sig);
+    Alert.alert('Signed', `Message:\n${message}`);
+  };
+
+  const handleShowDidDoc = () => {
+    if (!identity) return;
+    const doc = buildDidDocument(identity);
+    Alert.alert('DID Document', JSON.stringify(doc, null, 2));
   };
 
   return (
@@ -49,6 +62,13 @@ export default function PresenceScreen() {
           <Text selectable style={styles.did}>{identity.did}</Text>
           <Text style={styles.label}>Public Key (hex)</Text>
           <Text selectable style={styles.mono}>{identity.publicKeyHex}</Text>
+
+          {signature && (
+            <>
+              <Text style={styles.label}>Signature (hex)</Text>
+              <Text selectable style={styles.mono}>{signature}</Text>
+            </>
+          )}
         </>
       ) : (
         <Text style={styles.inactive}>No identity – Start from Square One</Text>
@@ -58,7 +78,13 @@ export default function PresenceScreen() {
         {!identity ? (
           <Button title="Create did:key Identity" onPress={handleCreate} />
         ) : (
-          <Button title="Destroy Identity" color="#c0392b" onPress={handleDestroy} />
+          <>
+            <Button title="Sign Test Message" onPress={handleSign} />
+            <View style={{ height: 12 }} />
+            <Button title="Show DID Document" onPress={handleShowDidDoc} />
+            <View style={{ height: 12 }} />
+            <Button title="Destroy Identity" color="#c0392b" onPress={handleDestroy} />
+          </>
         )}
       </View>
     </ScrollView>
