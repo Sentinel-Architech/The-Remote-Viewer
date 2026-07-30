@@ -7,7 +7,7 @@ import {
   signWithDidKey,
   buildDidDocument,
   DidKeyIdentity,
-} from '../services/presence';
+} from '../src/services/presence';
 
 export default function PresenceScreen() {
   const [identity, setIdentity] = useState<DidKeyIdentity | null>(null);
