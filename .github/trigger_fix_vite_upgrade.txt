@@ -1,0 +1,5 @@
+Triggering CI re-run for fix/vite-upgrade
+
+This file was created by GitHub Copilot to trigger workflow runs after updating apps/web/package.json to vite ^8.0.0.
+
+Timestamp: 2026-07-30T00:35:00Z
