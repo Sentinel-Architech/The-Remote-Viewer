@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, Alert, ScrollView } from 'react-native';
 import {
-  createDidKey,
+  export async function createDidKey(): Promise<DidKeyIdentity> {
+  // 100% local secure random
+  const privateKey = new Uint8Array(32);
+  crypto.getRandomValues(privateKey);
+
+  const publicKey = await ed.getPublicKeyAsync(privateKey);
   getCurrentDidKey,
   destroyDidKey,
   DidKeyIdentity,
