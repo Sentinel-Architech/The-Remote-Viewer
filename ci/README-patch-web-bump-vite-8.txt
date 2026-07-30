@@ -1,0 +1,1 @@
+Temporary note: package-lock.json was not generated in the automation environment. Please run `npm install` in apps/web locally to regenerate package-lock.json and push it to this branch before merging.
