@@ -8,16 +8,15 @@ const STORAGE_PRIVATE = 'did_key_private';
 const STORAGE_DID = 'did_key_id';
 
 /**
- * SecureStore options chosen for Destroy = Restart posture:
+ * SecureStore options for the current scaffold:
  * - WHEN_UNLOCKED_THIS_DEVICE_ONLY → never backed up to cloud / other devices
- * - requireAuthentication → biometrics / device credential when the platform supports it
+ * - requireAuthentication: false  → Expo Go / GrapheneOS often fails silently when true
  *
- * These are best-effort. Expo Go and some OEM skins may ignore parts of them.
- * Real production builds on GrapheneOS / stock Android are the target.
+ * Re-enable requireAuthentication: true in production / custom dev-client builds.
  */
 const SECURE_OPTIONS: SecureStore.SecureStoreOptions = {
   keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-  requireAuthentication: true,
+  requireAuthentication: false,
 };
 
 export type DidKeyIdentity = {
