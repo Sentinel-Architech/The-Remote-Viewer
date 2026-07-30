@@ -53,7 +53,8 @@ export async function createDidKey(): Promise<DidKeyIdentity> {
   const privateKey = new Uint8Array(32);
   crypto.getRandomValues(privateKey);
 
-  const publicKey = await ed.getPublicKeyAsync(privateKey);
+  // Sync API — does not require crypto.subtle
+  const publicKey = ed.getPublicKey(privateKey);
 
   const multicodecKey = new Uint8Array(ED25519_MULTICODEC.length + publicKey.length);
   multicodecKey.set(ED25519_MULTICODEC, 0);
@@ -82,7 +83,7 @@ export async function getCurrentDidKey(): Promise<DidKeyIdentity | null> {
   if (!did || !privateKeyHex) return null;
 
   const privateKey = hexToBytes(privateKeyHex);
-  const publicKey = await ed.getPublicKeyAsync(privateKey);
+  const publicKey = ed.getPublicKey(privateKey);
 
   const identity: DidKeyIdentity = {
     did,
@@ -105,7 +106,9 @@ export async function signWithDidKey(message: string): Promise<string | null> {
 
   const privateKey = hexToBytes(privateKeyHex);
   const messageBytes = new TextEncoder().encode(message);
-  const signature = await ed.signAsync(messageBytes, privateKey);
+
+  // Sync API — does not require crypto.subtle
+  const signature = ed.sign(messageBytes, privateKey);
 
   const signatureHex = bytesToHex(signature);
 
