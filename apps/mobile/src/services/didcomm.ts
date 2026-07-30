@@ -1,4 +1,5 @@
 import * as ed from '@noble/ed25519';
+import * as SecureStore from 'expo-secure-store';
 import { base58btc } from 'multiformats/bases/base58';
 import {
   getCurrentDidKey,
@@ -16,6 +17,8 @@ export type DidCommBasicMessage = {
   };
   trv_signature?: string;
 };
+
+const INBOX_KEY = 'didcomm_inbox';
 
 function uuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -76,20 +79,34 @@ export async function verifyBasicMessage(
   }
 }
 
-const inbox: DidCommBasicMessage[] = [];
+async function loadInbox(): Promise<DidCommBasicMessage[]> {
+  try {
+    const raw = await SecureStore.getItemAsync(INBOX_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw) as DidCommBasicMessage[];
+  } catch {
+    return [];
+  }
+}
 
-export function storeMessage(msg: DidCommBasicMessage) {
+async function saveInbox(messages: DidCommBasicMessage[]): Promise<void> {
+  await SecureStore.setItemAsync(INBOX_KEY, JSON.stringify(messages));
+}
+
+export async function storeMessage(msg: DidCommBasicMessage): Promise<void> {
+  const inbox = await loadInbox();
   inbox.unshift(msg);
+  await saveInbox(inbox);
 }
 
-export function getInbox(): DidCommBasicMessage[] {
-  return [...inbox];
+export async function getInbox(): Promise<DidCommBasicMessage[]> {
+  return loadInbox();
 }
 
-export function clearInbox() {
-  inbox.length = 0;
+export async function clearInbox(): Promise<void> {
+  await SecureStore.deleteItemAsync(INBOX_KEY);
 }
 
-export function destroyDidCommState() {
-  clearInbox();
+export async function destroyDidCommState(): Promise<void> {
+  await clearInbox();
 }
