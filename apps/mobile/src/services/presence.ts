@@ -1,30 +1,6 @@
-import * as ed from '@noble/ed25519';
-import { sha512 } from '@noble/hashes/sha512';
+import nacl from 'tweetnacl';
 import * as SecureStore from 'expo-secure-store';
 import { base58btc } from 'multiformats/bases/base58';
-
-// Required on React Native / Expo Go (no crypto.subtle).
-// The installed @noble/ed25519 version checks hashes.sha512Sync.
-function sha512Sync(...msgs: Uint8Array[]): Uint8Array {
-  const totalLen = msgs.reduce((n, m) => n + m.length, 0);
-  const out = new Uint8Array(totalLen);
-  let offset = 0;
-  for (const m of msgs) {
-    out.set(m, offset);
-    offset += m.length;
-  }
-  return sha512(out);
-}
-
-(ed as any).hashes = (ed as any).hashes || {};
-(ed as any).hashes.sha512Sync = sha512Sync;
-(ed as any).hashes.sha512 = sha512;
-(ed as any).hashes.sha512Async = (m: Uint8Array) => Promise.resolve(sha512(m));
-
-if ((ed as any).etc) {
-  (ed as any).etc.sha512Sync = sha512Sync;
-  (ed as any).etc.sha512Async = (...m: Uint8Array[]) => Promise.resolve(sha512Sync(...m));
-}
 
 const ED25519_MULTICODEC = new Uint8Array([0xed, 0x01]);
 
@@ -74,10 +50,10 @@ function zeroize(bytes: Uint8Array): void {
 }
 
 export async function createDidKey(): Promise<DidKeyIdentity> {
-  const privateKey = new Uint8Array(32);
-  crypto.getRandomValues(privateKey);
-
-  const publicKey = ed.getPublicKey(privateKey);
+  // tweetnacl uses its own CSPRNG; also ensure expo-crypto polyfill is loaded
+  const keyPair = nacl.sign.keyPair();
+  const privateKey = keyPair.secretKey; // 64 bytes (seed + public)
+  const publicKey = keyPair.publicKey;  // 32 bytes
 
   const multicodecKey = new Uint8Array(ED25519_MULTICODEC.length + publicKey.length);
   multicodecKey.set(ED25519_MULTICODEC, 0);
@@ -85,11 +61,14 @@ export async function createDidKey(): Promise<DidKeyIdentity> {
 
   const did = `did:key:${base58btc.encode(multicodecKey)}`;
 
-  await SecureStore.setItemAsync(STORAGE_PRIVATE, bytesToHex(privateKey), SECURE_OPTIONS);
+  // Store the 32-byte seed (first half of secretKey) for compactness
+  const seed = privateKey.slice(0, 32);
+  await SecureStore.setItemAsync(STORAGE_PRIVATE, bytesToHex(seed), SECURE_OPTIONS);
   await SecureStore.setItemAsync(STORAGE_DID, did, SECURE_OPTIONS);
 
   const publicKeyHex = bytesToHex(publicKey);
 
+  zeroize(seed);
   zeroize(privateKey);
 
   return {
@@ -101,12 +80,13 @@ export async function createDidKey(): Promise<DidKeyIdentity> {
 
 export async function getCurrentDidKey(): Promise<DidKeyIdentity | null> {
   const did = await SecureStore.getItemAsync(STORAGE_DID, SECURE_OPTIONS);
-  const privateKeyHex = await SecureStore.getItemAsync(STORAGE_PRIVATE, SECURE_OPTIONS);
+  const seedHex = await SecureStore.getItemAsync(STORAGE_PRIVATE, SECURE_OPTIONS);
 
-  if (!did || !privateKeyHex) return null;
+  if (!did || !seedHex) return null;
 
-  const privateKey = hexToBytes(privateKeyHex);
-  const publicKey = ed.getPublicKey(privateKey);
+  const seed = hexToBytes(seedHex);
+  const keyPair = nacl.sign.keyPair.fromSeed(seed);
+  const publicKey = keyPair.publicKey;
 
   const identity: DidKeyIdentity = {
     did,
@@ -114,7 +94,8 @@ export async function getCurrentDidKey(): Promise<DidKeyIdentity | null> {
     createdAt: 0,
   };
 
-  zeroize(privateKey);
+  zeroize(seed);
+  zeroize(keyPair.secretKey);
   return identity;
 }
 
@@ -124,16 +105,18 @@ export async function destroyDidKey(): Promise<void> {
 }
 
 export async function signWithDidKey(message: string): Promise<string | null> {
-  const privateKeyHex = await SecureStore.getItemAsync(STORAGE_PRIVATE, SECURE_OPTIONS);
-  if (!privateKeyHex) return null;
+  const seedHex = await SecureStore.getItemAsync(STORAGE_PRIVATE, SECURE_OPTIONS);
+  if (!seedHex) return null;
 
-  const privateKey = hexToBytes(privateKeyHex);
+  const seed = hexToBytes(seedHex);
+  const keyPair = nacl.sign.keyPair.fromSeed(seed);
   const messageBytes = new TextEncoder().encode(message);
-  const signature = ed.sign(messageBytes, privateKey);
+  const signature = nacl.sign.detached(messageBytes, keyPair.secretKey);
 
   const signatureHex = bytesToHex(signature);
 
-  zeroize(privateKey);
+  zeroize(seed);
+  zeroize(keyPair.secretKey);
   return signatureHex;
 }
 
