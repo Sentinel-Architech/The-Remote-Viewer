@@ -1,0 +1,5 @@
+### Zero-Knowledge Membership
+- Circuit: `protocols/zk_membership.circom`
+- Improved version with nullifier, public commitment, and binary path checks
+- Depth 20
+- Still early – full proving/verification pipeline coming next
