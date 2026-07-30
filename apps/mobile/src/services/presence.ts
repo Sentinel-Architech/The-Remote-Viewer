@@ -1,11 +1,11 @@
 import * as ed from '@noble/ed25519';
-import { sha512 } from '@noble/hashes/sha2.js';
+import { sha512 } from '@noble/hashes/sha512';
 import * as SecureStore from 'expo-secure-store';
 import { base58btc } from 'multiformats/bases/base58';
 
 // Required on React Native / Expo Go (no crypto.subtle).
-// Cover both current and older @noble/ed25519 hash hooks.
-const sha512Wrapped = (...msgs: Uint8Array[]) => {
+// The installed @noble/ed25519 version checks hashes.sha512Sync.
+function sha512Sync(...msgs: Uint8Array[]): Uint8Array {
   const totalLen = msgs.reduce((n, m) => n + m.length, 0);
   const out = new Uint8Array(totalLen);
   let offset = 0;
@@ -14,15 +14,16 @@ const sha512Wrapped = (...msgs: Uint8Array[]) => {
     offset += m.length;
   }
   return sha512(out);
-};
-
-if (ed.hashes) {
-  ed.hashes.sha512 = sha512;
-  ed.hashes.sha512Async = (m: Uint8Array) => Promise.resolve(sha512(m));
 }
+
+(ed as any).hashes = (ed as any).hashes || {};
+(ed as any).hashes.sha512Sync = sha512Sync;
+(ed as any).hashes.sha512 = sha512;
+(ed as any).hashes.sha512Async = (m: Uint8Array) => Promise.resolve(sha512(m));
+
 if ((ed as any).etc) {
-  (ed as any).etc.sha512Sync = sha512Wrapped;
-  (ed as any).etc.sha512Async = (...m: Uint8Array[]) => Promise.resolve(sha512Wrapped(...m));
+  (ed as any).etc.sha512Sync = sha512Sync;
+  (ed as any).etc.sha512Async = (...m: Uint8Array[]) => Promise.resolve(sha512Sync(...m));
 }
 
 const ED25519_MULTICODEC = new Uint8Array([0xed, 0x01]);
@@ -76,7 +77,6 @@ export async function createDidKey(): Promise<DidKeyIdentity> {
   const privateKey = new Uint8Array(32);
   crypto.getRandomValues(privateKey);
 
-  // Sync API — does not require crypto.subtle
   const publicKey = ed.getPublicKey(privateKey);
 
   const multicodecKey = new Uint8Array(ED25519_MULTICODEC.length + publicKey.length);
@@ -129,8 +129,6 @@ export async function signWithDidKey(message: string): Promise<string | null> {
 
   const privateKey = hexToBytes(privateKeyHex);
   const messageBytes = new TextEncoder().encode(message);
-
-  // Sync API — does not require crypto.subtle
   const signature = ed.sign(messageBytes, privateKey);
 
   const signatureHex = bytesToHex(signature);
