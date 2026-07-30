@@ -18,7 +18,8 @@ Repository: [github.com/Sentinel-Archetecht/The-Remote-Viewer](https://github.co
 | **[Hobbyist — Start from nothing](#hobbyist--start-from-nothing)** | You have never worked on this kind of project. You just want to get something running and explore. |
 | **[Builder — Zero-trust / crypto](#builder--zero-trust--crypto)** | You already care about local keys, no custody, and honest loss semantics. |
 
-**Free stays free.** Optional paid packs: [vending](docs/public/VENDING.md) via **Phantom / Solana**.
+**Free stays free.** Optional paid packs may be offered later via Phantom / Solana.  
+**There is no live in-app shop checkout yet.** See [Packs / vending](#packs--vending).
 
 ---
 
