@@ -3,9 +3,27 @@ import { sha512 } from '@noble/hashes/sha2.js';
 import * as SecureStore from 'expo-secure-store';
 import { base58btc } from 'multiformats/bases/base58';
 
-// Required on React Native / Expo Go (no crypto.subtle)
-ed.hashes.sha512 = sha512;
-ed.hashes.sha512Async = (m: Uint8Array) => Promise.resolve(sha512(m));
+// Required on React Native / Expo Go (no crypto.subtle).
+// Cover both current and older @noble/ed25519 hash hooks.
+const sha512Wrapped = (...msgs: Uint8Array[]) => {
+  const totalLen = msgs.reduce((n, m) => n + m.length, 0);
+  const out = new Uint8Array(totalLen);
+  let offset = 0;
+  for (const m of msgs) {
+    out.set(m, offset);
+    offset += m.length;
+  }
+  return sha512(out);
+};
+
+if (ed.hashes) {
+  ed.hashes.sha512 = sha512;
+  ed.hashes.sha512Async = (m: Uint8Array) => Promise.resolve(sha512(m));
+}
+if ((ed as any).etc) {
+  (ed as any).etc.sha512Sync = sha512Wrapped;
+  (ed as any).etc.sha512Async = (...m: Uint8Array[]) => Promise.resolve(sha512Wrapped(...m));
+}
 
 const ED25519_MULTICODEC = new Uint8Array([0xed, 0x01]);
 
