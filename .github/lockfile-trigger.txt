@@ -1,0 +1,3 @@
+Trigger file for CI: this commit exists to trigger the CI workflow which will generate and open a PR with apps/mobile/package-lock.json if missing.
+
+If you see this commit, CI should run the `mobile` job and create a PR named `chore(mobile): add package-lock.json (CI generated)` targeting the branch that triggered the workflow.
