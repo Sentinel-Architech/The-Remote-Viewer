@@ -1,0 +1,11 @@
+# Project config for The-Remote-Viewer
+# Makes Grok Build automatically aware of the project's zero-trust / local-first rules
+
+[models]
+default = "grok-build"
+
+# Uncomment and customize if you want project-specific MCP servers
+# [mcp_servers.filesystem]
+# command = "npx"
+# args = ["-y", "@modelcontextprotocol/server-filesystem", "."]
+# enabled = true
