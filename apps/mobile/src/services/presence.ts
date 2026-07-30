@@ -74,4 +74,12 @@ export async function destroyDidKey() {
  * Sign a message with the current did:key
  */
 export async function signWithDidKey(message: string): Promise<string | null> {
-  const privateKeyHex = await SecureStore
+  const privateKeyHex = await SecureStore.getItemAsync(STORAGE_PRIVATE);
+  if (!privateKeyHex) return null;
+
+  const privateKey = Buffer.from(privateKeyHex, 'hex');
+  const messageBytes = new TextEncoder().encode(message);
+  const signature = await ed.signAsync(messageBytes, privateKey);
+
+  return Buffer.from(signature).toString('hex');
+}
