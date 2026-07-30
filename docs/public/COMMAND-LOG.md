@@ -217,6 +217,48 @@ No server, no cloud, no recovery theater. Keys never leave the device.
 
 ---
 
+## 10. Mobile did:key hardening (2026-07-30)
+
+**Problem:** Five concrete gaps remained after the initial cleanup:
+1. `Buffer` used but not guaranteed under Expo/Hermes
+2. SecureStore called with default (weak) options
+3. Private key material not zeroized after use
+4. No automated Create → Destroy → Assert Empty check
+5. Expo Go presented as if it were a real security environment
+
+**Actions that worked (in order):**
+
+1. **Removed all Buffer usage**  
+   Rewrote `src/services/presence.ts` to pure `Uint8Array` + local hex helpers. No Node Buffer dependency remains.
+
+2. **Locked SecureStore options**  
+   Every set/get/delete now uses:
+   ```ts
+   {
+     keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+     requireAuthentication: true,
+   }
+   ```
+   Prevents cloud backup / cross-device transfer of the private key where the platform honors the flags.
+
+3. **Explicit zeroize**  
+   After every create / get / sign, the temporary private-key `Uint8Array` is overwritten with zeros before it goes out of scope.
+
+4. **Smoke test button**  
+   Added “Run Smoke Test (Create → Destroy → Empty)” to `PresenceScreen`.  
+   It creates an identity, verifies it exists, destroys it, and asserts `getCurrentDidKey()` returns `null`. Fails loudly if Destroy = Restart does not hold.
+
+5. **Expo Go warning**  
+   Updated `apps/mobile/README.md` to state clearly that Expo Go is exploration-only. Real SecureStore / authentication behavior requires a custom development client or production build.
+
+**Commit messages:**
+- `fix(mobile): remove all Buffer usage from did:key service`
+- `fix(mobile): harden SecureStore options for did:key material`
+- `feat(mobile): add Create → Destroy → Assert Empty smoke test button`
+- `docs(mobile): honest status + Expo Go is exploration-only warning`
+
+---
+
 ## Intentionally not logged
 
 - Any private keys, seeds, tokens, or credentials (none were handled)
