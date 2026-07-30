@@ -1,3 +1,25 @@
+export function buildDidDocument(identity: DidKeyIdentity) {
+  const did = identity.did;
+  const keyId = `${did}#${did.split(':')[2]}`; // fragment = multibase key
+
+  return {
+    '@context': [
+      'https://www.w3.org/ns/did/v1',
+      'https://w3id.org/security/suites/ed25519-2020/v1',
+    ],
+    id: did,
+    verificationMethod: [
+      {
+        id: keyId,
+        type: 'Ed25519VerificationKey2020',
+        controller: did,
+        publicKeyMultibase: did.replace('did:key:', ''),
+      },
+    ],
+    authentication: [keyId],
+    assertionMethod: [keyId],
+  };
+}
 import * as ed from '@noble/ed25519';
 import * as SecureStore from 'expo-secure-store';
 import { base58btc } from 'multiformats/bases/base58';
