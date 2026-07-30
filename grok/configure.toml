@@ -1,0 +1,27 @@
+# The-Remote-Viewer – Grok Build project configuration
+# Local-first • Zero-trust • Digital sovereignty
+
+[models]
+default = "grok-build"
+
+# Optional: force Grok 4.5 if you prefer
+# [model.grok-4.5]
+# model = "grok-4.5"
+# base_url = "https://api.x.ai/v1"
+# env_key = "XAI_API_KEY"
+# name = "Grok 4.5"
+
+# ---------- MCP Servers ----------
+[mcp_servers.github]
+command = "npx"
+args = ["-y", "@modelcontextprotocol/server-github"]
+env = { GITHUB_PERSONAL_ACCESS_TOKEN = "${GITHUB_TOKEN}" }
+enabled = true
+startup_timeout_sec = 30
+tool_timeout_sec = 120
+
+# Optional local filesystem access (uncomment if needed)
+# [mcp_servers.filesystem]
+# command = "npx"
+# args = ["-y", "@modelcontextprotocol/server-filesystem", "."]
+# enabled = true
