@@ -13,6 +13,30 @@ export type DidKeyIdentity = {
   createdAt: number;
 };
 
+/** Convert Uint8Array → lowercase hex string */
+function bytesToHex(bytes: Uint8Array): string {
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+/** Convert lowercase hex string → Uint8Array */
+function hexToBytes(hex: string): Uint8Array {
+  if (hex.length % 2 !== 0) {
+    throw new Error('Invalid hex string');
+  }
+  const out = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < out.length; i++) {
+    out[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+  }
+  return out;
+}
+
+/** Overwrite a Uint8Array with zeros (best-effort zeroization) */
+function zeroize(bytes: Uint8Array): void {
+  bytes.fill(0);
+}
+
 export async function createDidKey(): Promise<DidKeyIdentity> {
   const privateKey = new Uint8Array(32);
   crypto.getRandomValues(privateKey);
@@ -25,12 +49,18 @@ export async function createDidKey(): Promise<DidKeyIdentity> {
 
   const did = `did:key:${base58btc.encode(multicodecKey)}`;
 
-  await SecureStore.setItemAsync(STORAGE_PRIVATE, Buffer.from(privateKey).toString('hex'));
+  // Store only the hex form; never keep the raw private key longer than needed
+  await SecureStore.setItemAsync(STORAGE_PRIVATE, bytesToHex(privateKey));
   await SecureStore.setItemAsync(STORAGE_DID, did);
+
+  const publicKeyHex = bytesToHex(publicKey);
+
+  // Best-effort wipe of the temporary private key material
+  zeroize(privateKey);
 
   return {
     did,
-    publicKeyHex: Buffer.from(publicKey).toString('hex'),
+    publicKeyHex,
     createdAt: Date.now(),
   };
 }
@@ -41,17 +71,20 @@ export async function getCurrentDidKey(): Promise<DidKeyIdentity | null> {
 
   if (!did || !privateKeyHex) return null;
 
-  const privateKey = Buffer.from(privateKeyHex, 'hex');
+  const privateKey = hexToBytes(privateKeyHex);
   const publicKey = await ed.getPublicKeyAsync(privateKey);
 
-  return {
+  const identity: DidKeyIdentity = {
     did,
-    publicKeyHex: Buffer.from(publicKey).toString('hex'),
+    publicKeyHex: bytesToHex(publicKey),
     createdAt: 0,
   };
+
+  zeroize(privateKey);
+  return identity;
 }
 
-export async function destroyDidKey() {
+export async function destroyDidKey(): Promise<void> {
   await SecureStore.deleteItemAsync(STORAGE_PRIVATE);
   await SecureStore.deleteItemAsync(STORAGE_DID);
 }
@@ -60,11 +93,14 @@ export async function signWithDidKey(message: string): Promise<string | null> {
   const privateKeyHex = await SecureStore.getItemAsync(STORAGE_PRIVATE);
   if (!privateKeyHex) return null;
 
-  const privateKey = Buffer.from(privateKeyHex, 'hex');
+  const privateKey = hexToBytes(privateKeyHex);
   const messageBytes = new TextEncoder().encode(message);
   const signature = await ed.signAsync(messageBytes, privateKey);
 
-  return Buffer.from(signature).toString('hex');
+  const signatureHex = bytesToHex(signature);
+
+  zeroize(privateKey);
+  return signatureHex;
 }
 
 export function buildDidDocument(identity: DidKeyIdentity) {
