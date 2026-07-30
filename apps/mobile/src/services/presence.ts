@@ -2,7 +2,6 @@ import * as ed from '@noble/ed25519';
 import * as SecureStore from 'expo-secure-store';
 import { base58btc } from 'multiformats/bases/base58';
 
-// Multicodec for Ed25519 public key
 const ED25519_MULTICODEC = new Uint8Array([0xed, 0x01]);
 
 const STORAGE_PRIVATE = 'did_key_private';
@@ -14,10 +13,6 @@ export type DidKeyIdentity = {
   createdAt: number;
 };
 
-/**
- * Create a new did:key identity (Ed25519)
- * Uses device CSPRNG via expo-crypto polyfill
- */
 export async function createDidKey(): Promise<DidKeyIdentity> {
   const privateKey = new Uint8Array(32);
   crypto.getRandomValues(privateKey);
@@ -40,9 +35,6 @@ export async function createDidKey(): Promise<DidKeyIdentity> {
   };
 }
 
-/**
- * Get current did:key identity (if any)
- */
 export async function getCurrentDidKey(): Promise<DidKeyIdentity | null> {
   const did = await SecureStore.getItemAsync(STORAGE_DID);
   const privateKeyHex = await SecureStore.getItemAsync(STORAGE_PRIVATE);
@@ -59,17 +51,11 @@ export async function getCurrentDidKey(): Promise<DidKeyIdentity | null> {
   };
 }
 
-/**
- * Destroy = Restart from Square One
- */
 export async function destroyDidKey() {
   await SecureStore.deleteItemAsync(STORAGE_PRIVATE);
   await SecureStore.deleteItemAsync(STORAGE_DID);
 }
 
-/**
- * Sign a message with the current did:key
- */
 export async function signWithDidKey(message: string): Promise<string | null> {
   const privateKeyHex = await SecureStore.getItemAsync(STORAGE_PRIVATE);
   if (!privateKeyHex) return null;
@@ -81,9 +67,6 @@ export async function signWithDidKey(message: string): Promise<string | null> {
   return Buffer.from(signature).toString('hex');
 }
 
-/**
- * Build a minimal DID Document from the identity
- */
 export function buildDidDocument(identity: DidKeyIdentity) {
   const did = identity.did;
   const multibaseKey = did.replace('did:key:', '');
