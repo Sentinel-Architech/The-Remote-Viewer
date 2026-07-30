@@ -1,0 +1,7 @@
+import * as Crypto from 'expo-crypto';
+
+if (typeof global.crypto !== 'object') {
+  (global as any).crypto = {};
+}
+
+global.crypto.getRandomValues = Crypto.getRandomValues;
