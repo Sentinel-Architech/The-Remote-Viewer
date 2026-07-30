@@ -72,11 +72,11 @@ jobs:
       - name: Install dependencies
         run: |
           if [ -f package-lock.json ]; then
-            echo "package-lock.json found → npm ci"
-            npm ci
+            echo "package-lock.json found → npm ci --legacy-peer-deps"
+            npm ci --legacy-peer-deps
           else
-            echo "NOTE: no package-lock.json — falling back to npm install"
-            npm install
+            echo "NOTE: no package-lock.json — falling back to npm install --legacy-peer-deps"
+            npm install --legacy-peer-deps
           fi
 
       - name: Verify package installs
@@ -103,11 +103,11 @@ jobs:
       - name: Install dependencies
         run: |
           if [ -f package-lock.json ]; then
-            echo "package-lock.json found → npm ci"
-            npm ci
+            echo "package-lock.json found → npm ci --legacy-peer-deps"
+            npm ci --legacy-peer-deps
           else
-            echo "NOTE: no package-lock.json — falling back to npm install"
-            npm install
+            echo "NOTE: no package-lock.json — falling back to npm install --legacy-peer-deps"
+            npm install --legacy-peer-deps
           fi
 
       - name: Verify package installs
