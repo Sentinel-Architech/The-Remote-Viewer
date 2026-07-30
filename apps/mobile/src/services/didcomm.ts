@@ -3,7 +3,6 @@ import { base58btc } from 'multiformats/bases/base58';
 import {
   getCurrentDidKey,
   signWithDidKey,
-  DidKeyIdentity,
 } from './presence';
 
 export type DidCommBasicMessage = {
@@ -34,7 +33,6 @@ function publicKeyFromDidKey(did: string): Uint8Array | null {
     if (!did.startsWith('did:key:')) return null;
     const multibase = did.replace('did:key:', '');
     const decoded = base58btc.decode(multibase);
-    // Skip multicodec prefix (0xed 0x01)
     if (decoded.length < 34) return null;
     return decoded.slice(2);
   } catch {
@@ -88,7 +86,7 @@ export async function verifyBasicMessage(
 }
 
 /**
- * Local inbox (scaffold — later move to SecureStore / SQLite)
+ * Local inbox (scaffold — later: SecureStore / SQLite)
  */
 const inbox: DidCommBasicMessage[] = [];
 
@@ -105,7 +103,7 @@ export function clearInbox() {
 }
 
 /**
- * Destroy cascade — call this from destroyDidKey later
+ * Destroy cascade
  */
 export function destroyDidCommState() {
   clearInbox();
