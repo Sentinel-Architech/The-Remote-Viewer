@@ -1,3 +1,4 @@
+import { destroyDidCommState } from './didcomm';
 import nacl from 'tweetnacl';
 import * as SecureStore from 'expo-secure-store';
 import { base58btc } from 'multiformats/bases/base58';
@@ -6,6 +7,7 @@ const ED25519_MULTICODEC = new Uint8Array([0xed, 0x01]);
 
 const STORAGE_PRIVATE = 'did_key_private';
 const STORAGE_DID = 'did_key_id';
+destroyDidCommState();
 
 /**
  * SecureStore options for the current scaffold:
