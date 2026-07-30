@@ -1,6 +1,11 @@
 import * as ed from '@noble/ed25519';
+import { sha512 } from '@noble/hashes/sha2.js';
 import * as SecureStore from 'expo-secure-store';
 import { base58btc } from 'multiformats/bases/base58';
+
+// Required on React Native / Expo Go (no crypto.subtle)
+ed.hashes.sha512 = sha512;
+ed.hashes.sha512Async = (m: Uint8Array) => Promise.resolve(sha512(m));
 
 const ED25519_MULTICODEC = new Uint8Array([0xed, 0x01]);
 
