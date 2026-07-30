@@ -25,9 +25,6 @@ function uuid(): string {
   });
 }
 
-/**
- * Extract Ed25519 public key bytes from a did:key
- */
 function publicKeyFromDidKey(did: string): Uint8Array | null {
   try {
     if (!did.startsWith('did:key:')) return null;
@@ -40,9 +37,6 @@ function publicKeyFromDidKey(did: string): Uint8Array | null {
   }
 }
 
-/**
- * Create a signed DIDComm Basic Message 2.0
- */
 export async function createBasicMessage(
   content: string,
   toDid?: string
@@ -65,9 +59,6 @@ export async function createBasicMessage(
   return msg;
 }
 
-/**
- * Verify a Basic Message signature against the claimed from DID
- */
 export async function verifyBasicMessage(
   msg: DidCommBasicMessage
 ): Promise<boolean> {
@@ -85,9 +76,6 @@ export async function verifyBasicMessage(
   }
 }
 
-/**
- * Local inbox (scaffold — later: SecureStore / SQLite)
- */
 const inbox: DidCommBasicMessage[] = [];
 
 export function storeMessage(msg: DidCommBasicMessage) {
@@ -102,9 +90,6 @@ export function clearInbox() {
   inbox.length = 0;
 }
 
-/**
- * Destroy cascade
- */
 export function destroyDidCommState() {
   clearInbox();
 }
