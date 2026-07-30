@@ -218,3 +218,10 @@ See [`SECURITY.md`](SECURITY.md). Do not file secrets in issues.
 ## License
 
 See the `License` file in the repository root.
+
+### Zero-Knowledge Membership
+- Circuit: `protocols/zk_membership.circom`
+- Improved version with nullifier, public commitment, and binary path checks
+- Depth 20 (~1M leaves)
+- Docs: `protocols/zk-membership.md` (or `docs/zk-membership.md`)
+- Still early – full proving/verification pipeline coming next
