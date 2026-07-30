@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   # ------------------------------------------------------------------
@@ -85,6 +85,7 @@ jobs:
   # ------------------------------------------------------------------
   # Mobile scaffold (not required for branch protection yet)
   # Same npm policy as web; cache off until package-lock.json exists.
+  # Generates and commits package-lock.json automatically if missing.
   # ------------------------------------------------------------------
   mobile:
     name: Mobile (npm)
@@ -101,6 +102,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
+        id: install_deps
         run: |
           if [ -f package-lock.json ]; then
             echo "package-lock.json found → npm ci --legacy-peer-deps"
@@ -109,6 +111,23 @@ jobs:
             echo "NOTE: no package-lock.json — falling back to npm install --legacy-peer-deps"
             npm install --legacy-peer-deps
           fi
+
+      - name: Ensure package-lock exists (generate if missing)
+        run: |
+          if [ ! -f package-lock.json ]; then
+            echo "package-lock.json missing — generating with npm install --package-lock-only"
+            npm install --package-lock-only
+          else
+            echo "package-lock.json already present"
+          fi
+
+      - name: Commit package-lock.json back to branch (if generated)
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: chore(mobile): add package-lock.json (CI auto-generated)
+          file_pattern: package-lock.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify package installs
         run: npm ls --depth=0 || true
