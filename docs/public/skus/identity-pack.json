@@ -1,0 +1,31 @@
+{
+  "id": "trv-identity-pack",
+  "name": "Identity Pack",
+  "version": "0.1.0",
+  "status": "in_development",
+  "price": {
+    "amount": 15,
+    "currency": "USDC",
+    "chain": "solana",
+    "note": "Manual vending only until shop checkout ships. Not auto-fulfilled."
+  },
+  "includes": [
+    "Local did:key (Ed25519) on device",
+    "CSPRNG via expo-crypto polyfill",
+    "SecureStore private key storage",
+    "Sign / verify presence messages",
+    "Minimal DID Document builder",
+    "Destroy = Restart (wipe key material)",
+    "DIDComm Basic Message 2.0 scaffold (local only)"
+  ],
+  "does_not_include": [
+    "Encrypted DIDComm (authcrypt)",
+    "Mediators or cloud delivery",
+    "Web or desktop parity",
+    "Membership attestations",
+    "Automatic unlock after payment"
+  ],
+  "fulfillment": "Manual — after payment, contact originator with tx signature. No automated entitlement yet.",
+  "identity_rule": "Entitlement is tied to the active identity path. Destroy = Restart clears local state for that path.",
+  "treasury": "When automated shop exists: 10% creator / 90% Community Pool per locked docs. Manual sales follow same intent."
+}
