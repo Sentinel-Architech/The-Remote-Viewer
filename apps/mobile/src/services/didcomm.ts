@@ -1,4 +1,10 @@
-import { getCurrentDidKey, signWithDidKey, DidKeyIdentity } from './presence';
+import * as ed from '@noble/ed25519';
+import { base58btc } from 'multiformats/bases/base58';
+import {
+  getCurrentDidKey,
+  signWithDidKey,
+  DidKeyIdentity,
+} from './presence';
 
 export type DidCommBasicMessage = {
   type: 'https://didcomm.org/basicmessage/2.0/message';
@@ -9,7 +15,6 @@ export type DidCommBasicMessage = {
   body: {
     content: string;
   };
-  // TRV extension: signature over the content
   trv_signature?: string;
 };
 
@@ -22,8 +27,23 @@ function uuid(): string {
 }
 
 /**
+ * Extract Ed25519 public key bytes from a did:key
+ */
+function publicKeyFromDidKey(did: string): Uint8Array | null {
+  try {
+    if (!did.startsWith('did:key:')) return null;
+    const multibase = did.replace('did:key:', '');
+    const decoded = base58btc.decode(multibase);
+    // Skip multicodec prefix (0xed 0x01)
+    if (decoded.length < 34) return null;
+    return decoded.slice(2);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Create a signed DIDComm Basic Message 2.0
- * (plaintext + signature — not yet encrypted)
  */
 export async function createBasicMessage(
   content: string,
@@ -48,17 +68,27 @@ export async function createBasicMessage(
 }
 
 /**
- * Verify a message was signed by the claimed `from` DID
- * (simplified — full verification needs public key extraction from did:key)
+ * Verify a Basic Message signature against the claimed from DID
  */
-export function verifyBasicMessage(msg: DidCommBasicMessage): boolean {
-  // Placeholder: full verify needs extracting Ed25519 pubkey from did:key
-  // and calling ed.verify. Add in next iteration.
-  return !!(msg.from && msg.trv_signature && msg.body?.content);
+export async function verifyBasicMessage(
+  msg: DidCommBasicMessage
+): Promise<boolean> {
+  if (!msg.from || !msg.trv_signature || !msg.body?.content) return false;
+
+  const publicKey = publicKeyFromDidKey(msg.from);
+  if (!publicKey) return false;
+
+  try {
+    const messageBytes = new TextEncoder().encode(JSON.stringify(msg.body));
+    const signature = Buffer.from(msg.trv_signature, 'hex');
+    return await ed.verifyAsync(signature, messageBytes, publicKey);
+  } catch {
+    return false;
+  }
 }
 
 /**
- * Local inbox (in-memory for scaffold — later: SecureStore / SQLite)
+ * Local inbox (scaffold — later move to SecureStore / SQLite)
  */
 const inbox: DidCommBasicMessage[] = [];
 
@@ -72,4 +102,11 @@ export function getInbox(): DidCommBasicMessage[] {
 
 export function clearInbox() {
   inbox.length = 0;
+}
+
+/**
+ * Destroy cascade — call this from destroyDidKey later
+ */
+export function destroyDidCommState() {
+  clearInbox();
 }
