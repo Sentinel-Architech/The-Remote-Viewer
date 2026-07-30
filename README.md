@@ -54,6 +54,7 @@ This is a basic React + Vite shell. It is not a finished product.
 
 ### 3. Run the mobile scaffold (optional)
 
+
 ```bash
 cd apps/mobile
 npm install
@@ -194,6 +195,28 @@ Public posture: [`docs/public/POSTURE.md`](docs/public/POSTURE.md)
 ---
 
 ## Packs / vending
+
+**Status: early / manual only — not a live store.**
+
+- The repo is **not** a finished product catalog.
+- There is **no** in-app checkout, cart, or automatic unlock after payment.
+- Free path (clone, build scaffolds) stays free.
+
+### Optional packs (manual)
+
+| Pack | Price | Status | Notes |
+|------|-------|--------|--------|
+| **Posture Lite** | 11 USDC | Manual | Design/posture materials only — not software unlock |
+| **Posture Pack** | 25 USDC | Manual | Fuller posture materials — not software unlock |
+| **Identity Pack** | 15 USDC | In development | Local `did:key` + presence scaffold — see `docs/public/skus/identity-pack.json` |
+
+Payment (when offered): Phantom / Solana. After payment, DM with the transaction signature for manual delivery of the matching materials.
+
+Details: [`docs/public/VENDING.md`](docs/public/VENDING.md) (if present).
+
+Network fees are in SOL (usually small). Gasless options, if any, are between you and Phantom — not a TRV fee.
+
+**Do not treat this README as a storefront.** SKUs and prices may change until automated shop + fulfillment exist.
 
 Hybrid: **hobbyist path free forever**; optional paid ZIPs via **Phantom** (prices are **per pack**, not per file).
 
