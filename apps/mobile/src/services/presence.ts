@@ -7,6 +7,19 @@ const ED25519_MULTICODEC = new Uint8Array([0xed, 0x01]);
 const STORAGE_PRIVATE = 'did_key_private';
 const STORAGE_DID = 'did_key_id';
 
+/**
+ * SecureStore options chosen for Destroy = Restart posture:
+ * - WHEN_UNLOCKED_THIS_DEVICE_ONLY → never backed up to cloud / other devices
+ * - requireAuthentication → biometrics / device credential when the platform supports it
+ *
+ * These are best-effort. Expo Go and some OEM skins may ignore parts of them.
+ * Real production builds on GrapheneOS / stock Android are the target.
+ */
+const SECURE_OPTIONS: SecureStore.SecureStoreOptions = {
+  keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+  requireAuthentication: true,
+};
+
 export type DidKeyIdentity = {
   did: string;
   publicKeyHex: string;
@@ -49,13 +62,11 @@ export async function createDidKey(): Promise<DidKeyIdentity> {
 
   const did = `did:key:${base58btc.encode(multicodecKey)}`;
 
-  // Store only the hex form; never keep the raw private key longer than needed
-  await SecureStore.setItemAsync(STORAGE_PRIVATE, bytesToHex(privateKey));
-  await SecureStore.setItemAsync(STORAGE_DID, did);
+  await SecureStore.setItemAsync(STORAGE_PRIVATE, bytesToHex(privateKey), SECURE_OPTIONS);
+  await SecureStore.setItemAsync(STORAGE_DID, did, SECURE_OPTIONS);
 
   const publicKeyHex = bytesToHex(publicKey);
 
-  // Best-effort wipe of the temporary private key material
   zeroize(privateKey);
 
   return {
@@ -66,8 +77,8 @@ export async function createDidKey(): Promise<DidKeyIdentity> {
 }
 
 export async function getCurrentDidKey(): Promise<DidKeyIdentity | null> {
-  const did = await SecureStore.getItemAsync(STORAGE_DID);
-  const privateKeyHex = await SecureStore.getItemAsync(STORAGE_PRIVATE);
+  const did = await SecureStore.getItemAsync(STORAGE_DID, SECURE_OPTIONS);
+  const privateKeyHex = await SecureStore.getItemAsync(STORAGE_PRIVATE, SECURE_OPTIONS);
 
   if (!did || !privateKeyHex) return null;
 
@@ -85,12 +96,12 @@ export async function getCurrentDidKey(): Promise<DidKeyIdentity | null> {
 }
 
 export async function destroyDidKey(): Promise<void> {
-  await SecureStore.deleteItemAsync(STORAGE_PRIVATE);
-  await SecureStore.deleteItemAsync(STORAGE_DID);
+  await SecureStore.deleteItemAsync(STORAGE_PRIVATE, SECURE_OPTIONS);
+  await SecureStore.deleteItemAsync(STORAGE_DID, SECURE_OPTIONS);
 }
 
 export async function signWithDidKey(message: string): Promise<string | null> {
-  const privateKeyHex = await SecureStore.getItemAsync(STORAGE_PRIVATE);
+  const privateKeyHex = await SecureStore.getItemAsync(STORAGE_PRIVATE, SECURE_OPTIONS);
   if (!privateKeyHex) return null;
 
   const privateKey = hexToBytes(privateKeyHex);
