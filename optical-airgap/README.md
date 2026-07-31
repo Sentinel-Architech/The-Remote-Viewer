@@ -5,6 +5,7 @@ Local-first, zero-trust optical transfer stack for The Remote Viewer.
 **Repo path:** `optical-airgap/` on branch `TheRemoteViewer`  
 **Tracking:** https://github.com/Sentinel-Archetecht/The-Remote-Viewer/issues/38  
 **License:** MIT (see `LICENSE`) — zero Meta / Google / Microsoft in the core path  
+**Install (step-by-step):** [INSTALL.md](./INSTALL.md)  
 **Tech deep dive (share this):** [TECHNICAL.md](./TECHNICAL.md)
 
 ## Design Goals (locked)
@@ -69,17 +70,18 @@ Tracked in [issue #38](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/
    - Acoustic fallback (e.g. ggwave) as secondary air-gap path  
    - Outside-email tunnel of *already-encrypted* blobs only  
 
-## Quick start (Acer / Node — no phone required)
+## Quick start
+
+Full steps: **[INSTALL.md](./INSTALL.md)**
 
 ```bash
-cd optical-airgap/crypto
-npm install          # pulls age-encryption
+git clone https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
+cd The-Remote-Viewer
+git checkout TheRemoteViewer
+cd optical-airgap/crypto && npm install
 ```
 
-Then use `pipeline/encrypt-then-rdh.ts` after pointing your TS runner at the modules.
-Termux alternative: `pkg install age` and follow `crypto/age-notes.md`.
-
-Full clone + contribution notes: [TECHNICAL.md](./TECHNICAL.md).
+Then follow INSTALL.md for age smoke test, RDH pipeline, and QR demo notes.
 
 ## Local Identity
 ```
@@ -92,5 +94,6 @@ Pure local claim bound to Vault / DID. Never registered on public DNS. Destroyed
 - Real ePHI without organizational HIPAA process
 
 ## Docs
-- [TECHNICAL.md](./TECHNICAL.md) — architecture, crypto, RDH, LT, threat model, how to run and share
+- [INSTALL.md](./INSTALL.md) — step-by-step install and first run
+- [TECHNICAL.md](./TECHNICAL.md) — architecture, crypto, RDH, LT, threat model, share/contribute
 - [STATUS.md](./STATUS.md) — short shipped / not-shipped checklist
