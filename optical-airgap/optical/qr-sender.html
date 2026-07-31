@@ -9,89 +9,180 @@
     body { max-width: 640px; margin: 1rem auto; padding: 1rem; }
     h1 { font-size: 1.25rem; margin-bottom: 0.5rem; }
     .meta { font-size: 0.85rem; opacity: 0.7; margin-bottom: 1rem; }
-    #qr { display: flex; justify-content: center; margin: 1.5rem 0; min-height: 280px; align-items: center; background: #111; border-radius: 8px; }
-    #qr canvas, #qr img { max-width: 100%; }
-    textarea { width: 100%; height: 80px; background: #111; color: #e0e0e0; border: 1px solid #333; border-radius: 4px; padding: 0.5rem; }
+    #qr { display: flex; justify-content: center; margin: 1.5rem 0; min-height: 300px; align-items: center; background: #111; border-radius: 8px; }
     button { background: #1a5f2a; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 4px; cursor: pointer; margin-right: 0.5rem; }
     button:disabled { opacity: 0.4; cursor: not-allowed; }
     button.stop { background: #5f1a1a; }
+    textarea { width: 100%; height: 80px; background: #111; color: #e0e0e0; border: 1px solid #333; border-radius: 4px; padding: 0.5rem; box-sizing: border-box; }
     .status { margin-top: 1rem; font-size: 0.9rem; }
     .note { font-size: 0.8rem; opacity: 0.6; margin-top: 2rem; }
+    label { font-size: 0.9rem; }
   </style>
 </head>
 <body>
   <h1>TRV Optical Sender</h1>
-  <p class="meta">Local-first · LT fountain ready · No network · Open source</p>
+  <p class="meta">Offline QR · LT frame stream (TRVL) · No CDN · No Meta/Google/Microsoft</p>
 
-  <label for="payload">Payload (will be treated as already-encrypted + stego in production)</label>
-  <textarea id="payload" placeholder="Paste short ciphertext or test message…">TRV-OPTICAL-TEST-PAYLOAD</textarea>
+  <label for="payload">Payload (demo treats as opaque bytes — production: age ciphertext / stego)</label>
+  <textarea id="payload">TRV-OPTICAL-TEST-PAYLOAD</textarea>
 
   <div style="margin: 1rem 0;">
-    <button id="startBtn">Start Fountain Stream</button>
+    <label>Block size <input id="blockSize" type="number" value="32" min="8" max="64" style="width:4rem;background:#111;color:#e0e0e0;border:1px solid #333;" /></label>
+    <label style="margin-left:1rem;">FPS <input id="fps" type="number" value="2" min="1" max="8" style="width:3rem;background:#111;color:#e0e0e0;border:1px solid #333;" /></label>
+  </div>
+
+  <div style="margin: 1rem 0;">
+    <button id="startBtn">Start LT Stream</button>
     <button id="stopBtn" class="stop" disabled>Stop</button>
   </div>
 
   <div id="qr"></div>
-  <div class="status" id="status">Idle — paste payload and start.</div>
+  <div class="status" id="status">Idle — offline encoder ready.</div>
 
   <p class="note">
-    This page is a self-contained scaffold. It cycles simple QR frames for testing camera capture.
-    Production path: age encrypt → RDH embed → LT encode → QR animation.
-    Zero Meta/Google/Microsoft. Runs offline on GrapheneOS browser or any modern browser.
+    Uses local <code>qrcode-lite.js</code> (no CDN). Frames are base64url-encoded TRVL LT symbols
+    (see <code>fountain/lt-frame.ts</code>). Open this file from disk or any static server.
+    Production: age → RDH → LT → these frames.
   </p>
 
-  <!-- Minimal QR via external open CDN only as temporary demo; production must vendor or use pure local generator -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="qrcode-lite.js"></script>
   <script>
-    // NOTE: For true air-gap / zero-CDN use, replace with a vendored pure-JS QR library.
-    // This demo uses a well-known open-source QRCode lib only for rapid testing.
+    /**
+     * Inline LT + TRVL frame (mirrors fountain/lt-core + lt-frame for browser zero-build).
+     */
+    function splitBlocks(payload, blockSize) {
+      const blocks = [];
+      for (let i = 0; i < payload.length || blocks.length === 0; i += blockSize) {
+        const chunk = new Uint8Array(blockSize);
+        if (i < payload.length) {
+          chunk.set(payload.subarray(i, Math.min(i + blockSize, payload.length)));
+        }
+        blocks.push(chunk);
+        if (i >= payload.length) break;
+      }
+      if (blocks.length === 0) blocks.push(new Uint8Array(blockSize));
+      return blocks;
+    }
+
+    function sampleDegree(k, seed) {
+      const x = Math.abs(Math.sin(seed * 12.9898) * 43758.5453) % 1;
+      if (x < 0.5) return 1;
+      if (x < 0.75) return 2;
+      if (x < 0.9) return Math.min(3, k);
+      return Math.min(1 + Math.floor(x * k), k);
+    }
+
+    function encodeSymbol(blocks, seed) {
+      const k = blocks.length;
+      const degree = sampleDegree(k, seed);
+      const indices = [];
+      const chosen = new Set();
+      let s = seed;
+      while (indices.length < degree) {
+        s = (s * 1103515245 + 12345) & 0x7fffffff;
+        const idx = s % k;
+        if (!chosen.has(idx)) {
+          chosen.add(idx);
+          indices.push(idx);
+        }
+      }
+      indices.sort((a, b) => a - b);
+      const data = new Uint8Array(blocks[0].length);
+      for (const i of indices) {
+        const src = blocks[i];
+        for (let j = 0; j < data.length; j++) data[j] ^= src[j];
+      }
+      return { degree, indices, data, seed };
+    }
+
+    function crc16ibm(data) {
+      let crc = 0xffff;
+      for (let i = 0; i < data.length; i++) {
+        crc ^= data[i];
+        for (let b = 0; b < 8; b++) crc = crc & 1 ? (crc >>> 1) ^ 0xa001 : crc >>> 1;
+      }
+      return crc & 0xffff;
+    }
+
+    function u16be(n) { return [(n >>> 8) & 0xff, n & 0xff]; }
+    function u32be(n) {
+      return [(n >>> 24) & 0xff, (n >>> 16) & 0xff, (n >>> 8) & 0xff, n & 0xff];
+    }
+
+    function encodeLTFrame(sym, k, blockSize) {
+      const parts = [];
+      parts.push(0x54, 0x52, 0x56, 0x4c); // TRVL
+      parts.push(1, 1); // version, flags explicit indices
+      parts.push(...u16be(k), ...u16be(blockSize));
+      parts.push(...u32be(sym.seed >>> 0));
+      parts.push(...u16be(sym.degree), ...u16be(sym.data.length));
+      for (const idx of sym.indices) parts.push(...u16be(idx));
+      for (let i = 0; i < sym.data.length; i++) parts.push(sym.data[i]);
+      const body = new Uint8Array(parts);
+      const crc = crc16ibm(body);
+      const out = new Uint8Array(body.length + 2);
+      out.set(body, 0);
+      out[body.length] = (crc >>> 8) & 0xff;
+      out[body.length + 1] = crc & 0xff;
+      return out;
+    }
+
+    function toBase64Url(bytes) {
+      let bin = "";
+      for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    }
 
     const payloadEl = document.getElementById("payload");
     const qrEl = document.getElementById("qr");
     const statusEl = document.getElementById("status");
     const startBtn = document.getElementById("startBtn");
     const stopBtn = document.getElementById("stopBtn");
+    const blockSizeEl = document.getElementById("blockSize");
+    const fpsEl = document.getElementById("fps");
 
     let timer = null;
-    let seq = 0;
-
-    function makeFrame(text, seq) {
-      // Simple framed payload: SEQ|DATA  (production uses binary LT symbols + header)
-      return `TRV1|${seq}|${text}`;
-    }
-
-    async function showQR(data) {
-      qrEl.innerHTML = "";
-      try {
-        const canvas = document.createElement("canvas");
-        await QRCode.toCanvas(canvas, data, {
-          width: 280,
-          margin: 2,
-          errorCorrectionLevel: "L",
-          color: { dark: "#000000", light: "#ffffff" }
-        });
-        qrEl.appendChild(canvas);
-      } catch (e) {
-        qrEl.textContent = "QR error: " + e.message;
-      }
-    }
+    let seed = 0;
+    let blocks = null;
 
     function start() {
-      const text = payloadEl.value.trim() || "TRV-EMPTY";
-      seq = 0;
+      if (typeof TRVQR === "undefined") {
+        statusEl.textContent = "ERROR: qrcode-lite.js not loaded (open via folder or static server).";
+        return;
+      }
+      const text = payloadEl.value || "TRV-EMPTY";
+      const bytes = new TextEncoder().encode(text);
+      const blockSize = Math.max(8, Math.min(64, parseInt(blockSizeEl.value, 10) || 32));
+      blocks = splitBlocks(bytes, blockSize);
+      seed = 0;
       startBtn.disabled = true;
       stopBtn.disabled = false;
-      statusEl.textContent = "Streaming… point camera at the QR. Seq: 0";
+      const interval = Math.max(125, 1000 / (parseInt(fpsEl.value, 10) || 2));
 
-      const tick = async () => {
-        const frame = makeFrame(text, seq);
-        await showQR(frame);
-        statusEl.textContent = `Streaming… Seq: ${seq} | Frame length: ${frame.length}`;
-        seq++;
+      const tick = () => {
+        try {
+          const sym = encodeSymbol(blocks, seed);
+          const frame = encodeLTFrame(sym, blocks.length, blockSize);
+          const b64 = toBase64Url(frame);
+          // Prefix helps receivers demux
+          const qrText = "TRVL1." + b64;
+          qrEl.innerHTML = "";
+          const canvas = document.createElement("canvas");
+          TRVQR.drawCanvas(canvas, qrText, { cellSize: 3 });
+          qrEl.appendChild(canvas);
+          statusEl.textContent =
+            "Streaming seed=" + seed + " k=" + blocks.length +
+            " degree=" + sym.degree + " frameBytes=" + frame.length +
+            " qrChars=" + qrText.length;
+          seed++;
+        } catch (e) {
+          statusEl.textContent = "Frame error: " + e.message;
+          stop();
+        }
       };
 
       tick();
-      timer = setInterval(tick, 400); // ~2.5 fps — safe for most cameras
+      timer = setInterval(tick, interval);
     }
 
     function stop() {
@@ -99,7 +190,7 @@
       timer = null;
       startBtn.disabled = false;
       stopBtn.disabled = true;
-      statusEl.textContent = "Stopped.";
+      statusEl.textContent = "Stopped at seed " + seed + ".";
     }
 
     startBtn.addEventListener("click", start);

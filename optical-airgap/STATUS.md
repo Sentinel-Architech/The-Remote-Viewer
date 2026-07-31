@@ -6,22 +6,25 @@
 
 ## Shipped
 - [x] Module layout + MIT license
-- [x] Local `@sentinel.viewer` identity (also in `apps/shared`)
-- [x] Real age encryption interface (age-encryption / typage)
-- [x] Histogram-shifting RDH with capacity check + authenticated header
-- [x] encrypt-then-rdh pipeline (phone-optional)
-- [x] LT fountain encoder/decoder skeleton
-- [x] **LT binary frame encode/decode + CRC16 + base64url** (`fountain/lt-frame.ts`)
-- [x] QR sender HTML scaffold
-- [x] Security notes, INSTALL, TECHNICAL, COMPATIBILITY docs
+- [x] Local `@sentinel.viewer` identity
+- [x] Real age encryption (age-encryption / typage)
+- [x] Histogram-shifting RDH + capacity + auth header
+- [x] encrypt-then-rdh pipeline
+- [x] LT encoder/decoder skeleton
+- [x] LT binary frame (TRVL) + CRC16 + base64url
+- [x] **Offline QR encoder** `optical/qrcode-lite.js` (no CDN)
+- [x] **QR sender streams LT frames** `optical/qr-sender.html`
+- [x] `fountain/stream-symbols.ts` host iterator
+- [x] Docs: INSTALL, TECHNICAL, COMPATIBILITY, SECURITY
 
 ## Not shipped yet
-- [ ] Vendored pure-JS QR (no CDN)
-- [ ] Wire lt-frame into qr-sender.html (use base64url frames)
-- [ ] Camera receiver / peel UI
+- [ ] Camera receiver / peel UI (decode TRVL1.* → LTDecoder)
 - [ ] Capture quality gate
 - [ ] Recursive expert event hooks in code
-- [ ] Rust port scaffold (optional parallel path)
+- [ ] Rust port scaffold
+- [ ] Hardening: full Robust Soliton, multi-block RS for QR, larger versions
 
-## How this got here
-Pushed directly to `Sentinel-Archetecht/The-Remote-Viewer` on branch `TheRemoteViewer`.
+## Test (Acer, no phone)
+1. Open `optical-airgap/optical/qr-sender.html` (same folder as `qrcode-lite.js`)
+2. Start LT Stream — QR should animate without network
+3. Status line shows seed / k / degree / frame size
