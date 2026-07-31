@@ -11,15 +11,17 @@
 - [x] Histogram-shifting RDH with capacity check + authenticated header
 - [x] encrypt-then-rdh pipeline (phone-optional)
 - [x] LT fountain encoder/decoder skeleton
+- [x] **LT binary frame encode/decode + CRC16 + base64url** (`fountain/lt-frame.ts`)
 - [x] QR sender HTML scaffold
-- [x] Security notes (encrypt-first, checksum, HIPAA architecture note)
+- [x] Security notes, INSTALL, TECHNICAL, COMPATIBILITY docs
 
 ## Not shipped yet
 - [ ] Vendored pure-JS QR (no CDN)
-- [ ] LT ↔ QR binary framing
+- [ ] Wire lt-frame into qr-sender.html (use base64url frames)
 - [ ] Camera receiver / peel UI
 - [ ] Capture quality gate
 - [ ] Recursive expert event hooks in code
+- [ ] Rust port scaffold (optional parallel path)
 
 ## How this got here
-Pushed directly to `Sentinel-Archetecht/The-Remote-Viewer` on branch `TheRemoteViewer` via connected GitHub integration. No separate PR required for the scaffold path; issue #38 tracks remaining Phase 1 work.
+Pushed directly to `Sentinel-Archetecht/The-Remote-Viewer` on branch `TheRemoteViewer`.
