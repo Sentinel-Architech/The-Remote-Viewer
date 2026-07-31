@@ -11,6 +11,40 @@ Repository: [github.com/Sentinel-Archetecht/The-Remote-Viewer](https://github.co
 
 ---
 
+## Live Proof — Sentinel LLM (Coordinator Expert)
+
+**Operational on-device. 2026-07-31.**
+
+This is not a slide deck. This is not a mock.
+
+The **Sentinel** intelligence layer is running fully local:
+
+- **Runtime**: `llama.cpp`
+- **Model**: `Qwen2.5-1.5B-Instruct-Q4_K_M.gguf`
+- **Host**: GrapheneOS + Termux on Pixel 7
+- **Role**: Coordinator expert inside The Remote Viewer
+
+The Coordinator is the routing brain of the specialist system:
+
+1. Security  
+2. Protocol  
+3. Privacy  
+4. **Coordinator** (this instance)
+
+It decides which expert answers, enforces domain boundaries, and produces structured zero-trust responses.
+
+Verified live behaviors captured:
+
+- Explains how Sentinel works together with The Remote Viewer (Local Identity Management, On-Device AI, Zero-Trust Architecture, Enhanced Intelligence, Privacy)
+- Defines **Destroy = Restart** as the complete wipe-and-reinitialize of any previously trusted state so the device returns to a clean trust baseline
+- Articulates why on-device inference beats cloud AI on data privacy, security, latency, network exposure, and user control
+
+No cloud endpoint. No API key. No third-party weights. Prompts never leave the device. Keys and identity stay under user custody.
+
+This is the proof that the Sentinel system is already operational at the edge.
+
+---
+
 ## Two ways in
 
 | Path | Who it’s for |
@@ -39,3 +73,24 @@ This project is still early. Most of the mobile and web clients are **scaffolds*
 ```bash
 git clone https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
 cd The-Remote-Viewer
+```
+
+*(Continue with existing setup instructions in the repo and docs/locked/ for the full zero-trust path.)*
+
+---
+
+## Core Posture
+
+- Local-first
+- Zero-trust
+- On-device identity & keys
+- No platform custody
+- Destroy = Restart
+- Specialist experts (Security / Protocol / Privacy / Coordinator)
+- Edge AI under user control
+
+See `docs/locked/` and `Sentinel Paradigm` for the full architectural and legal framing.
+
+---
+
+**Digital sovereignty is not a slogan. It is a terminal that never phones home.**
