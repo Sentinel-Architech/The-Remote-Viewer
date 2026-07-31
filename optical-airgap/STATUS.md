@@ -5,28 +5,28 @@
 **Issue:** [#38](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/issues/38)
 
 ## Shipped
-- [x] Module layout + MIT license
-- [x] Local `@sentinel.viewer` identity
-- [x] Real age encryption (TS age-encryption / typage)
-- [x] Histogram-shifting RDH + capacity + auth header (TS)
-- [x] encrypt-then-rdh pipeline (TS)
-- [x] LT encoder/decoder skeleton (TS)
-- [x] LT binary frame TRVL + CRC16 + base64url (TS)
-- [x] Offline QR encoder + sender HTML (no CDN)
-- [x] **Rust crate `optical-airgap/rust`** — age, RDH, TRVL frame, identity, tests/example
+- [x] TS: age, RDH, LT core, TRVL frames, offline QR sender
+- [x] **TRVL receiver / peel UI** `optical/qr-receiver.html` (paste mode)
+- [x] Rust crate: age, RDH, TRVL frame, identity
+- [x] **Rust LT encoder/peel** `fountain/lt.rs` + tests
+- [x] **CLI** `trv-optical` (keygen, encrypt, rdh-cap, address, lt-demo)
 - [x] Docs: INSTALL, TECHNICAL, COMPATIBILITY, SECURITY
 
 ## Not shipped yet
-- [ ] Camera receiver / peel UI
+- [ ] Live camera → QR decode → auto-ingest (BarcodeDetector / vendored jsQR)
 - [ ] Capture quality gate
 - [ ] Recursive expert event hooks in code
-- [ ] Full LT Soliton + peel in Rust
-- [ ] Rust CLI binary + QR crate optional
+- [ ] Full Robust Soliton parameters
 - [ ] Vendor cargo deps for offline build
+- [ ] decrypt CLI with file-based identity (partial)
 
-## Rust quickstart
+## Quick tests
 ```bash
+# HTML: open optical/qr-sender.html + optical/qr-receiver.html
+# Paste TRVL1 lines from sender status tooling or manual capture into receiver
+
 cd optical-airgap/rust
 cargo test
-cargo run --example age_roundtrip
+cargo run --bin trv-optical -- keygen
+echo 'hello' | cargo run --bin trv-optical -- lt-demo
 ```

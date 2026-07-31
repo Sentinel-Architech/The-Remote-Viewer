@@ -9,6 +9,7 @@ pub mod rdh;
 
 pub use crypto::{decrypt_blob, encrypt_for_recipient, generate_identity_pair, AgeKeyPair};
 pub use fountain::frame::{decode_lt_frame, encode_lt_frame, LtFrameMeta, LtSymbol};
+pub use fountain::lt::{LtDecoder, LtEncoder};
 pub use identity::{generate_local_address, is_valid_local_address};
 pub use rdh::histogram::{embed_histogram_shifting, estimate_capacity, extract_histogram_shifting};
 
