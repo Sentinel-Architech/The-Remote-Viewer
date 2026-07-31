@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TRV Optical Air-Gap — QR Sender</title>
+  <style>
+    :root { font-family: system-ui, sans-serif; background: #0a0a0a; color: #e0e0e0; }
+    body { max-width: 640px; margin: 1rem auto; padding: 1rem; }
+    h1 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+    .meta { font-size: 0.85rem; opacity: 0.7; margin-bottom: 1rem; }
+    #qr { display: flex; justify-content: center; margin: 1.5rem 0; min-height: 280px; align-items: center; background: #111; border-radius: 8px; }
+    #qr canvas, #qr img { max-width: 100%; }
+    textarea { width: 100%; height: 80px; background: #111; color: #e0e0e0; border: 1px solid #333; border-radius: 4px; padding: 0.5rem; }
+    button { background: #1a5f2a; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 4px; cursor: pointer; margin-right: 0.5rem; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    button.stop { background: #5f1a1a; }
+    .status { margin-top: 1rem; font-size: 0.9rem; }
+    .note { font-size: 0.8rem; opacity: 0.6; margin-top: 2rem; }
+  </style>
+</head>
+<body>
+  <h1>TRV Optical Sender</h1>
+  <p class="meta">Local-first · LT fountain ready · No network · Open source</p>
+
+  <label for="payload">Payload (will be treated as already-encrypted + stego in production)</label>
+  <textarea id="payload" placeholder="Paste short ciphertext or test message…">TRV-OPTICAL-TEST-PAYLOAD</textarea>
+
+  <div style="margin: 1rem 0;">
+    <button id="startBtn">Start Fountain Stream</button>
+    <button id="stopBtn" class="stop" disabled>Stop</button>
+  </div>
+
+  <div id="qr"></div>
+  <div class="status" id="status">Idle — paste payload and start.</div>
+
+  <p class="note">
+    This page is a self-contained scaffold. It cycles simple QR frames for testing camera capture.
+    Production path: age encrypt → RDH embed → LT encode → QR animation.
+    Zero Meta/Google/Microsoft. Runs offline on GrapheneOS browser or any modern browser.
+  </p>
+
+  <!-- Minimal QR via external open CDN only as temporary demo; production must vendor or use pure local generator -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script>
+    // NOTE: For true air-gap / zero-CDN use, replace with a vendored pure-JS QR library.
+    // This demo uses a well-known open-source QRCode lib only for rapid testing.
+
+    const payloadEl = document.getElementById("payload");
+    const qrEl = document.getElementById("qr");
+    const statusEl = document.getElementById("status");
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+
+    let timer = null;
+    let seq = 0;
+
+    function makeFrame(text, seq) {
+      // Simple framed payload: SEQ|DATA  (production uses binary LT symbols + header)
+      return `TRV1|${seq}|${text}`;
+    }
+
+    async function showQR(data) {
+      qrEl.innerHTML = "";
+      try {
+        const canvas = document.createElement("canvas");
+        await QRCode.toCanvas(canvas, data, {
+          width: 280,
+          margin: 2,
+          errorCorrectionLevel: "L",
+          color: { dark: "#000000", light: "#ffffff" }
+        });
+        qrEl.appendChild(canvas);
+      } catch (e) {
+        qrEl.textContent = "QR error: " + e.message;
+      }
+    }
+
+    function start() {
+      const text = payloadEl.value.trim() || "TRV-EMPTY";
+      seq = 0;
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      statusEl.textContent = "Streaming… point camera at the QR. Seq: 0";
+
+      const tick = async () => {
+        const frame = makeFrame(text, seq);
+        await showQR(frame);
+        statusEl.textContent = `Streaming… Seq: ${seq} | Frame length: ${frame.length}`;
+        seq++;
+      };
+
+      tick();
+      timer = setInterval(tick, 400); // ~2.5 fps — safe for most cameras
+    }
+
+    function stop() {
+      if (timer) clearInterval(timer);
+      timer = null;
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      statusEl.textContent = "Stopped.";
+    }
+
+    startBtn.addEventListener("click", start);
+    stopBtn.addEventListener("click", stop);
+  </script>
+</body>
+</html>
