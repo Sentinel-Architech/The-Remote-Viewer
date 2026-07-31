@@ -23,13 +23,13 @@ Plaintext
   → Histogram-shifting RDH            (rdh/histogram-shifting.ts — capacity check + auth header)
   → LT Fountain encoding              (fountain/lt-core.ts)
   → Animated QR / multi-QR display    (optical/qr-sender.html)
-  → Camera capture + quality gate     (phone-side; optional until you touch the device)
+  → Camera capture + quality gate     (phone-side; optional until device is used)
   → LT peeling decoder
   → RDH extraction (checksum verified)
   → age decryption
 ```
 
-## What is on GitHub now
+## What is on GitHub now (shipped)
 
 | Path | Status |
 |------|--------|
@@ -43,6 +43,30 @@ Plaintext
 | `optical/qr-sender.html` | Browser QR stream (CDN QR temporary) |
 | `loop/recursive-hooks.md` | Event schema for on-device experts |
 | `apps/shared/src/identity.ts` | Wired local address into shared identity |
+
+## Roadmap (not done yet)
+
+Tracked in [issue #38](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/issues/38). Order is suggested priority for a working end-to-end optical path.
+
+1. **Vendor pure-JS QR library**  
+   Remove the temporary CDN dependency from `optical/qr-sender.html`. Bundle or inline an open-source QR generator so the sender works fully offline with zero external network.
+
+2. **LT ↔ QR binary framing**  
+   Encode LT symbols into QR frames with a stable binary header (seq, degree/indices or seed, payload). Replace the current text-framed demo stream with real fountain symbols.
+
+3. **Camera receiver / peel UI**  
+   Capture page that reads QR frames, feeds symbols into `LTDecoder`, and reports peel progress. Deferred until a device with a camera is in use.
+
+4. **Frame quality gate**  
+   Reject blurry, low-contrast, or motion-smeared frames before LT ingestion. Improves decode reliability on handheld capture.
+
+5. **Recursive expert event hooks (code)**  
+   Implement the schema in `loop/recursive-hooks.md` so optical metrics (success rate, symbols/sec, failures) feed the on-device Security / Protocol / Privacy experts. Policy updates stay Vault-bound and die with Destroy = Restart.
+
+6. **Optional later**  
+   - Higher-capacity RDH only if measured need exceeds histogram shifting  
+   - Acoustic fallback (e.g. ggwave) as secondary air-gap path  
+   - Outside-email tunnel of *already-encrypted* blobs only  
 
 ## Quick start (Acer / Node — no phone required)
 
@@ -64,9 +88,5 @@ Pure local claim bound to Vault / DID. Never registered on public DNS. Destroyed
 - WiFi CSI / through-wall sensing on Pixel 7 + GrapheneOS (hardware + OS isolation)
 - Real ePHI without organizational HIPAA process
 
-## Next (still open in #38)
-1. Vendor pure-JS QR (zero CDN)
-2. LT symbols → QR binary frames
-3. Receiver / peel page (when you use a camera again)
-4. Frame quality gate
-5. Recursive loop event wiring
+## Status file
+See `STATUS.md` for the short shipped / not-shipped checklist.
