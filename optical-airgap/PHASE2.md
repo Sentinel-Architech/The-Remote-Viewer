@@ -1,154 +1,221 @@
 # Optical Air-Gap — Phase 2
 
 **Phase 1:** complete ([STATUS.md](./STATUS.md), issue #38).  
-**This file:** goals, full task checklist, time estimates + **buffer hours**.
+**This file:** tasks · base hours · buffer · **risk contingency**.
 
 **Locks:** open source · no Meta/Google/Microsoft in core · encrypt-first · Destroy = Restart · `@sentinel.viewer` local-only · no new paid hardware required.
 
-**Estimate basis:** single experienced developer, part-time sovereign pace, including tests/docs.  
-**Buffer:** extra time for browser/device quirks, bad lighting tests, dependency/license rabbit holes, and doc rework — not scope creep into Phase 3.
-
-| Unit | Meaning |
+| Term | Meaning |
 |------|--------|
-| **Base** | Focused implementation + tests if things go clean |
-| **Buffer** | Contingency on top of base |
-| **Planned** | Base + buffer (use this for scheduling) |
-| **h / d** | Hours / ~6–8 h days |
+| **Base** | Clean-path implementation + tests |
+| **Buffer** | Routine friction (quirks, docs, one retest) |
+| **Risk contingency** | Named risks with trigger → response → extra hours or **cut scope** |
+| **Planned** | Base + buffer (day-to-day schedule) |
+| **Worst reasonable** | Planned + activated contingencies (do not schedule all at once) |
 
-**Default buffer policy:** ~25–40% of base on coding items; higher on device/optical and optional research (acoustic, new RDH).
-
----
-
-## Rollup (base → planned with buffer)
-
-| ID | Theme | Base | Buffer | **Planned** |
-|----|--------|------|--------|-------------|
-| P2-1 | jsQR fallback receiver | 6–10 h | +3–4 h | **9–14 h** |
-| P2-2 | Robust Soliton default | 8–14 h | +3–5 h | **11–19 h** |
-| P2-3 | Cargo vendor / offline | 2–4 h | +1–2 h | **3–6 h** |
-| P2-4 | Optical reliability pack | 12–20 h | +5–8 h | **17–28 h** |
-| P2-5 | Acoustic secondary (optional) | 16–28 h | +8–12 h | **24–40 h** |
-| P2-6 | RDH metrics only | 2–6 h | +1–2 h | **3–8 h** |
-| P2-6b | RDH new backend (if needed) | 20–40 h | +8–15 h | **28–55 h** |
-| P2-7 | Loop / IA-of-IA wiring | 6–12 h | +2–4 h | **8–16 h** |
-| P2-8 | CLI / release polish | 4–8 h | +2–3 h | **6–11 h** |
-| Cross-cutting | Interop, deps, issues | 3–6 h | +2–3 h | **5–9 h** |
-| **Core Phase 2** (no P2-5, no P2-6b) | | ~41–74 h | ~18–29 h | **~59–103 h (~9–16 d)** |
-| **+ Acoustic** | | | | **~83–143 h** |
-| **+ Acoustic + RDH backend** | | | | **~111–198 h (~16–30 d)** |
-
-Suggested order: **P2-1 → P2-2 → P2-4 → P2-3 → P2-7 → P2-8 → P2-6 → P2-5**.
+**Default buffer:** ~25–40% of base. Contingency is **not** free scope—it is pre-agreed fallback when a trigger fires.
 
 ---
 
-## Full task list (base + buffer)
+## Rollup — effort
 
-### P2-1 — jsQR fallback receiver · Planned **9–14 h** (base 6–10 + buffer 3–4)
+| ID | Theme | Base | Buffer | **Planned** | Contingency pool (if triggered) |
+|----|--------|------|--------|-------------|----------------------------------|
+| P2-1 | jsQR fallback | 6–10 h | +3–4 h | **9–14 h** | +4–8 h |
+| P2-2 | Robust Soliton | 8–14 h | +3–5 h | **11–19 h** | +4–10 h |
+| P2-3 | Cargo vendor | 2–4 h | +1–2 h | **3–6 h** | +2–4 h |
+| P2-4 | Optical reliability | 12–20 h | +5–8 h | **17–28 h** | +8–16 h |
+| P2-5 | Acoustic (optional) | 16–28 h | +8–12 h | **24–40 h** | +12–24 h or **defer** |
+| P2-6 | RDH metrics | 2–6 h | +1–2 h | **3–8 h** | +2 h |
+| P2-6b | RDH new backend | 20–40 h | +8–15 h | **28–55 h** | +15–25 h or **stop** |
+| P2-7 | Loop / IA-of-IA | 6–12 h | +2–4 h | **8–16 h** | +4–8 h |
+| P2-8 | CLI / polish | 4–8 h | +2–3 h | **6–11 h** | +2–4 h |
+| Cross-cutting | Interop / issues | 3–6 h | +2–3 h | **5–9 h** | +3–6 h |
+| **Core Phase 2** | no P2-5, no P2-6b | ~41–74 h | ~18–29 h | **~59–103 h** | **+27–56 h if many risks fire** |
 
-| Task | Base | Buffer |
-|------|------|--------|
-| Choose MIT/Apache decoder; NOTICE | 0.5–1 h | +0.5 h license edge cases |
-| Vendor under `optical/vendor/` | 0.5 h | — |
-| Feature-detect + canvas branch | 1.5–2.5 h | +1 h WebView quirks |
-| Gate reuse + dedup | 1 h | +0.5 h |
-| Status UI decoder path | 0.5 h | — |
-| Test Chromium path | 0.5–1 h | +0.5 h |
-| Test non-BarcodeDetector | 1–2 h | +1 h device variance |
-| GrapheneOS notes | 0.5–1 h | +0.5 h |
-| INSTALL + STATUS | 0.5 h | — |
-
-**Done when:** known payload recovers without BarcodeDetector.
-
----
-
-### P2-2 — Robust Soliton default · Planned **11–19 h** (base 8–14 + buffer 3–5)
-
-| Task | Base | Buffer |
-|------|------|--------|
-| Document c, delta, K | 0.5–1 h | — |
-| Precompute μ / CDF | 1–1.5 h | +0.5 h numeric edge K |
-| Replace degree in lt-core.ts | 1.5–2.5 h | +1 h interop breakage |
-| Align qr-sender inlined/bundle | 1–2 h | +1 h |
-| Port CDF to Rust lt.rs | 1.5–2.5 h | +1 h |
-| Align TS/Rust defaults | 0.5 h | — |
-| Degree histogram tests | 1–1.5 h | +0.5 h |
-| Peel overhead K∈{8,16,32,64} | 1.5–2.5 h | +1 h flaky seeds |
-| Optional symbols_needed | 0.5–1 h | — |
-| TECHNICAL.md | 0.5 h | — |
-
-**Done when:** Soliton is default TS+Rust; overhead band documented.
+**Scheduling rule:** plan **Planned** only. Pull from contingency **per trigger**, log which risk, prefer **cut scope** over unbounded hours.
 
 ---
 
-### P2-3 — Cargo vendor / offline · Planned **3–6 h** (base 2–4 + buffer 1–2)
+## Risk contingency register
 
-| Task | Base | Buffer |
-|------|------|--------|
-| cargo vendor / tarball | 0.5–1 h | +0.5–1 h path/CI friction |
-| .cargo/config.toml | 0.25 h | — |
-| INSTALL offline section | 0.5 h | +0.25 h |
-| Verify build/test/run --offline | 0.5–1 h | +0.5 h |
-| Vendor size note | 0.25 h | — |
-| Optional CI offline | 0.5–1 h | +0.5 h |
+### How to use
 
-**Done when:** `cargo build --offline` after one vendor step.
+1. Work against **Planned** hours.  
+2. When a **Trigger** is observed, apply **Response** (mitigate or cut).  
+3. Charge time to that risk’s contingency—not to buffer of unrelated items.  
+4. If contingency for that risk is exhausted → **mandatory scope cut** or park the item.  
+5. Review register when starting each P2-x.
 
 ---
 
-### P2-4 — Optical reliability · Planned **17–28 h** (base 12–20 + buffer 5–8)
+### R1 — BarcodeDetector / decoder dead-end (P2-1)
 
-**Gate v2** — base 3–5 h + buffer **+1–2 h** → planned **4–7 h**  
-**QR capacity** — base 6–10 h + buffer **+2–4 h** → planned **8–14 h**  
-**Stream + field log** — base 3–5 h + buffer **+2 h** → planned **5–7 h**  
-
-Buffer covers: bad lighting, camera focus, encoder bugs on large versions, re-running Acer↔Pixel trials.
-
-**Done when:** ~200-byte age ciphertext optical attempt logged.
-
----
-
-### P2-5 — Acoustic (optional) · Planned **24–40 h** (base 16–28 + buffer 8–12)
-
-Buffer covers: codec dead-ends, mic permission UX on GrapheneOS, ambient noise retries, license swaps.
-
-**Done when:** short age blob speaker→mic offline round-trip.
+| | |
+|--|--|
+| **Risk** | No usable pure decoder under license rules; or canvas decode too slow/inaccurate on target devices |
+| **Trigger** | >4 h stuck without a decoding path that passes one known TRVL frame |
+| **Response** | (1) Try alternate MIT decoder (2) **Ship paste-only + file import of frame lines** as supported mode (3) Document camera as best-effort |
+| **Contingency** | +4–8 h |
+| **Hard cut** | Camera decode deferred; paste/file remains Phase 2 acceptance for P2-1 |
 
 ---
 
-### P2-6 — RDH capacity
+### R2 — Soliton interop split (P2-2)
 
-| Path | Base | Buffer | Planned |
-|------|------|--------|--------|
-| Metrics only | 2–6 h | +1–2 h | **3–8 h** |
-| New backend (PEE/PVO) | 20–40 h | +8–15 h | **28–55 h** |
-
-**Done when:** metrics close item **or** alternate RDH flagged + tested.
-
----
-
-### P2-7 — Loop / IA-of-IA · Planned **8–16 h** (base 6–12 + buffer 2–4)
-
-Buffer covers: event wiring edge cases, policy schema rework, one extra adaptive experiment.
-
-**Done when:** one offline adaptive behavior observable.
+| | |
+|--|--|
+| **Risk** | TS and Rust degree streams diverge; mixed sender/receiver fails peel |
+| **Trigger** | Cross-impl peel test fails after parameter “alignment” |
+| **Response** | Freeze golden seed→degree vectors in `fountain/testdata/`; both langs must match vectors before feature default |
+| **Contingency** | +4–10 h |
+| **Hard cut** | Keep simplified degree as default; Soliton behind flag `lt_degree=soliton\|legacy` |
 
 ---
 
-### P2-8 — CLI / release polish · Planned **6–11 h** (base 4–8 + buffer 2–3)
+### R3 — Vendor / offline cargo failure (P2-3)
 
-Buffer covers: Windows path issues, zip/checksum tooling, doc drift fixes.
-
-**Done when:** frame-stream + file crypt; docs match.
-
----
-
-## Cross-cutting · Planned **5–9 h** (base 3–6 + buffer 2–3)
-
-TRVL vectors, age interop smoke, license checks, per-P2 issues, STATUS updates.
+| | |
+|--|--|
+| **Risk** | Vendor tree huge, path broken on Windows, or crate yank/feature mismatch |
+| **Trigger** | `--offline` build fails after documented vendor steps |
+| **Response** | Vendor tarball + checksum in release; or document “networked first build only” for Acer with one-time allowlist |
+| **Contingency** | +2–4 h |
+| **Hard cut** | Offline cargo is best-effort; Phase 1 `cargo build` online remains valid |
 
 ---
 
-## Non-goals (0 h + 0 buffer)
+### R4 — Optical field failure (P2-4)
+
+| | |
+|--|--|
+| **Risk** | Indoor Acer↔Pixel cannot complete ~200-byte transfer in reasonable time |
+| **Trigger** | Three controlled trials, peel never reaches k/k within 5 minutes each |
+| **Response** | (1) Force `safe` FPS + larger QR quiet zone (2) Shrink blockSize / more symbols (3) **Accept paste-assisted hybrid** as documented success path |
+| **Contingency** | +8–16 h |
+| **Hard cut** | Publish measured failure report; Phase 2 optical “reliability” becomes “instrumented + gated” without claiming field success |
+
+---
+
+### R5 — QR capacity / encoder wall (P2-4)
+
+| | |
+|--|--|
+| **Risk** | qrcode-lite cannot grow; vendored encoder conflicts with air-gap rules |
+| **Trigger** | Cannot fit TRVL frame at chosen blockSize without splitting protocol |
+| **Response** | Multi-QR continuation already inherent to LT—document smaller blockSize; defer large-version encoder |
+| **Contingency** | +4–8 h (subset of P2-4 pool) |
+| **Hard cut** | Cap blockSize at working maximum; no v20 requirement |
+
+---
+
+### R6 — Acoustic codec / legal / UX trap (P2-5)
+
+| | |
+|--|--|
+| **Risk** | Codec license unclear, mic UX rejected on GrapheneOS, or ambient noise makes link unusable |
+| **Trigger** | No clean license **or** no successful transfer after planned hours |
+| **Response** | **Defer P2-5 entire**; optical remains sole air-gap channel |
+| **Contingency** | +12–24 h only if license + one demo both look viable mid-stream; else **0 h more** |
+| **Hard cut** | Mark P2-5 cancelled in STATUS; do not burn core Phase 2 budget |
+
+---
+
+### R7 — RDH capacity crisis (P2-6 / P2-6b)
+
+| | |
+|--|--|
+| **Risk** | Real covers cannot hold short age blobs; new stego backend expands forever |
+| **Trigger** | Metrics show systematic capacity fail on representative covers |
+| **Response** | Prefer **fragment ciphertext across multiple covers/frames** over new stego math; if backend started, time-box prototype to contingency cap |
+| **Contingency** | Metrics +2 h; backend +15–25 h max |
+| **Hard cut** | Stop P2-6b at cap; ship multi-cover / multi-frame procedure instead |
+
+---
+
+### R8 — Loop policy complexity (P2-7)
+
+| | |
+|--|--|
+| **Risk** | IA-of-IA wiring becomes unbounded design debate |
+| **Trigger** | >8 h without one measurable adaptive behavior |
+| **Response** | Ship **one** hardcoded rule (e.g. CRC spike → status warn “lower FPS”); defer Vault policy schema |
+| **Contingency** | +4–8 h |
+| **Hard cut** | Hooks emit metrics only; no adaptive behavior required for Phase 2 close |
+
+---
+
+### R9 — Platform / toolchain drift (cross-cutting)
+
+| | |
+|--|--|
+| **Risk** | Node, Rust, age crate, or browser API breaks Phase 1 assumptions |
+| **Trigger** | Phase 1 smoke (age round-trip, TRVL CRC, sender load) fails on update |
+| **Response** | Pin versions in package/Cargo; repair Phase 1 before new P2 features |
+| **Contingency** | +3–6 h |
+| **Hard cut** | Freeze dependency upgrades until Phase 2 core items done |
+
+---
+
+### R10 — Maintainer bandwidth / no-device constraint
+
+| | |
+|--|--|
+| **Risk** | No access to Pixel/Acer for optical validation (known user constraint) |
+| **Trigger** | Device tests blocked >1 week wall-clock |
+| **Response** | Complete all phone-optional code + synthetic tests; mark field trials “blocked on device”; do not hold P2-1/2/3/7/8 for camera |
+| **Contingency** | 0 extra code hours; **schedule slip only** |
+| **Hard cut** | Phase 2 “code complete” vs “field verified” tracked as separate STATUS lines |
+
+---
+
+## Contingency budget (core Phase 2)
+
+| Bucket | Hours | Notes |
+|--------|-------|-------|
+| Planned core | **59–103 h** | Schedule this |
+| Contingency ceiling (if many risks fire) | **+27–56 h** | Not pre-allocated to calendar |
+| **Worst reasonable core** | **~86–159 h** | Only if R1–R4, R8–R9 all bite |
+| P2-5 / P2-6b | Separate | Optional; prefer defer over consuming core contingency |
+
+**Governance:** activating >20 h total contingency requires an explicit STATUS note listing risk IDs (R1…). Prefer hard cuts over silent overtime.
+
+---
+
+## Full task list (summary pointers)
+
+Per-subtask base estimates remain as before; use **Planned** from the rollup table for scheduling. Detailed subtasks:
+
+### P2-1 · Planned 9–14 h · Contingency R1 +4–8 h
+Decoder vendor, BarcodeDetector branch, gate, tests, GrapheneOS notes, docs.
+
+### P2-2 · Planned 11–19 h · Contingency R2 +4–10 h
+Soliton CDF default TS+Rust, golden vectors, peel overhead tests, TECHNICAL.md.
+
+### P2-3 · Planned 3–6 h · Contingency R3 +2–4 h
+`cargo vendor`, config, offline verify, INSTALL.
+
+### P2-4 · Planned 17–28 h · Contingency R4+R5 +8–16 h
+Gate v2, QR capacity, stream profiles, field log template.
+
+### P2-5 · Planned 24–40 h · Contingency R6 defer or +12–24 h
+Optional acoustic; default disposition = **defer if blocked**.
+
+### P2-6 · Planned 3–8 h (metrics) / 28–55 h (backend) · Contingency R7
+Metrics first; backend time-boxed.
+
+### P2-7 · Planned 8–16 h · Contingency R8 +4–8 h
+Emit metrics; one adaptive behavior or metrics-only hard cut.
+
+### P2-8 · Planned 6–11 h · Contingency +2–4 h
+frame-stream, file crypt, docs, optional zip.
+
+### Cross-cutting · Planned 5–9 h · Contingency R9–R10
+Interop vectors, pins, issue hygiene; device-blocked field trials split in STATUS.
+
+---
+
+## Non-goals (0 h, no contingency)
 
 - Pixel WiFi CSI / through-wall  
 - Public DNS for `sentinel.viewer`  
@@ -158,24 +225,15 @@ TRVL vectors, age interop smoke, license checks, per-P2 issues, STATUS updates.
 
 ---
 
-## How to use the buffer
-
-1. Schedule **Planned** hours, not Base.  
-2. Burn buffer only on the risks above — not new features.  
-3. If buffer exhausted mid-item, cut optional subtasks (e.g. CI offline, symbols_needed helper) before expanding scope.  
-4. Unused buffer does **not** automatically fund P2-5/P2-6b.
-
----
-
 ## Suggested issue titles
 
 ```
-optical-airgap P2-1: jsQR fallback (planned 9–14h)
-optical-airgap P2-2: Robust Soliton default (planned 11–19h)
-optical-airgap P2-3: cargo vendor offline (planned 3–6h)
-optical-airgap P2-4: optical reliability (planned 17–28h)
-optical-airgap P2-5: acoustic secondary (planned 24–40h)
-optical-airgap P2-6: RDH metrics / optional PEE (planned 3–8h / 28–55h)
-optical-airgap P2-7: loop adaptive policy (planned 8–16h)
+optical-airgap P2-1: jsQR fallback (planned 9–14h, R1 cont.)
+optical-airgap P2-2: Robust Soliton default (planned 11–19h, R2 cont.)
+optical-airgap P2-3: cargo vendor offline (planned 3–6h, R3 cont.)
+optical-airgap P2-4: optical reliability (planned 17–28h, R4/R5 cont.)
+optical-airgap P2-5: acoustic secondary (planned 24–40h, R6 defer-ok)
+optical-airgap P2-6: RDH metrics / PEE (planned 3–8h / 28–55h, R7 cont.)
+optical-airgap P2-7: loop adaptive policy (planned 8–16h, R8 cont.)
 optical-airgap P2-8: CLI + release polish (planned 6–11h)
 ```
