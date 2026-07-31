@@ -1,114 +1,173 @@
-# Optical Air-Gap — Device Compatibility
+# Optical Air-Gap — Device & Platform Compatibility
 
-Target hardware for TRV sovereign optical path. **No Meta / Google / Microsoft stacks required** for the core crypto + RDH + LT path.
+Public matrix for TRV sovereign optical path: **age → RDH → LT → QR (screen→camera)**.
 
-| Device | Role | Core (age + RDH + LT) | QR send | Camera receive | Notes |
-|--------|------|----------------------|---------|----------------|-------|
-| **Obsolete Acer (Linux)** | Primary build + sender | Yes | Yes (local browser or Rust CLI later) | Optional (webcam) | Node 20+ or `age` CLI; best first install target |
-| **Pixel 7 + GrapheneOS** | Vault / receive / Termux | Yes (Termux) | Limited | Yes (when used) | Use F-Droid Termux; no Play Services dependency |
-| **Tablet (generic)** | Secondary display / receive | Yes if Linux/Termux-class | Yes | Yes if camera API available | Wife’s tablet was used historically for ESP32 flashing only |
-| **Termux (on Pixel or tablet)** | CLI crypto + scripts | Yes | No (no GUI QR unless browser) | Via Android intents later | `pkg install git nodejs age` |
-| **ESP32 (Edge)** | Future Edge MFA / sensor | Partial (RDH/LT logic portable) | No | No | Firmware path separate; not required for Phase 1 optical |
+**Rules:** zero Meta/Google/Microsoft *required* in the core path; encrypt-first; Destroy = Restart; `@sentinel.viewer` is local-only (no public DNS).
 
----
+| Doc | Role |
+|-----|------|
+| [README.md](./README.md) | Overview |
+| [INSTALL.md](./INSTALL.md) | Install steps |
+| **COMPATIBILITY.md** | This matrix |
+| [TECHNICAL.md](./TECHNICAL.md) | Architecture |
 
-## Compatible by design
+**Legend**
 
-### 1. Acer (obsolete Linux laptop)
-**Status: fully supported for install and non-camera work.**
-
-- Git + Node 20+ → `optical-airgap/crypto` + pipeline
-- Optional: native `age` / `rage` CLI
-- QR sender: open `optical/qr-sender.html` in a local browser (CDN QR until vendored)
-- Future Rust binary: single static target `x86_64-unknown-linux-gnu`
-
-### 2. Pixel 7 + GrapheneOS
-**Status: supported for on-device Vault and Termux crypto; camera path when you choose to use the device.**
-
-| Feature | Compatible? | Detail |
-|---------|-------------|--------|
-| age encrypt/decrypt | Yes | Termux Node or `pkg install age` |
-| RDH / LT (compute) | Yes | Same pure logic; no Google APIs |
-| Local `@sentinel.viewer` | Yes | Vault-bound claim |
-| Screen QR display | Yes | Any local viewer / browser without Google account |
-| Camera capture for receive | Yes when used | Platform camera; quality gate is software |
-| WiFi CSI / through-wall | **No** | Broadcom + GrapheneOS isolation; locked out of scope |
-| Google Play / GMS | **Not required** | Prefer F-Droid Termux |
-
-Hardened profile fits Destroy = Restart: no cloud backup of Vault keys.
-
-### 3. Tablet
-**Status: compatible as second screen or Termux host if the OS allows sideload/F-Droid.**
-
-- Same rules as Pixel if Android + Termux
-- If locked OEM tablet with only Play Store: do **not** depend on it for core path
-- Optical: can show QR from files generated on Acer
-
-### 4. Cross-device optical pair (design target)
-
-```
-Acer (encode + display QR stream)
-        │  light only
-        ▼
-Pixel 7 / tablet (camera → LT peel → RDH → age decrypt)
-```
-
-Or reverse: Pixel encodes, Acer webcam receives. Both directions are compatible once QR framing + receive UI exist (roadmap).
-
-Wire format compatibility rules:
-
-- **age** ciphertext interoperable across Go age, rage, TS `age-encryption`, Rust `age` crate
-- **RDH** bit layout must stay identical if multiple languages implement it
-- **LT** symbol framing must stay identical across encoder/decoder implementations
+| Symbol | Meaning |
+|--------|---------|
+| **Yes** | Supported or straightforward with open tooling |
+| **Partial** | Works with caveats (sandbox, missing package, manual glue) |
+| **CLI** | Crypto/RDH/LT compute only; no first-class GUI optical |
+| **No** | Out of scope, blocked by platform, or violates project constraints |
+| **Future** | Portable in principle; not Phase 1 |
 
 ---
 
-## Software stack compatibility
+## 1. Primary TRV targets (locked)
 
-| Component | Acer Linux | Termux Node | Termux age CLI | Browser (local) | Future Rust binary |
-|-----------|------------|-------------|----------------|-----------------|--------------------|
-| `age-interface` / age | Yes | Yes | Yes | Via WASM later | Yes (`age` crate) |
-| histogram RDH | Yes | Yes | N/A (needs host) | Yes | Yes |
-| LT skeleton | Yes | Yes | N/A | Yes | Yes |
-| encrypt-then-rdh | Yes | Yes | Partial | Yes | Yes |
-| qr-sender.html | Yes | No | No | Yes* | Replace with CLI |
-| Camera receive | Optional | Optional | No | Optional | Platform glue |
-
-\*Temporary CDN for QR library — not air-gap pure until vendored.
+| Device | Core age+RDH+LT | QR send | Camera receive | Notes |
+|--------|-----------------|---------|----------------|-------|
+| Obsolete Acer (Linux) | Yes | Yes | Partial (webcam) | Best first install host |
+| Pixel 7 + GrapheneOS | Yes (Termux) | Yes | Yes when used | F-Droid Termux; no GMS required |
+| Generic Android tablet | Partial | Yes | Partial | Prefer de-Googled / sideload Termux |
+| Termux (any supported Android) | Yes | No | Future | `git`, `nodejs`, optional `age` |
 
 ---
 
-## Explicitly incompatible / out of scope
+## 2. Desktop & laptop operating systems
 
-- Devices that **require** Google account, Play Services, or Meta runtime for basic crypto
-- Relying on Microsoft cloud identity for key storage
-- Pixel 7 WiFi CSI sensing (hardware + GrapheneOS)
-- Assuming public DNS for `@sentinel.viewer`
+| System | Core | QR send | Receive | How |
+|--------|------|---------|---------|-----|
+| **Linux x86_64** (Debian, Ubuntu, Fedora, Arch, Mint, openSUSE, …) | Yes | Yes | Partial | Node 20+ or `age`/`rage`; browser or future Rust binary |
+| **Linux aarch64** (ARM laptops, some Chromebooks Linux) | Yes | Yes | Partial | Same; confirm Node/age packages for ARM |
+| **Windows 10/11** | Yes | Yes | Partial | Node 20+ from nodejs.org; WSL2 Linux path preferred for closer parity; avoid Microsoft account as key custody |
+| **Windows via WSL2** | Yes | Partial | Partial | Treat as Linux for CLI; QR in Windows host browser |
+| **macOS** (Intel / Apple Silicon) | Yes | Yes | Partial | Node 20+ or Homebrew `age`/`rage`; browser QR; do not use iCloud as Vault |
+| **ChromeOS (Linux container)** | Partial | Partial | Partial | Crostini: Node/`age` if available; optical limited |
+| **FreeBSD / OpenBSD / NetBSD** | Partial | Partial | Partial | `age` often packaged; Node varies; community effort |
+| **Solaris / illumos / obscure UNIX** | Partial | No | No | age may build from source; not a project focus |
 
----
-
-## Minimum viable compatible pair (no new purchases)
-
-1. **Acer** — install per [INSTALL.md](./INSTALL.md) (Node 20+ or age CLI)
-2. **Pixel 7 GrapheneOS + Termux** — same crypto path; camera later for receive
-3. Optional **tablet** — QR display only if needed
-
-You do **not** need both devices online at once for development. Encode offline on Acer; transfer test vectors by USB/SD if you refuse optical until receive UI exists.
+**Desktop guidance:** Any machine that runs **Git + Node 20+** or **age CLI** can run the shipped TypeScript crypto/RDH path. Camera receive is always “Partial” until a dedicated capture UI exists.
 
 ---
 
-## Checklist before claiming “works on device X”
+## 3. Mobile & handheld
 
-- [ ] age round-trip on that device
-- [ ] RDH embed/extract + `checksumOk` on that device
-- [ ] No plaintext written to shared storage
-- [ ] Keys only in Vault; Destroy = Restart documented for that OS
-- [ ] For optical: fixed/manual exposure if available; quality gate rejects garbage frames
+| System | Core | QR send | Receive | Notes |
+|--------|------|---------|---------|-------|
+| **Android 12+ (de-Googled / GrapheneOS / Calyx)** | Yes | Yes | Yes | Preferred mobile class |
+| **Android with GMS** | Partial | Yes | Yes | Core can avoid GMS; do not depend on Play for keys |
+| **iOS / iPadOS** | Partial | Partial | Partial | No Termux; Shortcuts/CLI limited; sandbox blocks classic air-gap tooling; possible only with pure web or approved app — **not** a first-class TRV host |
+| **HarmonyOS / other OEM Android forks** | Partial | Partial | Partial | Unknown package story; treat case-by-case |
+| **PinePhone / PinePhone Pro (Linux)** | Yes | Yes | Partial | Real Linux handheld; excellent philosophy fit; performance modest |
+| **Librem 5 / similar Linux phones** | Yes | Yes | Partial | Same class as PinePhone |
+| **Feature phones / KaiOS** | No | No | No | Insufficient runtime |
 
 ---
 
-## Related docs
+## 4. Single-board computers (SBC) & mini PCs
 
-- [INSTALL.md](./INSTALL.md) — install steps per environment
-- [README.md](./README.md) — overview + prerequisites
-- [TECHNICAL.md](./TECHNICAL.md) — architecture and threat model
+| Device class | Core | QR send | Receive | Notes |
+|--------------|------|---------|---------|-------|
+| **Raspberry Pi 4 / 5** (Raspberry Pi OS, Debian) | Yes | Yes | Partial | Node or age; HDMI QR display; USB camera optional |
+| **Raspberry Pi Zero 2 W** | Partial | Partial | Partial | OK for encode/CLI; tight on browser + camera |
+| **Orange Pi / Rock Pi / Odroid / Khadas** | Yes | Yes | Partial | Any Debian/Ubuntu-class ARM SBC |
+| **NVIDIA Jetson (Linux)** | Yes | Yes | Partial | Overkill but fine; keep proprietary CUDA out of *core* path |
+| **Intel NUC / mini PCs (Linux/Windows)** | Yes | Yes | Partial | Same as desktop |
+| **LattePanda / similar** | Yes | Yes | Partial | Windows or Linux |
+| **RISC-V SBCs** (VisionFive, Milk-V, etc.) | Partial | Partial | Partial | When Node/`age` exist for the ISA; great long-term sovereign target |
+| **TV boxes (Android)** | Partial | Partial | Partial | Often locked; only if unlocked + Termux-class access |
+
+---
+
+## 5. Hobbyist & embedded (Edge)
+
+These are **not** full optical-airgap hosts. They fit **Edge MFA, sensors, secondary channels**, or tiny encode helpers later.
+
+| Device | age | RDH/LT compute | QR | Camera optical | Role |
+|--------|-----|----------------|-----|----------------|------|
+| **ESP32 / ESP32-S3 / C3** | Partial (mbedTLS/libsodium ports, not full age stack easily) | Future (C port of RDH/LT) | Partial (small displays) | No practical | Edge MFA, LiDAR/trigger, BLE/Wi‑Fi *local* only — matches existing TRV ESP32 interest |
+| **ESP8266** | No | Future tiny | No | No | Too tight |
+| **Arduino Uno / AVR** | No | No | No | No | Insufficient |
+| **Arduino-class Giga / Portenta** | Partial | Future | Partial | No | Possible co-processor |
+| **RP2040 / RP2350 (Pico)** | Partial | Future | Partial | No | Good for offline gadget helpers |
+| **STM32 (Black Pill, Nucleo, …)** | Partial | Future | Partial | No | Bare-metal or RTOS ports later |
+| **nRF52 / nRF53** | Partial | Future | No | No | BLE-centric Edge |
+| **Teensy 4.x** | Partial | Future | Partial | No | Strong MCU if needed |
+| **FPGA boards** (iCE40, Lattice, Xilinx hobby) | No | Future research | No | No | Custom LT accelerators — research only |
+| **Old netbooks / Chromebooks (Linux enabled)** | Yes | Yes | Partial | Same as light Linux laptop |
+| **Retro PCs (Pentium-era)** | Partial | Partial | No | No | age may be heavy; not worth it |
+| **Game handhelds** (Steam Deck, etc.) | Yes | Yes | Partial | Linux Deck = desktop class |
+| **E-readers (kindle jailbreak, etc.)** | No / fragile | No | Partial display | No | Do not depend on |
+
+**ESP32 note (TRV context):** Firmware flashing via ESP-IDF / esptool from mobile OTG remains a **hardware integration** path for Edge, not a substitute for the optical air-gap stack on Acer/Pixel.
+
+---
+
+## 6. Virtual machines, containers, cloud
+
+| Environment | Core | Optical | Notes |
+|-------------|------|---------|-------|
+| **Local VM** (QEMU, VirtualBox, VMware, Hyper-V) | Yes | Poor | Fine for build/test; camera/QR pass-through painful |
+| **Docker / Podman** | Yes | No | CI and reproducible builds; not optical |
+| **Public cloud VMs** | CLI only | No | **Do not** place Vault identities in cloud disks; violates sovereignty posture |
+| **Codespaces / GitHub-hosted runners** | CLI | No | Build only; no secrets |
+
+---
+
+## 7. Cross-implementation compatibility (language)
+
+Wire formats must match across devices and languages:
+
+| Layer | Interop contract |
+|-------|------------------|
+| **age** | age v1 format — Go age, rage, TS `age-encryption`, Rust `age` crate |
+| **RDH** | Documented histogram-shifting bit layout + 112-bit header (peak, zero, length, SHA-256 prefix) |
+| **LT** | Project-defined symbol framing (roadmap) — same encoder/decoder rules everywhere |
+| **Identity** | `local@sentinel.viewer` string rules — not MX/DNS |
+
+A Pixel Termux decode must accept an Acer-encoded blob if both implement the same layouts.
+
+---
+
+## 8. Explicit incompatibilities (locked)
+
+| Item | Why |
+|------|-----|
+| Google Play **required** for core crypto | Violates zero-Google core path |
+| Meta / Facebook SDKs | Banned from core |
+| Microsoft cloud key custody (MSA as Vault) | Banned from core |
+| Pixel 7 WiFi CSI through-wall sensing | Hardware + GrapheneOS isolation |
+| iCloud / Google Drive as key store | Destroys Destroy = Restart story |
+| Public DNS for `sentinel.viewer` | Local claim only |
+| DRM-only appliances with no user runtime | Cannot run open stack |
+
+---
+
+## 9. Recommended pairs (no new purchases)
+
+1. **Acer Linux ↔ Pixel 7 GrapheneOS** — primary design pair  
+2. **Acer ↔ any Linux SBC with HDMI** — lab optical tests  
+3. **Steam Deck / Linux mini PC ↔ Android receive** — same topology  
+4. **Encode on any Yes-core device, transfer ciphertext by USB** — until camera UI exists  
+
+Hobbyist MCUs (ESP32, Pico, STM32) sit **beside** the pair for Edge triggers, not as the main encrypting Vault.
+
+---
+
+## 10. Checklist before claiming a new device “works”
+
+- [ ] age round-trip on device  
+- [ ] RDH embed/extract + `checksumOk`  
+- [ ] No plaintext in shared/cloud storage  
+- [ ] Keys only in Vault; wipe procedure documented  
+- [ ] Optical (if claimed): quality gate + LT peel success on real camera frames  
+- [ ] No new dependency on Meta/Google/Microsoft for those steps  
+
+---
+
+## Related
+
+- Install: [INSTALL.md](./INSTALL.md)  
+- Security: [rdh/SECURITY.md](./rdh/SECURITY.md)  
+- Issue tracking: https://github.com/Sentinel-Archetecht/The-Remote-Viewer/issues/38  

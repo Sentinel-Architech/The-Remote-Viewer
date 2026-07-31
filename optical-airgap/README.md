@@ -21,16 +21,15 @@ Local-first, zero-trust optical transfer stack for The Remote Viewer.
 
 ## Compatible devices (summary)
 
-| Device | Core crypto + RDH + LT | Optical send | Optical receive |
-|--------|------------------------|--------------|-----------------|
-| Obsolete Acer (Linux) | Yes | Yes | Optional webcam |
-| Pixel 7 + GrapheneOS | Yes (Termux) | Yes | Yes when used |
-| Tablet (Termux/sideload-capable) | Yes | Yes | If camera available |
-| Termux CLI | Yes | No | Via later Android glue |
+**Primary:** Acer (Linux), Pixel 7 + GrapheneOS, Termux, sideload-capable tablets.
 
-Full matrix, out-of-scope hardware, and pair topology: **[COMPATIBILITY.md](./COMPATIBILITY.md)**.
+**Also Yes/Partial for core crypto:** Windows 10/11, macOS, major Linux desktops, Raspberry Pi 4/5 and most ARM SBCs, PinePhone/Librem-class Linux phones, Steam Deck, WSL2, local VMs (build/test).
 
-**Not compatible by design:** Play-Services-required stacks, Microsoft cloud key custody, Pixel WiFi CSI through-wall sensing.
+**Hobbyist Edge (not full Vault hosts):** ESP32 family, RP2040/Pico, STM32, nRF52 — future C ports for MFA/sensors; ESP32 already in TRV hardware orbit.
+
+**No / out of scope:** Play-required-only stacks, iCloud/Google Drive as key store, Pixel WiFi CSI, public DNS for `@sentinel.viewer`, DRM appliances with no user runtime.
+
+Full matrices (desktop, mobile, SBC, MCU, VM/cloud): **[COMPATIBILITY.md](./COMPATIBILITY.md)**.
 
 ## Prerequisites
 
@@ -150,7 +149,7 @@ Pure local claim bound to Vault / DID. Never registered on public DNS. Destroyed
 - Real ePHI without organizational HIPAA process
 
 ## Docs
-- [COMPATIBILITY.md](./COMPATIBILITY.md) — device matrix (Acer, Pixel 7, tablet, Termux)
+- [COMPATIBILITY.md](./COMPATIBILITY.md) — desktop, mobile, SBC, hobbyist MCU, VM/cloud matrix
 - [INSTALL.md](./INSTALL.md) — step-by-step install and first run
 - [TECHNICAL.md](./TECHNICAL.md) — architecture, crypto, RDH, LT, threat model, share/contribute
 - [STATUS.md](./STATUS.md) — short shipped / not-shipped checklist
