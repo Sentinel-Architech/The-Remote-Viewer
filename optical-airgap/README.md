@@ -2,6 +2,10 @@
 
 Local-first, zero-trust optical transfer stack for The Remote Viewer.
 
+**Repo path:** `optical-airgap/` on branch `TheRemoteViewer`  
+**Tracking:** https://github.com/Sentinel-Archetecht/The-Remote-Viewer/issues/38  
+**License:** MIT (see `LICENSE`) — zero Meta / Google / Microsoft in the core path
+
 ## Design Goals (locked)
 - Fully open-source
 - Zero Meta / Google / Microsoft dependencies in core path
@@ -10,36 +14,59 @@ Local-first, zero-trust optical transfer stack for The Remote Viewer.
 - Destroy = Restart is absolute
 - Primary path is pure optical (screen → camera)
 - Outside email only ever sees already-encrypted + stego’d blobs
+- Encrypt-first always (HIPAA-aligned architecture; organizational compliance still required for real ePHI)
 
 ## Pipeline
 ```
 Plaintext
-  → age / libsodium encryption          (on-device)
-  → Reversible Data Hiding (RDH)        (Histogram Shifting or DE preferred)
-  → LT Fountain encoding                (Robust Soliton)
-  → Animated QR / multi-QR display
-  → Camera capture + quality gate
+  → age encryption                    (crypto/age-interface.ts — FiloSottile typage)
+  → Histogram-shifting RDH            (rdh/histogram-shifting.ts — capacity check + auth header)
+  → LT Fountain encoding              (fountain/lt-core.ts)
+  → Animated QR / multi-QR display    (optical/qr-sender.html)
+  → Camera capture + quality gate     (phone-side; optional until you touch the device)
   → LT peeling decoder
-  → RDH extraction (perfect inverse)
-  → Decryption
+  → RDH extraction (checksum verified)
+  → age decryption
 ```
 
+## What is on GitHub now
+
+| Path | Status |
+|------|--------|
+| `identity/local-address.ts` | Local `@sentinel.viewer` addresses |
+| `crypto/age-interface.ts` | Real age via `age-encryption` (typage) |
+| `crypto/age-notes.md` | Install + Termux CLI fallback |
+| `rdh/histogram-shifting.ts` | Embed/extract + capacity + SHA-256 header |
+| `rdh/SECURITY.md` | Encrypt-first + integrity rules |
+| `pipeline/encrypt-then-rdh.ts` | age → RDH one-shot helper |
+| `fountain/lt-core.ts` | LT encoder + peel decoder skeleton |
+| `optical/qr-sender.html` | Browser QR stream (CDN QR temporary) |
+| `loop/recursive-hooks.md` | Event schema for on-device experts |
+| `apps/shared/src/identity.ts` | Wired local address into shared identity |
+
+## Quick start (Acer / Node — no phone required)
+
+```bash
+cd optical-airgap/crypto
+npm install          # pulls age-encryption
+```
+
+Then use `pipeline/encrypt-then-rdh.ts` after pointing your TS runner at the modules.
+Termux alternative: `pkg install age` and follow `crypto/age-notes.md`.
+
 ## Local Identity
-Every Viewer receives a project-native address of the form:
 ```
 anything@sentinel.viewer
 ```
-This is a pure local claim bound to Vault / DID material. Never registered on public DNS.
+Pure local claim bound to Vault / DID. Never registered on public DNS. Destroyed with Destroy = Restart.
 
-## Status
-- Scaffolding and design locked 2026-07-31
-- Implementation begins with identity generation + age encryption + minimal LT/QR path
-- WiFi CSI sensing on Pixel 7 + GrapheneOS is out of scope (hardware/OS limitations)
+## Not in scope (locked)
+- WiFi CSI / through-wall sensing on Pixel 7 + GrapheneOS (hardware + OS isolation)
+- Real ePHI without organizational HIPAA process
 
-## Directory Layout
-- `identity/` — local address generation
-- `crypto/` — age / libsodium wrappers
-- `rdh/` — reversible data hiding (start with histogram shifting)
-- `fountain/` — LT encoder/decoder
-- `optical/` — QR display + camera capture helpers
-- `loop/` — recursive expert feedback hooks
+## Next (still open in #38)
+1. Vendor pure-JS QR (zero CDN)
+2. LT symbols → QR binary frames
+3. Receiver / peel page (when you use a camera again)
+4. Frame quality gate
+5. Recursive loop event wiring
