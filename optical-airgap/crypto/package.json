@@ -1,0 +1,15 @@
+{
+  "name": "@trv/optical-crypto",
+  "version": "0.1.0",
+  "private": true,
+  "description": "age encryption interface for TRV optical air-gap path",
+  "type": "module",
+  "main": "age-interface.ts",
+  "dependencies": {
+    "age-encryption": "^0.3.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}
