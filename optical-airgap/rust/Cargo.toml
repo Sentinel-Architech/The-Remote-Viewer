@@ -1,0 +1,22 @@
+[package]
+name = "trv-optical-airgap"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "TRV optical air-gap: age encrypt, reversible data hiding, LT frames"
+repository = "https://github.com/Sentinel-Archetecht/The-Remote-Viewer"
+readme = "README.md"
+keywords = ["age", "air-gap", "fountain", "steganography", "zero-trust"]
+categories = ["cryptography", "encoding"]
+
+[dependencies]
+age = { version = "0.11", features = ["armor"] }
+zeroize = { version = "1", features = ["derive"] }
+sha2 = "0.10"
+thiserror = "1"
+
+[dev-dependencies]
+
+[[example]]
+name = "age_roundtrip"
+path = "examples/age_roundtrip.rs"
