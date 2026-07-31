@@ -11,6 +11,30 @@ Repository: [github.com/Sentinel-Archetecht/The-Remote-Viewer](https://github.co
 
 ---
 
+## Today — 2026-07-30 (Mobile Identity Hardening)
+
+Heavy focus on making **on-device did:key** actually reliable under real constraints (Expo Go + GrapheneOS / Pixel).
+
+### What landed
+
+- Replaced `@noble/ed25519` with **tweetnacl** (pure JS, no WebCrypto dependency)
+- Removed all Node `Buffer` usage from the mobile did:key path
+- Hardened SecureStore options:
+  - `WHEN_UNLOCKED_THIS_DEVICE_ONLY`
+  - Authentication requirements made explicit (disabled only for Expo Go exploration)
+- Added Create → Destroy → Assert Empty smoke test button
+- Zeroize on destroy
+- Honest documentation: Expo Go is exploration-only; production builds stay strict
+- Multiple polyfill and import path cleanups
+- Dozens of commits of pure mobile crypto reliability work
+
+This is the unglamorous foundation work required for real local-first identity.  
+No cloud. No custody. Keys live and die on the device.
+
+The web and desktop sides remain scaffolds. Mobile identity is now significantly more honest under real device constraints.
+
+---
+
 ## Two ways in
 
 | Path | Who it’s for |
@@ -39,3 +63,4 @@ This project is still early. Most of the mobile and web clients are **scaffolds*
 ```bash
 git clone https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
 cd The-Remote-Viewer
+```
