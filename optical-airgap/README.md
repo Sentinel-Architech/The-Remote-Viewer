@@ -4,7 +4,8 @@ Local-first, zero-trust optical transfer stack for The Remote Viewer.
 
 **Repo path:** `optical-airgap/` on branch `TheRemoteViewer`  
 **Tracking:** https://github.com/Sentinel-Archetecht/The-Remote-Viewer/issues/38  
-**License:** MIT (see `LICENSE`) — zero Meta / Google / Microsoft in the core path
+**License:** MIT (see `LICENSE`) — zero Meta / Google / Microsoft in the core path  
+**Tech deep dive (share this):** [TECHNICAL.md](./TECHNICAL.md)
 
 ## Design Goals (locked)
 - Fully open-source
@@ -78,6 +79,8 @@ npm install          # pulls age-encryption
 Then use `pipeline/encrypt-then-rdh.ts` after pointing your TS runner at the modules.
 Termux alternative: `pkg install age` and follow `crypto/age-notes.md`.
 
+Full clone + contribution notes: [TECHNICAL.md](./TECHNICAL.md).
+
 ## Local Identity
 ```
 anything@sentinel.viewer
@@ -88,5 +91,6 @@ Pure local claim bound to Vault / DID. Never registered on public DNS. Destroyed
 - WiFi CSI / through-wall sensing on Pixel 7 + GrapheneOS (hardware + OS isolation)
 - Real ePHI without organizational HIPAA process
 
-## Status file
-See `STATUS.md` for the short shipped / not-shipped checklist.
+## Docs
+- [TECHNICAL.md](./TECHNICAL.md) — architecture, crypto, RDH, LT, threat model, how to run and share
+- [STATUS.md](./STATUS.md) — short shipped / not-shipped checklist
