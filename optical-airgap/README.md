@@ -18,6 +18,48 @@ Local-first, zero-trust optical transfer stack for The Remote Viewer.
 - Outside email only ever sees already-encrypted + stego’d blobs
 - Encrypt-first always (HIPAA-aligned architecture; organizational compliance still required for real ePHI)
 
+## Prerequisites
+
+You need **one** of the following environments. No paid cloud account and no Meta/Google/Microsoft SDKs are required for the core path.
+
+### A — Desktop / Acer (recommended for first install)
+| Requirement | Notes |
+|-------------|--------|
+| Git | Clone and update the repo |
+| **Node.js 20+** | Required for `age-encryption` (typage) |
+| npm | Ships with Node; used in `optical-airgap/crypto` |
+| Optional: `tsx` or TypeScript | For running the smoke tests in INSTALL.md (`npx tsx` is enough) |
+
+```bash
+git --version
+node -v    # expect v20.x or higher
+npm -v
+```
+
+### B — Termux (GrapheneOS / Android)
+| Requirement | Notes |
+|-------------|--------|
+| Termux | Prefer F-Droid on de-Googled devices |
+| `git`, `nodejs` | `pkg install git nodejs` |
+| Optional: `age` | `pkg install age` for native CLI encrypt/decrypt |
+
+Phone is **not** required to install or unit-test age + RDH; only for later camera receive work.
+
+### C — age CLI only (no npm)
+| Requirement | Notes |
+|-------------|--------|
+| `age` binary | Distro package or Termux `pkg install age` |
+
+Enough for keygen / encrypt / decrypt interoperability tests. The TypeScript RDH + pipeline path still needs A or B with Node 20+.
+
+### Not required for core install
+- Google Play Services, Meta, or Microsoft tooling
+- Extra paid hardware
+- Public DNS for `@sentinel.viewer` (local claim only)
+- Camera (only needed for optical receive; sender demo is optional)
+
+Full environment notes and troubleshooting: **[INSTALL.md](./INSTALL.md)**.
+
 ## Pipeline
 ```
 Plaintext
@@ -94,6 +136,6 @@ Pure local claim bound to Vault / DID. Never registered on public DNS. Destroyed
 - Real ePHI without organizational HIPAA process
 
 ## Docs
-- [INSTALL.md](./INSTALL.md) — step-by-step install and first run
+- [INSTALL.md](./INSTALL.md) — step-by-step install and first run (includes expanded prerequisites)
 - [TECHNICAL.md](./TECHNICAL.md) — architecture, crypto, RDH, LT, threat model, share/contribute
 - [STATUS.md](./STATUS.md) — short shipped / not-shipped checklist
