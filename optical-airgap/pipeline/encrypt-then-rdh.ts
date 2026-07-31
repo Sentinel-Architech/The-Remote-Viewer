@@ -1,9 +1,11 @@
 /**
  * TRV Optical Air-Gap — encrypt-then-RDH pipeline
  *
- * age encrypt → histogram-shifting reversible data hiding
- * Pure TypeScript. Runs on Acer / Node / Termux.
- * No camera, no phone required.
+ * age encrypt → histogram-shifting RDH (with capacity check + authenticated header)
+ * Pure TypeScript. Runs on Acer / Node / Termux. No camera, no phone required.
+ *
+ * Security: plaintext is encrypted before any stego. Cover never sees cleartext.
+ * Fails closed if the cover cannot hold header + ciphertext.
  *
  * License: MIT (or project root license)
  */
@@ -16,46 +18,50 @@ import {
 } from "../crypto/age-interface.js";
 import {
   embedHistogramShifting,
+  extractHistogramShifting,
+  estimateCapacity,
+  HEADER_BITS,
   type RDHResult,
+  type RDHExtractResult,
 } from "../rdh/histogram-shifting.js";
 
 export interface PipelineResult {
-  /** age ciphertext (also embedded inside stego) */
   encrypted: EncryptedBlob;
-  /** Cover image after reversible embedding */
   rdh: RDHResult;
-  /** Bits actually embedded (may be less than full ciphertext if cover is small) */
   embeddedBits: number;
+  capacityBits: number;
 }
 
 /**
- * Encrypt plaintext with age, then embed the ciphertext into a cover via RDH.
- * Cover must be large enough for the ciphertext bit length (rough capacity = peak count).
- *
- * @param plaintext  Raw payload (will be zeroed after encrypt)
- * @param recipient  age recipient (age1...)
- * @param cover      8-bit cover samples (grayscale image bytes recommended)
+ * Encrypt plaintext with age, then embed ciphertext into cover via RDH.
+ * Throws if cover capacity is insufficient for header + ciphertext.
  */
 export async function encryptThenRdh(
   plaintext: Uint8Array,
   recipient: PublicKey,
   cover: Uint8Array
 ): Promise<PipelineResult> {
+  const capacityBits = estimateCapacity(cover);
   const encrypted = await encryptForRecipient(plaintext, recipient);
   secureZero(plaintext);
 
-  const rdh = embedHistogramShifting(cover, encrypted.ciphertext);
+  const need = HEADER_BITS + encrypted.ciphertext.length * 8;
+  if (capacityBits < need) {
+    throw new Error(
+      `Cover capacity ${capacityBits} bits < required ${need} bits. Use a larger cover.`
+    );
+  }
+
+  const rdh = await embedHistogramShifting(cover, encrypted.ciphertext);
 
   return {
     encrypted,
     rdh,
     embeddedBits: rdh.embeddedBits,
+    capacityBits,
   };
 }
 
-/**
- * Convenience: encrypt a UTF-8 string then RDH-embed.
- */
 export async function encryptTextThenRdh(
   text: string,
   recipient: PublicKey,
@@ -64,3 +70,12 @@ export async function encryptTextThenRdh(
   const bytes = new TextEncoder().encode(text);
   return encryptThenRdh(bytes, recipient, cover);
 }
+
+/** Extract and verify. Returns checksumOk so caller can reject tampered stego. */
+export async function extractRdh(
+  stego: Uint8Array
+): Promise<RDHExtractResult> {
+  return extractHistogramShifting(stego);
+}
+
+export { estimateCapacity, HEADER_BITS };
