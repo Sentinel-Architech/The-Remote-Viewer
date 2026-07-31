@@ -2,6 +2,9 @@
 
 **Local-first · Zero-trust · On-device identity · No platform custody · Install-anywhere**
 
+> "When our technology rewires how information flows, that's when invention begins."
+> — **John Squires**, Director of the U.S. Patent and Trademark Office
+
 ![Visitors](https://visitor-badge.laobi.icu/badge?page_id=Sentinel-Archetecht.The-Remote-Viewer&left_color=%231a1a1a&right_color=%2300e676&left_text=Visitors)
 
 [![CI](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/actions/workflows/ci.yml/badge.svg)](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/actions/workflows/ci.yml)
