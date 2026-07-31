@@ -1,32 +1,30 @@
-# Optical Air-Gap — GitHub Status
+# Optical Air-Gap — Status (Phase 1 complete)
 
-**Last assembled:** 2026-07-31  
 **Branch:** `TheRemoteViewer`  
 **Issue:** [#38](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/issues/38)
 
-## Shipped
-- [x] TS: age, RDH, LT core, TRVL frames, offline QR sender
-- [x] **TRVL receiver / peel UI** `optical/qr-receiver.html` (paste mode)
-- [x] Rust crate: age, RDH, TRVL frame, identity
-- [x] **Rust LT encoder/peel** `fountain/lt.rs` + tests
-- [x] **CLI** `trv-optical` (keygen, encrypt, rdh-cap, address, lt-demo)
-- [x] Docs: INSTALL, TECHNICAL, COMPATIBILITY, SECURITY
+## Phase 1 — DONE
 
-## Not shipped yet
-- [ ] Live camera → QR decode → auto-ingest (BarcodeDetector / vendored jsQR)
-- [ ] Capture quality gate
-- [ ] Recursive expert event hooks in code
-- [ ] Full Robust Soliton parameters
-- [ ] Vendor cargo deps for offline build
-- [ ] decrypt CLI with file-based identity (partial)
+- [x] Local `@sentinel.viewer` identity
+- [x] age encryption (TS + Rust)
+- [x] Histogram-shifting RDH + capacity + checksum header
+- [x] encrypt-then-rdh pipeline
+- [x] LT core + **Robust Soliton** helper (`fountain/robust-soliton.ts`)
+- [x] TRVL binary frames + CRC16
+- [x] Offline QR sender (no CDN)
+- [x] Receiver: paste + **camera** + **quality gate** + LT peel
+- [x] Recursive loop hooks (`loop/hooks.ts`)
+- [x] Rust crate + LT peel tests + CLI (`keygen|encrypt|decrypt|…`)
+- [x] INSTALL / TECHNICAL / COMPATIBILITY docs
 
-## Quick tests
-```bash
-# HTML: open optical/qr-sender.html + optical/qr-receiver.html
-# Paste TRVL1 lines from sender status tooling or manual capture into receiver
+## Phase 2 (optional later)
+- Vendored jsQR fallback where BarcodeDetector is missing
+- Full Robust Soliton wired as default in all encoders
+- Cargo vendor for offline `cargo build`
+- Acoustic fallback / higher-capacity RDH
+- Production multi-block RS QR versions > 10
 
-cd optical-airgap/rust
-cargo test
-cargo run --bin trv-optical -- keygen
-echo 'hello' | cargo run --bin trv-optical -- lt-demo
-```
+## Pair test
+1. `optical/qr-sender.html` — Start LT Stream  
+2. `optical/qr-receiver.html` — camera or paste `TRVL1.…` lines  
+3. Recover payload when peel hits k/k  

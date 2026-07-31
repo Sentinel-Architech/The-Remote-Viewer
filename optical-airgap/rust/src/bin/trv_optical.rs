@@ -1,4 +1,4 @@
-//! Minimal CLI: age-keygen | age-encrypt | age-decrypt | rdh-capacity | lt-demo
+//! CLI: keygen | encrypt | decrypt | rdh-cap | address | lt-demo
 
 use std::env;
 use std::io::{self, Read, Write};
@@ -10,14 +10,14 @@ use trv_optical_airgap::{
 
 fn usage() {
     eprintln!(
-        "trv-optical — TRV optical air-gap CLI\n\
-         Commands:\n\
-           keygen\n\
-           encrypt <recipient-age1...>   (plaintext on stdin → ciphertext stdout)\n\
-           decrypt                      (identity AGE-SECRET-KEY on env TRV_AGE_IDENTITY; ct stdin)\n\
-           rdh-cap <cover-bytes-path>\n\
-           address <local> <vault-fp>\n\
-           lt-demo                      (stdin payload → print first 5 TRVL frame sizes)\n"
+        "trv-optical\n\
+         keygen\n\
+         encrypt <age1-recipient>     stdin plaintext → stdout ciphertext\n\
+         decrypt <identity-file>      stdin ciphertext → stdout plaintext\n\
+         rdh-cap <cover-file>\n\
+         address <local> <vault-fp>\n\
+         lt-demo                       stdin → 5 frame sizes\n\
+         rdh-embed-demo                stdin secret → stats on synthetic cover\n"
     );
 }
 
@@ -36,19 +36,33 @@ fn main() {
             let kp = generate_identity_pair();
             println!("{}", kp.recipient);
             eprintln!("{}", kp.identity);
-            eprintln!("(identity on stderr — store in Vault only)");
+            eprintln!("(identity on stderr — Vault only)");
         }
         "encrypt" => {
-            let recip_str = args.next().expect("recipient age1...");
-            let recipient: age::x25519::Recipient = recip_str.parse().expect("parse recipient");
+            let recip_str = args.next().expect("recipient");
+            let recipient: age::x25519::Recipient = recip_str.parse().expect("recipient");
             let mut pt = Vec::new();
             io::stdin().read_to_end(&mut pt).unwrap();
             let ct = encrypt_for_recipient(&pt, &recipient).expect("encrypt");
             io::stdout().write_all(&ct).unwrap();
         }
+        "decrypt" => {
+            let path = args.next().expect("identity file");
+            let id_str = std::fs::read_to_string(&path).expect("read identity");
+            let identity: age::x25519::Identity = id_str
+                .lines()
+                .find(|l| l.starts_with("AGE-SECRET-KEY-"))
+                .unwrap_or(id_str.trim())
+                .parse()
+                .expect("parse identity");
+            let mut ct = Vec::new();
+            io::stdin().read_to_end(&mut ct).unwrap();
+            let pt = decrypt_blob(&ct, &identity).expect("decrypt");
+            io::stdout().write_all(&pt).unwrap();
+        }
         "rdh-cap" => {
             let path = args.next().expect("cover path");
-            let cover = std::fs::read(path).expect("read cover");
+            let cover = std::fs::read(path).expect("read");
             println!("{}", estimate_capacity(&cover));
         }
         "address" => {
@@ -71,7 +85,6 @@ fn main() {
             }
         }
         "rdh-embed-demo" => {
-            // stdin secret, synthetic cover
             let mut secret = Vec::new();
             io::stdin().read_to_end(&mut secret).unwrap();
             let cover = vec![128u8; 100_000];
@@ -83,8 +96,6 @@ fn main() {
         }
         _ => {
             usage();
-            // keep decrypt documented but identity parsing is verbose for x25519 string
-            let _ = decrypt_blob;
             std::process::exit(1);
         }
     }
