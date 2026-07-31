@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, Alert, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  Alert,
+  ScrollView,
+  Pressable,
+} from 'react-native';
 import {
   createDidKey,
   getCurrentDidKey,
@@ -7,12 +15,12 @@ import {
   signWithDidKey,
   buildDidDocument,
   DidKeyIdentity,
-} from '../src/services/presence';
+} from '../services/presence';
 
 export default function PresenceScreen() {
   const [identity, setIdentity] = useState<DidKeyIdentity | null>(null);
   const [signature, setSignature] = useState<string | null>(null);
-  const [smokeResult, setSmokeResult] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   const refresh = async () => {
     const current = await getCurrentDidKey();
@@ -24,40 +32,40 @@ export default function PresenceScreen() {
   }, []);
 
   const handleCreate = async () => {
+    setBusy(true);
     try {
       const newIdentity = await createDidKey();
       setIdentity(newIdentity);
       setSignature(null);
-      setSmokeResult(null);
-    } catch (e: any) {
-      Alert.alert('Create failed', e?.message ?? String(e));
+    } finally {
+      setBusy(false);
     }
   };
 
   const handleDestroy = async () => {
-    try {
-      await destroyDidKey();
-      setIdentity(null);
-      setSignature(null);
-      setSmokeResult(null);
-      Alert.alert(
-        'Destroyed',
-        'did:key identity and private key have been permanently wiped.\nRestart from Square One.'
-      );
-    } catch (e: any) {
-      Alert.alert('Destroy failed', e?.message ?? String(e));
-    }
+    Alert.alert(
+      'Destroy identity?',
+      'Private key and DID will be wiped. Restart from Square One.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Destroy',
+          style: 'destructive',
+          onPress: async () => {
+            await destroyDidKey();
+            setIdentity(null);
+            setSignature(null);
+          },
+        },
+      ]
+    );
   };
 
   const handleSign = async () => {
-    try {
-      const message = 'TRV presence proof ' + new Date().toISOString();
-      const sig = await signWithDidKey(message);
-      setSignature(sig);
-      Alert.alert('Signed', `Message:\n${message}`);
-    } catch (e: any) {
-      Alert.alert('Sign failed', e?.message ?? String(e));
-    }
+    const message = 'TRV presence proof ' + new Date().toISOString();
+    const sig = await signWithDidKey(message);
+    setSignature(sig);
+    Alert.alert('Signed', message);
   };
 
   const handleShowDidDoc = () => {
@@ -66,97 +74,69 @@ export default function PresenceScreen() {
     Alert.alert('DID Document', JSON.stringify(doc, null, 2));
   };
 
-  /**
-   * One-button smoke test:
-   * 1. Create identity
-   * 2. Confirm it exists
-   * 3. Destroy it
-   * 4. Confirm it is gone
-   * Fails loudly if any step does not behave as expected.
-   */
-  const handleSmokeTest = async () => {
-    setSmokeResult(null);
-    try {
-      // Start clean
-      await destroyDidKey();
-
-      // 1. Create
-      const created = await createDidKey();
-      if (!created?.did || !created?.publicKeyHex) {
-        throw new Error('Create returned incomplete identity');
-      }
-
-      // 2. Confirm exists
-      const afterCreate = await getCurrentDidKey();
-      if (!afterCreate || afterCreate.did !== created.did) {
-        throw new Error('Identity missing immediately after create');
-      }
-
-      // 3. Destroy
-      await destroyDidKey();
-
-      // 4. Confirm gone
-      const afterDestroy = await getCurrentDidKey();
-      if (afterDestroy !== null) {
-        throw new Error('Identity still present after destroy — Destroy = Restart FAILED');
-      }
-
-      setIdentity(null);
-      setSignature(null);
-      setSmokeResult('PASS — Create → Destroy → empty');
-      Alert.alert('Smoke Test PASS', 'Create → Destroy → Assert Empty succeeded.\nDestroy = Restart holds for this run.');
-    } catch (e: any) {
-      setSmokeResult('FAIL — ' + (e?.message ?? String(e)));
-      Alert.alert('Smoke Test FAIL', e?.message ?? String(e));
-      // Leave UI in a known state
-      await refresh();
-    }
-  };
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>did:key Identity</Text>
+      <Text style={styles.kicker}>LOCAL · SCAFFOLD</Text>
+      <Text style={styles.title}>Identity</Text>
+      <Text style={styles.subtitle}>did:key · on-device only</Text>
 
-      {identity ? (
-        <>
-          <Text style={styles.active}>Identity Active</Text>
-          <Text style={styles.label}>DID</Text>
-          <Text selectable style={styles.did}>{identity.did}</Text>
-          <Text style={styles.label}>Public Key (hex)</Text>
-          <Text selectable style={styles.mono}>{identity.publicKeyHex}</Text>
-
-          {signature && (
-            <>
-              <Text style={styles.label}>Signature (hex)</Text>
-              <Text selectable style={styles.mono}>{signature}</Text>
-            </>
-          )}
-        </>
-      ) : (
-        <Text style={styles.inactive}>No identity – Start from Square One</Text>
-      )}
-
-      {smokeResult && (
-        <Text style={smokeResult.startsWith('PASS') ? styles.pass : styles.fail}>
-          {smokeResult}
-        </Text>
-      )}
-
-      <View style={styles.buttons}>
-        {!identity ? (
-          <Button title="Create did:key Identity" onPress={handleCreate} />
+      <View style={styles.card}>
+        {identity ? (
+          <>
+            <View style={styles.badgeActive}>
+              <Text style={styles.badgeText}>ACTIVE</Text>
+            </View>
+            <Text style={styles.label}>DID</Text>
+            <Text selectable style={styles.did}>
+              {identity.did}
+            </Text>
+            <Text style={styles.label}>Public key</Text>
+            <Text selectable style={styles.mono}>
+              {identity.publicKeyHex}
+            </Text>
+            {signature && (
+              <>
+                <Text style={styles.label}>Last signature</Text>
+                <Text selectable style={styles.mono}>
+                  {signature}
+                </Text>
+              </>
+            )}
+          </>
         ) : (
           <>
-            <Button title="Sign Test Message" onPress={handleSign} />
-            <View style={{ height: 12 }} />
-            <Button title="Show DID Document" onPress={handleShowDidDoc} />
-            <View style={{ height: 12 }} />
-            <Button title="Destroy Identity" color="#c0392b" onPress={handleDestroy} />
+            <View style={styles.badgeIdle}>
+              <Text style={styles.badgeTextIdle}>NO IDENTITY</Text>
+            </View>
+            <Text style={styles.hint}>
+              Create a local did:key. Keys never leave this device.
+            </Text>
           </>
         )}
+      </View>
 
-        <View style={{ height: 24 }} />
-        <Button title="Run Smoke Test (Create → Destroy → Empty)" onPress={handleSmokeTest} color="#2980b9" />
+      <View style={styles.actions}>
+        {!identity ? (
+          <Pressable
+            style={[styles.btn, styles.btnPrimary]}
+            onPress={handleCreate}
+            disabled={busy}
+          >
+            <Text style={styles.btnText}>Create did:key</Text>
+          </Pressable>
+        ) : (
+          <>
+            <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleSign}>
+              <Text style={styles.btnText}>Sign test message</Text>
+            </Pressable>
+            <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleShowDidDoc}>
+              <Text style={styles.btnText}>Show DID Document</Text>
+            </Pressable>
+            <Pressable style={[styles.btn, styles.btnDanger]} onPress={handleDestroy}>
+              <Text style={styles.btnText}>Destroy identity</Text>
+            </Pressable>
+          </>
+        )}
       </View>
     </ScrollView>
   );
@@ -165,56 +145,80 @@ export default function PresenceScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
+    padding: 20,
     backgroundColor: '#0a0a0a',
   },
-  title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 32,
+  kicker: {
+    color: '#666',
+    fontSize: 11,
+    letterSpacing: 1.5,
+    marginBottom: 4,
   },
-  active: {
-    fontSize: 20,
-    color: '#2ecc71',
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  subtitle: {
+    color: '#888',
     marginBottom: 20,
   },
-  inactive: {
-    fontSize: 20,
-    color: '#e74c3c',
-    marginBottom: 40,
+  card: {
+    backgroundColor: '#141414',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#222',
+    marginBottom: 24,
   },
+  badgeActive: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#0d3d24',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginBottom: 12,
+  },
+  badgeIdle: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#2a1515',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginBottom: 12,
+  },
+  badgeText: { color: '#2ecc71', fontSize: 12, fontWeight: '600' },
+  badgeTextIdle: { color: '#e74c3c', fontSize: 12, fontWeight: '600' },
   label: {
-    color: '#888',
-    marginTop: 16,
+    color: '#666',
+    fontSize: 12,
+    marginTop: 12,
     marginBottom: 4,
   },
   did: {
     color: '#fff',
     fontSize: 13,
-    textAlign: 'center',
-    marginBottom: 8,
+    lineHeight: 18,
   },
   mono: {
-    fontFamily: 'monospace',
     color: '#aaa',
-    fontSize: 12,
-    textAlign: 'center',
+    fontSize: 11,
+    fontFamily: 'monospace',
   },
-  pass: {
-    color: '#2ecc71',
-    marginTop: 16,
-    fontWeight: 'bold',
+  hint: {
+    color: '#888',
+    lineHeight: 20,
   },
-  fail: {
-    color: '#e74c3c',
-    marginTop: 16,
-    fontWeight: 'bold',
+  actions: {
+    gap: 10,
   },
-  buttons: {
-    width: '100%',
-    marginTop: 40,
+  btn: {
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: 'center',
   },
+  btnPrimary: { backgroundColor: '#1a7f4b' },
+  btnSecondary: { backgroundColor: '#1e1e1e', borderWidth: 1, borderColor: '#333' },
+  btnDanger: { backgroundColor: '#5c1a1a' },
+  btnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
 });
