@@ -18,7 +18,7 @@
     "react": "19.2.8",
     "react-native": "0.86.2",
     "@noble/ed25519": "^2.2.3",
-    "multiformats": "^13.3.2"
+    "multiformats": "^14.0.5"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",
