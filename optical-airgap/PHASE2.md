@@ -1,7 +1,8 @@
 # Optical Air-Gap — Phase 2
 
 **Phase 1:** complete ([STATUS.md](./STATUS.md), issue #38).  
-**This file:** tasks · base hours · buffer · **risk contingency**.
+**This file:** tasks · base hours · buffer · **risk contingency**.  
+**R6 (acoustic) full detail:** [PHASE2-R6.md](./PHASE2-R6.md)
 
 **Locks:** open source · no Meta/Google/Microsoft in core · encrypt-first · Destroy = Restart · `@sentinel.viewer` local-only · no new paid hardware required.
 
@@ -25,7 +26,7 @@
 | P2-2 | Robust Soliton | 8–14 h | +3–5 h | **11–19 h** | +4–10 h |
 | P2-3 | Cargo vendor | 2–4 h | +1–2 h | **3–6 h** | +2–4 h |
 | P2-4 | Optical reliability | 12–20 h | +5–8 h | **17–28 h** | +8–16 h |
-| P2-5 | Acoustic (optional) | 16–28 h | +8–12 h | **24–40 h** | +12–24 h or **defer** |
+| P2-5 | Acoustic (optional) | 16–28 h | +8–12 h | **24–40 h** | +12–24 h or **defer** — see [R6 detail](./PHASE2-R6.md) |
 | P2-6 | RDH metrics | 2–6 h | +1–2 h | **3–8 h** | +2 h |
 | P2-6b | RDH new backend | 20–40 h | +8–15 h | **28–55 h** | +15–25 h or **stop** |
 | P2-7 | Loop / IA-of-IA | 6–12 h | +2–4 h | **8–16 h** | +4–8 h |
@@ -33,7 +34,7 @@
 | Cross-cutting | Interop / issues | 3–6 h | +2–3 h | **5–9 h** | +3–6 h |
 | **Core Phase 2** | no P2-5, no P2-6b | ~41–74 h | ~18–29 h | **~59–103 h** | **+27–56 h if many risks fire** |
 
-**Scheduling rule:** plan **Planned** only. Pull from contingency **per trigger**, log which risk, prefer **cut scope** over unbounded hours.
+**Scheduling rule:** plan **Planned** only. Pull from contingency **per trigger**, log which risk, prefer **cut scope** over unbounded hours. **P2-5 never spends core P2 budget.**
 
 ---
 
@@ -109,15 +110,19 @@
 
 ---
 
-### R6 — Acoustic codec / legal / UX trap (P2-5)
+### R6 — Acoustic codec / legal / UX trap (P2-5) · **DETAIL → [PHASE2-R6.md](./PHASE2-R6.md)**
 
 | | |
 |--|--|
-| **Risk** | Codec license unclear, mic UX rejected on GrapheneOS, or ambient noise makes link unusable |
-| **Trigger** | No clean license **or** no successful transfer after planned hours |
-| **Response** | **Defer P2-5 entire**; optical remains sole air-gap channel |
-| **Contingency** | +12–24 h only if license + one demo both look viable mid-stream; else **0 h more** |
-| **Hard cut** | Mark P2-5 cancelled in STATUS; do not burn core Phase 2 budget |
+| **Risk** | Three families: **R6-L** license, **R6-P** platform/UX (GrapheneOS mic), **R6-E** ambient physics |
+| **Default posture** | Optical primary; P2-5 optional; **prefer defer** over core-budget burn |
+| **Pre-start gates** | G1–G5: docs primary optical, encrypt-only payload, license shortlist, no Big Tech runtime, explicit `P2-5 STARTED` |
+| **Phased burn** | A license/spike ≤4 h → B payload/gesture ≤8 h → C quiet-room demo ≤12 h → **D contingency only if go criteria met** |
+| **Go criteria (all)** | (1) License committed (2) ≥32-byte age blob offline TX (3) gesture-only mic |
+| **Contingency** | **+12–24 h max** after go; else **0 h** |
+| **Forbidden** | Always-on mic, plaintext modem, cloud relay, paying optical debt from R6 hours, second codec before first demo |
+| **Hard cut** | STATUS `P2-5 DEFERRED` or `CANCELLED`; experimental quiet-room soft-ship only if demo existed |
+| **Does not auto-start** when R4 optical fails — acoustic is not a free rescue |
 
 ---
 
@@ -176,42 +181,10 @@
 | Planned core | **59–103 h** | Schedule this |
 | Contingency ceiling (if many risks fire) | **+27–56 h** | Not pre-allocated to calendar |
 | **Worst reasonable core** | **~86–159 h** | Only if R1–R4, R8–R9 all bite |
-| P2-5 / P2-6b | Separate | Optional; prefer defer over consuming core contingency |
+| P2-5 / R6 | Separate | Optional; **prefer defer**; see [PHASE2-R6.md](./PHASE2-R6.md) |
+| P2-6b | Separate | Time-boxed backend |
 
-**Governance:** activating >20 h total contingency requires an explicit STATUS note listing risk IDs (R1…). Prefer hard cuts over silent overtime.
-
----
-
-## Full task list (summary pointers)
-
-Per-subtask base estimates remain as before; use **Planned** from the rollup table for scheduling. Detailed subtasks:
-
-### P2-1 · Planned 9–14 h · Contingency R1 +4–8 h
-Decoder vendor, BarcodeDetector branch, gate, tests, GrapheneOS notes, docs.
-
-### P2-2 · Planned 11–19 h · Contingency R2 +4–10 h
-Soliton CDF default TS+Rust, golden vectors, peel overhead tests, TECHNICAL.md.
-
-### P2-3 · Planned 3–6 h · Contingency R3 +2–4 h
-`cargo vendor`, config, offline verify, INSTALL.
-
-### P2-4 · Planned 17–28 h · Contingency R4+R5 +8–16 h
-Gate v2, QR capacity, stream profiles, field log template.
-
-### P2-5 · Planned 24–40 h · Contingency R6 defer or +12–24 h
-Optional acoustic; default disposition = **defer if blocked**.
-
-### P2-6 · Planned 3–8 h (metrics) / 28–55 h (backend) · Contingency R7
-Metrics first; backend time-boxed.
-
-### P2-7 · Planned 8–16 h · Contingency R8 +4–8 h
-Emit metrics; one adaptive behavior or metrics-only hard cut.
-
-### P2-8 · Planned 6–11 h · Contingency +2–4 h
-frame-stream, file crypt, docs, optional zip.
-
-### Cross-cutting · Planned 5–9 h · Contingency R9–R10
-Interop vectors, pins, issue hygiene; device-blocked field trials split in STATUS.
+**Governance:** activating >20 h total **core** contingency requires an explicit STATUS note listing risk IDs. Prefer hard cuts over silent overtime.
 
 ---
 
@@ -232,7 +205,7 @@ optical-airgap P2-1: jsQR fallback (planned 9–14h, R1 cont.)
 optical-airgap P2-2: Robust Soliton default (planned 11–19h, R2 cont.)
 optical-airgap P2-3: cargo vendor offline (planned 3–6h, R3 cont.)
 optical-airgap P2-4: optical reliability (planned 17–28h, R4/R5 cont.)
-optical-airgap P2-5: acoustic secondary (planned 24–40h, R6 defer-ok)
+optical-airgap P2-5: acoustic secondary (planned 24–40h, R6 detail PHASE2-R6.md)
 optical-airgap P2-6: RDH metrics / PEE (planned 3–8h / 28–55h, R7 cont.)
 optical-airgap P2-7: loop adaptive policy (planned 8–16h, R8 cont.)
 optical-airgap P2-8: CLI + release polish (planned 6–11h)
