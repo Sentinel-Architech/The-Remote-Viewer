@@ -20,6 +20,22 @@ Public matrix for TRV sovereign optical path: **age → RDH → LT → QR (scree
 | **CLI** | Crypto/RDH/LT compute only; no first-class GUI optical |
 | **No** | Out of scope, blocked by platform, or violates project constraints |
 | **Future** | Portable in principle; not Phase 1 |
+| **\*** | See **GrapheneOS source** footnote at end of this file |
+
+---
+
+## GrapheneOS source \*
+
+**Preferred hardened Android\* path for TRV mobile:** [GrapheneOS](https://grapheneos.org/) — install only from the official project:
+
+- Site: **https://grapheneos.org/**
+- Install guide: **https://grapheneos.org/install/**
+- Releases / factory images: linked from the install guide (verify signatures per project docs)
+- Discussion: **https://discuss.grapheneos.org/**
+
+Do **not** sideload “GrapheneOS” builds from third-party mirrors, random Telegram channels, or unofficial images. Pixel hardware only for official GrapheneOS (see their device support list).
+
+Wherever this document writes **Android\***, the sovereign default is GrapheneOS from the links above. Stock Android / GMS is a lesser, Partial path.
 
 ---
 
@@ -28,9 +44,9 @@ Public matrix for TRV sovereign optical path: **age → RDH → LT → QR (scree
 | Device | Core age+RDH+LT | QR send | Camera receive | Notes |
 |--------|-----------------|---------|----------------|-------|
 | Obsolete Acer (Linux) | Yes | Yes | Partial (webcam) | Best first install host |
-| Pixel 7 + GrapheneOS | Yes (Termux) | Yes | Yes when used | F-Droid Termux; no GMS required |
-| Generic Android tablet | Partial | Yes | Partial | Prefer de-Googled / sideload Termux |
-| Termux (any supported Android) | Yes | No | Future | `git`, `nodejs`, optional `age` |
+| Pixel 7 + GrapheneOS (Android\*) | Yes (Termux) | Yes | Yes when used | F-Droid Termux; no GMS required; OS from [grapheneos.org](https://grapheneos.org/) |
+| Generic Android\* tablet | Partial | Yes | Partial | Prefer GrapheneOS-capable Pixel tablet if available, else de-Googled / sideload Termux |
+| Termux (on Android\*) | Yes | No | Future | `git`, `nodejs`, optional `age`; host OS preferably GrapheneOS |
 
 ---
 
@@ -55,13 +71,16 @@ Public matrix for TRV sovereign optical path: **age → RDH → LT → QR (scree
 
 | System | Core | QR send | Receive | Notes |
 |--------|------|---------|---------|-------|
-| **Android 12+ (de-Googled / GrapheneOS / Calyx)** | Yes | Yes | Yes | Preferred mobile class |
+| **Android\* 12+ with GrapheneOS** | Yes | Yes | Yes | **Preferred** mobile class — get OS from [grapheneos.org](https://grapheneos.org/) |
+| **Android\* de-Googled (e.g. Calyx) ** | Yes | Yes | Yes | Acceptable; GrapheneOS still preferred for TRV |
 | **Android with GMS** | Partial | Yes | Yes | Core can avoid GMS; do not depend on Play for keys |
-| **iOS / iPadOS** | Partial | Partial | Partial | No Termux; Shortcuts/CLI limited; sandbox blocks classic air-gap tooling; possible only with pure web or approved app — **not** a first-class TRV host |
-| **HarmonyOS / other OEM Android forks** | Partial | Partial | Partial | Unknown package story; treat case-by-case |
-| **PinePhone / PinePhone Pro (Linux)** | Yes | Yes | Partial | Real Linux handheld; excellent philosophy fit; performance modest |
+| **iOS / iPadOS** | Partial | Partial | Partial | No Termux; sandbox limits; **not** a first-class TRV host |
+| **HarmonyOS / other OEM Android forks** | Partial | Partial | Partial | Case-by-case; not GrapheneOS |
+| **PinePhone / PinePhone Pro (Linux)** | Yes | Yes | Partial | Real Linux handheld |
 | **Librem 5 / similar Linux phones** | Yes | Yes | Partial | Same class as PinePhone |
 | **Feature phones / KaiOS** | No | No | No | Insufficient runtime |
+
+\* **Android\*** → preferred hardened path is **GrapheneOS**: https://grapheneos.org/ · install: https://grapheneos.org/install/
 
 ---
 
@@ -75,8 +94,8 @@ Public matrix for TRV sovereign optical path: **age → RDH → LT → QR (scree
 | **NVIDIA Jetson (Linux)** | Yes | Yes | Partial | Overkill but fine; keep proprietary CUDA out of *core* path |
 | **Intel NUC / mini PCs (Linux/Windows)** | Yes | Yes | Partial | Same as desktop |
 | **LattePanda / similar** | Yes | Yes | Partial | Windows or Linux |
-| **RISC-V SBCs** (VisionFive, Milk-V, etc.) | Partial | Partial | Partial | When Node/`age` exist for the ISA; great long-term sovereign target |
-| **TV boxes (Android)** | Partial | Partial | Partial | Often locked; only if unlocked + Termux-class access |
+| **RISC-V SBCs** (VisionFive, Milk-V, etc.) | Partial | Partial | Partial | When Node/`age` exist for the ISA |
+| **TV boxes (Android\*)** | Partial | Partial | Partial | Often locked; only if unlocked + Termux; not official GrapheneOS hardware |
 
 ---
 
@@ -86,21 +105,19 @@ These are **not** full optical-airgap hosts. They fit **Edge MFA, sensors, secon
 
 | Device | age | RDH/LT compute | QR | Camera optical | Role |
 |--------|-----|----------------|-----|----------------|------|
-| **ESP32 / ESP32-S3 / C3** | Partial (mbedTLS/libsodium ports, not full age stack easily) | Future (C port of RDH/LT) | Partial (small displays) | No practical | Edge MFA, LiDAR/trigger, BLE/Wi‑Fi *local* only — matches existing TRV ESP32 interest |
+| **ESP32 / ESP32-S3 / C3** | Partial | Future | Partial | No practical | Edge MFA / local radio — not a GrapheneOS host |
 | **ESP8266** | No | Future tiny | No | No | Too tight |
 | **Arduino Uno / AVR** | No | No | No | No | Insufficient |
-| **Arduino-class Giga / Portenta** | Partial | Future | Partial | No | Possible co-processor |
-| **RP2040 / RP2350 (Pico)** | Partial | Future | Partial | No | Good for offline gadget helpers |
-| **STM32 (Black Pill, Nucleo, …)** | Partial | Future | Partial | No | Bare-metal or RTOS ports later |
+| **Arduino-class Giga / Portenta** | Partial | Future | Partial | No | Co-processor |
+| **RP2040 / RP2350 (Pico)** | Partial | Future | Partial | No | Offline helpers |
+| **STM32 (Black Pill, Nucleo, …)** | Partial | Future | Partial | No | Bare-metal later |
 | **nRF52 / nRF53** | Partial | Future | No | No | BLE-centric Edge |
 | **Teensy 4.x** | Partial | Future | Partial | No | Strong MCU if needed |
-| **FPGA boards** (iCE40, Lattice, Xilinx hobby) | No | Future research | No | No | Custom LT accelerators — research only |
-| **Old netbooks / Chromebooks (Linux enabled)** | Yes | Yes | Partial | Same as light Linux laptop |
-| **Retro PCs (Pentium-era)** | Partial | Partial | No | No | age may be heavy; not worth it |
+| **FPGA boards** | No | Future research | No | No | Research only |
+| **Old netbooks / Chromebooks (Linux)** | Yes | Yes | Partial | Light Linux laptop class |
+| **Retro PCs** | Partial | Partial | No | No | Not worth it |
 | **Game handhelds** (Steam Deck, etc.) | Yes | Yes | Partial | Linux Deck = desktop class |
-| **E-readers (kindle jailbreak, etc.)** | No / fragile | No | Partial display | No | Do not depend on |
-
-**ESP32 note (TRV context):** Firmware flashing via ESP-IDF / esptool from mobile OTG remains a **hardware integration** path for Edge, not a substitute for the optical air-gap stack on Acer/Pixel.
+| **E-readers** | No / fragile | No | Partial display | No | Do not depend on |
 
 ---
 
@@ -108,25 +125,21 @@ These are **not** full optical-airgap hosts. They fit **Edge MFA, sensors, secon
 
 | Environment | Core | Optical | Notes |
 |-------------|------|---------|-------|
-| **Local VM** (QEMU, VirtualBox, VMware, Hyper-V) | Yes | Poor | Fine for build/test; camera/QR pass-through painful |
-| **Docker / Podman** | Yes | No | CI and reproducible builds; not optical |
-| **Public cloud VMs** | CLI only | No | **Do not** place Vault identities in cloud disks; violates sovereignty posture |
-| **Codespaces / GitHub-hosted runners** | CLI | No | Build only; no secrets |
+| **Local VM** | Yes | Poor | Build/test only |
+| **Docker / Podman** | Yes | No | CI / reproducible builds |
+| **Public cloud VMs** | CLI only | No | No Vault identities on cloud disks |
+| **Codespaces / GitHub runners** | CLI | No | Build only; no secrets |
 
 ---
 
 ## 7. Cross-implementation compatibility (language)
 
-Wire formats must match across devices and languages:
-
 | Layer | Interop contract |
 |-------|------------------|
-| **age** | age v1 format — Go age, rage, TS `age-encryption`, Rust `age` crate |
-| **RDH** | Documented histogram-shifting bit layout + 112-bit header (peak, zero, length, SHA-256 prefix) |
-| **LT** | Project-defined symbol framing (roadmap) — same encoder/decoder rules everywhere |
-| **Identity** | `local@sentinel.viewer` string rules — not MX/DNS |
-
-A Pixel Termux decode must accept an Acer-encoded blob if both implement the same layouts.
+| **age** | age v1 — Go age, rage, TS `age-encryption`, Rust `age` crate |
+| **RDH** | Histogram-shifting layout + header (peak, zero, length, SHA-256 prefix) |
+| **LT** | Project TRVL framing — same encoder/decoder rules everywhere |
+| **Identity** | `local@sentinel.viewer` — not MX/DNS |
 
 ---
 
@@ -136,33 +149,33 @@ A Pixel Termux decode must accept an Acer-encoded blob if both implement the sam
 |------|-----|
 | Google Play **required** for core crypto | Violates zero-Google core path |
 | Meta / Facebook SDKs | Banned from core |
-| Microsoft cloud key custody (MSA as Vault) | Banned from core |
-| Pixel 7 WiFi CSI through-wall sensing | Hardware + GrapheneOS isolation |
-| iCloud / Google Drive as key store | Destroys Destroy = Restart story |
+| Microsoft cloud key custody | Banned from core |
+| Pixel WiFi CSI through-wall sensing | Hardware + GrapheneOS isolation |
+| iCloud / Google Drive as key store | Breaks Destroy = Restart |
 | Public DNS for `sentinel.viewer` | Local claim only |
+| Unofficial “GrapheneOS” images | Only [grapheneos.org](https://grapheneos.org/) |
 | DRM-only appliances with no user runtime | Cannot run open stack |
 
 ---
 
 ## 9. Recommended pairs (no new purchases)
 
-1. **Acer Linux ↔ Pixel 7 GrapheneOS** — primary design pair  
+1. **Acer Linux ↔ Pixel 7 GrapheneOS (Android\*)** — primary design pair  
 2. **Acer ↔ any Linux SBC with HDMI** — lab optical tests  
-3. **Steam Deck / Linux mini PC ↔ Android receive** — same topology  
-4. **Encode on any Yes-core device, transfer ciphertext by USB** — until camera UI exists  
-
-Hobbyist MCUs (ESP32, Pico, STM32) sit **beside** the pair for Edge triggers, not as the main encrypting Vault.
+3. **Steam Deck / Linux mini PC ↔ Android\* receive** — same topology  
+4. **Encode on any Yes-core device, transfer ciphertext by USB** — until camera path used  
 
 ---
 
 ## 10. Checklist before claiming a new device “works”
 
 - [ ] age round-trip on device  
-- [ ] RDH embed/extract + `checksumOk`  
+- [ ] RDH embed/extract + checksum OK  
 - [ ] No plaintext in shared/cloud storage  
 - [ ] Keys only in Vault; wipe procedure documented  
-- [ ] Optical (if claimed): quality gate + LT peel success on real camera frames  
-- [ ] No new dependency on Meta/Google/Microsoft for those steps  
+- [ ] Optical (if claimed): quality gate + LT peel on real frames  
+- [ ] No Meta/Google/Microsoft required for those steps  
+- [ ] If Android\*: OS obtained from **https://grapheneos.org/** when claiming GrapheneOS  
 
 ---
 
@@ -170,4 +183,5 @@ Hobbyist MCUs (ESP32, Pico, STM32) sit **beside** the pair for Edge triggers, no
 
 - Install: [INSTALL.md](./INSTALL.md)  
 - Security: [rdh/SECURITY.md](./rdh/SECURITY.md)  
-- Issue tracking: https://github.com/Sentinel-Archetecht/The-Remote-Viewer/issues/38  
+- Issue: https://github.com/Sentinel-Archetecht/The-Remote-Viewer/issues/38  
+- **GrapheneOS:** https://grapheneos.org/ · https://grapheneos.org/install/  

@@ -23,24 +23,15 @@ plaintext → age → RDH → LT (TRVL frames) → offline QR → camera/paste �
 
 ## Phase 2 — planned
 
-Hardening and reach; details in **[PHASE2.md](./PHASE2.md)**.
-
-| Priority | ID | Summary |
-|----------|-----|--------|
-| 1 | P2-1 | Vendored jsQR fallback (no BarcodeDetector) |
-| 2 | P2-2 | Robust Soliton default in TS + Rust encoders |
-| 3 | P2-4 | Gate v2, larger QR, denser byte-mode frames |
-| 4 | P2-3 | Cargo vendor / offline Rust build |
-| 5 | P2-7 | Live loop metrics → adaptive policy |
-| 6 | P2-8 | CLI / release polish |
-| 7 | P2-6 | Higher-capacity RDH if needed |
-| 8 | P2-5 | Optional acoustic secondary channel |
+See **[PHASE2.md](./PHASE2.md)** (tasks, hours, buffer, risk contingency). Acoustic R6 detail: [PHASE2-R6.md](./PHASE2-R6.md).
 
 ## Prerequisites
 
 - **Desktop:** Git, Node 20+ and/or Rust 1.74+
-- **Termux:** `git`, `nodejs`, optional `age`
+- **Mobile Android\*:** prefer **GrapheneOS** + Termux (F-Droid)
 - **Not required:** Play Services, Meta/Microsoft SDKs, public DNS, paid hardware
+
+\* **Android\*** hardened path: install GrapheneOS only from **[grapheneos.org](https://grapheneos.org/)** · **[grapheneos.org/install](https://grapheneos.org/install/)**
 
 ## Quick start
 
@@ -60,3 +51,4 @@ Open `optical/qr-sender.html` and `optical/qr-receiver.html` from the `optical/`
 - Destroy = Restart wipes keys, addresses, loop state
 - `@sentinel.viewer` is local-only
 - Outside email only ever sees ciphertext
+- GrapheneOS (when used) from official source only — see footnote \*
