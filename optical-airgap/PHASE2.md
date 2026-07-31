@@ -1,160 +1,189 @@
-# Optical Air-Gap — Phase 2 Roadmap
+# Optical Air-Gap — Phase 2
 
-**Phase 1:** complete (see [STATUS.md](./STATUS.md)).  
-**Phase 2:** optional hardening and reach — no new paid hardware required.
+**Phase 1:** complete ([STATUS.md](./STATUS.md), issue #38).  
+**This file:** goals, acceptance criteria, and **full task checklist**.
 
-**Constraints still locked:** open source, zero Meta/Google/Microsoft in core path, encrypt-first, Destroy = Restart, `@sentinel.viewer` local-only.
-
----
-
-## Goals
-
-1. Work on browsers/OS builds that lack `BarcodeDetector`.
-2. Make LT degree sampling production-grade by default (full Robust Soliton).
-3. Fully offline Rust builds (vendored crates).
-4. Stronger optical reliability (gate tuning, multi-frame, larger QR).
-5. Optional secondary air-gap channel (acoustic).
-6. Higher RDH capacity only when measured need exists.
-7. Wire loop hooks into real on-device expert policy (IA-of-IA).
+**Locks:** open source · no Meta/Google/Microsoft in core · encrypt-first · Destroy = Restart · `@sentinel.viewer` local-only · no new paid hardware required.
 
 ---
 
-## Work items
+## Priority order
 
-### P2-1 — jsQR (or equivalent) fallback receiver
-**Why:** Firefox, many WebViews, and some GrapheneOS browser builds may not expose `BarcodeDetector`.
+1. P2-1 jsQR fallback  
+2. P2-2 Robust Soliton default  
+3. P2-4 Optical reliability  
+4. P2-3 Cargo vendor  
+5. P2-7 Loop / IA-of-IA wiring  
+6. P2-8 CLI / release polish  
+7. P2-6 Higher-capacity RDH (if needed)  
+8. P2-5 Acoustic secondary  
 
-| Task | Detail |
-|------|--------|
-| Vendor | Single-file or `optical/vendor/jsQR.js` (MIT/Apache only) |
-| Integration | `qr-receiver.html`: try BarcodeDetector → else jsQR on gated canvas frames |
-| No CDN | Same rule as sender |
-| Test | Acer webcam + Pixel camera without BarcodeDetector |
+---
 
-**Done when:** paste mode + camera mode both recover a known TRVL stream on Chromium *and* a non-BarcodeDetector browser.
+## Full task list
+
+### P2-1 — jsQR (or pure) fallback receiver
+
+- [ ] Choose MIT/Apache QR **decoder** (jsQR or equivalent); record license in `optical/vendor/NOTICE`
+- [ ] Vendor single file under `optical/vendor/` (no CDN)
+- [ ] Feature-detect `BarcodeDetector`; branch to vendor decoder on canvas frames
+- [ ] Reuse existing quality gate before decode attempts
+- [ ] Dedup decoded strings (seed/raw) to avoid double-ingest
+- [ ] Status UI: show which decoder path is active
+- [ ] Test: Chromium + BarcodeDetector path still works
+- [ ] Test: browser/WebView **without** BarcodeDetector recovers TRVL stream via fallback
+- [ ] Test: GrapheneOS browser path documented (what works / paste fallback)
+- [ ] Update INSTALL.md + STATUS.md when green
+
+**Done when:** camera or paste recovers known payload on at least one non-BarcodeDetector environment.
 
 ---
 
 ### P2-2 — Robust Soliton as default encoder path
-**Why:** Phase 1 LT uses a simplified degree heuristic; `robust-soliton.ts` exists but is not the default everywhere.
 
-| Task | Detail |
-|------|--------|
-| TS | `lt-core.ts` / browser sender: sample degree from Robust Soliton CDF (`c`, `delta` documented) |
-| Rust | Port CDF sampler into `fountain/lt.rs` |
-| Interop | Same `c`/`delta` defaults in TS and Rust so mixed senders/receivers match |
-| Tests | Peel success rate vs symbol overhead curves for K ∈ {8,16,32,64} |
+- [ ] Document parameters `c`, `delta`, `K` in `fountain/lt-notes.md`
+- [ ] Precompute μ and CDF from `robust-soliton.ts` for given K
+- [ ] Replace simplified `sampleDegree` in `lt-core.ts` with CDF sample (keep seed determinism)
+- [ ] Use same distribution in `qr-sender.html` inlined encoder **or** share one bundled module
+- [ ] Port CDF sampler to Rust `fountain/lt.rs`
+- [ ] Align TS/Rust defaults: `c = 0.1`, `delta = 0.05` (or one agreed pair)
+- [ ] Unit tests: degree histogram roughly matches μ for large seed range
+- [ ] Integration tests: zero-loss peel overhead for K ∈ {8, 16, 32, 64}
+- [ ] Optional: export `symbols_needed` estimate helper
+- [ ] Update TECHNICAL.md LT section
 
-**Defaults (starting point):** `c = 0.1`, `delta = 0.05` (tune with measured optical loss).
-
-**Done when:** default encode path uses Soliton; tests document average symbols needed ≈ `K * (1.05–1.2)` under zero loss.
+**Done when:** default encode path is Soliton in TS + Rust; tests record overhead band ≈ `K × (1.05–1.2)` under zero loss.
 
 ---
 
 ### P2-3 — Cargo vendor / offline Rust build
-**Why:** First `cargo build` needs crates.io; air-gapped Acer should not.
 
-| Task | Detail |
-|------|--------|
-| `cargo vendor` | Commit or release-attach `optical-airgap/rust/vendor/` (or documented tarball) |
-| `.cargo/config.toml` | `source.crates-io.replace-with = "vendored-sources"` |
-| CI note | Optional check that build works with `--offline` |
-| Docs | INSTALL.md section “Rust offline” |
+- [ ] Run `cargo vendor` into `optical-airgap/rust/vendor/` **or** release a vendor tarball
+- [ ] Add `.cargo/config.toml` with `replace-with = "vendored-sources"`
+- [ ] Document first-time networked vendor vs offline build in INSTALL.md
+- [ ] Verify `cargo build --offline` and `cargo test --offline`
+- [ ] Verify `cargo run --bin trv-optical --offline -- keygen`
+- [ ] Note disk size of vendor tree in PHASE2/STATUS
+- [ ] Optional: CI job with `--offline` after cache seed
+- [ ] Do **not** require crates.io on air-gapped Acer after vendor step
 
-**Done when:** `cargo build --offline` succeeds after one networked vendor step on a clean machine.
+**Done when:** clean machine with only vendored sources builds and tests offline.
 
 ---
 
 ### P2-4 — Optical reliability pack
-**Why:** Handheld capture is noisy; Phase 1 gate is a simple luminance/variance check.
 
-| Task | Detail |
-|------|--------|
-| Gate v2 | Adaptive thresholds; optional Laplacian blur score |
-| Frame dedup | Already partial via last-codes set; persist seed-level dedup across sessions optional |
-| QR capacity | Extend `qrcode-lite` beyond v10 or swap to audited pure-Rust/JS lib for v12–20 |
-| Byte-mode QR | Prefer raw TRVL bytes over base64url when encoder supports it (≈25% denser) |
-| Sender pacing | Adaptive FPS from receiver loop events (if back-channel exists) or fixed profiles: slow/safe/fast |
+#### Gate v2
+- [ ] Keep mean luminance bounds; make thresholds configurable
+- [ ] Add blur proxy (e.g. Laplacian variance) reject
+- [ ] Count `gateRejections` for loop metrics
+- [ ] UI: show last gate pass/fail reason
 
-**Done when:** documented success rate for a 200-byte age ciphertext on Acer→Pixel under indoor lighting.
+#### Framing / QR capacity
+- [ ] Evaluate byte-mode QR carrying raw TRVL bytes vs base64url
+- [ ] If byte-mode: define QR content convention (e.g. binary vs `TRVL1.` text)
+- [ ] Extend `qrcode-lite` versions **or** vendor audited encoder supporting v12–20
+- [ ] Benchmark max payload per frame at ECC L/M
+- [ ] Document recommended `blockSize` vs QR version table
+
+#### Stream behavior
+- [ ] Sender profiles: `safe` (1 fps) / `normal` (2) / `fast` (4)
+- [ ] Stronger seed-level dedup on receiver
+- [ ] Optional: sequence stats (unique seeds / window)
+- [ ] Indoor Acer→Pixel test log template (payload size, time, symbols, failures)
+
+**Done when:** written result for ~200-byte age ciphertext optical transfer under indoor light (success or measured blockers).
 
 ---
 
 ### P2-5 — Acoustic secondary channel (optional)
-**Why:** Optical fails in bright IR / no line-of-sight; sound is another air-gap medium.
 
-| Task | Detail |
-|------|--------|
-| Codec | Prefer open (e.g. ggwave-class or custom FSK) — audit license |
-| Payload | **Same** age ciphertext / TRVL semantics; do not invent a second crypto path |
-| UX | Explicit user gesture; never always-on mic |
-| GrapheneOS | Mic permission hardened; document |
+- [ ] Select open codec (ggwave-class or minimal FSK); license audit
+- [ ] Encode **only** age ciphertext or TRVL-equivalent opaque bytes
+- [ ] Explicit user gesture to start mic/speaker (no always-on)
+- [ ] GrapheneOS mic permission notes in COMPATIBILITY.md
+- [ ] Demo path: short blob speaker→mic, no network
+- [ ] Document: optical remains primary; acoustic is fallback
+- [ ] Threat note: ambient eavesdropping vs optical shoulder-surf tradeoffs
 
-**Done when:** demo transfers a short age blob speaker→mic without network; optical remains primary.
-
----
-
-### P2-6 — Higher-capacity RDH (only if needed)
-**Why:** Histogram shifting is capacity-limited by peak height.
-
-| Task | Detail |
-|------|--------|
-| Measure | Log capacity failures in pipeline |
-| Candidates | Prediction-error expansion, PVO — still reversible, still encrypt-first |
-| Guard | Do not replace HS until metrics say short age blobs fail real covers |
-
-**Done when:** either metrics say HS is enough, or alternate RDH is behind a flag with tests.
+**Done when:** one documented offline acoustic round-trip of a short age blob.
 
 ---
 
-### P2-7 — Recursive IA-of-IA wiring
-**Why:** `loop/hooks.ts` emits events; experts are stubs.
+### P2-6 — Higher-capacity RDH (conditional)
 
-| Task | Detail |
-|------|--------|
-| Wire | Receiver/sender call `emitOpticalEvent` with live metrics |
-| Policy | On-device rules: FPS, gate strictness, “stop and Destroy buffers” |
-| Storage | Policy state in Vault only; wiped on Destroy = Restart |
-| No cloud | Experts never exfiltrate metrics |
+- [ ] Instrument pipeline: log capacity failures (need vs peak)
+- [ ] Collect sample covers (flat vs natural image) capacity stats
+- [ ] **If** short age blobs fail real covers: prototype prediction-error expansion or PVO
+- [ ] Keep encrypt-first; never embed plaintext
+- [ ] Feature flag: `rdh_backend = histogram | pee`
+- [ ] Round-trip + checksum tests for any new backend
+- [ ] **If** HS sufficient: close item with metrics note, no code churn
 
-**Done when:** at least one adaptive behavior (e.g. auto-slow sender FPS after high CRC) works offline.
-
----
-
-### P2-8 — CLI / UX polish
-| Task | Detail |
-|------|--------|
-| `trv-optical decrypt` | Done in Phase 1; add `encrypt-file` / `frame-stream` subcommands |
-| Identity files | `age-keygen -o` compatible paths documented |
-| Windows | Note WSL2 as preferred; native if `age` + Rust toolchains exist |
-| Obtainium / release | Optional signed release zip of `optical/` static pages for non-git users |
+**Done when:** either metrics close the item, or alternate RDH is flagged and tested.
 
 ---
 
-## Priority order (suggested)
+### P2-7 — Recursive IA-of-IA / loop wiring
 
-1. **P2-1** jsQR fallback — maximizes device coverage  
-2. **P2-2** Soliton default — correctness under loss  
-3. **P2-4** Optical reliability — real-world peel rates  
-4. **P2-3** Cargo vendor — air-gap builds  
-5. **P2-7** Loop wiring — adaptive behavior  
-6. **P2-8** CLI polish  
-7. **P2-6** RDH upgrade — only if needed  
-8. **P2-5** Acoustic — optional secondary  
+- [ ] `qr-receiver.html`: call `emitOpticalEvent` (or inline equivalent) on ingest/complete/fail
+- [ ] `qr-sender.html`: optional metrics emit if shared context exists
+- [ ] Map metrics → `defaultCoordinatorNote` policy strings
+- [ ] Implement one adaptive behavior (example: recommend lower FPS after CRC spike)
+- [ ] Vault-local policy blob schema (versioned JSON)
+- [ ] Wipe policy on Destroy = Restart (document + helper)
+- [ ] No network exfiltration of metrics
+- [ ] Unit-test pure policy functions in `loop/hooks.ts`
 
----
-
-## Non-goals (still)
-
-- Pixel WiFi CSI / through-wall sensing  
-- Public DNS for `sentinel.viewer`  
-- Google/Meta/Microsoft SDKs in core  
-- Cloud Vault or hosted key custody  
-- Claiming HIPAA certification from code alone  
+**Done when:** one offline adaptive behavior is observable in the receiver/sender UX or logs.
 
 ---
 
-## Tracking
+### P2-8 — CLI / UX / release polish
 
-Open focused issues per item (e.g. `optical-airgap P2-1 jsQR`) rather than overloading #38.  
-Phase 1 issue: [#38](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/issues/38) (complete).
+- [ ] `trv-optical frame-stream`: stdin → N TRVL frames to stdout/files
+- [ ] `trv-optical encrypt-file` / `decrypt-file` path args
+- [ ] Identity file format examples matching `age-keygen -o`
+- [ ] Windows: WSL2 primary path documented; native optional note
+- [ ] Optional: static zip of `optical/*.html` + `qrcode-lite.js` + vendor for non-git users
+- [ ] Optional: checksums for release artifacts
+- [ ] README quickstart link check (all Phase 1 + Phase 2 docs)
+- [ ] COMPATIBILITY.md: BarcodeDetector vs jsQR matrix row
+
+**Done when:** CLI covers frame-stream + file encrypt/decrypt; docs match reality.
+
+---
+
+## Cross-cutting tasks
+
+- [ ] Keep TS and Rust **TRVL** layout byte-identical (regression test vectors)
+- [ ] Keep age ciphertext interoperable (Go age / rage / typage / Rust age)
+- [ ] No new dependency without license + “no Big Tech core” check
+- [ ] Prefer in-tree or vendored code over CDN forever
+- [ ] Update STATUS.md checkboxes as each P2-x completes
+- [ ] Open one GitHub issue per P2-x (avoid reusing #38 for all work)
+
+---
+
+## Non-goals (do not schedule)
+
+- [ ] ~~Pixel WiFi CSI / through-wall~~
+- [ ] ~~Public DNS for sentinel.viewer~~
+- [ ] ~~Google/Meta/Microsoft SDKs in core~~
+- [ ] ~~Cloud Vault / hosted keys~~
+- [ ] ~~HIPAA certification-from-repo claims~~
+
+---
+
+## Suggested issue titles
+
+```
+optical-airgap P2-1: jsQR fallback receiver
+optical-airgap P2-2: Robust Soliton default TS+Rust
+optical-airgap P2-3: cargo vendor offline build
+optical-airgap P2-4: optical reliability pack
+optical-airgap P2-5: acoustic secondary channel
+optical-airgap P2-6: RDH capacity metrics / optional PEE
+optical-airgap P2-7: loop hooks adaptive policy
+optical-airgap P2-8: CLI frame-stream and release polish
+```
