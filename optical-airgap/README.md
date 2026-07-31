@@ -6,6 +6,7 @@ Local-first, zero-trust optical transfer stack for The Remote Viewer.
 **Tracking:** https://github.com/Sentinel-Archetecht/The-Remote-Viewer/issues/38  
 **License:** MIT (see `LICENSE`) — zero Meta / Google / Microsoft in the core path  
 **Install (step-by-step):** [INSTALL.md](./INSTALL.md)  
+**Device compatibility:** [COMPATIBILITY.md](./COMPATIBILITY.md)  
 **Tech deep dive (share this):** [TECHNICAL.md](./TECHNICAL.md)
 
 ## Design Goals (locked)
@@ -17,6 +18,19 @@ Local-first, zero-trust optical transfer stack for The Remote Viewer.
 - Primary path is pure optical (screen → camera)
 - Outside email only ever sees already-encrypted + stego’d blobs
 - Encrypt-first always (HIPAA-aligned architecture; organizational compliance still required for real ePHI)
+
+## Compatible devices (summary)
+
+| Device | Core crypto + RDH + LT | Optical send | Optical receive |
+|--------|------------------------|--------------|-----------------|
+| Obsolete Acer (Linux) | Yes | Yes | Optional webcam |
+| Pixel 7 + GrapheneOS | Yes (Termux) | Yes | Yes when used |
+| Tablet (Termux/sideload-capable) | Yes | Yes | If camera available |
+| Termux CLI | Yes | No | Via later Android glue |
+
+Full matrix, out-of-scope hardware, and pair topology: **[COMPATIBILITY.md](./COMPATIBILITY.md)**.
+
+**Not compatible by design:** Play-Services-required stacks, Microsoft cloud key custody, Pixel WiFi CSI through-wall sensing.
 
 ## Prerequisites
 
@@ -136,6 +150,7 @@ Pure local claim bound to Vault / DID. Never registered on public DNS. Destroyed
 - Real ePHI without organizational HIPAA process
 
 ## Docs
-- [INSTALL.md](./INSTALL.md) — step-by-step install and first run (includes expanded prerequisites)
+- [COMPATIBILITY.md](./COMPATIBILITY.md) — device matrix (Acer, Pixel 7, tablet, Termux)
+- [INSTALL.md](./INSTALL.md) — step-by-step install and first run
 - [TECHNICAL.md](./TECHNICAL.md) — architecture, crypto, RDH, LT, threat model, share/contribute
 - [STATUS.md](./STATUS.md) — short shipped / not-shipped checklist
