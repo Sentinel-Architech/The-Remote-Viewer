@@ -14,7 +14,7 @@
     "expo": "~57.0.9",
     "expo-status-bar": "~57.0.1",
     "expo-crypto": "~57.0.1",
-    "expo-secure-store": "~14.2.3",
+    "expo-secure-store": "~57.0.1",
     "react": "19.2.8",
     "react-native": "0.86.2",
     "@noble/ed25519": "^2.2.3",
