@@ -2,7 +2,70 @@
 
 One place for reviewers and CI to check professional claims and academic citations before a specialist skill merges.
 
-**Local-first where possible. Crossref only for DOI existence/metadata.**
+**Local-first where possible. Crossref only for DOI existence/metadata.**  
+**Works for contributors and reviewers on any iOS or Android device, anywhere — not limited to one phone or OS.**
+
+---
+
+## Global mobile access (iOS + Android)
+
+Anyone on **iPhone, iPad, or any Android phone/tablet** can participate. You do not need GrapheneOS or Termux to verify a citation or contribute a skill.
+
+### Path A — Browser only (every device)
+
+No install. Works offline for reading skills; needs network only to resolve DOIs.
+
+1. Open the skill file on GitHub (mobile browser or GitHub app).
+2. For each DOI, open:
+   ```text
+   https://doi.org/<doi>
+   ```
+   or
+   ```text
+   https://api.crossref.org/works/<doi>
+   ```
+3. **Resolves + title matches claim** → OK.  
+   **404 / not found** → treat as hallucinated; strip it.  
+   **Wrong paper** → fix or remove.
+
+Credential links (state boards, ORCID, university pages) open the same way in any mobile browser worldwide.
+
+### Path B — Python script (when you have a shell)
+
+Same script, same behavior, on whatever device can run Python 3:
+
+| Environment | Typical setup |
+|-------------|----------------|
+| **Android** | Termux, or any Linux-on-Android environment |
+| **iOS** | a-Shell, iSH, or SSH to a machine you control |
+| **Laptop / CI** | System Python 3 |
+
+```bash
+cd grok/verification
+python verify_dois.py --mailto you@example.com --file ../skills/<domain>/SKILL.md
+```
+
+Crossref is a global public API. No region lock. Use a real `mailto` from any country for the polite pool.
+
+### Path C — Contribute from the phone
+
+1. Edit or create `grok/skills/<domain>/SKILL.md` via GitHub mobile (web or app), or clone with a mobile git client.
+2. Open a PR on branch `TheRemoteViewer`.
+3. Paste public credential links and DOIs in the PR body.
+4. Reviewers (on any device) use Path A or B to verify.
+
+Skills are plain markdown. No App Store or Play Store dependency for contribution or citation checks.
+
+### What stays local vs what needs network
+
+| Task | Network? | Device |
+|------|----------|--------|
+| Read skill / router rules | No (once cloned or viewed) | Any |
+| Resolve DOI / open credential link | Yes (Crossref or board site) | Any browser |
+| Run `verify_dois.py` | Yes (Crossref) | Any with Python 3 |
+| On-device specialist answers (llama.cpp) | No | Device that runs the model |
+
+Verification is intentionally usable from a normal phone browser so professionals and reviewers are not locked to one stack.
 
 ---
 
@@ -33,7 +96,7 @@ Contributor should provide in the PR (public links only):
 
 Never store license scans, SSNs, or private documents in the repo.
 
-Common public checks:
+Common public checks (open in any mobile browser):
 
 | Domain | Where to look |
 |--------|----------------|
@@ -43,6 +106,8 @@ Common public checks:
 | Nursing | State board / Nursys |
 | Engineering | State PE lookup, NCEES where public |
 | Research | ORCID, Google Scholar, institutional profile |
+
+Boards and directories outside the US work the same way: use the official public registry for that country or profession.
 
 ---
 
@@ -55,7 +120,7 @@ For each material claim that cites a paper:
 3. **Supports claim?** Abstract/relevant section actually says what the skill asserts.
 4. **Status?** Not retracted; preprint vs peer-reviewed labeled if it matters.
 
-Prefer official guidelines (CDC, AMS, state code, ILCOR, etc.) when they exist; use papers as support, not as a substitute for the governing standard.
+Prefer official guidelines (CDC, AMS, state code, ILCOR, national meteorological services, etc.) when they exist; use papers as support, not as a substitute for the governing standard.
 
 ---
 
@@ -72,7 +137,8 @@ https://api.crossref.org/works/<doi>?mailto=you@example.com
 | 404 / DOI not found | Hallucinated or wrong — strip |
 | Resolves but wrong paper | Invalid for this claim — strip or fix |
 
-Shape checks (`10.xxxx/...`) are filters only. **Resolution is mandatory.**
+Shape checks (`10.xxxx/...`) are filters only. **Resolution is mandatory.**  
+Works in Safari, Chrome, Firefox, or in-app browsers on iOS and Android.
 
 ---
 
@@ -84,13 +150,13 @@ Shape checks (`10.xxxx/...`) are filters only. **Resolution is mandatory.**
 | **Polite** | `mailto=` email | **10/sec** | 3/sec | 3–5 |
 | Plus | Paid token | 150/sec | higher | — |
 
-Always use polite pool:
+Always use polite pool when scripting:
 
 ```bash
 curl "https://api.crossref.org/works/10.1038/nature12373?mailto=you@example.com"
 ```
 
-HTTP **429** → back off. Cache results. Sequential checks for PR review are fine.
+HTTP **429** → back off. Cache results. Sequential checks for PR review are fine from any region.
 
 ---
 
@@ -118,13 +184,14 @@ HALF_OPEN → few probes after cooldown (30–60s)
 - 404 does **not** count as breaker failure.
 - Backoff retries a struggling call; breaker stops calling a struggling service.
 
-Use both for batch/CI. Backoff alone is enough for a few manual DOI checks.
+Use both for batch/CI. Backoff alone is enough for a few manual DOI checks. Browser-only Path A does not need a breaker — you resolve one DOI at a time by hand.
 
 ---
 
 ## 6. Tool: `verify_dois.py` — usage examples
 
-Run from the verification directory (or pass paths relative to your cwd).
+Requires Python 3 (Android Termux, iOS a-Shell/iSH, laptop, or CI).  
+Browser-only users: use Path A above instead.
 
 ### Check a single known DOI
 
@@ -168,8 +235,6 @@ Exit code is `1` if any DOI is MISSING or ERROR (useful for CI).
 python verify_dois.py --mailto you@example.com --file ../skills/first-aid/SKILL.md
 python verify_dois.py --mailto you@example.com -f ../skills/physics/SKILL.md
 ```
-
-The script finds every `10.xxxx/...` pattern in the file, de-duplicates, and resolves each one.
 
 ### No mailto (still works; public pool, stricter limits)
 
@@ -217,8 +282,6 @@ Non-zero exit if any DOI failed verification.
 
 ## 7. Error handling examples
 
-How the tool behaves when things go wrong — and what you should do.
-
 ### Hallucinated / unknown DOI (404)
 
 ```bash
@@ -232,98 +295,42 @@ Summary: 0 OK, 1 bad, 0 skipped, 1 total
 ```
 
 - **No retries** — 404 is final.
-- **Circuit breaker not tripped** — missing DOI is not a service outage.
-- **Action:** Remove or replace the citation in the skill. Exit code `1`.
+- **Circuit breaker not tripped**.
+- **Action:** Remove or replace the citation. Exit code `1`.
+
+Same check in a phone browser: open `https://doi.org/10.9999/this.does.not.exist` → not found → strip.
 
 ### Rate limited (429) — backoff then recover
 
-When Crossref returns 429, the script waits with exponential backoff (≈1s, 2s, 4s, …) and retries the same DOI.
-
-```text
-# (internal behavior — you mainly see delay, then either OK or ERROR)
-OK        10.1038/nature12373 — A safe operating space for humanity
-```
-
-If every retry still gets 429:
+Script waits with exponential backoff and retries. If still 429:
 
 ```text
 ERROR     10.1038/nature12373 (exhausted retries)
 ```
 
-**Action:** Slow down the batch, confirm `--mailto` is set, wait a minute, re-run. Do not loop tightly in a shell `while` without sleep.
+**Action:** Wait, confirm `--mailto`, re-run. Browser users: try again in a minute.
 
 ### Sustained failures — circuit opens
 
-After enough consecutive 429/5xx/network failures (default 5), later DOIs are not attempted:
-
 ```text
-ERROR     10.1111/example.one (HTTP 429)
-ERROR     10.1111/example.two (HTTP 429)
-...
 SKIPPED   10.1111/example.six (circuit open after failures)
-SKIPPED   10.1111/example.seven (circuit open)
-
-Summary: 0 OK, 2 bad, 2 skipped, ...
 ```
 
-**Action:** Wait for `--cooldown` seconds (default 45), then re-run only the remaining DOIs. Or raise `--cooldown` / lower concurrency by running sequentially (already the default).
+**Action:** Wait `--cooldown` seconds, re-run remaining DOIs.
 
 ### Network timeout / offline
 
-```text
-ERROR     10.1038/nature12373 (exhausted retries)
-```
+**Action:** Check connectivity on the phone (Wi‑Fi/cellular). Re-run when `api.crossref.org` or `doi.org` loads in the browser.
 
-or after repeated timeouts the circuit may open and further IDs show `SKIPPED`.
-
-**Action:** Check connectivity. On Termux, confirm DNS and that `api.crossref.org` is reachable. Re-run when online. No skill change required if the DOI was previously known good.
-
-### File missing or unreadable
-
-```bash
-python verify_dois.py --file ../skills/does-not-exist/SKILL.md
-```
-
-```text
-# Python traceback: FileNotFoundError
-```
-
-**Action:** Fix the path. Use paths relative to your current directory.
-
-### No DOIs in file
-
-```bash
-python verify_dois.py --file ../skills/simple-comms/SKILL.md
-```
+### File missing / no DOIs
 
 ```text
 No DOIs provided or found.
 ```
 
-Exit code `0` — nothing to verify is not a failure.
+Exit `0` — nothing to verify is not a failure.
 
-### Mixed batch (real + fake + rate pressure)
-
-```bash
-python verify_dois.py --mailto you@example.com \
-  10.1038/nature12373 \
-  10.9999/fake.doi \
-  10.1103/PhysRevLett.116.061102
-```
-
-Possible output:
-
-```text
-OK        10.1038/nature12373 — A safe operating space for humanity
-MISSING   10.9999/fake.doi (DOI not found (404))
-OK        10.1103/PhysRevLett.116.061102 — Observation of Gravitational Waves from a Binary Black Hole Merger
-
-Summary: 2 OK, 1 bad, 0 skipped, 3 total
-```
-
-Exit code `1` because of the MISSING entry. Fix the bad citation; re-run until summary shows `0 bad`.
-
-### CI pattern with explicit failure
+### CI pattern
 
 ```bash
 cd grok/verification || exit 1
@@ -339,20 +346,19 @@ fi
 
 | You see | Means | Do this |
 |---------|--------|--------|
-| `MISSING` | DOI does not exist | Strip or correct citation |
-| `ERROR` … exhausted retries | Rate limit or network after backoff | Wait, check network, re-run |
+| `MISSING` or doi.org 404 | DOI does not exist | Strip or correct citation |
+| `ERROR` … exhausted retries | Rate limit or network | Wait, check network, re-run |
 | `SKIPPED` … circuit open | Too many recent failures | Wait cooldown, re-run remainder |
 | `No DOIs provided or found` | Nothing to check | OK for skills without DOIs |
-| Traceback `FileNotFoundError` | Bad `--file` path | Fix path |
 | Exit code `1` | At least one MISSING or ERROR | Do not merge until clean |
 
 ---
 
-## 8. PR reviewer flow (short)
+## 8. PR reviewer flow (any device)
 
-1. Credential links present? Public check → verified / community / reject framing.
+1. Credential links present? Open them in the phone browser → verified / community / reject framing.
 2. Material citations have DOIs or official guideline URLs?
-3. Run `verify_dois.py` on the skill (or paste DOIs).
+3. Resolve each DOI in the browser **or** run `verify_dois.py` if you have Python.
 4. Spot-check that claims match the resolved papers.
 5. Merge with appropriate note; no private credential data in git.
 
@@ -363,5 +369,6 @@ fi
 - Not a licensing authority
 - Not a substitute for peer review of the skill’s scientific content
 - Not an on-device runtime dependency (verification stays in contributor/CI path)
+- Not restricted to one OS, one store, or one country
 
-**Primary sources. Resolvable identifiers. Honest limits.**
+**Primary sources. Resolvable identifiers. Honest limits. Any iOS or Android, globally.**
