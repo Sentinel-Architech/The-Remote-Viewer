@@ -11,35 +11,26 @@
 | Test | Result |
 |------|--------|
 | Soliton LT short | `hello-sentinel` recovered |
-| Soliton LT longer | `TRV optical air-gap on GrapheneOS+Termux` recovered |
-| age keygen | `age1…` + Vault identity file |
-| **Full chain** | encrypt → frame-stream (k=10) → peel → decrypt → **`secret viewer message`** |
+| Soliton LT longer | message recovered |
+| age keygen | Vault files |
+| Full chain | encrypt → stream → peel → decrypt → plaintext |
+| Automation | `scripts/e2e-age-lt.sh` recovered `secret viewer message` |
 
-Workspace member `optical-airgap/rust` · age 0.11 Decryptor/Identity CLI fixes · Termux: use `$HOME` not `/tmp`.
+\* [grapheneos.org](https://grapheneos.org/)
 
-\* GrapheneOS: [grapheneos.org](https://grapheneos.org/)
+## Done
 
-## Shipped (wired)
+- [x] age + Soliton LT + TRVL + golden k=8  
+- [x] CLI encrypt/decrypt/stream/peel/keygen  
+- [x] e2e scripts (`$HOME`)  
+- [x] QR HTML offline + gate v2  
+- [x] RDH optional path  
+- [x] Public docs (README / INSTALL / OPEN-SOURCE / Standard)  
 
-age (TS + Rust) · RDH · Soliton LT · TRVL · offline QR + gate v2 · FPS profiles ·  
-`trv-optical` CLI (`frame-stream` / `frame-peel` / `encrypt` / `decrypt` / `keygen`) ·  
-`pipeline/full-path.ts` · `peel-path.ts` · golden k=8 · e2e script · OSS inventory
+## Not done
 
-## Phase 2 remainder
-
-| ID | Status |
-|----|--------|
-| P2-1 jsQR | Optional vendor drop |
-| P2-3 cargo vendor | Run on networked host (`rust/OFFLINE.md`) |
-| P2-5 acoustic | Deferred — [PHASE2-R6.md](./PHASE2-R6.md) |
-| Multi-device optical | Acer ↔ phone QR when ready |
-| Paste QR lab | `optical/qr-*.html` + `trvl.txt` lines |
-
-```bash
-cd optical-airgap && npm install && npm run test:golden
-cd rust
-# LT only:
-echo hello-sentinel | cargo run --quiet --bin trv-optical -- frame-stream 16 40 \
-  | cargo run --quiet --bin trv-optical -- frame-peel
-# Full age+LT: see INSTALL.md § full chain
-```
+- [ ] Multi-device optical lab  
+- [ ] jsQR optional vendor  
+- [ ] cargo vendor  
+- [ ] Acoustic R6 (deferred)  
+- [ ] Exact payload length in LT  

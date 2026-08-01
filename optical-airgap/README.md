@@ -6,21 +6,45 @@ Local-first, zero-trust optical transfer for The Remote Viewer.
 **Standard:** [SENTINEL-STANDARD.md](./SENTINEL-STANDARD.md)  
 **Open source:** [OPEN-SOURCE.md](./OPEN-SOURCE.md)  
 **Install:** [INSTALL.md](./INSTALL.md) · **Devices:** [COMPATIBILITY.md](./COMPATIBILITY.md)  
-**Status:** [STATUS.md](./STATUS.md)
+**Status:** [STATUS.md](./STATUS.md) · **Phase 2:** [PHASE2.md](./PHASE2.md)
 
-## Verified path (2026-07-31)
+---
 
-On **GrapheneOS\* + Termux** (Pixel-class hardware):
+## Checklist (public)
+
+### Done — verified 2026-07-31 (GrapheneOS\* + Termux)
+
+- [x] age encrypt / decrypt (Rust `trv-optical` + TS `age-encryption`)
+- [x] Robust Soliton LT (default) + TRVL1 framing
+- [x] Golden degrees k=8 locked (TS ↔ Rust)
+- [x] Full chain: encrypt → frame-stream → peel → decrypt → plaintext
+- [x] Automation: [`scripts/e2e-age-lt.sh`](./scripts/e2e-age-lt.sh) (`$HOME` paths)
+- [x] LT-only demo: [`scripts/e2e-lt-demo.sh`](./scripts/e2e-lt-demo.sh)
+- [x] Offline QR sender / receiver HTML + gate v2 + FPS profiles
+- [x] RDH histogram-shifting (encrypt-first; optional before LT)
+- [x] Local `@sentinel.viewer` address helper
+- [x] OSS inventory (no Meta / Google / Microsoft core)
+- [x] Workspace membership for `cargo run`
+- [x] Install guide + Termux troubleshooting
+
+### Not done
+
+- [ ] Acer ↔ phone optical (screen/camera) lab
+- [ ] Optional jsQR under `optical/vendor/`
+- [ ] `cargo vendor` offline tree
+- [ ] Acoustic R6 (deferred)
+- [ ] Exact LT payload length field
+- [ ] Recursive IA-of-IA beyond hooks
+
+\* GrapheneOS only from [grapheneos.org](https://grapheneos.org/).
+
+---
+
+## Verified path
 
 ```
 plaintext → age → Soliton LT (TRVL) → peel → age decrypt
 ```
-
-Full CLI chain recovered live plaintext (`secret viewer message`) after encrypt → frame-stream → peel → decrypt.
-
-\* Install GrapheneOS only from [grapheneos.org](https://grapheneos.org/).
-
-## Wired modules
 
 | Layer | Code |
 |-------|------|
@@ -38,7 +62,11 @@ cd optical-airgap && npm install && npm run test:golden
 cd rust && cargo test
 ```
 
-Termux: prefer `$HOME` for temp files (not `/tmp`). See INSTALL.md.
+Termux: use `$HOME` for files (not `/tmp`). Full chain: [INSTALL.md](./INSTALL.md).
+
+```bash
+bash scripts/e2e-age-lt.sh   # needs vault-recipient + vault-identity in $HOME
+```
 
 ## Design locks
 

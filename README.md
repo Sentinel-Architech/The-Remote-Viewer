@@ -10,7 +10,52 @@
 [![CI](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/actions/workflows/ci.yml/badge.svg)](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/actions/workflows/ci.yml)
 [![Posture Pack](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/actions/workflows/build-posture-pack.yml/badge.svg)](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/actions/workflows/build-posture-pack.yml)
 
-Repository: [github.com/Sentinel-Archetecht/The-Remote-Viewer](https://github.com/Sentinel-Archetecht/The-Remote-Viewer)
+Repository: [github.com/Sentinel-Archetecht/The-Remote-Viewer](https://github.com/Sentinel-Archetecht/The-Remote-Viewer)  
+**Working branch for optical air-gap:** [`TheRemoteViewer`](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/tree/TheRemoteViewer)
+
+---
+
+## Live Proof — Optical Air-Gap (age + Soliton LT)
+
+**Operational on-device. 2026-07-31.** GrapheneOS\* + Termux (Pixel-class).
+
+```
+plaintext → age encrypt → Robust Soliton LT (TRVL frames) → peel → age decrypt
+```
+
+### Done
+
+- [x] Encrypt-first with open-source **age** (Rust CLI + TS path)
+- [x] **Robust Soliton** LT fountain (not RaptorQ default) — [Sentinel Standard](optical-airgap/SENTINEL-STANDARD.md)
+- [x] TRVL framing + golden degree vectors (TS ↔ Rust interop)
+- [x] `trv-optical` CLI: `keygen` · `encrypt` · `decrypt` · `frame-stream` · `frame-peel`
+- [x] Full chain on device recovered live plaintext (`secret viewer message`)
+- [x] One-shot automation script [`optical-airgap/scripts/e2e-age-lt.sh`](optical-airgap/scripts/e2e-age-lt.sh) (`$HOME` paths for Termux)
+- [x] Offline QR sender/receiver HTML (no CDN in core path)
+- [x] Gate v2 quality checks · FPS profiles
+- [x] Open-source inventory — zero Meta / Google / Microsoft in core — [OPEN-SOURCE.md](optical-airgap/OPEN-SOURCE.md)
+- [x] Workspace member so `cargo run` works under repo root
+- [x] Install + troubleshooting for Termux — [INSTALL.md](optical-airgap/INSTALL.md)
+
+### Not done / optional
+
+- [ ] Multi-device screen↔camera optical lab (Acer ↔ phone)
+- [ ] Optional jsQR vendor drop for browsers without BarcodeDetector
+- [ ] `cargo vendor` offline cache (see `optical-airgap/rust/OFFLINE.md`)
+- [ ] Acoustic contingency (deferred) — [PHASE2-R6.md](optical-airgap/PHASE2-R6.md)
+- [ ] Exact payload-length field in LT (today: zero-pad trim)
+
+\* GrapheneOS: install only from [grapheneos.org](https://grapheneos.org/).
+
+**Start here:** [optical-airgap/README.md](optical-airgap/README.md) · [STATUS.md](optical-airgap/STATUS.md)
+
+```bash
+git clone https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
+cd The-Remote-Viewer && git checkout TheRemoteViewer
+cd optical-airgap/rust
+# requires Vault files from: cargo run --quiet --bin trv-optical -- keygen
+bash ../scripts/e2e-age-lt.sh
+```
 
 ---
 
@@ -54,9 +99,10 @@ This is the proof that the Sentinel system is already operational at the edge.
 |------|----------------|
 | **[Hobbyist — Start from nothing](#hobbyist--start-from-nothing)** | You have never worked on this kind of project. You just want to get something running and explore. |
 | **[Builder — Zero-trust / crypto](#builder--zero-trust--crypto)** | You already care about local keys, no custody, and honest loss semantics. |
+| **[Optical air-gap](optical-airgap/README.md)** | age + Soliton LT + TRVL; verified on Termux 2026-07-31. |
 
 **Free stays free.** Optional paid packs may be offered later via Phantom / Solana.  
-**There is no live in-app shop checkout yet.** See [Packs / vending](#packs--vending).
+**There is no live in-app shop checkout yet.**
 
 ---
 
@@ -66,9 +112,9 @@ This project is still early. Most of the mobile and web clients are **scaffolds*
 
 ### What you need
 
-- A computer (Linux, macOS, or Windows with WSL is easiest)
-- [Node.js](https://nodejs.org/) (LTS version)
-- [Rust](https://rustup.rs/) (only if you want to touch the desktop binary)
+- A computer (Linux, macOS, or Windows with WSL is easiest) **or** GrapheneOS + Termux
+- [Node.js](https://nodejs.org/) (LTS) for TS golden tests
+- [Rust](https://rustup.rs/) for `trv-optical`
 - Git
 
 ### 1. Clone the repo
@@ -76,9 +122,22 @@ This project is still early. Most of the mobile and web clients are **scaffolds*
 ```bash
 git clone https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
 cd The-Remote-Viewer
+git checkout TheRemoteViewer
 ```
 
-*(Continue with existing setup instructions in the repo and docs/locked/ for the full zero-trust path.)*
+### 2. Fastest real demo (optical CLI)
+
+See [optical-airgap/INSTALL.md](optical-airgap/INSTALL.md).
+
+---
+
+## Builder — Zero-trust / crypto
+
+- Local-first keys (age) — never commit `AGE-SECRET-KEY-...`
+- Destroy = Restart
+- No platform custody of identity
+- Core path: zero Meta / Google / Microsoft runtime deps
+- Spec and posture: `docs/locked/`, `Sentinel Paradigm`, [optical-airgap/SENTINEL-STANDARD.md](optical-airgap/SENTINEL-STANDARD.md)
 
 ---
 
@@ -91,6 +150,7 @@ cd The-Remote-Viewer
 - Destroy = Restart
 - Specialist experts (Security / Protocol / Privacy / Coordinator)
 - Edge AI under user control
+- Optical air-gap transport under Sentinel Standard (Soliton LT)
 
 See `docs/locked/` and `Sentinel Paradigm` for the full architectural and legal framing.
 
