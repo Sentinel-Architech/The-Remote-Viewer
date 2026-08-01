@@ -6,6 +6,8 @@ You can put your knowledge into the Sentinel specialist system so it is availabl
 
 No cloud required. No platform custody. Your skill file lives in the repo and runs locally.
 
+**Verification (credentials, citations, DOIs):** see **[grok/verification/README.md](grok/verification/README.md)**
+
 ---
 
 ## What you are adding
@@ -65,6 +67,11 @@ You are the <Domain> specialist inside the Sentinel intelligence layer.
 - Present the model, the evidence, and the limits. Stop there.
 - When life-safety or regulated practice is involved, name the authoritative source.
 
+## Credential note (optional but preferred)
+- Credential: <license / cert / degree>
+- Issuer: <board or institution>
+- Public verification link: <URL>
+
 ## Scope boundaries
 - Stay inside this domain.
 - Hand off clearly when the question belongs to another specialist.
@@ -74,6 +81,35 @@ You are the <Domain> specialist inside the Sentinel intelligence layer.
 
 You exist to make <domain> knowledge reliable and local.
 ```
+
+---
+
+## Credentials (public only)
+
+In the PR, include public links that support your claim (state board, AMS, Nursys, university directory, ORCID, etc.).
+
+Reviewers will:
+
+- **Verified public credential** → merge with a short note
+- **Plausible but unconfirmed** → merge as community / unverified-professional
+- **No public signal** → ask for a link or decline professional framing
+
+No private documents in the repo. Full process: [grok/verification/README.md](grok/verification/README.md).
+
+---
+
+## Citations and DOIs
+
+Material academic claims should carry a resolvable DOI or an official guideline URL.
+
+Reviewers resolve DOIs (Crossref polite pool). Unresolvable DOIs are treated as invalid (hallucinated or wrong) and stripped.
+
+```bash
+cd grok/verification
+python verify_dois.py --mailto you@example.com --file ../skills/<your-domain>/SKILL.md
+```
+
+The script uses exponential backoff and a circuit breaker so bulk checks stay within Crossref limits.
 
 ---
 
@@ -100,6 +136,7 @@ Add whatever you actually practice. The list is not closed.
 - **Life-safety first** — if your domain touches emergency response, say so and cite the authority.
 - **Local-only** — the skill must work offline once loaded. No “call this API” dependency for core answers.
 - **Honest limits** — if something requires a licensed professional on site, say so plainly.
+- **Resolvable citations** — DOIs must resolve; prefer official guidelines where they exist.
 
 ---
 
