@@ -59,37 +59,56 @@ bash ../scripts/e2e-age-lt.sh
 
 ---
 
-## Live Proof — Sentinel LLM (Coordinator Expert)
+## Live Proof — Sentinel LLM (Coordinator + Specialists)
 
-**Operational on-device. 2026-07-31.**
+**Operational on-device. 2026-07-31.** Extended 2026-08-01.
 
 This is not a slide deck. This is not a mock.
 
-The **Sentinel** intelligence layer is running fully local:
+The **Sentinel** intelligence layer runs fully local:
 
 - **Runtime**: `llama.cpp`
 - **Model**: `Qwen2.5-1.5B-Instruct-Q4_K_M.gguf`
 - **Host**: GrapheneOS + Termux on Pixel 7
-- **Role**: Coordinator expert inside The Remote Viewer
+- **Role**: Coordinator + domain specialists
 
-The Coordinator is the routing brain of the specialist system:
+### Specialist system
 
-1. Security  
-2. Protocol  
-3. Privacy  
-4. **Coordinator** (this instance)
+To the average eye it is one intelligence. Under the hood it is a set of constrained experts with hard domain boundaries.
 
-It decides which expert answers, enforces domain boundaries, and produces structured zero-trust responses.
+**Current specialists** (`grok/skills/`):
 
-Verified live behaviors captured:
+| Skill | Domain |
+|-------|--------|
+| `coordinator` | Routing brain and synthesizer |
+| `remote-viewer` | Project identity, zero-trust posture, Destroy = Restart |
+| `zk` | Zero-knowledge circuits, membership proofs |
+| `political-science` | Institutions, power, incentives, primary sources |
+| `cognitive-science` | Biases, motivated reasoning, decision mechanisms |
+| `simple-comms` | Direct style enforcement |
+| `physics` | Classical through relativistic physics |
+| `quantum` | Quantum mechanics, information, experimental base |
+| `mathematics` | Arithmetic through advanced formal mathematics |
+| `first-aid` | Emergency response (AHA / Red Cross sourced) |
 
-- Explains how Sentinel works together with The Remote Viewer (Local Identity Management, On-Device AI, Zero-Trust Architecture, Enhanced Intelligence, Privacy)
-- Defines **Destroy = Restart** as the complete wipe-and-reinitialize of any previously trusted state so the device returns to a clean trust baseline
-- Articulates why on-device inference beats cloud AI on data privacy, security, latency, network exposure, and user control
+All specialists share the same delivery rules: fact-based, primary sources preferred, never lecture the Viewer.
+
+### Hybrid router (live)
+
+Keyword rules first (zero tokens). Classifier prompt ready for the local model when needed.
+
+```bash
+cd grok/router
+python route.py --list
+python route.py "how do I control severe bleeding"
+python route.py --show-skill "entanglement"
+```
+
+See [grok/router/README.md](grok/router/README.md).
+
+**Next (queued):** thin wrapper that takes a question → runs the router → emits a ready-to-paste system prompt (or launches llama.cpp with the matched skill).
 
 No cloud endpoint. No API key. No third-party weights. Prompts never leave the device. Keys and identity stay under user custody.
-
-This is the proof that the Sentinel system is already operational at the edge.
 
 ---
 
@@ -129,6 +148,13 @@ git checkout TheRemoteViewer
 
 See [optical-airgap/INSTALL.md](optical-airgap/INSTALL.md).
 
+### 3. Specialist router (on device)
+
+```bash
+cd grok/router
+python route.py --list
+```
+
 ---
 
 ## Builder — Zero-trust / crypto
@@ -148,7 +174,7 @@ See [optical-airgap/INSTALL.md](optical-airgap/INSTALL.md).
 - On-device identity & keys
 - No platform custody
 - Destroy = Restart
-- Specialist experts (Security / Protocol / Privacy / Coordinator)
+- Specialist experts under Coordinator + hybrid router
 - Edge AI under user control
 - Optical air-gap transport under Sentinel Standard (Soliton LT)
 
