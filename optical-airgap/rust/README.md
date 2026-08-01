@@ -1,44 +1,44 @@
 # trv-optical-airgap (Rust)
 
-Sovereign runtime path for TRV optical air-gap.
+Sentinel Standard optical helpers: **age** · histogram RDH · **Robust Soliton LT** · TRVL frames.
 
-Interoperates with the TypeScript module under `optical-airgap/`:
+Workspace member of the repo root (`Cargo.toml` includes `optical-airgap/rust`).
 
-| Layer | Rust | TS reference |
-|-------|------|----------------|
-| age | `age` crate | `crypto/age-interface.ts` |
-| RDH | `rdh::histogram` | `rdh/histogram-shifting.ts` |
-| LT frame | `fountain::frame` | `fountain/lt-frame.ts` |
-| Identity | `identity` | `identity/local-address.ts` |
-
-**Constraints:** MIT, no Meta/Google/Microsoft deps, encrypt-first, Destroy = Restart (use `zeroize`).
-
-## Prerequisites
-
-- Rust 1.74+ (`rustup`)
-- Network only for first `cargo build` (crates.io). Vendor later for full air-gap builds.
+## Build
 
 ```bash
 cd optical-airgap/rust
-cargo build
 cargo test
-cargo run --example age_roundtrip
+cargo run --quiet --bin trv-optical --
 ```
 
-## Pipeline (same as TS)
+## CLI
 
+| Command | Role |
+|---------|------|
+| `keygen` | recipient on stdout; identity on stderr (Vault) |
+| `encrypt <age1…>` | stdin → age ciphertext |
+| `decrypt <identity-file>` | stdin → plaintext |
+| `frame-stream [block] [count]` | stdin → `TRVL1.` lines (Soliton) |
+| `frame-peel` | `TRVL1.` lines → payload |
+| `lt-demo` / `rdh-*` / `address` | helpers |
+
+### Verified on Termux (GrapheneOS\*) 2026-07-31
+
+Full chain recovered plaintext after encrypt → frame-stream → peel → decrypt.
+
+Use **`$HOME`** for temp files on Termux (`/tmp` often fails).
+
+```bash
+echo hello | cargo run --quiet --bin trv-optical -- frame-stream 16 40 \
+  | cargo run --quiet --bin trv-optical -- frame-peel
 ```
-plaintext → age → RDH embed → LT symbols → TRVL frames → QR
-```
 
-## Status
+## age 0.11 notes
 
-- [x] Crate layout + `age` encrypt/decrypt helpers + zeroize
-- [x] Histogram-shifting RDH (port of TS logic + SHA-256 header prefix)
-- [x] TRVL frame encode/decode (magic, CRC-16/IBM)
-- [x] Local `@sentinel.viewer` helper
-- [ ] Full LT Robust Soliton encoder/peel (skeleton hooks only)
-- [ ] QR encode in pure Rust (optional; host can use `qrcode` crate later)
-- [ ] CLI binary
+- `Decryptor` is used as a struct (`Decryptor::new` → `decrypt`), not `Recipients` enum.  
+- `Identity` is not `Display`; keygen uses `to_string().expose_secret()`.
 
-See parent [../TECHNICAL.md](../TECHNICAL.md) and [../COMPATIBILITY.md](../COMPATIBILITY.md).
+## Offline
+
+See [OFFLINE.md](./OFFLINE.md).

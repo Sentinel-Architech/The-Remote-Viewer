@@ -7,6 +7,7 @@
 | [SENTINEL-STANDARD.md](./SENTINEL-STANDARD.md) | Normative policy |
 | [TECHNICAL.md](./TECHNICAL.md) | Architecture |
 | **INSTALL.md** | This file |
+| [STATUS.md](./STATUS.md) | Verification + checklist |
 
 **Repo:** https://github.com/Sentinel-Archetecht/The-Remote-Viewer · **Branch:** `TheRemoteViewer` · **License:** MIT
 
@@ -14,25 +15,16 @@
 
 ## Prerequisites
 
-### Desktop / Acer (recommended)
+### Desktop / Acer
 - Git, **Node.js 20+**, optional **Rust 1.74+**
 
-```bash
-git --version && node -v && npm -v
-# optional:
-rustc --version && cargo --version
-```
-
-### Termux on GrapheneOS (Android\*)
-- Termux from **F-Droid** (not Play)
+### Termux on GrapheneOS (Android\*) — verified 2026-07-31
+- Termux from **F-Droid**
 - GrapheneOS only from **https://grapheneos.org/**
+- `pkg install git nodejs` · optional `pkg install rust`
+- **Use `$HOME/...` for files** — `/tmp` is often not writable on Termux
 
-```bash
-pkg update && pkg install git nodejs
-# optional: pkg install age rust
-```
-
-### Explicitly not required
+### Not required
 Play Services · Meta/Microsoft SDKs · CDN scripts · public DNS for `@sentinel.viewer`
 
 ---
@@ -43,12 +35,13 @@ Play Services · Meta/Microsoft SDKs · CDN scripts · public DNS for `@sentinel
 git clone https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
 cd The-Remote-Viewer
 git checkout TheRemoteViewer
-ls optical-airgap
 ```
+
+Root `Cargo.toml` workspace includes `optical-airgap/rust` (required for `cargo run` from that crate).
 
 ---
 
-## 2. TypeScript OSS dependency (age only)
+## 2. TypeScript (age-encryption only)
 
 ```bash
 cd optical-airgap
@@ -56,92 +49,72 @@ npm install
 npm run test:golden
 ```
 
-Installs **`age-encryption`** (FiloSottile). Fountain/RDH/QR need no extra packages.
-
-Legacy path still works: `cd crypto && npm install` (same dep).
-
 ---
 
-## 3. Rust path (optional but recommended)
+## 3. Rust CLI
 
 ```bash
 cd optical-airgap/rust
 cargo test
-cargo build --release
+cargo build --release   # optional
 ```
 
-Offline later: see [rust/OFFLINE.md](./rust/OFFLINE.md) (`cargo vendor`).
+Offline later: [rust/OFFLINE.md](./rust/OFFLINE.md).
 
 ---
 
-## 4. Security rules (do not skip)
+## 4. Security rules
 
-1. **Encrypt first** — never feed plaintext into RDH or LT as “secret.”
-2. **Identity in Vault only** — never commit `AGE-SECRET-KEY-...`.
-3. **Destroy = Restart** — wipe test keys after experiments.
-4. RDH `checksumOk === false` → **do not decrypt**.
+1. **Encrypt first** — never put plaintext in RDH/LT as the secret.  
+2. **Identity in Vault only** — never commit `AGE-SECRET-KEY-...`.  
+3. **Destroy = Restart** — wipe test keys and blobs after experiments.  
+4. RDH `checksumOk === false` → do not decrypt.  
 
-Read: `rdh/SECURITY.md`, `crypto/age-notes.md`, `SENTINEL-STANDARD.md`.
+Burn any identity that appeared in screenshots or chat scrollback.
 
 ---
 
-## 5. First smoke tests
+## 5. Smoke tests
 
-### Golden Soliton degrees
+### Golden Soliton
 
 ```bash
 cd optical-airgap && npm run test:golden
-# → OK golden degrees k=8
 ```
 
-### Rust LT stream ↔ peel (no age)
+### LT only (Termux-friendly)
 
 ```bash
 cd optical-airgap/rust
-echo 'hello-sentinel' | cargo run --quiet --bin trv-optical -- frame-stream 16 40 \
-  | cargo run --quiet --bin trv-optical -- frame-peel
+echo hello-sentinel > $HOME/msg.txt
+cargo run --quiet --bin trv-optical -- frame-stream 16 40 < $HOME/msg.txt > $HOME/trvl.txt
+cargo run --quiet --bin trv-optical -- frame-peel < $HOME/trvl.txt
 # → hello-sentinel
 ```
 
-Or: `../scripts/e2e-lt-demo.sh`
-
-### age keygen + encrypt (Rust)
+### Full chain: age → LT → peel → age (verified on device)
 
 ```bash
-cargo run --quiet --bin trv-optical -- keygen
-# recipient on stdout; identity on stderr — save identity to Vault only
+cd optical-airgap/rust
+
+# Fresh Vault identity (do not reuse keys from chat/screenshots)
+cargo run --quiet --bin trv-optical -- keygen 2> $HOME/vault-identity.txt | tee $HOME/vault-recipient.txt
+chmod 600 $HOME/vault-identity.txt
+
+RECIP=$(cat $HOME/vault-recipient.txt)
+echo "secret viewer message" | cargo run --quiet --bin trv-optical -- encrypt "$RECIP" > $HOME/ct.bin
+cargo run --quiet --bin trv-optical -- frame-stream 32 0 < $HOME/ct.bin > $HOME/trvl.txt
+cargo run --quiet --bin trv-optical -- frame-peel < $HOME/trvl.txt > $HOME/ct2.bin
+cargo run --quiet --bin trv-optical -- decrypt $HOME/vault-identity.txt < $HOME/ct2.bin
+# → secret viewer message
+
+rm -f $HOME/ct.bin $HOME/ct2.bin $HOME/trvl.txt $HOME/msg.txt
 ```
 
-### Browser optical (offline QR — no CDN)
+### Browser optical (offline)
 
-Open from disk:
-
-- `optical/qr-sender.html` — Soliton LT → QR stream  
-- `optical/qr-receiver.html` — camera / paste / file → peel  
-
-Optional: drop Apache-2.0 **jsQR** into `optical/vendor/jsQR.js` (see `optical/vendor/README.md`).
-
----
-
-## 6. Full path modules (TS)
-
-| Module | Role |
-|--------|------|
-| `pipeline/full-path.ts` | age → optional RDH → Soliton → `TRVL1.` lines |
-| `pipeline/peel-path.ts` | lines → peel → optional RDH → age decrypt |
-| `pipeline/encrypt-then-rdh.ts` | age → RDH only |
-
-Compose with `npx tsx` after `npm install` when integrating into your host app.
-
----
-
-## 7. Stay current
-
-```bash
-git checkout TheRemoteViewer && git pull origin TheRemoteViewer
-cd optical-airgap && npm install
-cd rust && cargo test
-```
+- `optical/qr-sender.html` · `optical/qr-receiver.html`  
+- Optional: vendor `jsQR` under `optical/vendor/`  
 
 ---
 
@@ -149,23 +122,23 @@ cd rust && cargo test
 
 | Symptom | Fix |
 |---------|-----|
-| `age-encryption package not found` | `cd optical-airgap && npm install` (Node 20+) |
-| Golden test FAIL | Do not change Soliton math without updating Standard + both languages |
-| QR blank | Open HTML from folder path; no CDN — check `qrcode-lite.js` same directory |
-| Camera no decode | Use paste/file; or vendor jsQR |
-| RDH capacity error | Larger cover / `fill(128)` synthetic buffer |
-| `cargo` offline fail | Run `cargo vendor` once online — OFFLINE.md |
+| workspace / not a member | `git pull` — root Cargo.toml must list `optical-airgap/rust` |
+| `Identity` Display / Decryptor::Recipients | age 0.11 fixes — pull latest branch |
+| `/tmp` permission denied | use `$HOME/...` |
+| `\~` path errors | do not escape tilde; use `$HOME` |
+| cargo treats `--frame-peel` as its flag | space after `--`: `-- frame-peel` |
+| Missing `test:golden` | `cd optical-airgap` (not repo root only) |
 
 ---
 
 ## After successful install
 
 - [x] Branch `TheRemoteViewer`  
-- [x] `age-encryption` installed  
-- [x] Golden Soliton locked  
-- [x] `frame-stream` / `frame-peel` roundtrip  
-- [x] Offline QR sender/receiver  
-- [x] OPEN-SOURCE inventory  
+- [x] age-encryption / Rust age  
+- [x] Golden Soliton  
+- [x] frame-stream / frame-peel  
+- [x] **Full age+LT chain on Termux (2026-07-31)**  
+- [x] Offline QR pages  
 
 **Share:** INSTALL + OPEN-SOURCE + SENTINEL-STANDARD.  
 **Never share:** age identities, Vault material, real payloads.
