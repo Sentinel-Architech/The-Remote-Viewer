@@ -28,6 +28,8 @@ export interface PeelResult {
   ingestedSymbols: number;
   errors: number;
   usedRdh: boolean;
+  k: number;
+  blockSize: number;
 }
 
 function normalizeLine(line: string): string | null {
@@ -46,6 +48,8 @@ export async function peelTrvlToPlaintext(
 ): Promise<PeelResult> {
   const arr = typeof lines === "string" ? lines.split(/\r?\n/) : lines;
   let decoder: LTDecoder | null = null;
+  let k = 0;
+  let blockSize = 0;
   let ingested = 0;
   let errors = 0;
 
@@ -56,13 +60,12 @@ export async function peelTrvlToPlaintext(
       const frame = frameFromBase64Url(s);
       const { meta, symbol } = decodeLTFrame(frame);
       if (!decoder) {
-        decoder = new LTDecoder(meta.k, meta.blockSize);
-      } else if (
-        meta.k !== decoder["k"] &&
-        // LTDecoder exposes recoveredCount; k is constructor param — use duck
-        true
-      ) {
-        // meta mismatch checked via addSymbol side effects; keep simple
+        k = meta.k;
+        blockSize = meta.blockSize;
+        decoder = new LTDecoder(k, blockSize);
+      } else if (meta.k !== k || meta.blockSize !== blockSize) {
+        errors++;
+        continue;
       }
       decoder.addSymbol(symbol);
       ingested++;
@@ -74,11 +77,12 @@ export async function peelTrvlToPlaintext(
 
   if (!decoder || !decoder.isComplete) {
     const n = decoder?.recoveredCount ?? 0;
-    throw new Error(`incomplete peel recovered=${n} ingested=${ingested} errors=${errors}`);
+    throw new Error(
+      `incomplete peel recovered=${n}/${k} ingested=${ingested} errors=${errors}`
+    );
   }
 
   let payload = decoder.getPayload()!;
-  // trim zero pad
   let end = payload.length;
   while (end > 0 && payload[end - 1] === 0) end--;
   payload = payload.subarray(0, end);
@@ -101,5 +105,7 @@ export async function peelTrvlToPlaintext(
     ingestedSymbols: ingested,
     errors,
     usedRdh,
+    k,
+    blockSize,
   };
 }
