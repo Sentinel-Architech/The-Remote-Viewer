@@ -1,19 +1,29 @@
 #!/usr/bin/env bash
-# watch-sales-notify-v2.sh — Level 2.5 + circuit + RPC soft-retry
-# Polls Solana → payment detect → ZIP + age/LT delivery
-# + PENDING auto-retry with exponential backoff
-# + RPC circuit breaker (closed/open/half-open)
-# + rpc_call soft retries (transient blips) before circuit counts a failure
+# watch-sales-notify-v2.sh — Level 2.5 + circuit + soft-retry + multi-RPC failover
 #
-# Env tunables:
-#   RPC_RETRIES (default 3), RPC_RETRY_DELAY_SEC (default 2)
-#   CIRCUIT_FAILURE_THRESHOLD (5), CIRCUIT_COOLDOWN_SECONDS (120)
-#   MAX_TRANSIENT_RETRIES, BACKOFF_BASE_SECONDS, BACKOFF_MAX_SECONDS
+# Env:
+#   SOLANA_RPC_URLS="url1,url2,url3"   (preferred)
+#   SOLANA_RPC_URL=single-url          (fallback)
+#   RPC_RETRIES, RPC_RETRY_DELAY_SEC
+#   CIRCUIT_FAILURE_THRESHOLD, CIRCUIT_COOLDOWN_SECONDS
+#   MAX_TRANSIENT_RETRIES, BACKOFF_*
 
 set -euo pipefail
 
 SALES_ADDRESS="${SALES_ADDRESS:-HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv}"
-RPC="${SOLANA_RPC_URL:-https://api.mainnet-beta.solana.com}"
+_DEFAULT_RPCS="https://api.mainnet-beta.solana.com,https://solana-mainnet.g.alchemy.com/v2/demo"
+if [[ -n "${SOLANA_RPC_URLS:-}" ]]; then
+  IFS=',' read -r -a RPC_LIST <<< "$SOLANA_RPC_URLS"
+elif [[ -n "${SOLANA_RPC_URL:-}" ]]; then
+  RPC_LIST=("$SOLANA_RPC_URL")
+else
+  IFS=',' read -r -a RPC_LIST <<< "$_DEFAULT_RPCS"
+fi
+for i in "${!RPC_LIST[@]}"; do RPC_LIST[$i]=$(echo "${RPC_LIST[$i]}" | xargs); done
+RPC_INDEX=0
+RPC="${RPC_LIST[$RPC_INDEX]}"
+RPC_COUNT=${#RPC_LIST[@]}
+
 STATE_FILE="${STATE_FILE:-/tmp/trv-sales-last-sig}"
 POLL_SECONDS="${POLL_SECONDS:-45}"
 DISCORD_WEBHOOK="${DISCORD_WEBHOOK:-}"
@@ -35,9 +45,9 @@ mkdir -p "$DELIVER_DIR"
 touch "$RETRY_STATE"
 
 echo "════════════════════════════════════════"
-echo " TRV Sales Watcher (Level 2.5 — circuit)"
+echo " TRV Sales Watcher (Level 2.5 — failover)"
 echo " Address : $SALES_ADDRESS"
-echo " RPC     : $RPC"
+echo " RPC     : $RPC  ($((RPC_INDEX+1))/$RPC_COUNT endpoints)"
 echo " Discord : ${DISCORD_WEBHOOK:+configured}${DISCORD_WEBHOOK:-not set}"
 echo " Deliver : $DELIVER_DIR"
 echo " Vending : $VENDING_DIR"
@@ -85,17 +95,33 @@ circuit_success() {
   [[ "$state" != "closed" ]] && echo "[circuit] RPC recovered → closed" >&2
   circuit_write "closed" 0 0
 }
+
+rotate_rpc() {
+  if [[ $RPC_COUNT -le 1 ]]; then
+    echo "[rpc-failover] only one endpoint configured — no rotation" >&2
+    return 1
+  fi
+  RPC_INDEX=$(( (RPC_INDEX + 1) % RPC_COUNT ))
+  RPC="${RPC_LIST[$RPC_INDEX]}"
+  echo "[rpc-failover] switched → [$RPC_INDEX] $RPC" >&2
+  circuit_write "closed" 0 0
+  return 0
+}
+
 circuit_failure() {
   local now state failures opened_at; now=$(date +%s)
   read -r state failures opened_at <<< "$(circuit_read)"
   failures=$((failures + 1))
   if [[ "$state" == "half-open" ]]; then
     echo "[circuit] RPC probe failed → open (cooldown ${CIRCUIT_COOLDOWN_SECONDS}s)" >&2
-    circuit_write "open" "$failures" "$now"; return
+    circuit_write "open" "$failures" "$now"
+    rotate_rpc || true
+    return
   fi
   if [[ "$failures" -ge "$CIRCUIT_FAILURE_THRESHOLD" ]]; then
     echo "[circuit] RPC OPEN after $failures consecutive failures (cooldown ${CIRCUIT_COOLDOWN_SECONDS}s)" >&2
     circuit_write "open" "$failures" "$now"
+    rotate_rpc || true
   else
     circuit_write "closed" "$failures" 0
     echo "[circuit] RPC failure count $failures/$CIRCUIT_FAILURE_THRESHOLD" >&2
@@ -212,15 +238,12 @@ notify_discord() {
   curl -sS -X POST -H "Content-Type: application/json" -d "$content" "$DISCORD_WEBHOOK" >/dev/null || true
 }
 
-# Soft-retry RPC helper. Sets RPC_RESP.
-# Returns: 0=ok  1=net/timeout/HTTP  2=empty  3=JSON-RPC error  4=bad JSON
 rpc_call() {
   local payload="$1"
   local max_attempts="${RPC_RETRIES:-3}"
   local base_delay="${RPC_RETRY_DELAY_SEC:-2}"
   local attempt=1 last_rc=1
   RPC_RESP=""
-
   while [[ $attempt -le $max_attempts ]]; do
     local http_code body curl_rc
     set +e
@@ -228,7 +251,6 @@ rpc_call() {
       -X POST -H "Content-Type: application/json" -d "$payload" 2>/dev/null)
     curl_rc=$?
     set -e
-
     if [[ $curl_rc -ne 0 ]]; then
       if [[ $curl_rc -eq 28 ]]; then echo "[rpc] attempt $attempt/$max_attempts: timeout after 15s" >&2
       else echo "[rpc] attempt $attempt/$max_attempts: curl failed (rc=$curl_rc)" >&2; fi
@@ -251,7 +273,6 @@ rpc_call() {
         fi
       fi
     fi
-
     if [[ $attempt -lt $max_attempts ]]; then
       local delay=$((base_delay * (1 << (attempt - 1))))
       [[ $delay -gt 15 ]] && delay=15
@@ -260,7 +281,6 @@ rpc_call() {
     fi
     attempt=$((attempt + 1))
   done
-
   echo "[rpc] all $max_attempts attempts failed (last_rc=$last_rc)" >&2
   return $last_rc
 }
