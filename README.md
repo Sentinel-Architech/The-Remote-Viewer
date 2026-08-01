@@ -11,7 +11,22 @@
 [![Posture Pack](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/actions/workflows/build-posture-pack.yml/badge.svg)](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/actions/workflows/build-posture-pack.yml)
 
 Repository: [github.com/Sentinel-Archetecht/The-Remote-Viewer](https://github.com/Sentinel-Archetecht/The-Remote-Viewer)  
-**Working branch for optical air-gap:** [`TheRemoteViewer`](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/tree/TheRemoteViewer)
+**Working branch:** [`TheRemoteViewer`](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/tree/TheRemoteViewer)
+
+---
+
+## Start here — three paths
+
+One repo. Three real entry points.
+
+| Path | What it is |
+|------|------------|
+| **[1. Optical air-gap](optical-airgap/README.md)** | Proven transport: age encrypt → Robust Soliton LT → peel → decrypt. Verified on GrapheneOS + Termux 2026-07-31. |
+| **[2. Sentinel specialists + router](#live-proof--sentinel-llm-coordinator--specialists)** | On-device intelligence layer. Coordinator routes to domain experts. Hybrid router live. |
+| **[3. Zero-trust / Builder](#zero-trust--builder)** | Keys, posture, Destroy = Restart, full stack rules. |
+
+**Free stays free.** Optional paid packs may be offered later via Phantom / Solana.  
+**There is no live in-app shop checkout yet.**
 
 ---
 
@@ -63,8 +78,6 @@ bash ../scripts/e2e-age-lt.sh
 
 **Operational on-device. 2026-07-31.** Extended 2026-08-01.
 
-This is not a slide deck. This is not a mock.
-
 The **Sentinel** intelligence layer runs fully local:
 
 - **Runtime**: `llama.cpp`
@@ -108,62 +121,23 @@ See [grok/router/README.md](grok/router/README.md).
 
 **Next (queued):** thin wrapper that takes a question → runs the router → emits a ready-to-paste system prompt (or launches llama.cpp with the matched skill).
 
-No cloud endpoint. No API key. No third-party weights. Prompts never leave the device. Keys and identity stay under user custody.
+No cloud endpoint. No API key. No third-party weights. Prompts never leave the device.
 
 ---
 
-## Two ways in
-
-| Path | Who it’s for |
-|------|----------------|
-| **[Hobbyist — Start from nothing](#hobbyist--start-from-nothing)** | You have never worked on this kind of project. You just want to get something running and explore. |
-| **[Builder — Zero-trust / crypto](#builder--zero-trust--crypto)** | You already care about local keys, no custody, and honest loss semantics. |
-| **[Optical air-gap](optical-airgap/README.md)** | age + Soliton LT + TRVL; verified on Termux 2026-07-31. |
-
-**Free stays free.** Optional paid packs may be offered later via Phantom / Solana.  
-**There is no live in-app shop checkout yet.**
-
----
-
-## Hobbyist — Start from nothing
-
-This project is still early. Most of the mobile and web clients are **scaffolds** (structural placeholders). That is fine. You can still learn the shape of the system and run the pieces that exist.
-
-### What you need
-
-- A computer (Linux, macOS, or Windows with WSL is easiest) **or** GrapheneOS + Termux
-- [Node.js](https://nodejs.org/) (LTS) for TS golden tests
-- [Rust](https://rustup.rs/) for `trv-optical`
-- Git
-
-### 1. Clone the repo
-
-```bash
-git clone https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
-cd The-Remote-Viewer
-git checkout TheRemoteViewer
-```
-
-### 2. Fastest real demo (optical CLI)
-
-See [optical-airgap/INSTALL.md](optical-airgap/INSTALL.md).
-
-### 3. Specialist router (on device)
-
-```bash
-cd grok/router
-python route.py --list
-```
-
----
-
-## Builder — Zero-trust / crypto
+## Zero-trust / Builder
 
 - Local-first keys (age) — never commit `AGE-SECRET-KEY-...`
 - Destroy = Restart
 - No platform custody of identity
 - Core path: zero Meta / Google / Microsoft runtime deps
 - Spec and posture: `docs/locked/`, `Sentinel Paradigm`, [optical-airgap/SENTINEL-STANDARD.md](optical-airgap/SENTINEL-STANDARD.md)
+
+```bash
+git clone https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
+cd The-Remote-Viewer
+git checkout TheRemoteViewer
+```
 
 ---
 
