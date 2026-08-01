@@ -40,12 +40,18 @@ BLOCK_SIZE="${3:-32}"
 
 if [[ -z "$ID" || -z "$RECIPIENT" ]]; then
   echo "Usage: $0 <catalog-id> <buyer-age1-recipient> [block_size=32]" >&2
+  echo "  recipient must be a valid age1... public key" >&2
   echo "Catalog IDs:" >&2
   if command -v jq >/dev/null; then
     jq -r '.[].id' "$CATALOG" >&2
   else
     grep -o '"id": "[^"]*"' "$CATALOG" >&2
   fi
+  exit 1
+fi
+
+if [[ ! "$RECIPIENT" =~ ^age1 ]]; then
+  echo "ERROR: recipient must start with age1 (got: ${RECIPIENT:0:20}...)" >&2
   exit 1
 fi
 
