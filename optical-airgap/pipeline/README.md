@@ -1,39 +1,35 @@
-# Pipeline helpers (phone-optional)
+# Pipeline — wired open-source path
 
-## encrypt-then-rdh.ts
+## Modules
 
-```
-plaintext → age encrypt → histogram-shifting RDH → stego cover
-```
+| File | Role |
+|------|------|
+| `encrypt-then-rdh.ts` | age → RDH only |
+| **`full-path.ts`** | age → optional RDH → **Soliton LT** → `TRVL1.` lines |
+| **`peel-path.ts`** | `TRVL1.` → peel → optional RDH extract → age decrypt |
 
-Runs entirely on Acer / Node / Termux. No camera, no phone.
+## Required OSS
 
-### Minimal flow (once age-encryption is installed)
+See [../OPEN-SOURCE.md](../OPEN-SOURCE.md).
 
-```ts
-import { generateAgeKeyPair } from "../crypto/age-interface.js";
-import { encryptTextThenRdh } from "./encrypt-then-rdh.js";
-
-const { identity, recipient } = await generateAgeKeyPair();
-// keep identity in Vault only
-
-// cover = raw grayscale bytes of an image (or any 8-bit buffer)
-const cover = new Uint8Array(/* ... */);
-
-const result = await encryptTextThenRdh(
-  "TRV test payload",
-  recipient,
-  cover
-);
-
-// result.rdh.stego  → next step is LT fountain + QR (still desktop-side)
-// result.encrypted  → ciphertext metadata
+```bash
+cd optical-airgap && npm install   # pulls age-encryption only for crypto
 ```
 
-### Capacity note
-Histogram shifting capacity is limited by the height of the peak bin.
-For short keys / identity claims this is usually enough.
-For larger payloads use a bigger cover or switch to a higher-capacity RDH later.
+Fountain modules need **no** npm packages.
 
-### Destroy = Restart
-Zero the plaintext (done inside the helper), wipe identity, and discard stego/ciphertext buffers when the Viewer is destroyed.
+## Rust equivalent
+
+```bash
+cd rust
+# encrypt then stream:
+#   trv-optical encrypt age1... < plain.bin | trv-optical frame-stream 32
+# peel:
+#   trv-optical frame-peel < frames.txt | trv-optical decrypt identity.txt
+```
+
+(Compose with shell; age ciphertext is the LT payload when RDH is skipped.)
+
+## Policy
+
+[SENTINEL-STANDARD.md](../SENTINEL-STANDARD.md) — Soliton LT, no RaptorQ default.

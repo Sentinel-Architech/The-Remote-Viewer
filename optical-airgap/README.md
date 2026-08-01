@@ -3,48 +3,45 @@
 Local-first, zero-trust optical transfer for The Remote Viewer.
 
 **Branch:** `TheRemoteViewer` · **License:** MIT  
-**The Sentinel Standard:** [SENTINEL-STANDARD.md](./SENTINEL-STANDARD.md)  
-**Install:** [INSTALL.md](./INSTALL.md) · **Devices:** [COMPATIBILITY.md](./COMPATIBILITY.md) · **Tech:** [TECHNICAL.md](./TECHNICAL.md)  
-**Status:** [STATUS.md](./STATUS.md) · **Phase 2:** [PHASE2.md](./PHASE2.md)
+**Standard:** [SENTINEL-STANDARD.md](./SENTINEL-STANDARD.md)  
+**Open source:** [OPEN-SOURCE.md](./OPEN-SOURCE.md) — all required deps listed  
+**Install:** [INSTALL.md](./INSTALL.md) · **Devices:** [COMPATIBILITY.md](./COMPATIBILITY.md)  
+**Status:** [STATUS.md](./STATUS.md)
 
-## Phase 1 — complete
+## Wired path
 
 ```
-plaintext → age → RDH → LT (Robust Soliton) → TRVL → offline QR → peel → decrypt
+plaintext → age (OSS) → optional RDH → LT Robust Soliton → TRVL → QR/paste
+         → peel → decrypt
 ```
 
-**Fountain policy (normative):** Luby Transform + **Robust Soliton** (`c=0.1`, `δ=0.05`).  
-**Not standard:** RaptorQ / RFC 6330 precode as the default path — see Sentinel Standard.
-
-| Area | Location |
-|------|----------|
-| TS age / RDH / pipeline | `crypto/`, `rdh/`, `pipeline/` |
-| LT + TRVL + Soliton | `fountain/` |
-| Offline QR send/receive | `optical/` |
-| Loop hooks | `loop/hooks.ts` |
-| Rust + CLI | `rust/` (`trv-optical`) |
+| Layer | Code |
+|-------|------|
+| Full outbound | [`pipeline/full-path.ts`](./pipeline/full-path.ts) |
+| Full inbound | [`pipeline/peel-path.ts`](./pipeline/peel-path.ts) |
+| Rust CLI | `rust/` → `trv-optical frame-stream` / `frame-peel` |
+| Browser | `optical/qr-sender.html` + `qr-receiver.html` |
 
 ## Prerequisites
 
-- **Desktop:** Git, Node 20+ and/or Rust 1.74+
-- **Mobile Android\*:** prefer **GrapheneOS** + Termux (F-Droid)
-- **Not required:** Play Services, Meta/Microsoft SDKs, public DNS, paid hardware
+```bash
+cd optical-airgap && npm install          # age-encryption only
+cd rust && cargo build                   # age, zeroize, sha2, thiserror
+```
 
-\* **Android\*** hardened path: install GrapheneOS only from **[grapheneos.org](https://grapheneos.org/)** · **[grapheneos.org/install](https://grapheneos.org/install/)**
+- **Mobile Android\*:** GrapheneOS from [grapheneos.org](https://grapheneos.org/) + Termux  
+- **Not required:** Play Services, Meta/Microsoft SDKs, CDN scripts  
 
 ## Quick start
 
 ```bash
 git clone https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
 cd The-Remote-Viewer && git checkout TheRemoteViewer
-cd optical-airgap/crypto && npm install
-cd ../rust && cargo test && cargo run --bin trv-optical -- keygen
+cd optical-airgap && npm install && npm run test:golden
+cd rust && cargo test
 ```
-
-Open `optical/qr-sender.html` and `optical/qr-receiver.html`.
 
 ## Design locks
 
-- Encrypt-first · Zero Meta/Google/Microsoft in core · Destroy = Restart  
-- `@sentinel.viewer` local-only · GrapheneOS from official source only  
-- **Sentinel Standard 1.0** fountain = Soliton LT, not RaptorQ  
+Encrypt-first · Soliton LT (not RaptorQ) · Zero Meta/Google/Microsoft core ·  
+Destroy = Restart · `@sentinel.viewer` local-only · GrapheneOS official only  

@@ -1,30 +1,39 @@
 # Optical Air-Gap — Status
 
-**Policy:** [SENTINEL-STANDARD.md](./SENTINEL-STANDARD.md) — Optical Fountain 1.0  
-**Phase 1:** COMPLETE · **Phase 2:** [PHASE2.md](./PHASE2.md)
+**Policy:** [SENTINEL-STANDARD.md](./SENTINEL-STANDARD.md)  
+**Open source inventory:** [OPEN-SOURCE.md](./OPEN-SOURCE.md)  
+**Phase 1:** COMPLETE
 
-## Sentinel Standard (locked)
+## Wired open-source stack
 
-LT + Robust Soliton · golden k=8 · no RaptorQ default · TRVL1 · age first
+| Layer | Implementation | OSS |
+|-------|----------------|-----|
+| age crypto | TS `age-encryption` + Rust `age` | BSD-3 / MIT-Apache |
+| RDH | first-party histogram shifting | MIT |
+| LT + Soliton | first-party TS + Rust | MIT |
+| TRVL | first-party framing | MIT |
+| QR encode | `qrcode-lite.js` | MIT |
+| QR decode | BarcodeDetector + optional jsQR | platform / Apache-2.0 |
+| CLI | `trv-optical` frame-stream / peel | MIT |
+| Full path | `pipeline/full-path.ts` + `peel-path.ts` | MIT |
 
-## Phase 2 progress
+**Excluded from core:** Meta, Google, Microsoft SDKs; RaptorQ default.
 
-| ID | Item | Status |
-|----|------|--------|
-| P2-2 | Soliton default | **Done** |
-| P2-8 | CLI frame-stream / peel | **Done** — `trv-optical frame-stream` / `frame-peel` |
-| P2-4 | Optical reliability | **Partial** — FPS profiles; gate v2 (mean/var + edge) |
-| P2-1 | jsQR | Partial |
-| P2-3 | Cargo offline | Scaffold |
-| P2-5–P2-7 | Planned | Not started |
+## Phase 2
 
-### Verify
+| ID | Status |
+|----|--------|
+| P2-2 Soliton | **Done** + Standard |
+| P2-8 CLI stream/peel | **Done** |
+| P2-4 gate v2 / FPS | **Done** (tune on device) |
+| Full path wire | **Done** |
+| OSS inventory | **Done** |
+| P2-1 jsQR | Optional vendor drop |
+| P2-3 cargo vendor | Scaffold — run on networked host |
 
 ```bash
-cd optical-airgap/rust
-cargo test
-echo 'hello-sentinel' | cargo run --quiet --bin trv-optical -- frame-stream 16 40 | cargo run --quiet --bin trv-optical -- frame-peel
+cd optical-airgap && npm install && npm run test:golden
+cd rust && cargo test
+echo hello | cargo run --quiet --bin trv-optical -- frame-stream 16 40 \
+  | cargo run --quiet --bin trv-optical -- frame-peel
 ```
-
-### Next
-Gate tuning on device · optional jsQR · cargo vendor on networked host

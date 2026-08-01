@@ -1,0 +1,34 @@
+{
+  "name": "@trv/optical-airgap",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TRV / Sentinel Standard optical air-gap: age → RDH → Soliton LT → TRVL",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test:golden": "node --experimental-strip-types scripts/check-golden.mjs",
+    "pipeline:help": "node --experimental-strip-types -e \"import('./pipeline/full-path.ts').then(m=>console.log(Object.keys(m)))\""
+  },
+  "dependencies": {
+    "age-encryption": "^0.3.0"
+  },
+  "exports": {
+    "./crypto": "./crypto/age-interface.ts",
+    "./rdh": "./rdh/histogram-shifting.ts",
+    "./fountain": "./fountain/lt-core.ts",
+    "./pipeline": "./pipeline/full-path.ts"
+  },
+  "keywords": [
+    "age",
+    "air-gap",
+    "fountain",
+    "lt-codes",
+    "soliton",
+    "steganography",
+    "zero-trust",
+    "sentinel"
+  ]
+}
