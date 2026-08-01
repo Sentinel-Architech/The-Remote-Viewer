@@ -19,6 +19,25 @@ Repository: [github.com/Sentinel-Archetecht/The-Remote-Viewer](https://github.co
 
 One repo. Three real entry points.
 
+```mermaid
+flowchart TD
+    A[The Remote Viewer] --> B[1. Optical Air-Gap]
+    A --> C[2. Sentinel Specialists]
+    A --> D[3. Zero-Trust / Builder]
+
+    B --> B1[age encrypt]
+    B1 --> B2[Soliton LT frames]
+    B2 --> B3[peel + decrypt]
+
+    C --> C1[Hybrid Router]
+    C1 --> C2[Coordinator]
+    C2 --> C3[Domain Specialists]
+
+    D --> D1[Local keys]
+    D1 --> D2[Destroy = Restart]
+    D2 --> D3[No platform custody]
+```
+
 | Path | What it is |
 |------|------------|
 | **[1. Optical air-gap](optical-airgap/README.md)** | Proven transport: age encrypt → Robust Soliton LT → peel → decrypt. Verified on GrapheneOS + Termux 2026-07-31. |
@@ -85,11 +104,33 @@ The **Sentinel** intelligence layer runs fully local:
 - **Host**: GrapheneOS + Termux on Pixel 7
 - **Role**: Coordinator + domain specialists
 
-### Specialist system
+### Specialist flow
 
-To the average eye it is one intelligence. Under the hood it is a set of constrained experts with hard domain boundaries.
+```mermaid
+flowchart LR
+    Q[User Question] --> R[Hybrid Router]
+    R -->|keyword / classifier| S[Matched Skill]
+    S --> C[Coordinator]
+    C --> P[System Prompt + Skill]
+    P --> M[llama.cpp / Qwen]
+    M --> A[Answer]
 
-**Current specialists** (`grok/skills/`):
+    subgraph Specialists
+        direction TB
+        physics
+        quantum
+        mathematics
+        first-aid
+        political-science
+        cognitive-science
+        zk
+        remote-viewer
+    end
+
+    S -.-> Specialists
+```
+
+### Current specialists (`grok/skills/`)
 
 | Skill | Domain |
 |-------|--------|
