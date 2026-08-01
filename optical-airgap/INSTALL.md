@@ -1,226 +1,147 @@
-# Optical Air-Gap — Step-by-step install
-
-Get the module running on a normal Linux/Acer box or Termux. **No phone required** for steps 1–6.
+# Optical Air-Gap — Install (Sentinel Standard)
 
 | Doc | Purpose |
 |-----|---------|
-| [README.md](./README.md) | Overview + roadmap |
-| [TECHNICAL.md](./TECHNICAL.md) | Deep architecture |
-| **INSTALL.md** (this file) | Install and first run |
-| [STATUS.md](./STATUS.md) | Shipped checklist |
+| [README.md](./README.md) | Overview |
+| [OPEN-SOURCE.md](./OPEN-SOURCE.md) | Required OSS inventory |
+| [SENTINEL-STANDARD.md](./SENTINEL-STANDARD.md) | Normative policy |
+| [TECHNICAL.md](./TECHNICAL.md) | Architecture |
+| **INSTALL.md** | This file |
 
-**Repo:** https://github.com/Sentinel-Archetecht/The-Remote-Viewer  
-**Branch:** `TheRemoteViewer`  
-**License:** MIT
+**Repo:** https://github.com/Sentinel-Archetecht/The-Remote-Viewer · **Branch:** `TheRemoteViewer` · **License:** MIT
 
 ---
 
 ## Prerequisites
 
-Pick one environment:
-
-### Option A — Desktop / Acer (recommended for first install)
-- Git
-- Node.js **20+** (for `age-encryption`)
-- Optional: a TypeScript runner (`npx tsx`, or compile with `tsc`)
-
-Check:
+### Desktop / Acer (recommended)
+- Git, **Node.js 20+**, optional **Rust 1.74+**
 
 ```bash
-git --version
-node -v    # should be v20 or higher
-npm -v
+git --version && node -v && npm -v
+# optional:
+rustc --version && cargo --version
 ```
 
-### Option B — Termux (GrapheneOS / Android, no GUI IDE required)
-- Termux from a trusted source (F-Droid recommended on de-Googled devices)
-- `pkg install git nodejs` (and optionally `age` for the CLI path)
+### Termux on GrapheneOS (Android\*)
+- Termux from **F-Droid** (not Play)
+- GrapheneOS only from **https://grapheneos.org/**
 
 ```bash
-pkg update
-pkg install git nodejs
-# optional native age CLI:
-pkg install age
+pkg update && pkg install git nodejs
+# optional: pkg install age rust
 ```
 
-### Option C — age CLI only (no npm)
-If you only want encrypt/decrypt with the Go `age` binary and will wire RDH later:
-
-```bash
-# Debian/Ubuntu example
-sudo apt install age
-# or Termux:
-pkg install age
-age --version
-```
-
-You can skip Node for pure CLI experiments; the TypeScript pipeline needs Option A or B with Node 20+.
+### Explicitly not required
+Play Services · Meta/Microsoft SDKs · CDN scripts · public DNS for `@sentinel.viewer`
 
 ---
 
-## Step 1 — Clone the repo
+## 1. Clone + branch
 
 ```bash
 git clone https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
 cd The-Remote-Viewer
-```
-
----
-
-## Step 2 — Check out the branch that has optical-airgap
-
-```bash
 git checkout TheRemoteViewer
 ls optical-airgap
 ```
 
-You should see `README.md`, `INSTALL.md`, `TECHNICAL.md`, `crypto/`, `rdh/`, `pipeline/`, `fountain/`, etc.
-
 ---
 
-## Step 3 — Install the age TypeScript dependency
+## 2. TypeScript OSS dependency (age only)
 
 ```bash
-cd optical-airgap/crypto
+cd optical-airgap
 npm install
+npm run test:golden
 ```
 
-This installs **`age-encryption`** (FiloSottile typage) per `package.json`.
+Installs **`age-encryption`** (FiloSottile). Fountain/RDH/QR need no extra packages.
 
-Confirm the package is present:
-
-```bash
-ls node_modules/age-encryption
-```
-
-If `npm install` fails on an old Node, upgrade to Node 20+ and retry.
+Legacy path still works: `cd crypto && npm install` (same dep).
 
 ---
 
-## Step 4 — (Optional) Native age CLI side-by-side
-
-Useful for interoperability checks and offline encrypt without Node:
+## 3. Rust path (optional but recommended)
 
 ```bash
-age-keygen -o /tmp/trv-test-identity.txt
-# Public recipient line is printed; private key is in the file — treat as Vault material
-
-echo "TRV install test" | age -r age1... > /tmp/trv-test.age
-age -d -i /tmp/trv-test-identity.txt /tmp/trv-test.age
-
-# Clean up test keys when done
-shred -u /tmp/trv-test-identity.txt 2>/dev/null || rm -f /tmp/trv-test-identity.txt
-rm -f /tmp/trv-test.age
+cd optical-airgap/rust
+cargo test
+cargo build --release
 ```
 
-Same age format as the TypeScript API.
+Offline later: see [rust/OFFLINE.md](./rust/OFFLINE.md) (`cargo vendor`).
 
 ---
 
-## Step 5 — Read the security rules (do not skip)
+## 4. Security rules (do not skip)
 
-```bash
-cd ../..   # back to optical-airgap/ if you were in crypto/
-# or from repo root:
-less optical-airgap/rdh/SECURITY.md
-less optical-airgap/crypto/age-notes.md
-```
+1. **Encrypt first** — never feed plaintext into RDH or LT as “secret.”
+2. **Identity in Vault only** — never commit `AGE-SECRET-KEY-...`.
+3. **Destroy = Restart** — wipe test keys after experiments.
+4. RDH `checksumOk === false` → **do not decrypt**.
 
-Hard rules:
-
-1. **Encrypt first** — never feed plaintext into RDH.
-2. **Identity stays in the Vault** — never commit `AGE-SECRET-KEY-...` material.
-3. **Destroy = Restart** — test keys must be wiped after experiments.
-4. RDH checksum failure (`checksumOk === false`) means **do not decrypt**.
+Read: `rdh/SECURITY.md`, `crypto/age-notes.md`, `SENTINEL-STANDARD.md`.
 
 ---
 
-## Step 6 — First programmatic smoke (age + RDH pipeline)
+## 5. First smoke tests
 
-From `optical-airgap/crypto` after `npm install`, you need a small runner that can resolve the TS modules. Minimal approach with `tsx`:
+### Golden Soliton degrees
 
 ```bash
-cd optical-airgap/crypto
-npm install   # if not already
-npx --yes tsx -e "
-import { generateAgeKeyPair, encryptForRecipient, decryptBlob, secureZero } from './age-interface.ts';
-
-const { identity, recipient } = await generateAgeKeyPair();
-console.log('recipient', recipient.slice(0, 20) + '...');
-
-const pt = new TextEncoder().encode('TRV optical install smoke');
-const blob = await encryptForRecipient(pt, recipient);
-secureZero(pt);
-
-const out = await decryptBlob(blob, identity);
-console.log('roundtrip', new TextDecoder().decode(out));
-"
+cd optical-airgap && npm run test:golden
+# → OK golden degrees k=8
 ```
 
-Expected: `roundtrip TRV optical install smoke`.
+### Rust LT stream ↔ peel (no age)
 
-**Pipeline (age → RDH)** needs a cover buffer large enough for header + ciphertext. Example pattern (run from a context that can import both modules):
-
-```ts
-import { generateAgeKeyPair } from "./crypto/age-interface.ts";
-import { encryptTextThenRdh, extractRdh } from "./pipeline/encrypt-then-rdh.ts";
-
-const { identity, recipient } = await generateAgeKeyPair();
-// Synthetic cover: many repeated mid-gray bytes → tall peak → more capacity
-const cover = new Uint8Array(200_000).fill(128);
-
-const result = await encryptTextThenRdh("TRV RDH smoke", recipient, cover);
-console.log("embeddedBits", result.embeddedBits, "capacity", result.capacityBits);
-
-const extracted = await extractRdh(result.rdh.stego);
-console.log("checksumOk", extracted.checksumOk);
-// Then decrypt extracted.secret with identity via decryptBlob
+```bash
+cd optical-airgap/rust
+echo 'hello-sentinel' | cargo run --quiet --bin trv-optical -- frame-stream 16 40 \
+  | cargo run --quiet --bin trv-optical -- frame-peel
+# → hello-sentinel
 ```
 
-If capacity throws, increase cover size or use a real grayscale image’s raw bytes.
+Or: `../scripts/e2e-lt-demo.sh`
+
+### age keygen + encrypt (Rust)
+
+```bash
+cargo run --quiet --bin trv-optical -- keygen
+# recipient on stdout; identity on stderr — save identity to Vault only
+```
+
+### Browser optical (offline QR — no CDN)
+
+Open from disk:
+
+- `optical/qr-sender.html` — Soliton LT → QR stream  
+- `optical/qr-receiver.html` — camera / paste / file → peel  
+
+Optional: drop Apache-2.0 **jsQR** into `optical/vendor/jsQR.js` (see `optical/vendor/README.md`).
 
 ---
 
-## Step 7 — QR sender demo (visual only)
+## 6. Full path modules (TS)
 
-```bash
-# From repo, open in any local browser:
-# optical-airgap/optical/qr-sender.html
-```
+| Module | Role |
+|--------|------|
+| `pipeline/full-path.ts` | age → optional RDH → Soliton → `TRVL1.` lines |
+| `pipeline/peel-path.ts` | lines → peel → optional RDH → age decrypt |
+| `pipeline/encrypt-then-rdh.ts` | age → RDH only |
 
-- Works offline for the page logic; **temporary CDN** loads a QR library until roadmap item “vendor pure-JS QR” lands.
-- For a strict air-gap machine, skip this step until the CDN is removed, or vendor a QR lib yourself and point the script tag at a local file.
-
-Paste a short test string → **Start Fountain Stream** → QR should animate. This does **not** yet send real LT symbols (roadmap).
+Compose with `npx tsx` after `npm install` when integrating into your host app.
 
 ---
 
-## Step 8 — Local identity helper
-
-No install beyond reading/using the TS:
-
-```ts
-import { generateLocalAddress, isValidLocalAddress } from "./identity/local-address.ts";
-
-const addr = generateLocalAddress("ops", "did:example:vault-fingerprint");
-console.log(addr.full);  // ops@sentinel.viewer
-console.log(isValidLocalAddress(addr.full));
-```
-
-Also exported from shared identity types under `apps/shared/src/identity.ts` on the same branch.
-
----
-
-## Step 9 — Stay current
+## 7. Stay current
 
 ```bash
-cd The-Remote-Viewer
-git checkout TheRemoteViewer
-git pull origin TheRemoteViewer
-cd optical-airgap/crypto && npm install
+git checkout TheRemoteViewer && git pull origin TheRemoteViewer
+cd optical-airgap && npm install
+cd rust && cargo test
 ```
-
-Track remaining work: https://github.com/Sentinel-Archetecht/The-Remote-Viewer/issues/38
 
 ---
 
@@ -228,22 +149,23 @@ Track remaining work: https://github.com/Sentinel-Archetecht/The-Remote-Viewer/i
 
 | Symptom | Fix |
 |---------|-----|
-| `age-encryption package not found` | Run `npm install` inside `optical-airgap/crypto`; use Node 20+ |
-| `RDH capacity … < required` | Larger cover (more pixels / taller peak); synthetic `fill(128)` buffers work for tests |
-| `peak and zero collide` | Try a different cover image or buffer pattern |
-| QR page blank / no codes | Network blocked CDN — expected on full air-gap until QR is vendored |
-| GrapheneOS / Play-free Termux | Use F-Droid Termux; avoid Play-only node builds if they pull Google services |
-| Accidentally committed a key | Rotate: destroy that identity, purge git history if it was real key material, generate new keys only in Vault |
+| `age-encryption package not found` | `cd optical-airgap && npm install` (Node 20+) |
+| Golden test FAIL | Do not change Soliton math without updating Standard + both languages |
+| QR blank | Open HTML from folder path; no CDN — check `qrcode-lite.js` same directory |
+| Camera no decode | Use paste/file; or vendor jsQR |
+| RDH capacity error | Larger cover / `fill(128)` synthetic buffer |
+| `cargo` offline fail | Run `cargo vendor` once online — OFFLINE.md |
 
 ---
 
-## What you have after a successful install
+## After successful install
 
-- [x] Repo on branch `TheRemoteViewer`
-- [x] `age-encryption` under `optical-airgap/crypto/node_modules`
-- [x] Ability to generate age key pairs and round-trip ciphertext
-- [x] Path to encrypt-then-RDH with capacity + checksum
-- [ ] Full optical LT→QR→camera path (not shipped yet — see README roadmap)
+- [x] Branch `TheRemoteViewer`  
+- [x] `age-encryption` installed  
+- [x] Golden Soliton locked  
+- [x] `frame-stream` / `frame-peel` roundtrip  
+- [x] Offline QR sender/receiver  
+- [x] OPEN-SOURCE inventory  
 
-**Share:** point people at `optical-airgap/INSTALL.md` + `TECHNICAL.md`.  
-**Do not share:** age identities, Vault material, or real payloads.
+**Share:** INSTALL + OPEN-SOURCE + SENTINEL-STANDARD.  
+**Never share:** age identities, Vault material, real payloads.
