@@ -4,7 +4,9 @@
 
 You can put your knowledge into the Sentinel specialist system so it is available on-device, at a moment’s notice, under the same rules as every other expert.
 
-No cloud required. No platform custody. Your skill file lives in the repo and runs locally.
+No cloud required for the skill itself. No platform custody. Your skill file lives in the repo and runs locally wherever the Viewer runs.
+
+**Any iOS or Android, globally.** Contribute and verify from a normal phone browser; Python is optional.
 
 **Verification (credentials, citations, DOIs):** see **[grok/verification/README.md](grok/verification/README.md)**
 
@@ -24,6 +26,8 @@ When someone asks a question that matches your domain, the router loads your ski
 ---
 
 ## Fast path (moment’s notice)
+
+Works from GitHub mobile (iOS/Android), desktop, or a local clone.
 
 1. **Copy the template** below into a new file:
    ```
@@ -86,9 +90,9 @@ You exist to make <domain> knowledge reliable and local.
 
 ## Credentials (public only)
 
-In the PR, include public links that support your claim (state board, AMS, Nursys, university directory, ORCID, etc.).
+In the PR, include public links that support your claim (state board, AMS, Nursys, university directory, ORCID, national registry in your country, etc.).
 
-Reviewers will:
+Reviewers will (from any phone or computer):
 
 - **Verified public credential** → merge with a short note
 - **Plausible but unconfirmed** → merge as community / unverified-professional
@@ -102,14 +106,16 @@ No private documents in the repo. Full process: [grok/verification/README.md](gr
 
 Material academic claims should carry a resolvable DOI or an official guideline URL.
 
-Reviewers resolve DOIs (Crossref polite pool). Unresolvable DOIs are treated as invalid (hallucinated or wrong) and stripped.
+**From any iPhone or Android browser:** open `https://doi.org/<doi>`. If it 404s, strip the citation.
+
+**With Python (optional):**
 
 ```bash
 cd grok/verification
 python verify_dois.py --mailto you@example.com --file ../skills/<your-domain>/SKILL.md
 ```
 
-The script uses exponential backoff and a circuit breaker so bulk checks stay within Crossref limits.
+The script uses exponential backoff and a circuit breaker so bulk checks stay within Crossref limits. Crossref is available globally.
 
 ---
 
@@ -125,7 +131,7 @@ The script uses exponential backoff and a circuit breaker so bulk checks stay wi
 | History (primary-source) | archive, primary document, chronology |
 | Agriculture | soil, crop, irrigation, pest management |
 
-Add whatever you actually practice. The list is not closed.
+Add whatever you actually practice. The list is not closed. National and regional standards are welcome; cite the authority you use.
 
 ---
 
@@ -159,4 +165,4 @@ The Coordinator and hybrid router will load your skill when the question matches
 Open an issue with label idea or discussion, or start a PR draft.  
 We will help you shape the skill so it fits the system without diluting your expertise.
 
-**Your knowledge. On-device. At a moment’s notice.**
+**Your knowledge. On-device. At a moment’s notice. Any iOS or Android, globally.**
