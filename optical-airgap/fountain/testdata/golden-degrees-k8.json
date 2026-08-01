@@ -4,7 +4,6 @@
   "delta": 0.05,
   "mode": "soliton",
   "seedToUnit": "abs(sin(seed * 12.9898) * 43758.5453) % 1",
-  "note": "Regenerate with TS or Rust after changing Soliton math. Degrees for seeds 0..31 must match across languages.",
-  "degrees": null,
-  "how_to_fill": "Run a small script that prints sampleDegreeSoliton(8, seed) for seed in 0..31 and paste the array here; then assert in both test suites."
+  "note": "TS robust-soliton.ts + Rust fountain/soliton.rs must match this table. Regenerated 2026-07-31.",
+  "degrees": [1, 5, 1, 3, 2, 3, 4, 2, 5, 3, 1, 2, 5, 1, 2, 2, 5, 2, 5, 2, 5, 3, 5, 4, 5, 5, 3, 8, 5, 4, 7, 5]
 }

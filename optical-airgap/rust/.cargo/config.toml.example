@@ -1,0 +1,13 @@
+# Copy to .cargo/config.toml after `cargo vendor`
+#
+#   cargo vendor vendor
+#   cp .cargo/config.toml.example .cargo/config.toml
+#   cargo build --offline
+#
+# See INSTALL.md “Rust offline”.
+
+[source.crates-io]
+replace-with = "vendored-sources"
+
+[source.vendored-sources]
+directory = "vendor"

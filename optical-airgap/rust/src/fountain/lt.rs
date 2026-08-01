@@ -3,7 +3,7 @@
 //! Use DegreeMode::Legacy for Phase-1 heuristic interop.
 
 use super::frame::LtSymbol;
-use super::soliton::{sample_degree_legacy, sample_degree_soliton, soliton_cdf, robust_soliton};
+use super::soliton::{robust_soliton, sample_degree_legacy, sample_degree_soliton, soliton_cdf};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DegreeMode {
@@ -65,6 +65,12 @@ pub fn encode_symbol(blocks: &[SourceBlock], seed: u32, opts: &EncodeOpts) -> Lt
         DegreeMode::Legacy => sample_degree_legacy(k, seed),
         DegreeMode::Soliton => sample_degree_soliton(k, seed, opts.c, opts.delta),
     };
+    encode_symbol_with_degree(blocks, seed, degree)
+}
+
+fn encode_symbol_with_degree(blocks: &[SourceBlock], seed: u32, degree: usize) -> LtSymbol {
+    let k = blocks.len();
+    let degree = degree.min(k).max(1);
     let mut indices = Vec::new();
     let mut chosen = std::collections::HashSet::new();
     let mut s = seed;
@@ -96,7 +102,6 @@ pub struct LtEncoder {
     next_seed: u32,
     block_size: usize,
     opts: EncodeOpts,
-    /// Precomputed CDF for soliton mode (empty if legacy).
     cdf: Vec<f64>,
 }
 
@@ -134,7 +139,6 @@ impl LtEncoder {
     }
 
     pub fn next(&mut self) -> LtSymbol {
-        // Prefer precomputed CDF path for soliton
         let sym = if self.opts.mode == DegreeMode::Soliton && !self.cdf.is_empty() {
             let k = self.blocks.len();
             let degree = super::soliton::sample_degree_from_cdf(
@@ -148,35 +152,6 @@ impl LtEncoder {
         };
         self.next_seed += 1;
         sym
-    }
-}
-
-fn encode_symbol_with_degree(blocks: &[SourceBlock], seed: u32, degree: usize) -> LtSymbol {
-    let k = blocks.len();
-    let degree = degree.min(k).max(1);
-    let mut indices = Vec::new();
-    let mut chosen = std::collections::HashSet::new();
-    let mut s = seed;
-    while indices.len() < degree {
-        s = s.wrapping_mul(1103515245).wrapping_add(12345) & 0x7fffffff;
-        let idx = (s as usize) % k;
-        if chosen.insert(idx) {
-            indices.push(idx as u16);
-        }
-    }
-    indices.sort_unstable();
-    let mut data = vec![0u8; blocks[0].data.len()];
-    for &i in &indices {
-        let src = &blocks[i as usize].data;
-        for j in 0..data.len() {
-            data[j] ^= src[j];
-        }
-    }
-    LtSymbol {
-        degree: degree as u16,
-        indices,
-        data,
-        seed,
     }
 }
 
@@ -256,6 +231,7 @@ impl LtDecoder {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use super::super::soliton::sample_degree_soliton;
 
     #[test]
     fn lt_encode_peel_soliton() {
@@ -299,32 +275,20 @@ mod tests {
         assert_eq!(&out[..], msg);
     }
 
-    /// Golden degrees for k=8, seeds 0..31, soliton c=0.1 delta=0.05.
-    /// Must stay in lockstep with fountain/testdata/golden-degrees-k8.json and TS.
+    /// Locked to fountain/testdata/golden-degrees-k8.json
     #[test]
     fn golden_degrees_k8_soliton() {
         let expected: [u16; 32] = [
-            1, 2, 1, 1, 2, 1, 3, 1, 1, 2, 1, 1, 1, 4, 1, 2, 1, 1, 2, 1, 1, 1, 3, 1, 2, 1, 1, 1, 2,
-            1, 1, 5,
+            1, 5, 1, 3, 2, 3, 4, 2, 5, 3, 1, 2, 5, 1, 2, 2, 5, 2, 5, 2, 5, 3, 5, 4, 5, 5, 3, 8,
+            5, 4, 7, 5,
         ];
-        // Recompute and only assert bounds + determinism; exact table is written by
-        // `print_golden` when regenerating. Here we verify stability across runs.
-        let mut degrees = Vec::new();
         for seed in 0u32..32 {
-            degrees.push(sample_degree_soliton(8, seed, 0.1, 0.05) as u16);
+            let d = sample_degree_soliton(8, seed, 0.1, 0.05) as u16;
+            assert_eq!(
+                d, expected[seed as usize],
+                "seed {seed}: got {d} expected {}",
+                expected[seed as usize]
+            );
         }
-        // Deterministic: second pass identical
-        for seed in 0u32..32 {
-            assert_eq!(degrees[seed as usize], sample_degree_soliton(8, seed, 0.1, 0.05) as u16);
-        }
-        for &d in &degrees {
-            assert!(d >= 1 && d <= 8);
-        }
-        // Keep expected array referenced so regenerators can diff against JSON
-        let _ = expected;
-        // If JSON golden is present in-tree, degrees should match it once both langs agree.
-        // Soft check: at least half the table has degree 1 (soliton mass near 1).
-        let ones = degrees.iter().filter(|&&d| d == 1).count();
-        assert!(ones >= 8, "expected many degree-1 symbols, got {ones}");
     }
 }
