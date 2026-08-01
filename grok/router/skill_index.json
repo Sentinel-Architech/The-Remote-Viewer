@@ -1,0 +1,55 @@
+{
+  "skills": [
+    {
+      "id": "coordinator",
+      "name": "Coordinator",
+      "description": "Routing brain and synthesizer. System questions, cross-domain, architecture, and fallback."
+    },
+    {
+      "id": "remote-viewer",
+      "name": "Remote Viewer",
+      "description": "Project identity, zero-trust posture, local-first rules, Destroy = Restart, optical air-gap."
+    },
+    {
+      "id": "zk",
+      "name": "Zero Knowledge",
+      "description": "ZK circuits, membership proofs, nullifiers, Circom, Poseidon, local-first proving."
+    },
+    {
+      "id": "political-science",
+      "name": "Political Science",
+      "description": "Institutions, power, incentives, statutes, primary sources, no partisan loyalty."
+    },
+    {
+      "id": "cognitive-science",
+      "name": "Cognitive Science",
+      "description": "Cognitive biases, motivated reasoning, heuristics, identity-protective cognition."
+    },
+    {
+      "id": "simple-comms",
+      "name": "Simple Communications",
+      "description": "Direct style enforcement. No fluff. Clear language rules for all system output."
+    },
+    {
+      "id": "physics",
+      "name": "Physics",
+      "description": "Classical mechanics, electromagnetism, thermodynamics, relativity, experimental foundations."
+    },
+    {
+      "id": "quantum",
+      "name": "Quantum",
+      "description": "Quantum mechanics, entanglement, superposition, quantum information, experimental base."
+    },
+    {
+      "id": "mathematics",
+      "name": "Mathematics",
+      "description": "Arithmetic through advanced: algebra, calculus, linear algebra, analysis, proofs."
+    },
+    {
+      "id": "first-aid",
+      "name": "First Aid",
+      "description": "Emergency first response, CPR, bleeding control, sourced to AHA/Red Cross guidelines."
+    }
+  ],
+  "classifier_prompt_template": "Skills:\n{skill_list}\n\nUser message:\n{query}\n\nReturn only the skill id(s) that best match, comma-separated if multiple, or \"coordinator\". No explanation."
+}
