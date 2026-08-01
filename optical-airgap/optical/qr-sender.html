@@ -21,13 +21,21 @@
 </head>
 <body>
   <h1>TRV Optical Sender</h1>
-  <p class="meta">Offline QR · LT TRVL · Robust Soliton degrees · No CDN</p>
+  <p class="meta">Offline QR · LT TRVL · Robust Soliton · FPS profiles · No CDN</p>
 
   <label for="payload">Payload (opaque bytes — production: age ciphertext)</label>
   <textarea id="payload">TRV-OPTICAL-TEST-PAYLOAD</textarea>
 
   <div style="margin: 1rem 0;">
     <label>Block size <input id="blockSize" type="number" value="32" min="8" max="64" style="width:4rem;background:#111;color:#e0e0e0;border:1px solid #333;" /></label>
+    <label style="margin-left:1rem;">Profile
+      <select id="profile" style="background:#111;color:#e0e0e0;border:1px solid #333;">
+        <option value="safe">safe (1 fps)</option>
+        <option value="normal" selected>normal (2 fps)</option>
+        <option value="fast">fast (4 fps)</option>
+        <option value="custom">custom FPS</option>
+      </select>
+    </label>
     <label style="margin-left:1rem;">FPS <input id="fps" type="number" value="2" min="1" max="8" style="width:3rem;background:#111;color:#e0e0e0;border:1px solid #333;" /></label>
     <label style="margin-left:1rem;">Degree
       <select id="degreeMode" style="background:#111;color:#e0e0e0;border:1px solid #333;">
@@ -47,7 +55,7 @@
 
   <p class="note">
     Local <code>qrcode-lite.js</code>. Frames: <code>TRVL1.</code> + base64url TRVL.
-    Degree default matches <code>fountain/lt-core.ts</code> (c=0.1, δ=0.05).
+    Degree default matches TS/Rust (c=0.1, δ=0.05). Profiles: safe=1 / normal=2 / fast=4 fps.
   </p>
 
   <script src="qrcode-lite.js"></script>
@@ -62,7 +70,7 @@
       const rho = idealSoliton(k);
       const R = c * Math.log(k / delta) * Math.sqrt(k);
       const tau = new Float64Array(k + 1);
-      const threshold = Math.floor(k / R) || 1;
+      const threshold = Math.max(1, Math.floor(k / R) || 1);
       for (let i = 1; i <= k; i++) {
         if (i < threshold) tau[i] = R / (i * k);
         else if (i === threshold) tau[i] = (R * Math.log(R / delta)) / k;
@@ -171,6 +179,14 @@
     const blockSizeEl = document.getElementById("blockSize");
     const fpsEl = document.getElementById("fps");
     const degreeModeEl = document.getElementById("degreeMode");
+    const profileEl = document.getElementById("profile");
+
+    profileEl.addEventListener("change", () => {
+      const p = profileEl.value;
+      if (p === "safe") fpsEl.value = 1;
+      else if (p === "normal") fpsEl.value = 2;
+      else if (p === "fast") fpsEl.value = 4;
+    });
 
     let timer = null;
     let seed = 0;
@@ -192,7 +208,8 @@
       seed = 0;
       startBtn.disabled = true;
       stopBtn.disabled = false;
-      const interval = Math.max(125, 1000 / (parseInt(fpsEl.value, 10) || 2));
+      const fps = Math.max(1, Math.min(8, parseInt(fpsEl.value, 10) || 2));
+      const interval = Math.max(125, 1000 / fps);
 
       const tick = () => {
         try {
@@ -204,8 +221,9 @@
           TRVQR.drawCanvas(canvas, qrText, { cellSize: 3 });
           qrEl.appendChild(canvas);
           statusEl.textContent =
-            "mode=" + mode + " seed=" + seed + " k=" + blocks.length +
-            " degree=" + sym.degree + " frameBytes=" + frame.length;
+            "profile=" + profileEl.value + " mode=" + mode + " seed=" + seed +
+            " k=" + blocks.length + " degree=" + sym.degree +
+            " fps=" + fps + " frameBytes=" + frame.length;
           seed++;
         } catch (e) {
           statusEl.textContent = "Frame error: " + e.message;

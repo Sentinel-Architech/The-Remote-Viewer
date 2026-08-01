@@ -12,20 +12,21 @@ All Phase 1 items shipped.
 
 | ID | Item | Status |
 |----|------|--------|
-| **P2-2** | Robust Soliton default | **In progress / default on** — `lt-core.ts` + `qr-sender.html`; `degreeMode=legacy` retained |
-| **P2-1** | jsQR fallback path | **Partial** — receiver: BarcodeDetector \| optional `vendor/jsQR.js` \| paste \| **file import**; NOTICE + vendor README; drop jsQR dist to finish |
+| **P2-2** | Robust Soliton default | **Mostly done** — TS + Rust + sender default Soliton; legacy flag retained; golden JSON scaffold |
+| **P2-1** | jsQR fallback path | **Partial** — BarcodeDetector \| vendor hook \| paste \| file; drop `vendor/jsQR.js` to finish |
+| **P2-4** | Optical reliability | **Partial** — FPS profiles safe/normal/fast on sender; gate reject counter on receiver |
 | P2-3 | Cargo vendor | Not started |
-| P2-4 | Optical reliability | Gate reject counter live; more later |
 | P2-5–P2-8 | As planned | Not started |
 
 ### Just shipped
-- Soliton CDF sampling as **default** encode path (c=0.1, δ=0.05)
-- Sender UI mode toggle soliton/legacy
-- Receiver: path badge, file ingest, gateReject counter, jsQR hook when vendored
-- `optical/vendor/NOTICE` + README (Apache-2.0 jsQR drop instructions)
+- Rust `fountain/soliton.rs` (c=0.1, δ=0.05) aligned with TS math
+- `LtEncoder` default Soliton; `DegreeMode::Legacy` + `EncodeOpts`
+- Peel tests for both modes
+- `fountain/testdata/` golden degree scaffold + R2 note
+- Sender **safe / normal / fast** FPS profiles
 
-### Next build steps
-1. Pin + commit `vendor/jsQR.js` (or document USB drop only)
-2. Rust LT degree = same Soliton defaults + golden seed vectors
-3. P2-3 cargo vendor offline
-4. Gate v2 / FPS profiles (P2-4)
+### Next
+1. Fill `golden-degrees-k8.json` from one language; assert both
+2. Optional: commit vendored `jsQR.js`
+3. P2-3 `cargo vendor` offline
+4. Gate v2 (blur / adaptive thresholds)

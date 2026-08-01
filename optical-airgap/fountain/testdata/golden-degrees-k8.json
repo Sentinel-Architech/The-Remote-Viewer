@@ -1,0 +1,10 @@
+{
+  "k": 8,
+  "c": 0.1,
+  "delta": 0.05,
+  "mode": "soliton",
+  "seedToUnit": "abs(sin(seed * 12.9898) * 43758.5453) % 1",
+  "note": "Regenerate with TS or Rust after changing Soliton math. Degrees for seeds 0..31 must match across languages.",
+  "degrees": null,
+  "how_to_fill": "Run a small script that prints sampleDegreeSoliton(8, seed) for seed in 0..31 and paste the array here; then assert in both test suites."
+}
