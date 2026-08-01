@@ -1,6 +1,4 @@
 //! CLI — Sentinel Standard optical helpers
-//! keygen | encrypt | decrypt | rdh-cap | address | lt-demo
-//! frame-stream | frame-peel | rdh-embed-demo
 
 use std::env;
 use std::io::{self, BufRead, Read, Write};
@@ -16,16 +14,13 @@ fn usage() {
     eprintln!(
         "trv-optical (Sentinel Standard — Soliton LT)\n\
          keygen\n\
-         encrypt <age1-recipient>       stdin → age ciphertext\n\
-         decrypt <identity-file>        stdin → plaintext\n\
+         encrypt <age1-recipient>\n\
+         decrypt <identity-file>\n\
          rdh-cap <cover-file>\n\
          address <local> <vault-fp>\n\
-         lt-demo                         stdin → 5 frame sizes\n\
+         lt-demo\n\
          frame-stream [block_size] [count]\n\
-             stdin payload → stdout TRVL1. lines (Soliton)\n\
-             count default = max(k*3, 16); 0 = k*5\n\
          frame-peel\n\
-             stdin TRVL1. lines → stdout recovered payload\n\
          rdh-embed-demo\n"
     );
 }
@@ -167,7 +162,6 @@ fn main() {
             }
         }
         "frame-stream" => {
-            // Sentinel Standard: Soliton LT → TRVL1 lines
             let block_size: usize = args
                 .next()
                 .and_then(|s| s.parse().ok())
@@ -187,9 +181,7 @@ fn main() {
                 k: k as u16,
                 block_size: block_size as u16,
             };
-            eprintln!(
-                "frame-stream: k={k} block_size={block_size} symbols={n} mode=soliton"
-            );
+            eprintln!("frame-stream: k={k} block_size={block_size} symbols={n} mode=soliton");
             for _ in 0..n {
                 let sym = enc.next();
                 let frame = encode_lt_frame(&sym, &meta).expect("frame");
@@ -230,7 +222,7 @@ fn main() {
                             ));
                         }
                         if let Some(ref mut dec) = decoder {
-                            if meta.k as usize != dec_k(dec) || meta.block_size as usize != dec_bs(dec)
+                            if meta.k as usize != dec.k() || meta.block_size as usize != dec.block_size()
                             {
                                 errors += 1;
                                 eprintln!("meta mismatch");
@@ -252,7 +244,6 @@ fn main() {
             match decoder {
                 Some(dec) if dec.is_complete() => {
                     let mut out = dec.payload().unwrap();
-                    // trim trailing zero pad from last block
                     while out.last() == Some(&0) {
                         out.pop();
                     }
@@ -263,7 +254,7 @@ fn main() {
                     eprintln!(
                         "incomplete recovered={}/{} ingested={ingested} errors={errors}",
                         dec.recovered_count(),
-                        dec_k(&dec)
+                        dec.k()
                     );
                     std::process::exit(2);
                 }
@@ -288,19 +279,4 @@ fn main() {
             std::process::exit(1);
         }
     }
-}
-
-// LtDecoder fields are private — use recovered_count / is_complete only.
-// We need k and block_size for mismatch checks; store via first meta and mirror.
-fn dec_k(dec: &LtDecoder) -> usize {
-    // recovered_count max is k; we cannot read k privately without API.
-    // Use a workaround: payload length when complete is k*block_size.
-    // For mismatch we track externally — simplified: skip strict check if API limited.
-    // Actually LtDecoder doesn't expose k. Add exposure in a follow-up; for now always accept.
-    let _ = dec;
-    0 // placeholder — mismatch check disabled until k()/block_size() accessors
-}
-fn dec_bs(dec: &LtDecoder) -> usize {
-    let _ = dec;
-    0
 }

@@ -172,6 +172,14 @@ impl LtDecoder {
         }
     }
 
+    pub fn k(&self) -> usize {
+        self.k
+    }
+
+    pub fn block_size(&self) -> usize {
+        self.block_size
+    }
+
     pub fn add_symbol(&mut self, sym: LtSymbol) {
         self.symbols.push(sym);
         self.peel();
@@ -275,7 +283,6 @@ mod tests {
         assert_eq!(&out[..], msg);
     }
 
-    /// Locked to fountain/testdata/golden-degrees-k8.json
     #[test]
     fn golden_degrees_k8_soliton() {
         let expected: [u16; 32] = [
