@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TRV Digital Vending — Catalog</title>
+  <style>
+    :root { --bg: #0a0a0a; --fg: #e0e0e0; --accent: #00e676; --muted: #888; }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--fg); margin: 0; padding: 1rem; max-width: 720px; margin-inline: auto; }
+    h1 { color: var(--accent); font-size: 1.4rem; }
+    .item { border: 1px solid #333; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+    .item h2 { margin: 0 0 0.3rem; font-size: 1.1rem; }
+    .price { color: var(--accent); font-weight: 600; }
+    .memo { font-family: monospace; font-size: 0.85rem; color: var(--muted); }
+    label { display: block; margin-top: 0.8rem; font-size: 0.9rem; }
+    input, textarea, select, button { width: 100%; padding: 0.6rem; margin-top: 0.3rem; background: #111; border: 1px solid #444; color: var(--fg); border-radius: 4px; }
+    button { background: var(--accent); color: #000; font-weight: 700; cursor: pointer; margin-top: 1rem; }
+    button:hover { filter: brightness(1.1); }
+    .note { font-size: 0.85rem; color: var(--muted); margin-top: 1.5rem; }
+    pre { background: #111; padding: 0.8rem; overflow-x: auto; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <h1>🇺🇸 TRV Digital Vending Chute</h1>
+  <p>Catalog + manual/Solana-pay → age + Soliton LT optical delivery. Zero platform custody.</p>
+
+  <div id="catalog"></div>
+
+  <section>
+    <h2>Seller Delivery</h2>
+    <label>Catalog ID
+      <select id="itemId"></select>
+    </label>
+    <label>Buyer age recipient (age1...)
+      <input id="recipient" type="text" placeholder="age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p" autocomplete="off">
+    </label>
+    <label>Payment confirmation note (optional)
+      <textarea id="payNote" rows="2" placeholder="Solana sig or cash receipt note"></textarea>
+    </label>
+    <button onclick="prepareDelivery()">Generate Delivery Command</button>
+    <pre id="cmdOut"></pre>
+  </section>
+
+  <p class="note">
+    Buyer side: receive TRVL frames → <code>frame-peel</code> → <code>decrypt</code> with private identity.<br>
+    Never reuse identities that appeared in chat or screenshots. Destroy = Restart.<br>
+    Sales watcher already exists for Solana memos matching the catalog.
+  </p>
+
+  <script>
+    // Inline catalog for offline use. Keep in sync with catalog.json
+    const catalog = [
+      { id: "trv-posture-lite", title: "TRV Posture Lite", price: "11 USDC", memo: "TRV-Posture-Lite", description: "Core zero-trust posture pack." },
+      { id: "trv-posture-pack", title: "TRV Posture Pack", price: "25 USDC", memo: "TRV-Posture-Pack", description: "Full posture pack." },
+      { id: "sentinel-skill-zk-01", title: "ZK Membership Skill Pack", price: "0.05 XMR or manual", memo: "SENTINEL-ZK-01", description: "On-device ZK notes." },
+      { id: "hello-sentinel-demo", title: "Hello Sentinel Demo", price: "0 (test)", memo: "TEST-HELLO", description: "E2E verification payload." }
+    ];
+
+    const catEl = document.getElementById("catalog");
+    const sel = document.getElementById("itemId");
+    catalog.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `<h2>${item.title}</h2>
+        <div class="price">${item.price}</div>
+        <div class="memo">Memo: ${item.memo}</div>
+        <p>${item.description}</p>`;
+      catEl.appendChild(div);
+
+      const opt = document.createElement("option");
+      opt.value = item.id;
+      opt.textContent = `${item.id} — ${item.title}`;
+      sel.appendChild(opt);
+    });
+
+    function prepareDelivery() {
+      const id = document.getElementById("itemId").value;
+      const recip = document.getElementById("recipient").value.trim();
+      const note = document.getElementById("payNote").value.trim();
+      if (!recip.startsWith("age1")) {
+        document.getElementById("cmdOut").textContent = "ERROR: recipient must be age1... public key";
+        return;
+      }
+      let cmd = `./seller-deliver.sh ${id} "${recip}"`;
+      if (note) cmd += `  # pay note: ${note}`;
+      document.getElementById("cmdOut").textContent = 
+`# Run in Termux / shell after payment verified:
+${cmd}
+
+# Output TRVL frames → save to file or feed QR sender.
+# Buyer:
+#   cat frames.trvl | ./buyer-receive.sh $HOME/their-identity.txt
+`;
+    }
+  </script>
+</body>
+</html>
