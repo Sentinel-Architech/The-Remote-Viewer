@@ -1,39 +1,44 @@
 # Contributing to The Remote Viewer
 
-Thank you for your interest in contributing to this project!
+Thank you for your interest in contributing.
 
-## How to Contribute
+## Domain professionals (fast path)
 
-We welcome contributions that align with the goals of this project. There are several ways you can help:
+**Meteorologist, geologist, special education teacher, nurse, engineer, historian, or any practicing expert:**
+
+→ Go directly to **[PROFESSIONALS.md](PROFESSIONALS.md)**
+
+That page has the skill template and the three-step process to add your domain so it is available on-device at a moment’s notice.
+
+## Other contributions
 
 - Reporting bugs or issues
-- Suggesting new features or improvements
+- Suggesting features or improvements
 - Improving documentation
 - Responsible security research and testing
+- Router / optical air-gap / zero-trust code
 
-## Reporting Issues
+## Reporting issues
 
-Please use the GitHub Issues tab to report bugs or request features. When reporting an issue, try to include:
+Use the GitHub Issues tab. Include a clear description, steps to reproduce when applicable, and any relevant logs or screenshots.
 
-- A clear description of the problem
-- Steps to reproduce (if applicable)
-- Any relevant logs or screenshots
+## Security research
 
-## Security Research
+This project is used for defensive security research. If you discover a vulnerability, open an issue or contact the maintainer directly rather than exploiting it publicly.
 
-This project is used for defensive security research. If you discover a vulnerability or have findings from testing, please open an issue or contact the maintainer directly rather than exploiting it publicly.
-
-## Pull Requests
+## Pull requests
 
 1. Fork the repository
-2. Create a new branch for your changes
+2. Create a branch for your changes (prefer `TheRemoteViewer` as the base for current work)
 3. Make your changes
-4. Submit a pull request with a clear description of what was changed and why
+4. Submit a pull request with a clear description of what changed and why
 
-## Code of Conduct
+For new specialist skills, follow the checklist in [PROFESSIONALS.md](PROFESSIONALS.md).
 
-Please be respectful and constructive in all interactions. We aim to maintain a professional and collaborative environment.
+## Code of conduct
+
+Be respectful and constructive. We aim to maintain a professional and collaborative environment.
 
 ## Questions?
 
-Feel free to open an issue or start a discussion if you have any questions about contributing.
+Open an issue or start a discussion.
