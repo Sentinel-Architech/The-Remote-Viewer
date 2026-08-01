@@ -1,48 +1,38 @@
-# TRV Digital Vending Chute — Level 2.5 (backoff)
+# TRV Digital Vending Chute — Level 2.5 (circuit + backoff)
 
 **Catalog + Solana memo / manual-pay → age encrypt → Robust Soliton LT (TRVL) → optical or file delivery.**
 
 Zero platform custody. Seller never holds buyer private keys. Buyer peels and decrypts on-device only.
 
-## Files
+## Resilience layers
 
-- `catalog.json` — product list
-- `payloads/` — plaintext goods (encrypt at delivery time)
-- `seller-deliver.sh` — core encrypt + frame-stream
-- `auto-deliver.sh` — wrapper with exit codes + PENDING markers
-- `buyer-receive.sh` — peel + decrypt
-- `catalog-ui.html` — offline catalog + command generator
-- `watch-sales-notify-v2.sh` — Level 2.5 watcher with exponential backoff
+1. **Per-sale exponential backoff** — encrypt/stream failures back off (30s → 60s → 120s … cap 30 min).
+2. **RPC circuit breaker** — consecutive Solana failures open the circuit. While open the watcher skips the poll and only runs local PENDING retries. After cooldown it probes once (half-open). Success → closed. Failure → open again.
 
-## Automation + retry
+## Circuit breaker defaults
 
-1. Payment detected → ZIP prep + age/LT attempt.
-2. No recipient → `.PENDING` marker written.
-3. Every poll cycle:
-   - Scans PENDING files.
-   - If `<sig-prefix>.recipient` exists and backoff window has elapsed → re-run auto-deliver.
-4. Transient failures (encrypt/stream) use **exponential backoff**:
-   - Attempt 1 → wait `BACKOFF_BASE_SECONDS` (default 30s)
-   - Attempt 2 → 60s
-   - Attempt 3 → 120s
-   - … capped at `BACKOFF_MAX_SECONDS` (default 1800s / 30 min)
-5. After `MAX_TRANSIENT_RETRIES` (default 3) the sale is marked EXHAUSTED.
+| Param | Default | Meaning |
+|-------|---------|--------|
+| `CIRCUIT_FAILURE_THRESHOLD` | 5 | Consecutive RPC failures before open |
+| `CIRCUIT_COOLDOWN_SECONDS` | 120 | Seconds to stay open before half-open probe |
 
-Missing-recipient stays PENDING forever until the drop file appears (does not burn retry budget).
+State lives in `$DELIVER_DIR/.circuit-rpc`.
 
-### Drop file
-
-```bash
-echo "age1..." > $HOME/trv-deliver/<first-12-of-sig>.recipient
-```
-
-### Tunables
+## Tunables
 
 ```bash
 export MAX_TRANSIENT_RETRIES=3
 export BACKOFF_BASE_SECONDS=30
 export BACKOFF_MAX_SECONDS=1800
+export CIRCUIT_FAILURE_THRESHOLD=5
+export CIRCUIT_COOLDOWN_SECONDS=120
 ./digital-vending/watch-sales-notify-v2.sh
+```
+
+## Drop file (encrypted delivery)
+
+```bash
+echo "age1..." > $HOME/trv-deliver/<first-12-of-sig>.recipient
 ```
 
 ## Exit codes (auto-deliver.sh)
