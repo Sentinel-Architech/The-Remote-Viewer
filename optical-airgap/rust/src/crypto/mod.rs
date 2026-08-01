@@ -1,4 +1,5 @@
 //! age helpers — interoperable with Go age, rage, and TS age-encryption.
+//! Targets age crate 0.11 (Decryptor is a struct, not Recipients enum).
 
 use age::x25519::{Identity, Recipient};
 use age::{Decryptor, Encryptor};
@@ -29,7 +30,7 @@ pub fn generate_identity_pair() -> AgeKeyPair {
 
 pub fn encrypt_for_recipient(plaintext: &[u8], recipient: &Recipient) -> Result<Vec<u8>> {
     let encryptor = Encryptor::with_recipients(std::iter::once(recipient as &dyn age::Recipient))
-        .map_err(|e| TrvError::Age(e.to_string()))?;
+        .expect("at least one recipient");
     let mut ciphertext = Vec::new();
     {
         let mut writer = encryptor
@@ -46,10 +47,8 @@ pub fn encrypt_for_recipient(plaintext: &[u8], recipient: &Recipient) -> Result<
 }
 
 pub fn decrypt_blob(ciphertext: &[u8], identity: &Identity) -> Result<Vec<u8>> {
-    let decryptor = match Decryptor::new(ciphertext).map_err(|e| TrvError::Age(e.to_string()))? {
-        Decryptor::Recipients(d) => d,
-        _ => return Err(TrvError::Age("passphrase file not supported here".into())),
-    };
+    // age 0.11: Decryptor::new → decrypt(identities) directly (no Recipients variant).
+    let decryptor = Decryptor::new(ciphertext).map_err(|e| TrvError::Age(e.to_string()))?;
     let mut reader = decryptor
         .decrypt(std::iter::once(identity as &dyn age::Identity))
         .map_err(|e| TrvError::Age(e.to_string()))?;

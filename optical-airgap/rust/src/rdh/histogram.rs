@@ -101,7 +101,7 @@ pub fn embed_histogram_shifting(cover: &[u8], secret: &[u8]) -> Result<RdhEmbedR
     let capacity = estimate_capacity(cover);
     let need = HEADER_BITS + secret.len() * 8;
     if capacity < need {
-        return Err(TrvError::Rdh(format(
+        return Err(TrvError::Rdh(format!(
             "capacity {capacity} bits < required {need}"
         )));
     }
