@@ -1,14 +1,20 @@
 #!/usr/bin/env bash
-# watch-sales-notify-v2.sh — Level 2 automation
-# Polls Solana → detects payment + memo → prepares ZIP + age/LT encrypted frames
-# when a recipient is known (drop file or future memo).
+# watch-sales-notify-v2.sh — Level 2.5 automation
+# Polls Solana → detects payment + memo → prepares ZIP + age/LT frames
+# + automatic retry of PENDING deliveries when recipient drop files appear.
 #
-# Drop file method (current practical path):
-#   After payment, create $DELIVER_DIR/<sig-prefix>.recipient containing the
-#   buyer's age1 public key. Re-run prepare or let the next poll pick it up.
+# Retry logic:
+#   - Every poll cycle scans $DELIVER_DIR for *.PENDING markers
+#   - If matching <prefix>.recipient now exists → re-run auto-deliver
+#   - Transient encrypt failures (exit 3) are retried up to MAX_TRANSIENT_RETRIES
+#   - Permanent missing recipient stays PENDING until drop file appears
+#
+# Drop file method:
+#   echo "age1..." > $DELIVER_DIR/<sig-prefix>.recipient
 #
 # Requirements: curl, jq
-# Env same as v1 + DIGITAL_VENDING path.
+# Env: SOLANA_RPC_URL, DISCORD_WEBHOOK, SALES_ADDRESS, DELIVER_DIR,
+#      POLL_SECONDS, MAX_TRANSIENT_RETRIES (default 3)
 
 set -euo pipefail
 
@@ -17,20 +23,24 @@ RPC="${SOLANA_RPC_URL:-https://api.mainnet-beta.solana.com}"
 STATE_FILE="${STATE_FILE:-/tmp/trv-sales-last-sig}"
 POLL_SECONDS="${POLL_SECONDS:-45}"
 DISCORD_WEBHOOK="${DISCORD_WEBHOOK:-}"
+MAX_TRANSIENT_RETRIES="${MAX_TRANSIENT_RETRIES:-3}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DELIVER_DIR="${DELIVER_DIR:-$HOME/trv-deliver}"
 DIST_DIR="${ROOT}/dist"
 VENDING_DIR="${ROOT}/digital-vending"
+RETRY_STATE="${DELIVER_DIR}/.retry-state"
 
 mkdir -p "$DELIVER_DIR"
+touch "$RETRY_STATE"
 
 echo "════════════════════════════════════════"
-echo " TRV Sales Watcher (Level 2 — age/LT)"
+echo " TRV Sales Watcher (Level 2.5 — retry)"
 echo " Address : $SALES_ADDRESS"
 echo " RPC     : $RPC"
 echo " Discord : ${DISCORD_WEBHOOK:+configured}${DISCORD_WEBHOOK:-not set}"
 echo " Deliver : $DELIVER_DIR"
 echo " Vending : $VENDING_DIR"
+echo " Retries : max transient = $MAX_TRANSIENT_RETRIES"
 echo "════════════════════════════════════════"
 echo "Ctrl+C to stop"
 echo
@@ -46,6 +56,83 @@ map_memo_to_id() {
   else
     echo ""
   fi
+}
+
+# Track transient retry counts: key = prefix_id, value = count
+get_retry_count() {
+  local key="$1"
+  grep -E "^${key}=" "$RETRY_STATE" 2>/dev/null | tail -1 | cut -d= -f2 || echo 0
+}
+
+set_retry_count() {
+  local key="$1"
+  local count="$2"
+  grep -v -E "^${key}=" "$RETRY_STATE" > "${RETRY_STATE}.tmp" 2>/dev/null || true
+  mv "${RETRY_STATE}.tmp" "$RETRY_STATE"
+  echo "${key}=${count}" >> "$RETRY_STATE"
+}
+
+clear_retry_count() {
+  local key="$1"
+  grep -v -E "^${key}=" "$RETRY_STATE" > "${RETRY_STATE}.tmp" 2>/dev/null || true
+  mv "${RETRY_STATE}.tmp" "$RETRY_STATE"
+}
+
+retry_pending() {
+  local pending
+  shopt -s nullglob
+  for pending in "$DELIVER_DIR"/*.PENDING; do
+    [[ -f "$pending" ]] || continue
+
+    local base
+    base=$(basename "$pending" .PENDING)
+    local prefix="${base%%_*}"
+    local catalog_id="${base#*_}"
+    local key="${prefix}_${catalog_id}"
+    local recip_file="$DELIVER_DIR/${prefix}.recipient"
+
+    if [[ ! -f "$recip_file" ]]; then
+      continue
+    fi
+
+    local count
+    count=$(get_retry_count "$key")
+    if [[ "$count" -ge "$MAX_TRANSIENT_RETRIES" ]]; then
+      echo "  [retry] $key exceeded max transient retries ($MAX_TRANSIENT_RETRIES) — manual intervention needed"
+      continue
+    fi
+
+    echo "  [retry] Found pending $key + recipient drop file → re-attempting"
+    local real_sig
+    real_sig=$(grep -E '^sig=' "$pending" 2>/dev/null | cut -d= -f2- || echo "${prefix}000000000000")
+    set +e
+    "$VENDING_DIR/auto-deliver.sh" "$catalog_id" "$real_sig"
+    rc=$?
+    set -e
+
+    case $rc in
+      0)
+        echo "  [retry] SUCCESS — frames ready for $key"
+        clear_retry_count "$key"
+        ;;
+      2)
+        echo "  [retry] still PENDING (recipient issue) for $key"
+        ;;
+      3|4)
+        count=$((count + 1))
+        set_retry_count "$key" "$count"
+        echo "  [retry] FAILED (exit $rc) — attempt $count/$MAX_TRANSIENT_RETRIES for $key"
+        if [[ "$count" -ge "$MAX_TRANSIENT_RETRIES" ]]; then
+          echo "  [retry] giving up on $key after $count transient failures"
+          echo "EXHAUSTED after $count transient failures at $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$pending"
+        fi
+        ;;
+      *)
+        echo "  [retry] unexpected exit $rc for $key"
+        ;;
+    esac
+  done
+  shopt -u nullglob
 }
 
 prepare_delivery() {
@@ -82,7 +169,6 @@ prepare_delivery() {
     fi
   fi
 
-  # Age/LT path
   if [[ -n "$catalog_id" && -x "$VENDING_DIR/auto-deliver.sh" ]]; then
     echo "  [prepare] Attempting age+LT delivery for $catalog_id"
     set +e
@@ -92,13 +178,14 @@ prepare_delivery() {
     case $rc in
       0) echo "  [prepare] age+LT frames ready" ;;
       2) echo "  [prepare] PENDING — age recipient missing. Drop file needed." ;;
-      3) echo "  [prepare] FAILED — encrypt/stream error (see log in deliver dir)" ;;
+      3) echo "  [prepare] FAILED — encrypt/stream error (see log in deliver dir)"
+         set_retry_count "${sig:0:12}_${catalog_id}" 1
+         ;;
       4) echo "  [prepare] FAILED — catalog/payload problem" ;;
       *) echo "  [prepare] auto-deliver exited $rc" ;;
     esac
   fi
 
-  # Fallback classic DM if no age path ran
   if [[ -n "$pack" && ! -f "${DELIVER_DIR}/${sig:0:12}_${catalog_id}_dm.txt" ]]; then
     local dm_file="${DELIVER_DIR}/${sig:0:12}_dm.txt"
     cat > "$dm_file" << EOF
@@ -111,7 +198,7 @@ Here’s your TRV Posture ${pack}.
 Sig verified: ${sig}
 
 If you provided an age1 recipient, encrypted frames are preferred.
-Place the age1 key in ${DELIVER_DIR}/${sig:0:12}.recipient and re-trigger.
+Place the age1 key in ${DELIVER_DIR}/${sig:0:12}.recipient and the watcher will auto-retry.
 EOF
     echo "  [prepare] Classic DM written to $dm_file"
   fi
@@ -155,7 +242,7 @@ notify_discord() {
                 "**Delivery prep**\n" +
                 $zip + "\n" +
                 "Ready files in: `" + $deliver + "`\n" +
-                "For age/LT: drop age1 key into <sig-prefix>.recipient then re-run auto-deliver.")}')
+                "For age/LT: drop age1 key into <sig-prefix>.recipient — watcher auto-retries.")}')
 
   curl -sS -X POST -H "Content-Type: application/json" \
     -d "$content" "$DISCORD_WEBHOOK" >/dev/null || true
@@ -199,6 +286,10 @@ get_tx_details() {
 }
 
 while true; do
+  # 1. Always try to clear any PENDING items that now have a recipient
+  retry_pending
+
+  # 2. Poll for new sales
   payload=$(jq -n \
     --arg addr "$SALES_ADDRESS" \
     '{jsonrpc:"2.0",id:1,method:"getSignaturesForAddress",params:[$addr,{limit:8}]}')
