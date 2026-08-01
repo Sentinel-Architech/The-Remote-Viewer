@@ -1,22 +1,29 @@
 #!/usr/bin/env bash
-# watch-sales-notify-v2.sh — Level 2.5 automation + exponential backoff
+# watch-sales-notify-v2.sh — Level 2.5 + circuit breaker
 # Polls Solana → detects payment + memo → prepares ZIP + age/LT frames
-# + automatic retry of PENDING deliveries when recipient drop files appear.
+# + automatic retry of PENDING deliveries when recipient drop files appear
+# + RPC circuit breaker (closed / open / half-open)
 #
 # Retry logic:
 #   - Every poll cycle scans $DELIVER_DIR for *.PENDING markers
 #   - If matching <prefix>.recipient now exists → re-run auto-deliver
 #   - Transient encrypt failures (exit 3) are retried up to MAX_TRANSIENT_RETRIES
-#     with exponential backoff: base * 2^(attempt-1), capped at BACKOFF_MAX
-#   - Permanent missing recipient stays PENDING until drop file appears (no backoff burn)
+#     with exponential backoff
+#   - Permanent missing recipient stays PENDING until drop file appears
+#
+# Circuit breaker (RPC):
+#   - CIRCUIT_FAILURE_THRESHOLD consecutive failures → open
+#   - While open: skip Solana poll, still run local retry_pending
+#   - After CIRCUIT_COOLDOWN_SECONDS → half-open (one probe)
+#   - Probe success → closed; probe failure → open again
 #
 # Drop file method:
 #   echo "age1..." > $DELIVER_DIR/<sig-prefix>.recipient
 #
 # Requirements: curl, jq
 # Env: SOLANA_RPC_URL, DISCORD_WEBHOOK, SALES_ADDRESS, DELIVER_DIR,
-#      POLL_SECONDS, MAX_TRANSIENT_RETRIES (default 3),
-#      BACKOFF_BASE_SECONDS (default 30), BACKOFF_MAX_SECONDS (default 1800)
+#      POLL_SECONDS, MAX_TRANSIENT_RETRIES, BACKOFF_*,
+#      CIRCUIT_FAILURE_THRESHOLD (default 5), CIRCUIT_COOLDOWN_SECONDS (default 120)
 
 set -euo pipefail
 
@@ -28,26 +35,114 @@ DISCORD_WEBHOOK="${DISCORD_WEBHOOK:-}"
 MAX_TRANSIENT_RETRIES="${MAX_TRANSIENT_RETRIES:-3}"
 BACKOFF_BASE_SECONDS="${BACKOFF_BASE_SECONDS:-30}"
 BACKOFF_MAX_SECONDS="${BACKOFF_MAX_SECONDS:-1800}"
+CIRCUIT_FAILURE_THRESHOLD="${CIRCUIT_FAILURE_THRESHOLD:-5}"
+CIRCUIT_COOLDOWN_SECONDS="${CIRCUIT_COOLDOWN_SECONDS:-120}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DELIVER_DIR="${DELIVER_DIR:-$HOME/trv-deliver}"
 DIST_DIR="${ROOT}/dist"
 VENDING_DIR="${ROOT}/digital-vending"
 RETRY_STATE="${DELIVER_DIR}/.retry-state"
+CIRCUIT_FILE="${DELIVER_DIR}/.circuit-rpc"
 
 mkdir -p "$DELIVER_DIR"
 touch "$RETRY_STATE"
 
 echo "════════════════════════════════════════"
-echo " TRV Sales Watcher (Level 2.5 — backoff)"
+echo " TRV Sales Watcher (Level 2.5 — circuit)"
 echo " Address : $SALES_ADDRESS"
 echo " RPC     : $RPC"
 echo " Discord : ${DISCORD_WEBHOOK:+configured}${DISCORD_WEBHOOK:-not set}"
 echo " Deliver : $DELIVER_DIR"
 echo " Vending : $VENDING_DIR"
 echo " Retries : max=$MAX_TRANSIENT_RETRIES  backoff base=${BACKOFF_BASE_SECONDS}s max=${BACKOFF_MAX_SECONDS}s"
+echo " Circuit : threshold=$CIRCUIT_FAILURE_THRESHOLD  cooldown=${CIRCUIT_COOLDOWN_SECONDS}s"
 echo "════════════════════════════════════════"
 echo "Ctrl+C to stop"
 echo
+
+# ── RPC Circuit Breaker ──────────────────────────────────────────────
+# State file format: state=closed|open|half-open  failures=N  opened_at=UNIX
+
+circuit_read() {
+  if [[ ! -f "$CIRCUIT_FILE" ]]; then
+    echo "closed 0 0"
+    return
+  fi
+  local state failures opened_at
+  state=$(grep -E '^state=' "$CIRCUIT_FILE" 2>/dev/null | cut -d= -f2 || echo closed)
+  failures=$(grep -E '^failures=' "$CIRCUIT_FILE" 2>/dev/null | cut -d= -f2 || echo 0)
+  opened_at=$(grep -E '^opened_at=' "$CIRCUIT_FILE" 2>/dev/null | cut -d= -f2 || echo 0)
+  echo "${state:-closed} ${failures:-0} ${opened_at:-0}"
+}
+
+circuit_write() {
+  local state="$1" failures="$2" opened_at="$3"
+  cat > "$CIRCUIT_FILE" << EOF
+state=$state
+failures=$failures
+opened_at=$opened_at
+updated=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+EOF
+}
+
+# Returns 0 = allow call, 1 = deny (circuit open)
+circuit_allow() {
+  local now state failures opened_at
+  now=$(date +%s)
+  read -r state failures opened_at <<< "$(circuit_read)"
+
+  case "$state" in
+    closed)
+      return 0
+      ;;
+    open)
+      if [[ $((now - opened_at)) -ge $CIRCUIT_COOLDOWN_SECONDS ]]; then
+        circuit_write "half-open" "$failures" "$opened_at"
+        echo "[circuit] RPC half-open — allowing probe" >&2
+        return 0
+      fi
+      local remaining=$((CIRCUIT_COOLDOWN_SECONDS - (now - opened_at)))
+      echo "[circuit] RPC OPEN — skipping poll (${remaining}s cooldown left)" >&2
+      return 1
+      ;;
+    half-open)
+      return 0
+      ;;
+    *)
+      return 0
+      ;;
+  esac
+}
+
+circuit_success() {
+  local state failures opened_at
+  read -r state failures opened_at <<< "$(circuit_read)"
+  if [[ "$state" != "closed" ]]; then
+    echo "[circuit] RPC recovered → closed" >&2
+  fi
+  circuit_write "closed" 0 0
+}
+
+circuit_failure() {
+  local now state failures opened_at
+  now=$(date +%s)
+  read -r state failures opened_at <<< "$(circuit_read)"
+  failures=$((failures + 1))
+
+  if [[ "$state" == "half-open" ]]; then
+    echo "[circuit] RPC probe failed → open (cooldown ${CIRCUIT_COOLDOWN_SECONDS}s)" >&2
+    circuit_write "open" "$failures" "$now"
+    return
+  fi
+
+  if [[ "$failures" -ge "$CIRCUIT_FAILURE_THRESHOLD" ]]; then
+    echo "[circuit] RPC OPEN after $failures consecutive failures (cooldown ${CIRCUIT_COOLDOWN_SECONDS}s)" >&2
+    circuit_write "open" "$failures" "$now"
+  else
+    circuit_write "closed" "$failures" 0
+    echo "[circuit] RPC failure count $failures/$CIRCUIT_FAILURE_THRESHOLD" >&2
+  fi
+}
 
 map_memo_to_id() {
   local memo="$1"
@@ -89,7 +184,6 @@ clear_retry_state() {
   mv "${RETRY_STATE}.tmp" "$RETRY_STATE"
 }
 
-# delay = base * 2^(attempt-1), capped
 backoff_delay() {
   local attempt="$1"
   local delay=$BACKOFF_BASE_SECONDS
@@ -301,7 +395,7 @@ get_tx_details() {
     '{jsonrpc:"2.0",id:1,method:"getTransaction",params:[$sig,{encoding:"jsonParsed",maxSupportedTransactionVersion:0}]}')
 
   local resp
-  resp=$(curl -sS "$RPC" -X POST -H 'Content-Type: application/json' -d "$payload" || true)
+  resp=$(curl -sS --max-time 15 "$RPC" -X POST -H 'Content-Type: application/json' -d "$payload" || true)
 
   local memo
   memo=$(echo "$resp" | jq -r '
@@ -331,36 +425,55 @@ get_tx_details() {
 }
 
 while true; do
+  # 1. Local work always runs (PENDING retries with backoff)
   retry_pending
 
-  payload=$(jq -n \
-    --arg addr "$SALES_ADDRESS" \
-    '{jsonrpc:"2.0",id:1,method:"getSignaturesForAddress",params:[$addr,{limit:8}]}')
+  # 2. Solana poll — guarded by circuit breaker
+  if circuit_allow; then
+    payload=$(jq -n \
+      --arg addr "$SALES_ADDRESS" \
+      '{jsonrpc:"2.0",id:1,method:"getSignaturesForAddress",params:[$addr,{limit:8}]}')
 
-  resp=$(curl -sS "$RPC" -X POST -H 'Content-Type: application/json' -d "$payload" || true)
-  newest=$(echo "$resp" | jq -r '.result[0].signature // empty')
+    set +e
+    resp=$(curl -sS --max-time 15 "$RPC" -X POST -H 'Content-Type: application/json' -d "$payload" 2>/dev/null)
+    curl_rc=$?
+    set -e
 
-  if [[ -n "$newest" ]]; then
-    last=""
-    [[ -f "$STATE_FILE" ]] && last=$(cat "$STATE_FILE")
+    if [[ $curl_rc -ne 0 || -z "$resp" ]]; then
+      circuit_failure
+    else
+      err=$(echo "$resp" | jq -r '.error.message // empty' 2>/dev/null || true)
+      if [[ -n "$err" ]]; then
+        echo "  [rpc] error: $err"
+        circuit_failure
+      else
+        circuit_success
+        newest=$(echo "$resp" | jq -r '.result[0].signature // empty')
 
-    if [[ "$newest" != "$last" ]]; then
-      echo "$(date -u +%Y-%m-%dT%H:%M:%SZ)  NEW activity detected"
-      echo "  Signature : $newest"
-      echo "  Explorer  : https://solscan.io/tx/$newest"
+        if [[ -n "$newest" ]]; then
+          last=""
+          [[ -f "$STATE_FILE" ]] && last=$(cat "$STATE_FILE")
 
-      details=$(get_tx_details "$newest")
-      memo="${details%%|*}"
-      amount="${details#*|}"
+          if [[ "$newest" != "$last" ]]; then
+            echo "$(date -u +%Y-%m-%dT%H:%M:%SZ)  NEW activity detected"
+            echo "  Signature : $newest"
+            echo "  Explorer  : https://solscan.io/tx/$newest"
 
-      echo "  Memo      : $memo"
-      echo "  Amount    : $amount"
-      echo
+            details=$(get_tx_details "$newest")
+            memo="${details%%|*}"
+            amount="${details#*|}"
 
-      prepare_delivery "$memo" "$newest"
-      notify_discord "$newest" "$memo" "$amount"
+            echo "  Memo      : $memo"
+            echo "  Amount    : $amount"
+            echo
 
-      echo "$newest" > "$STATE_FILE"
+            prepare_delivery "$memo" "$newest"
+            notify_discord "$newest" "$memo" "$amount"
+
+            echo "$newest" > "$STATE_FILE"
+          fi
+        fi
+      fi
     fi
   fi
 
