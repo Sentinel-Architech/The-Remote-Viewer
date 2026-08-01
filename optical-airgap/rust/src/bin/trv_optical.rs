@@ -1,5 +1,6 @@
 //! CLI — Sentinel Standard optical helpers
 
+use age::secrecy::ExposeSecret;
 use std::env;
 use std::io::{self, BufRead, Read, Write};
 use trv_optical_airgap::fountain::{
@@ -111,8 +112,11 @@ fn main() {
     match cmd.as_str() {
         "keygen" => {
             let kp = generate_identity_pair();
+            // Recipient implements Display (age1…)
             println!("{}", kp.recipient);
-            eprintln!("{}", kp.identity);
+            // Identity does not implement Display in age 0.11 — string is SecretString
+            let id = kp.identity.to_string();
+            eprintln!("{}", id.expose_secret());
             eprintln!("(identity on stderr — Vault only)");
         }
         "encrypt" => {
@@ -222,7 +226,8 @@ fn main() {
                             ));
                         }
                         if let Some(ref mut dec) = decoder {
-                            if meta.k as usize != dec.k() || meta.block_size as usize != dec.block_size()
+                            if meta.k as usize != dec.k()
+                                || meta.block_size as usize != dec.block_size()
                             {
                                 errors += 1;
                                 eprintln!("meta mismatch");
