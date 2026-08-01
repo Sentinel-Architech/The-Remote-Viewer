@@ -122,21 +122,96 @@ Use both for batch/CI. Backoff alone is enough for a few manual DOI checks.
 
 ---
 
-## 6. Tool: `verify_dois.py`
+## 6. Tool: `verify_dois.py` — usage examples
+
+Run from the verification directory (or pass paths relative to your cwd).
+
+### Check a single known DOI
 
 ```bash
 cd grok/verification
-python verify_dois.py 10.1038/nature12373
-python verify_dois.py --file ../skills/first-aid/SKILL.md
-python verify_dois.py --mailto you@example.com 10.xxxx/yyyy
+python verify_dois.py --mailto you@example.com 10.1038/nature12373
 ```
 
-- Extracts `10.\d+/\S+` style DOIs from text or a skill file
-- Resolves each via Crossref polite pool
-- Exponential backoff + circuit breaker on 429/5xx
-- Reports: **OK**, **MISSING** (hallucinated/wrong), **ERROR**
+Example output:
 
-See script header for options.
+```text
+OK        10.1038/nature12373 — A safe operating space for humanity
+
+Summary: 1 OK, 0 bad, 0 skipped, 1 total
+```
+
+### Check several DOIs at once
+
+```bash
+python verify_dois.py --mailto you@example.com \
+  10.1038/nature12373 \
+  10.1103/PhysRevLett.116.061102 \
+  10.9999/fake.doi.hallucinated
+```
+
+Example output:
+
+```text
+OK        10.1038/nature12373 — A safe operating space for humanity
+OK        10.1103/PhysRevLett.116.061102 — Observation of Gravitational Waves from a Binary Black Hole Merger
+MISSING   10.9999/fake.doi.hallucinated (DOI not found (404))
+
+Summary: 2 OK, 1 bad, 0 skipped, 3 total
+```
+
+Exit code is `1` if any DOI is MISSING or ERROR (useful for CI).
+
+### Scan a skill file (extract + resolve)
+
+```bash
+python verify_dois.py --mailto you@example.com --file ../skills/first-aid/SKILL.md
+python verify_dois.py --mailto you@example.com -f ../skills/physics/SKILL.md
+```
+
+The script finds every `10.xxxx/...` pattern in the file, de-duplicates, and resolves each one.
+
+### No mailto (still works; public pool, stricter limits)
+
+```bash
+python verify_dois.py 10.1038/nature12373
+```
+
+Prefer `--mailto` so Crossref can place you in the polite pool.
+
+### Tune the circuit breaker
+
+```bash
+python verify_dois.py --mailto you@example.com \
+  --threshold 3 \
+  --cooldown 60 \
+  --file ../skills/mathematics/SKILL.md
+```
+
+| Flag | Default | Meaning |
+|------|---------|--------|
+| `--mailto` | `sentinel-doi-check@localhost` | Email for Crossref polite pool |
+| `--file` / `-f` | — | Read DOIs from this markdown/text file |
+| `--threshold` | `5` | Failures before circuit opens |
+| `--cooldown` | `45` | Seconds to stay OPEN before probing again |
+
+### What each status means
+
+| Status | Meaning | Action |
+|--------|--------|--------|
+| **OK** | DOI resolved; title shown when available | Keep; spot-check claim vs paper |
+| **MISSING** | Crossref 404 — no such DOI | Treat as hallucinated/wrong; remove |
+| **ERROR** | HTTP/network failure after retries | Retry later or check connectivity |
+| **SKIPPED** | Circuit breaker open | Wait for cooldown; re-run batch |
+
+### CI-style one-liner
+
+```bash
+cd grok/verification && \
+  python verify_dois.py --mailto ci@yourdomain.example --file ../skills/first-aid/SKILL.md
+```
+
+Non-zero exit if any DOI failed verification.
 
 ---
 
