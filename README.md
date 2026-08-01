@@ -13,6 +13,8 @@
 Repository: [github.com/Sentinel-Archetecht/The-Remote-Viewer](https://github.com/Sentinel-Archetecht/The-Remote-Viewer)  
 **Working branch:** [`TheRemoteViewer`](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/tree/TheRemoteViewer)
 
+**Prefer pictures?** → **[Visual Guide](VISUAL-GUIDE.md)** (sight-first flowcharts, no jargon)
+
 ---
 
 ## Start here — three paths
