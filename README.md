@@ -13,7 +13,8 @@
 Repository: [github.com/Sentinel-Archetecht/The-Remote-Viewer](https://github.com/Sentinel-Archetecht/The-Remote-Viewer)  
 **Working branch:** [`TheRemoteViewer`](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/tree/TheRemoteViewer)
 
-**Prefer pictures?** → **[Visual Guide](VISUAL-GUIDE.md)** (sight-first flowcharts, no jargon)
+**Prefer pictures?** → **[Visual Guide](VISUAL-GUIDE.md)** (sight-first + ADA text alternatives)  
+**Domain professional?** → **[Professionals](PROFESSIONALS.md)** (meteorologist, geologist, SPED teacher, nurse, engineer — add your skill)
 
 ---
 
@@ -148,6 +149,9 @@ flowchart LR
 | `first-aid` | Emergency response (AHA / Red Cross sourced) |
 
 All specialists share the same delivery rules: fact-based, primary sources preferred, never lecture the Viewer.
+
+**Want to add meteorology, geology, special education, nursing, engineering, or another real domain?**  
+→ **[Professionals guide](PROFESSIONALS.md)** — template + three-step contribution path.
 
 ### Hybrid router (live)
 
