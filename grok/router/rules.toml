@@ -1,0 +1,72 @@
+# Sentinel Router — hard keyword rules
+# First match wins within priority groups. Higher priority groups evaluated first.
+# Case-insensitive matching intended.
+
+[priority.first_aid]
+# Life-safety always wins
+patterns = [
+  "cpr", "aed", "bleeding", "hemorrhage", "choking", "heimlich",
+  "burn", "fracture", "shock", "anaphylaxis", "epipen", "naloxone",
+  "overdose", "heat stroke", "hypothermia", "first aid", "tourniquet",
+  "stop the bleed", "rescue breathing", "unresponsive"
+]
+skill = "first-aid"
+
+[priority.quantum]
+patterns = [
+  "quantum", "qubit", "entanglement", "superposition", "wave function",
+  "schrodinger", "heisenberg", "bell test", "decoherence", "quantum computing",
+  "quantum information", "no-cloning", "born rule"
+]
+skill = "quantum"
+
+[priority.physics]
+patterns = [
+  "newton", "maxwell", "relativity", "einstein", "thermodynamics",
+  "electromagnetism", "kinematics", "force", "momentum", "optics",
+  "classical mechanics", "special relativity", "general relativity"
+]
+skill = "physics"
+
+[priority.mathematics]
+patterns = [
+  "derivative", "integral", "eigen", "matrix", "proof", "theorem",
+  "algebra", "calculus", "trigonometry", "geometry", "arithmetic",
+  "polynomial", "limit", "series", "vector", "linear algebra",
+  "differential equation", "number theory", "probability"
+]
+skill = "mathematics"
+
+[priority.political]
+patterns = [
+  "congress", "statute", "constitution", "incentive", "legislation",
+  "election", "regulation", "bureaucracy", "separation of powers",
+  "federal", "supreme court", "policy", "governance"
+]
+skill = "political-science"
+
+[priority.cognitive]
+patterns = [
+  "bias", "motivated reasoning", "confirmation bias", "heuristic",
+  "availability", "sunk cost", "identity-protective", "prospect theory",
+  "kahneman", "kunda", "kahan"
+]
+skill = "cognitive-science"
+
+[priority.zk]
+patterns = [
+  "zero knowledge", "zk", "nullifier", "circom", "poseidon",
+  "membership proof", "commitment scheme", "trusted setup"
+]
+skill = "zk"
+
+[priority.project]
+patterns = [
+  "remote viewer", "sentinel", "destroy = restart", "optical air-gap",
+  "age encrypt", "soliton", "local-first", "zero-trust", "did:key"
+]
+skill = "remote-viewer"
+
+# Fallback when nothing matches
+[fallback]
+skill = "coordinator"
