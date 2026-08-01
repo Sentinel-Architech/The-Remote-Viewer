@@ -1,18 +1,19 @@
 /**
- * TRV Optical Air-Gap — Luby Transform (LT) Fountain Code Skeleton
+ * TRV Optical Air-Gap — Luby Transform (LT) Fountain Codes
  *
  * Pure TypeScript, no external dependencies.
- * Robust Soliton degree distribution (simplified).
- * Open-source, suitable for GrapheneOS browser / Termux / Node.
+ * Degree sampling: Robust Soliton by default (c=0.1, delta=0.05).
+ * Set LTEncoderConfig.degreeMode = "legacy" for the old heuristic.
  *
- * License: MIT (or project root license)
- *
- * This is a correct structural skeleton. Production use requires:
- * - Full Robust Soliton parameter tuning
- * - Proper random number generation from a seed
- * - Efficient peeling decoder with degree-1 tracking
- * - Header + integrity (hash) on every symbol
+ * License: MIT (project root)
  */
+
+import {
+  robustSoliton,
+  sampleDegreeFromCdf,
+  seedToUnit,
+  solitonCdf,
+} from "./robust-soliton";
 
 export interface LTSourceBlock {
   index: number;
@@ -20,29 +21,21 @@ export interface LTSourceBlock {
 }
 
 export interface LTSymbol {
-  /** Degree (number of source blocks XORed) */
   degree: number;
-  /** Indices of the source blocks that were XORed */
   indices: number[];
-  /** The XOR result */
   data: Uint8Array;
-  /** Sequence / seed used to generate this symbol (for deterministic reconstruction) */
   seed: number;
 }
 
 export interface LTEncoderConfig {
-  /** Number of source blocks K */
   k: number;
-  /** Block size in bytes */
   blockSize: number;
-  /** Robust Soliton parameters (simplified defaults) */
   c?: number;
   delta?: number;
+  /** default: soliton */
+  degreeMode?: "soliton" | "legacy";
 }
 
-/**
- * Split payload into K fixed-size source blocks (pad last block with zeros).
- */
 export function splitIntoBlocks(
   payload: Uint8Array,
   blockSize: number
@@ -64,12 +57,8 @@ export function splitIntoBlocks(
   return blocks;
 }
 
-/**
- * Simple degree sampler (placeholder for full Robust Soliton).
- * Returns degree in [1, K].
- */
-function sampleDegree(k: number, seed: number): number {
-  // Deterministic but simplified. Replace with proper Robust Soliton.
+/** Legacy heuristic (kept for R2 hard-cut / interop tests). */
+function sampleDegreeLegacy(k: number, seed: number): number {
   const x = Math.abs(Math.sin(seed * 12.9898) * 43758.5453) % 1;
   if (x < 0.5) return 1;
   if (x < 0.75) return 2;
@@ -77,18 +66,27 @@ function sampleDegree(k: number, seed: number): number {
   return Math.min(1 + Math.floor(x * k), k);
 }
 
-/**
- * Generate one LT symbol from source blocks.
- */
 export function encodeSymbol(
   blocks: LTSourceBlock[],
-  seed: number
+  seed: number,
+  opts?: { c?: number; delta?: number; degreeMode?: "soliton" | "legacy"; cdf?: Float64Array }
 ): LTSymbol {
   const k = blocks.length;
-  const degree = sampleDegree(k, seed);
+  const mode = opts?.degreeMode ?? "soliton";
+  let degree: number;
+  if (mode === "legacy") {
+    degree = sampleDegreeLegacy(k, seed);
+  } else {
+    const cdf =
+      opts?.cdf ??
+      solitonCdf(
+        robustSoliton({ k, c: opts?.c ?? 0.1, delta: opts?.delta ?? 0.05 })
+      );
+    degree = sampleDegreeFromCdf(cdf, seedToUnit(seed), k);
+  }
+
   const indices: number[] = [];
   const chosen = new Set<number>();
-
   let s = seed;
   while (indices.length < degree) {
     s = (s * 1103515245 + 12345) & 0x7fffffff;
@@ -111,34 +109,45 @@ export function encodeSymbol(
   return { degree, indices, data, seed };
 }
 
-/**
- * LT Encoder: produces an infinite stream of symbols.
- */
 export class LTEncoder {
   private blocks: LTSourceBlock[];
   private nextSeed = 0;
+  private degreeMode: "soliton" | "legacy";
+  private c: number;
+  private delta: number;
+  private cdf: Float64Array | null;
 
-  constructor(payload: Uint8Array, blockSize: number) {
+  constructor(
+    payload: Uint8Array,
+    blockSize: number,
+    opts?: { c?: number; delta?: number; degreeMode?: "soliton" | "legacy" }
+  ) {
     this.blocks = splitIntoBlocks(payload, blockSize);
+    this.degreeMode = opts?.degreeMode ?? "soliton";
+    this.c = opts?.c ?? 0.1;
+    this.delta = opts?.delta ?? 0.05;
+    this.cdf =
+      this.degreeMode === "soliton"
+        ? solitonCdf(robustSoliton({ k: this.blocks.length, c: this.c, delta: this.delta }))
+        : null;
   }
 
   get k(): number {
     return this.blocks.length;
   }
 
-  /** Generate the next symbol */
   next(): LTSymbol {
-    const sym = encodeSymbol(this.blocks, this.nextSeed);
+    const sym = encodeSymbol(this.blocks, this.nextSeed, {
+      degreeMode: this.degreeMode,
+      c: this.c,
+      delta: this.delta,
+      cdf: this.cdf ?? undefined,
+    });
     this.nextSeed++;
     return sym;
   }
 }
 
-/**
- * Minimal peeling decoder skeleton.
- * Collect symbols until enough degree-1 symbols appear and cascade.
- * Production version needs efficient data structures.
- */
 export class LTDecoder {
   private k: number;
   private blockSize: number;
@@ -164,7 +173,6 @@ export class LTDecoder {
     return this.recoveredCount === this.k;
   }
 
-  /** Attempt peeling decode (simplified). */
   private peel(): void {
     let progress = true;
     while (progress) {
@@ -189,7 +197,6 @@ export class LTDecoder {
     }
   }
 
-  /** Return recovered payload (concatenated blocks) or null if incomplete. */
   getPayload(): Uint8Array | null {
     if (!this.isComplete) return null;
     const out = new Uint8Array(this.k * this.blockSize);

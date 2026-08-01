@@ -1,0 +1,22 @@
+TRV optical vendor directory
+============================
+
+Drop offline QR **decoder** sources here. No CDN at runtime.
+
+Recommended (Apache-2.0 OR MIT):
+  https://github.com/cozmo/jsQR
+  Place dist file as:  optical/vendor/jsQR.js
+
+  License: Apache License 2.0 (see upstream LICENSE)
+  Copyright (c) Cosmo Wolfe and contributors
+
+Alternate (MIT OR Apache-2.0):
+  https://github.com/paulmillr/qr
+  May be vendored if preferred; wire import path in qr-receiver if API differs.
+
+Do NOT vendor Meta / Google / Microsoft proprietary SDKs.
+
+Receiver load order:
+  1. BarcodeDetector (Chromium) when present
+  2. global jsQR from this folder if script tag loads
+  3. Paste / file import of TRVL1 lines always works

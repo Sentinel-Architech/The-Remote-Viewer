@@ -21,14 +21,20 @@
 </head>
 <body>
   <h1>TRV Optical Sender</h1>
-  <p class="meta">Offline QR · LT frame stream (TRVL) · No CDN · No Meta/Google/Microsoft</p>
+  <p class="meta">Offline QR · LT TRVL · Robust Soliton degrees · No CDN</p>
 
-  <label for="payload">Payload (demo treats as opaque bytes — production: age ciphertext / stego)</label>
+  <label for="payload">Payload (opaque bytes — production: age ciphertext)</label>
   <textarea id="payload">TRV-OPTICAL-TEST-PAYLOAD</textarea>
 
   <div style="margin: 1rem 0;">
     <label>Block size <input id="blockSize" type="number" value="32" min="8" max="64" style="width:4rem;background:#111;color:#e0e0e0;border:1px solid #333;" /></label>
     <label style="margin-left:1rem;">FPS <input id="fps" type="number" value="2" min="1" max="8" style="width:3rem;background:#111;color:#e0e0e0;border:1px solid #333;" /></label>
+    <label style="margin-left:1rem;">Degree
+      <select id="degreeMode" style="background:#111;color:#e0e0e0;border:1px solid #333;">
+        <option value="soliton" selected>soliton (default)</option>
+        <option value="legacy">legacy</option>
+      </select>
+    </label>
   </div>
 
   <div style="margin: 1rem 0;">
@@ -37,26 +43,63 @@
   </div>
 
   <div id="qr"></div>
-  <div class="status" id="status">Idle — offline encoder ready.</div>
+  <div class="status" id="status">Idle — Robust Soliton ready.</div>
 
   <p class="note">
-    Uses local <code>qrcode-lite.js</code> (no CDN). Frames are base64url-encoded TRVL LT symbols
-    (see <code>fountain/lt-frame.ts</code>). Open this file from disk or any static server.
-    Production: age → RDH → LT → these frames.
+    Local <code>qrcode-lite.js</code>. Frames: <code>TRVL1.</code> + base64url TRVL.
+    Degree default matches <code>fountain/lt-core.ts</code> (c=0.1, δ=0.05).
   </p>
 
   <script src="qrcode-lite.js"></script>
   <script>
-    /**
-     * Inline LT + TRVL frame (mirrors fountain/lt-core + lt-frame for browser zero-build).
-     */
+    function idealSoliton(k) {
+      const rho = new Float64Array(k + 1);
+      rho[1] = 1 / k;
+      for (let i = 2; i <= k; i++) rho[i] = 1 / (i * (i - 1));
+      return rho;
+    }
+    function robustSoliton(k, c, delta) {
+      const rho = idealSoliton(k);
+      const R = c * Math.log(k / delta) * Math.sqrt(k);
+      const tau = new Float64Array(k + 1);
+      const threshold = Math.floor(k / R) || 1;
+      for (let i = 1; i <= k; i++) {
+        if (i < threshold) tau[i] = R / (i * k);
+        else if (i === threshold) tau[i] = (R * Math.log(R / delta)) / k;
+      }
+      let beta = 0;
+      for (let i = 1; i <= k; i++) beta += rho[i] + tau[i];
+      const mu = new Float64Array(k + 1);
+      for (let i = 1; i <= k; i++) mu[i] = (rho[i] + tau[i]) / beta;
+      return mu;
+    }
+    function solitonCdf(mu) {
+      const cdf = new Float64Array(mu.length);
+      let acc = 0;
+      for (let i = 0; i < mu.length; i++) { acc += mu[i]; cdf[i] = acc; }
+      return cdf;
+    }
+    function seedToUnit(seed) {
+      return Math.abs(Math.sin(seed * 12.9898) * 43758.5453) % 1;
+    }
+    function sampleDegreeSoliton(cdf, seed, k) {
+      const u = seedToUnit(seed);
+      for (let i = 1; i <= k; i++) if (u < cdf[i]) return i;
+      return k;
+    }
+    function sampleDegreeLegacy(k, seed) {
+      const x = seedToUnit(seed);
+      if (x < 0.5) return 1;
+      if (x < 0.75) return 2;
+      if (x < 0.9) return Math.min(3, k);
+      return Math.min(1 + Math.floor(x * k), k);
+    }
+
     function splitBlocks(payload, blockSize) {
       const blocks = [];
       for (let i = 0; i < payload.length || blocks.length === 0; i += blockSize) {
         const chunk = new Uint8Array(blockSize);
-        if (i < payload.length) {
-          chunk.set(payload.subarray(i, Math.min(i + blockSize, payload.length)));
-        }
+        if (i < payload.length) chunk.set(payload.subarray(i, Math.min(i + blockSize, payload.length)));
         blocks.push(chunk);
         if (i >= payload.length) break;
       }
@@ -64,27 +107,17 @@
       return blocks;
     }
 
-    function sampleDegree(k, seed) {
-      const x = Math.abs(Math.sin(seed * 12.9898) * 43758.5453) % 1;
-      if (x < 0.5) return 1;
-      if (x < 0.75) return 2;
-      if (x < 0.9) return Math.min(3, k);
-      return Math.min(1 + Math.floor(x * k), k);
-    }
-
-    function encodeSymbol(blocks, seed) {
+    function encodeSymbol(blocks, seed, mode, cdf) {
       const k = blocks.length;
-      const degree = sampleDegree(k, seed);
+      const degree =
+        mode === "legacy" ? sampleDegreeLegacy(k, seed) : sampleDegreeSoliton(cdf, seed, k);
       const indices = [];
       const chosen = new Set();
       let s = seed;
       while (indices.length < degree) {
         s = (s * 1103515245 + 12345) & 0x7fffffff;
         const idx = s % k;
-        if (!chosen.has(idx)) {
-          chosen.add(idx);
-          indices.push(idx);
-        }
+        if (!chosen.has(idx)) { chosen.add(idx); indices.push(idx); }
       }
       indices.sort((a, b) => a - b);
       const data = new Uint8Array(blocks[0].length);
@@ -103,16 +136,14 @@
       }
       return crc & 0xffff;
     }
-
     function u16be(n) { return [(n >>> 8) & 0xff, n & 0xff]; }
     function u32be(n) {
       return [(n >>> 24) & 0xff, (n >>> 16) & 0xff, (n >>> 8) & 0xff, n & 0xff];
     }
-
     function encodeLTFrame(sym, k, blockSize) {
       const parts = [];
-      parts.push(0x54, 0x52, 0x56, 0x4c); // TRVL
-      parts.push(1, 1); // version, flags explicit indices
+      parts.push(0x54, 0x52, 0x56, 0x4c);
+      parts.push(1, 1);
       parts.push(...u16be(k), ...u16be(blockSize));
       parts.push(...u32be(sym.seed >>> 0));
       parts.push(...u16be(sym.degree), ...u16be(sym.data.length));
@@ -126,7 +157,6 @@
       out[body.length + 1] = crc & 0xff;
       return out;
     }
-
     function toBase64Url(bytes) {
       let bin = "";
       for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
@@ -140,20 +170,25 @@
     const stopBtn = document.getElementById("stopBtn");
     const blockSizeEl = document.getElementById("blockSize");
     const fpsEl = document.getElementById("fps");
+    const degreeModeEl = document.getElementById("degreeMode");
 
     let timer = null;
     let seed = 0;
     let blocks = null;
+    let cdf = null;
+    let mode = "soliton";
 
     function start() {
       if (typeof TRVQR === "undefined") {
-        statusEl.textContent = "ERROR: qrcode-lite.js not loaded (open via folder or static server).";
+        statusEl.textContent = "ERROR: qrcode-lite.js not loaded.";
         return;
       }
       const text = payloadEl.value || "TRV-EMPTY";
       const bytes = new TextEncoder().encode(text);
       const blockSize = Math.max(8, Math.min(64, parseInt(blockSizeEl.value, 10) || 32));
       blocks = splitBlocks(bytes, blockSize);
+      mode = degreeModeEl.value === "legacy" ? "legacy" : "soliton";
+      cdf = mode === "soliton" ? solitonCdf(robustSoliton(blocks.length, 0.1, 0.05)) : null;
       seed = 0;
       startBtn.disabled = true;
       stopBtn.disabled = false;
@@ -161,19 +196,16 @@
 
       const tick = () => {
         try {
-          const sym = encodeSymbol(blocks, seed);
+          const sym = encodeSymbol(blocks, seed, mode, cdf);
           const frame = encodeLTFrame(sym, blocks.length, blockSize);
-          const b64 = toBase64Url(frame);
-          // Prefix helps receivers demux
-          const qrText = "TRVL1." + b64;
+          const qrText = "TRVL1." + toBase64Url(frame);
           qrEl.innerHTML = "";
           const canvas = document.createElement("canvas");
           TRVQR.drawCanvas(canvas, qrText, { cellSize: 3 });
           qrEl.appendChild(canvas);
           statusEl.textContent =
-            "Streaming seed=" + seed + " k=" + blocks.length +
-            " degree=" + sym.degree + " frameBytes=" + frame.length +
-            " qrChars=" + qrText.length;
+            "mode=" + mode + " seed=" + seed + " k=" + blocks.length +
+            " degree=" + sym.degree + " frameBytes=" + frame.length;
           seed++;
         } catch (e) {
           statusEl.textContent = "Frame error: " + e.message;

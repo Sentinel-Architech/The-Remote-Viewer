@@ -11,6 +11,7 @@
     .meta { font-size: 0.85rem; opacity: 0.7; margin-bottom: 1rem; }
     video { width: 100%; max-height: 280px; background: #000; border-radius: 8px; }
     canvas.gate { display: none; }
+    canvas#scan { display: none; }
     textarea { width: 100%; height: 80px; background: #111; color: #e0e0e0; border: 1px solid #333; border-radius: 4px; padding: 0.5rem; box-sizing: border-box; }
     button { background: #1a3f5f; color: white; border: none; padding: 0.55rem 1rem; border-radius: 4px; cursor: pointer; margin: 0.25rem 0.4rem 0.25rem 0; }
     button.warn { background: #5f1a1a; }
@@ -20,14 +21,20 @@
     .err { color: #f66; }
     .note { font-size: 0.8rem; opacity: 0.6; margin-top: 1.5rem; }
     #out { background: #111; padding: 0.75rem; border-radius: 4px; margin-top: 1rem; word-break: break-all; font-family: ui-monospace, monospace; font-size: 0.85rem; min-height: 2rem; }
+    #pathBadge { font-size: 0.8rem; opacity: 0.85; margin-bottom: 0.5rem; }
   </style>
+  <!-- Optional offline decoder: place cozmo/jsQR dist at vendor/jsQR.js then enable:
+  <script src="vendor/jsQR.js"></script>
+  -->
 </head>
 <body>
   <h1>TRV Optical Receiver</h1>
-  <p class="meta">Camera or paste · TRVL1 · quality gate · LT peel · offline</p>
+  <p class="meta">Camera · paste · file · TRVL1 · gate · LT peel · offline</p>
+  <div id="pathBadge">Decoder path: detecting…</div>
 
   <video id="vid" playsinline muted></video>
   <canvas class="gate" id="gate"></canvas>
+  <canvas id="scan"></canvas>
 
   <div>
     <button class="go" id="camBtn">Start camera</button>
@@ -35,16 +42,19 @@
     <button id="resetBtn" class="warn">Reset decoder</button>
   </div>
 
-  <label for="frameIn">Or paste <code>TRVL1.</code> lines</label>
+  <label for="frameIn">Paste <code>TRVL1.</code> lines</label>
   <textarea id="frameIn"></textarea>
   <button id="addBtn">Ingest paste</button>
+  <label style="display:inline-block;margin-left:0.5rem;">
+    File <input type="file" id="fileIn" accept=".txt,.trvl,text/plain" />
+  </label>
 
   <div class="status" id="status">Idle.</div>
   <div id="out"></div>
 
   <p class="note">
-    Uses <code>BarcodeDetector</code> when available (Chromium). Quality gate rejects low-contrast / dark frames.
-    No CDN. Pair with <code>qr-sender.html</code>.
+    Path order: <strong>BarcodeDetector</strong> → <strong>jsQR</strong> (if <code>vendor/jsQR.js</code> loaded) → paste/file.
+    No CDN. Gate rejects dark/flat frames. Pair with <code>qr-sender.html</code>.
   </p>
 
   <script>
@@ -133,7 +143,6 @@
       }
     }
 
-    /** Quality gate: mean luminance + contrast proxy on downscaled frame. */
     function framePassesGate(video, canvas) {
       const w = 64, h = 48;
       canvas.width = w; canvas.height = h;
@@ -147,16 +156,36 @@
       }
       const mean = sum / n;
       const variance = sum2 / n - mean * mean;
-      // reject too dark or too flat
       return mean > 25 && mean < 240 && variance > 200;
     }
 
-    let decoder = null, ingested = 0, errors = 0, stream = null, scanTimer = null, detector = null;
+    let decoder = null, ingested = 0, errors = 0, gateRejections = 0;
+    let stream = null, scanTimer = null, detector = null;
+    let decodePath = "none";
     const statusEl = document.getElementById("status");
     const outEl = document.getElementById("out");
+    const pathBadge = document.getElementById("pathBadge");
     const vid = document.getElementById("vid");
     const gate = document.getElementById("gate");
+    const scanCanvas = document.getElementById("scan");
     const lastCodes = new Set();
+
+    function hasJsQR() {
+      return typeof jsQR === "function";
+    }
+
+    function updatePathBadge() {
+      const bd = typeof BarcodeDetector !== "undefined";
+      const jq = hasJsQR();
+      pathBadge.innerHTML =
+        "Decoder path: " +
+        (decodePath !== "none" ? "<span class='ok'>" + decodePath + "</span>" : "idle") +
+        " · available: " +
+        (bd ? "BarcodeDetector " : "") +
+        (jq ? "jsQR " : "") +
+        "paste/file";
+    }
+    updatePathBadge();
 
     function showPayload() {
       if (!decoder || !decoder.done) return;
@@ -167,14 +196,24 @@
       try {
         outEl.textContent = "PAYLOAD UTF-8:\n" + new TextDecoder().decode(slim);
       } catch {
-        outEl.textContent = "PAYLOAD hex: " + Array.from(slim.slice(0, 64)).map(b => b.toString(16).padStart(2,"0")).join("");
+        outEl.textContent =
+          "PAYLOAD hex: " +
+          Array.from(slim.slice(0, 64)).map((b) => b.toString(16).padStart(2, "0")).join("");
       }
     }
 
     function render() {
-      if (!decoder) { statusEl.textContent = "Idle."; return; }
-      statusEl.innerHTML = "k=" + decoder.k + " recovered <span class='ok'>" + decoder.count + "/" + decoder.k +
-        "</span> ingested=" + ingested + " errors=" + errors;
+      if (!decoder) {
+        statusEl.textContent = "Idle. gateRejections=" + gateRejections;
+        return;
+      }
+      statusEl.innerHTML =
+        "k=" + decoder.k +
+        " recovered <span class='ok'>" + decoder.count + "/" + decoder.k + "</span>" +
+        " ingested=" + ingested +
+        " errors=" + errors +
+        " gateReject=" + gateRejections +
+        " path=" + decodePath;
       showPayload();
     }
 
@@ -190,48 +229,112 @@
       if (decoder.add(sym)) ingested++;
     }
 
-    document.getElementById("addBtn").onclick = () => {
-      for (const line of document.getElementById("frameIn").value.split(/\r?\n/)) {
+    function ingestText(text) {
+      for (const line of text.split(/\r?\n/)) {
         try { ingestLine(line); } catch (e) { errors++; statusEl.innerHTML = "<span class='err'>" + e.message + "</span>"; }
       }
-      document.getElementById("frameIn").value = "";
       render();
+    }
+
+    document.getElementById("addBtn").onclick = () => {
+      decodePath = "paste";
+      updatePathBadge();
+      ingestText(document.getElementById("frameIn").value);
+      document.getElementById("frameIn").value = "";
+    };
+
+    document.getElementById("fileIn").onchange = (ev) => {
+      const f = ev.target.files && ev.target.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        decodePath = "file";
+        updatePathBadge();
+        ingestText(String(reader.result || ""));
+      };
+      reader.readAsText(f);
     };
 
     document.getElementById("resetBtn").onclick = () => {
-      decoder = null; ingested = 0; errors = 0; lastCodes.clear(); outEl.textContent = ""; render();
+      decoder = null; ingested = 0; errors = 0; gateRejections = 0;
+      lastCodes.clear(); outEl.textContent = ""; decodePath = "none";
+      updatePathBadge(); render();
     };
+
+    function tryJsQRFromVideo() {
+      if (!hasJsQR()) return;
+      const w = Math.min(640, vid.videoWidth || 640);
+      const h = Math.min(480, vid.videoHeight || 480);
+      if (!w || !h) return;
+      scanCanvas.width = w;
+      scanCanvas.height = h;
+      const ctx = scanCanvas.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(vid, 0, 0, w, h);
+      const img = ctx.getImageData(0, 0, w, h);
+      const code = jsQR(img.data, img.width, img.height, { inversionAttempts: "dontInvert" });
+      if (code && code.data) {
+        const raw = String(code.data).trim();
+        if (raw && !lastCodes.has(raw)) {
+          lastCodes.add(raw);
+          if (lastCodes.size > 200) lastCodes.clear();
+          decodePath = "jsQR";
+          updatePathBadge();
+          try { ingestLine(raw); render(); } catch (e) { errors++; }
+        }
+      }
+    }
 
     async function startCam() {
       if (!navigator.mediaDevices?.getUserMedia) {
         statusEl.innerHTML = "<span class='err'>No camera API</span>";
         return;
       }
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+        audio: false,
+      });
       vid.srcObject = stream;
       await vid.play();
+
+      detector = null;
       if ("BarcodeDetector" in window) {
         try { detector = new BarcodeDetector({ formats: ["qr_code"] }); }
         catch { detector = null; }
       }
-      if (!detector) {
-        statusEl.innerHTML = "Camera on — <span class='err'>BarcodeDetector unavailable; use paste mode</span>";
+
+      if (detector) decodePath = "BarcodeDetector";
+      else if (hasJsQR()) decodePath = "jsQR";
+      else decodePath = "camera-no-decoder";
+      updatePathBadge();
+
+      if (!detector && !hasJsQR()) {
+        statusEl.innerHTML =
+          "Camera on — <span class='err'>no BarcodeDetector / jsQR; use paste or file</span>";
         return;
       }
+
       statusEl.textContent = "Camera scanning…";
       scanTimer = setInterval(async () => {
         if (decoder?.done) return;
         try {
-          if (!framePassesGate(vid, gate)) return;
-          const codes = await detector.detect(vid);
-          for (const c of codes) {
-            const raw = (c.rawValue || "").trim();
-            if (!raw || lastCodes.has(raw)) continue;
-            lastCodes.add(raw);
-            if (lastCodes.size > 200) lastCodes.clear();
-            try { ingestLine(raw); render(); } catch (e) { errors++; }
+          if (!framePassesGate(vid, gate)) {
+            gateRejections++;
+            return;
           }
-        } catch (_) { /* ignore detect errors */ }
+          if (detector) {
+            const codes = await detector.detect(vid);
+            for (const c of codes) {
+              const raw = (c.rawValue || "").trim();
+              if (!raw || lastCodes.has(raw)) continue;
+              lastCodes.add(raw);
+              if (lastCodes.size > 200) lastCodes.clear();
+              decodePath = "BarcodeDetector";
+              try { ingestLine(raw); render(); } catch (e) { errors++; }
+            }
+          } else {
+            tryJsQRFromVideo();
+          }
+        } catch (_) {}
       }, 250);
     }
 
@@ -243,9 +346,10 @@
       vid.srcObject = null;
     }
 
-    document.getElementById("camBtn").onclick = () => startCam().catch((e) => {
-      statusEl.innerHTML = "<span class='err'>" + e.message + "</span>";
-    });
+    document.getElementById("camBtn").onclick = () =>
+      startCam().catch((e) => {
+        statusEl.innerHTML = "<span class='err'>" + e.message + "</span>";
+      });
     document.getElementById("camStop").onclick = stopCam;
   </script>
 </body>

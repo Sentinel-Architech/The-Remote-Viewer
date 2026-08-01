@@ -1,19 +1,19 @@
-# LT Fountain Codes for Optical Transfer
+# LT degree sampling notes
 
-Luby Transform (LT) codes with Robust Soliton distribution.
+## Defaults (Phase 2)
 
-## Why LT
-- Rateless: generate as many symbols as needed.
-- Receiver needs only ~K × 1.05–1.20 distinct symbols in any order.
-- Dropped / blurred / out-of-order frames only cost time, never correctness.
-- Perfect match for one-way screen → camera channel (no back-channel possible).
+| Parameter | Value |
+|-----------|-------|
+| `degreeMode` | `soliton` (default) |
+| `c` | `0.1` |
+| `delta` | `0.05` |
 
-## Pipeline position
-After encryption + RDH, before QR animation.
+Robust Soliton μ is built once per encoder from `robust-soliton.ts`. Degrees are sampled via CDF + `seedToUnit(seed)` so TS/Rust can share golden vectors later.
 
-## Open implementations to adapt
-- decimen-optical-transfer lineage
-- txqr-style LT cores
-- pure TypeScript / Go / Dart LT libraries
+## Legacy mode
 
-Keep the core pure and dependency-light so it runs under GrapheneOS browser or Termux.
+`degreeMode: "legacy"` keeps the Phase 1 heuristic (R2 hard-cut interop).
+
+## Expected overhead
+
+Under zero loss, peel typically completes near `K × (1.05–1.2)` symbols for moderate K. Optical loss raises that; send rateless until receiver reports complete.
