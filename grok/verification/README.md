@@ -215,7 +215,140 @@ Non-zero exit if any DOI failed verification.
 
 ---
 
-## 7. PR reviewer flow (short)
+## 7. Error handling examples
+
+How the tool behaves when things go wrong — and what you should do.
+
+### Hallucinated / unknown DOI (404)
+
+```bash
+python verify_dois.py --mailto you@example.com 10.9999/this.does.not.exist
+```
+
+```text
+MISSING   10.9999/this.does.not.exist (DOI not found (404))
+
+Summary: 0 OK, 1 bad, 0 skipped, 1 total
+```
+
+- **No retries** — 404 is final.
+- **Circuit breaker not tripped** — missing DOI is not a service outage.
+- **Action:** Remove or replace the citation in the skill. Exit code `1`.
+
+### Rate limited (429) — backoff then recover
+
+When Crossref returns 429, the script waits with exponential backoff (≈1s, 2s, 4s, …) and retries the same DOI.
+
+```text
+# (internal behavior — you mainly see delay, then either OK or ERROR)
+OK        10.1038/nature12373 — A safe operating space for humanity
+```
+
+If every retry still gets 429:
+
+```text
+ERROR     10.1038/nature12373 (exhausted retries)
+```
+
+**Action:** Slow down the batch, confirm `--mailto` is set, wait a minute, re-run. Do not loop tightly in a shell `while` without sleep.
+
+### Sustained failures — circuit opens
+
+After enough consecutive 429/5xx/network failures (default 5), later DOIs are not attempted:
+
+```text
+ERROR     10.1111/example.one (HTTP 429)
+ERROR     10.1111/example.two (HTTP 429)
+...
+SKIPPED   10.1111/example.six (circuit open after failures)
+SKIPPED   10.1111/example.seven (circuit open)
+
+Summary: 0 OK, 2 bad, 2 skipped, ...
+```
+
+**Action:** Wait for `--cooldown` seconds (default 45), then re-run only the remaining DOIs. Or raise `--cooldown` / lower concurrency by running sequentially (already the default).
+
+### Network timeout / offline
+
+```text
+ERROR     10.1038/nature12373 (exhausted retries)
+```
+
+or after repeated timeouts the circuit may open and further IDs show `SKIPPED`.
+
+**Action:** Check connectivity. On Termux, confirm DNS and that `api.crossref.org` is reachable. Re-run when online. No skill change required if the DOI was previously known good.
+
+### File missing or unreadable
+
+```bash
+python verify_dois.py --file ../skills/does-not-exist/SKILL.md
+```
+
+```text
+# Python traceback: FileNotFoundError
+```
+
+**Action:** Fix the path. Use paths relative to your current directory.
+
+### No DOIs in file
+
+```bash
+python verify_dois.py --file ../skills/simple-comms/SKILL.md
+```
+
+```text
+No DOIs provided or found.
+```
+
+Exit code `0` — nothing to verify is not a failure.
+
+### Mixed batch (real + fake + rate pressure)
+
+```bash
+python verify_dois.py --mailto you@example.com \
+  10.1038/nature12373 \
+  10.9999/fake.doi \
+  10.1103/PhysRevLett.116.061102
+```
+
+Possible output:
+
+```text
+OK        10.1038/nature12373 — A safe operating space for humanity
+MISSING   10.9999/fake.doi (DOI not found (404))
+OK        10.1103/PhysRevLett.116.061102 — Observation of Gravitational Waves from a Binary Black Hole Merger
+
+Summary: 2 OK, 1 bad, 0 skipped, 3 total
+```
+
+Exit code `1` because of the MISSING entry. Fix the bad citation; re-run until summary shows `0 bad`.
+
+### CI pattern with explicit failure
+
+```bash
+cd grok/verification || exit 1
+python verify_dois.py --mailto ci@yourdomain.example --file ../skills/first-aid/SKILL.md
+status=$?
+if [ "$status" -ne 0 ]; then
+  echo "DOI verification failed — fix MISSING/ERROR entries before merge"
+  exit "$status"
+fi
+```
+
+### Quick decision table
+
+| You see | Means | Do this |
+|---------|--------|--------|
+| `MISSING` | DOI does not exist | Strip or correct citation |
+| `ERROR` … exhausted retries | Rate limit or network after backoff | Wait, check network, re-run |
+| `SKIPPED` … circuit open | Too many recent failures | Wait cooldown, re-run remainder |
+| `No DOIs provided or found` | Nothing to check | OK for skills without DOIs |
+| Traceback `FileNotFoundError` | Bad `--file` path | Fix path |
+| Exit code `1` | At least one MISSING or ERROR | Do not merge until clean |
+
+---
+
+## 8. PR reviewer flow (short)
 
 1. Credential links present? Public check → verified / community / reject framing.
 2. Material citations have DOIs or official guideline URLs?
@@ -225,7 +358,7 @@ Non-zero exit if any DOI failed verification.
 
 ---
 
-## 8. What this is not
+## 9. What this is not
 
 - Not a licensing authority
 - Not a substitute for peer review of the skill’s scientific content
