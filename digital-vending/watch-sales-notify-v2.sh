@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# watch-sales-notify-v2.sh — Level 2.5 automation
+# watch-sales-notify-v2.sh — Level 2.5 automation + exponential backoff
 # Polls Solana → detects payment + memo → prepares ZIP + age/LT frames
 # + automatic retry of PENDING deliveries when recipient drop files appear.
 #
@@ -7,14 +7,16 @@
 #   - Every poll cycle scans $DELIVER_DIR for *.PENDING markers
 #   - If matching <prefix>.recipient now exists → re-run auto-deliver
 #   - Transient encrypt failures (exit 3) are retried up to MAX_TRANSIENT_RETRIES
-#   - Permanent missing recipient stays PENDING until drop file appears
+#     with exponential backoff: base * 2^(attempt-1), capped at BACKOFF_MAX
+#   - Permanent missing recipient stays PENDING until drop file appears (no backoff burn)
 #
 # Drop file method:
 #   echo "age1..." > $DELIVER_DIR/<sig-prefix>.recipient
 #
 # Requirements: curl, jq
 # Env: SOLANA_RPC_URL, DISCORD_WEBHOOK, SALES_ADDRESS, DELIVER_DIR,
-#      POLL_SECONDS, MAX_TRANSIENT_RETRIES (default 3)
+#      POLL_SECONDS, MAX_TRANSIENT_RETRIES (default 3),
+#      BACKOFF_BASE_SECONDS (default 30), BACKOFF_MAX_SECONDS (default 1800)
 
 set -euo pipefail
 
@@ -24,6 +26,8 @@ STATE_FILE="${STATE_FILE:-/tmp/trv-sales-last-sig}"
 POLL_SECONDS="${POLL_SECONDS:-45}"
 DISCORD_WEBHOOK="${DISCORD_WEBHOOK:-}"
 MAX_TRANSIENT_RETRIES="${MAX_TRANSIENT_RETRIES:-3}"
+BACKOFF_BASE_SECONDS="${BACKOFF_BASE_SECONDS:-30}"
+BACKOFF_MAX_SECONDS="${BACKOFF_MAX_SECONDS:-1800}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DELIVER_DIR="${DELIVER_DIR:-$HOME/trv-deliver}"
 DIST_DIR="${ROOT}/dist"
@@ -34,13 +38,13 @@ mkdir -p "$DELIVER_DIR"
 touch "$RETRY_STATE"
 
 echo "════════════════════════════════════════"
-echo " TRV Sales Watcher (Level 2.5 — retry)"
+echo " TRV Sales Watcher (Level 2.5 — backoff)"
 echo " Address : $SALES_ADDRESS"
 echo " RPC     : $RPC"
 echo " Discord : ${DISCORD_WEBHOOK:+configured}${DISCORD_WEBHOOK:-not set}"
 echo " Deliver : $DELIVER_DIR"
 echo " Vending : $VENDING_DIR"
-echo " Retries : max transient = $MAX_TRANSIENT_RETRIES"
+echo " Retries : max=$MAX_TRANSIENT_RETRIES  backoff base=${BACKOFF_BASE_SECONDS}s max=${BACKOFF_MAX_SECONDS}s"
 echo "════════════════════════════════════════"
 echo "Ctrl+C to stop"
 echo
@@ -58,53 +62,89 @@ map_memo_to_id() {
   fi
 }
 
-# Track transient retry counts: key = prefix_id, value = count
-get_retry_count() {
+# Retry state format: key=count:next_attempt_unix
+get_retry_state() {
   local key="$1"
-  grep -E "^${key}=" "$RETRY_STATE" 2>/dev/null | tail -1 | cut -d= -f2 || echo 0
+  local line
+  line=$(grep -E "^${key}=" "$RETRY_STATE" 2>/dev/null | tail -1 || true)
+  if [[ -z "$line" ]]; then
+    echo "0:0"
+    return
+  fi
+  echo "${line#*=}"
 }
 
-set_retry_count() {
+set_retry_state() {
   local key="$1"
   local count="$2"
+  local next_ts="$3"
   grep -v -E "^${key}=" "$RETRY_STATE" > "${RETRY_STATE}.tmp" 2>/dev/null || true
   mv "${RETRY_STATE}.tmp" "$RETRY_STATE"
-  echo "${key}=${count}" >> "$RETRY_STATE"
+  echo "${key}=${count}:${next_ts}" >> "$RETRY_STATE"
 }
 
-clear_retry_count() {
+clear_retry_state() {
   local key="$1"
   grep -v -E "^${key}=" "$RETRY_STATE" > "${RETRY_STATE}.tmp" 2>/dev/null || true
   mv "${RETRY_STATE}.tmp" "$RETRY_STATE"
+}
+
+# delay = base * 2^(attempt-1), capped
+backoff_delay() {
+  local attempt="$1"
+  local delay=$BACKOFF_BASE_SECONDS
+  local i=1
+  while [[ $i -lt $attempt ]]; do
+    delay=$((delay * 2))
+    i=$((i + 1))
+    if [[ $delay -ge $BACKOFF_MAX_SECONDS ]]; then
+      delay=$BACKOFF_MAX_SECONDS
+      break
+    fi
+  done
+  echo "$delay"
 }
 
 retry_pending() {
-  local pending
+  local pending now
+  now=$(date +%s)
   shopt -s nullglob
   for pending in "$DELIVER_DIR"/*.PENDING; do
     [[ -f "$pending" ]] || continue
 
-    local base
+    local base prefix catalog_id key recip_file
     base=$(basename "$pending" .PENDING)
-    local prefix="${base%%_*}"
-    local catalog_id="${base#*_}"
-    local key="${prefix}_${catalog_id}"
-    local recip_file="$DELIVER_DIR/${prefix}.recipient"
+    prefix="${base%%_*}"
+    catalog_id="${base#*_}"
+    key="${prefix}_${catalog_id}"
+    recip_file="$DELIVER_DIR/${prefix}.recipient"
 
     if [[ ! -f "$recip_file" ]]; then
       continue
     fi
 
-    local count
-    count=$(get_retry_count "$key")
+    local state count next_ts
+    state=$(get_retry_state "$key")
+    count="${state%%:*}"
+    next_ts="${state##*:}"
+    count=${count:-0}
+    next_ts=${next_ts:-0}
+
     if [[ "$count" -ge "$MAX_TRANSIENT_RETRIES" ]]; then
-      echo "  [retry] $key exceeded max transient retries ($MAX_TRANSIENT_RETRIES) — manual intervention needed"
+      echo "  [retry] $key exhausted ($count/$MAX_TRANSIENT_RETRIES) — manual intervention"
       continue
     fi
 
-    echo "  [retry] Found pending $key + recipient drop file → re-attempting"
+    if [[ "$next_ts" -gt 0 && "$now" -lt "$next_ts" ]]; then
+      local wait=$((next_ts - now))
+      echo "  [retry] $key in backoff — next attempt in ${wait}s"
+      continue
+    fi
+
+    echo "  [retry] $key ready (attempt $((count+1))) — recipient present"
     local real_sig
     real_sig=$(grep -E '^sig=' "$pending" 2>/dev/null | cut -d= -f2- || echo "${prefix}000000000000")
+
     set +e
     "$VENDING_DIR/auto-deliver.sh" "$catalog_id" "$real_sig"
     rc=$?
@@ -113,17 +153,20 @@ retry_pending() {
     case $rc in
       0)
         echo "  [retry] SUCCESS — frames ready for $key"
-        clear_retry_count "$key"
+        clear_retry_state "$key"
         ;;
       2)
-        echo "  [retry] still PENDING (recipient issue) for $key"
+        echo "  [retry] still PENDING (recipient invalid) for $key"
         ;;
       3|4)
         count=$((count + 1))
-        set_retry_count "$key" "$count"
-        echo "  [retry] FAILED (exit $rc) — attempt $count/$MAX_TRANSIENT_RETRIES for $key"
+        local delay next
+        delay=$(backoff_delay "$count")
+        next=$((now + delay))
+        set_retry_state "$key" "$count" "$next"
+        echo "  [retry] FAILED (exit $rc) — attempt $count/$MAX_TRANSIENT_RETRIES, backoff ${delay}s"
         if [[ "$count" -ge "$MAX_TRANSIENT_RETRIES" ]]; then
-          echo "  [retry] giving up on $key after $count transient failures"
+          echo "  [retry] giving up on $key"
           echo "EXHAUSTED after $count transient failures at $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$pending"
         fi
         ;;
@@ -179,7 +222,9 @@ prepare_delivery() {
       0) echo "  [prepare] age+LT frames ready" ;;
       2) echo "  [prepare] PENDING — age recipient missing. Drop file needed." ;;
       3) echo "  [prepare] FAILED — encrypt/stream error (see log in deliver dir)"
-         set_retry_count "${sig:0:12}_${catalog_id}" 1
+         now=$(date +%s)
+         delay=$(backoff_delay 1)
+         set_retry_state "${sig:0:12}_${catalog_id}" 1 $((now + delay))
          ;;
       4) echo "  [prepare] FAILED — catalog/payload problem" ;;
       *) echo "  [prepare] auto-deliver exited $rc" ;;
@@ -198,7 +243,7 @@ Here’s your TRV Posture ${pack}.
 Sig verified: ${sig}
 
 If you provided an age1 recipient, encrypted frames are preferred.
-Place the age1 key in ${DELIVER_DIR}/${sig:0:12}.recipient and the watcher will auto-retry.
+Place the age1 key in ${DELIVER_DIR}/${sig:0:12}.recipient and the watcher will auto-retry with backoff.
 EOF
     echo "  [prepare] Classic DM written to $dm_file"
   fi
@@ -242,7 +287,7 @@ notify_discord() {
                 "**Delivery prep**\n" +
                 $zip + "\n" +
                 "Ready files in: `" + $deliver + "`\n" +
-                "For age/LT: drop age1 key into <sig-prefix>.recipient — watcher auto-retries.")}')
+                "For age/LT: drop age1 key into <sig-prefix>.recipient — watcher auto-retries with backoff.")}')
 
   curl -sS -X POST -H "Content-Type: application/json" \
     -d "$content" "$DISCORD_WEBHOOK" >/dev/null || true
@@ -286,10 +331,8 @@ get_tx_details() {
 }
 
 while true; do
-  # 1. Always try to clear any PENDING items that now have a recipient
   retry_pending
 
-  # 2. Poll for new sales
   payload=$(jq -n \
     --arg addr "$SALES_ADDRESS" \
     '{jsonrpc:"2.0",id:1,method:"getSignaturesForAddress",params:[$addr,{limit:8}]}')
