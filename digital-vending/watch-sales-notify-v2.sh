@@ -85,7 +85,17 @@ prepare_delivery() {
   # Age/LT path
   if [[ -n "$catalog_id" && -x "$VENDING_DIR/auto-deliver.sh" ]]; then
     echo "  [prepare] Attempting age+LT delivery for $catalog_id"
-    "$VENDING_DIR/auto-deliver.sh" "$catalog_id" "$sig" || true
+    set +e
+    "$VENDING_DIR/auto-deliver.sh" "$catalog_id" "$sig"
+    rc=$?
+    set -e
+    case $rc in
+      0) echo "  [prepare] age+LT frames ready" ;;
+      2) echo "  [prepare] PENDING — age recipient missing. Drop file needed." ;;
+      3) echo "  [prepare] FAILED — encrypt/stream error (see log in deliver dir)" ;;
+      4) echo "  [prepare] FAILED — catalog/payload problem" ;;
+      *) echo "  [prepare] auto-deliver exited $rc" ;;
+    esac
   fi
 
   # Fallback classic DM if no age path ran
