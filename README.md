@@ -5,6 +5,9 @@
 > "When our technology rewires how information flows, that's when invention begins."
 > — **John Squires**, Director of the U.S. Patent and Trademark Office
 
+**Heavily inspired by the CIA Gateway Process** (declassified 2003).
+Primary source: [Analysis and Assessment of Gateway Process](https://www.cia.gov/readingroom/document/cia-rdp96-00788r001700210016-5) (CIA-RDP96-00788R001700210016-5, 9 June 1983).
+
 ![Visitors](https://visitor-badge.laobi.icu/badge?page_id=Sentinel-Archetecht.The-Remote-Viewer&left_color=%231a1a1a&right_color=%2300e676&left_text=Visitors)
 
 [![CI](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/actions/workflows/ci.yml/badge.svg)](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/actions/workflows/ci.yml)
