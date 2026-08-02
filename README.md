@@ -194,15 +194,15 @@ Primary sources: CIA Reading Room / CREST Stargate releases, The Black Vault ful
 
 ### Parallels to The Remote Viewer
 
-| Stargate / AIR finding | The Remote Viewer posture |
-|------------------------|---------------------------|
-| Centralized agency program with platform/agency custody of process and product | Local-first, on-device identity and keys. No platform custody. Destroy = Restart. |
-| Unverifiable channel; product required subjective interpretation | Cryptographic, end-to-end verifiable transport (age + Robust Soliton LT optical air-gap). Proven on GrapheneOS + Termux. |
-| Lab anomalies that never became actionable intelligence | Reproducible, open-source pipelines the user can run, audit, and verify himself. |
-| Feedback and distinctive targets available in lab but absent in real ops | Optical air-gap and local LLM specialists operate under the same constraints the user actually faces. |
-| Classified protocols and final bureaucratic termination | Open documentation, Sentinel Standard, and user sovereignty. Inspiration from Gateway (consciousness tools) is retained; operational claims are limited to what can be demonstrated in code. |
+| Dimension | Stargate / AIR finding | The Remote Viewer |
+|-----------|------------------------|-------------------|
+| **Custody** | Agency-owned process and product. Viewers and tasking lived inside government systems. | User-owned keys and identity. No platform or third-party custody. Destroy = Restart. |
+| **Verifiability** | Unverifiable channel. Product required subjective scoring and interpretation by handlers. | Cryptographic end-to-end proof. age encrypt → Soliton LT frames → peel → decrypt. Anyone can reproduce the chain. |
+| **Actionability** | Lab hits existed. Operational product was too vague to drive decisions. Zero cases of guiding real ops. | Claims limited to what the code demonstrates. Optical air-gap and local specialists are runnable and auditable today. |
+| **Environment** | Lab feedback + distinctive targets produced effects that vanished under real operational constraints. | Designed for the constraints the user actually faces: offline, GrapheneOS, no cloud, no feedback loop from a central authority. |
+| **Claims discipline** | Classified protocols + statistical anomalies presented as intelligence capability → bureaucratic termination. | Open Sentinel Standard. Inspiration from Gateway retained. No paranormal collection claims. Only sovereign transport + on-device intelligence under user control. |
 
-The Remote Viewer does not claim paranormal collection. It claims sovereign transport, local intelligence under user control, and zero-trust posture that survives the kind of scrutiny that ended Star Gate.
+The Remote Viewer does not claim paranormal collection. It claims sovereign transport, local intelligence under user control, and a zero-trust posture that survives the kind of scrutiny that ended Star Gate.
 
 ---
 
