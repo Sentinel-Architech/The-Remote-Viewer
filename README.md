@@ -175,6 +175,37 @@ No cloud endpoint. No API key. No third-party weights. Prompts never leave the d
 
 ---
 
+## Historical Context: Stargate & the 1995 AIR Evaluation
+
+The U.S. government ran remote-viewing research and operational programs (SCANATE, Grill Flame, Center Lane, Sun Streak, Star Gate) from the early 1970s until 1995. Primary research was performed at SRI International / SAIC under CIA and later DIA sponsorship. Protocols included Coordinate Remote Viewing (CRV) developed with Ingo Swann and the earlier double-blind local-target protocol of Puthoff & Targ.
+
+In 1995 the CIA contracted the American Institutes for Research (AIR) for an independent review. Report: *An Evaluation of Remote Viewing: Research and Applications* (Michael D. Mumford, Andrew M. Rose, David A. Goslin), 29 September 1995.
+
+**Laboratory side**  
+Statistician Jessica Utts concluded that, by ordinary scientific standards, psychic functioning had been established; effect sizes were small-to-medium and consistent across laboratories. Psychologist Ray Hyman accepted statistical anomalies in the better-controlled studies but refused to equate an unexplained departure from chance with proven paranormal ability. No mechanism was identified.
+
+**Operational side**  
+Users scored 40 recent tasks. Accuracy averaged ~3.0 on a 6-point scale; value averaged ~3.5 on a 5-point scale. Reports were vague, required heavy interpretation, and in no case guided an actual intelligence operation. AIR stated the laboratory conditions that produced hits do not transfer to real collection requirements.
+
+**AIR final recommendation**  
+“…continued use of remote viewing in intelligence gathering operations is not warranted.” The program was terminated.
+
+Primary sources: CIA Reading Room / CREST Stargate releases, The Black Vault full collection, FAS mirror of the AIR report.
+
+### Parallels to The Remote Viewer
+
+| Stargate / AIR finding | The Remote Viewer posture |
+|------------------------|---------------------------|
+| Centralized agency program with platform/agency custody of process and product | Local-first, on-device identity and keys. No platform custody. Destroy = Restart. |
+| Unverifiable channel; product required subjective interpretation | Cryptographic, end-to-end verifiable transport (age + Robust Soliton LT optical air-gap). Proven on GrapheneOS + Termux. |
+| Lab anomalies that never became actionable intelligence | Reproducible, open-source pipelines the user can run, audit, and verify himself. |
+| Feedback and distinctive targets available in lab but absent in real ops | Optical air-gap and local LLM specialists operate under the same constraints the user actually faces. |
+| Classified protocols and final bureaucratic termination | Open documentation, Sentinel Standard, and user sovereignty. Inspiration from Gateway (consciousness tools) is retained; operational claims are limited to what can be demonstrated in code. |
+
+The Remote Viewer does not claim paranormal collection. It claims sovereign transport, local intelligence under user control, and zero-trust posture that survives the kind of scrutiny that ended Star Gate.
+
+---
+
 ## Zero-trust / Builder
 
 - Local-first keys (age) — never commit `AGE-SECRET-KEY-...`
