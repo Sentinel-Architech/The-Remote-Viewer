@@ -13,7 +13,7 @@ categories = ["cryptography", "encoding"]
 age = { version = "0.11", features = ["armor"] }
 zeroize = { version = "1", features = ["derive"] }
 sha2 = "0.10"
-thiserror = "1"
+thiserror = "2"
 
 [[bin]]
 name = "trv-optical"
