@@ -1,9 +1,9 @@
 version: 2
 
 # ---------------------------------------------------------------------------
-# Dependabot version updates (active)
-# Schedule: every Friday at 16:20 America/New_York (4:20 PM Eastern)
-# Renovate remains parked (manual-only) — do not run both as version bots.
+# Dependabot version updates
+# Schedule: every Friday at 16:20 America/New_York
+# Cooldown: 3 days (lets new releases settle before opening PRs)
 # ---------------------------------------------------------------------------
 
 updates:
@@ -15,6 +15,8 @@ updates:
       day: "friday"
       time: "16:20"
       timezone: "America/New_York"
+    cooldown:
+      default-days: 3
     open-pull-requests-limit: 10
     labels:
       - "dependencies"
@@ -36,6 +38,8 @@ updates:
       day: "friday"
       time: "16:20"
       timezone: "America/New_York"
+    cooldown:
+      default-days: 3
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
@@ -56,6 +60,8 @@ updates:
       day: "friday"
       time: "16:20"
       timezone: "America/New_York"
+    cooldown:
+      default-days: 3
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
@@ -84,6 +90,8 @@ updates:
       day: "friday"
       time: "16:20"
       timezone: "America/New_York"
+    cooldown:
+      default-days: 3
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
@@ -112,6 +120,8 @@ updates:
       day: "friday"
       time: "16:20"
       timezone: "America/New_York"
+    cooldown:
+      default-days: 3
     open-pull-requests-limit: 3
     labels:
       - "dependencies"
