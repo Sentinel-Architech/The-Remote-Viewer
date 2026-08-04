@@ -10,7 +10,7 @@ keywords = ["age", "air-gap", "fountain", "steganography", "zero-trust"]
 categories = ["cryptography", "encoding"]
 
 [dependencies]
-age = { version = "0.11", features = ["armor"] }
+age = { version = "0.12", features = ["armor"] }
 zeroize = { version = "1", features = ["derive"] }
 sha2 = "0.10"
 thiserror = "1"
