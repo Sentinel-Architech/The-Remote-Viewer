@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TRV Optical Air-Gap — Receiver</title>
+  <style>
+    :root { font-family: system-ui, sans-serif; background: #0a0a0a; color: #e0e0e0; }
+    body { max-width: 720px; margin: 1rem auto; padding: 1rem; }
+    h1 { font-size: 1.25rem; }
+    .meta { font-size: 0.85rem; opacity: 0.7; margin-bottom: 1rem; }
+    video { width: 100%; max-height: 280px; background: #000; border-radius: 8px; }
+    canvas.gate { display: none; }
+    canvas#scan { display: none; }
+    textarea { width: 100%; height: 80px; background: #111; color: #e0e0e0; border: 1px solid #333; border-radius: 4px; padding: 0.5rem; box-sizing: border-box; }
+    button { background: #1a3f5f; color: white; border: none; padding: 0.55rem 1rem; border-radius: 4px; cursor: pointer; margin: 0.25rem 0.4rem 0.25rem 0; }
+    button.warn { background: #5f1a1a; }
+    button.go { background: #1a5f2a; }
+    .status { margin-top: 0.75rem; font-size: 0.9rem; white-space: pre-wrap; }
+    .ok { color: #6d6; }
+    .err { color: #f66; }
+    .note { font-size: 0.8rem; opacity: 0.6; margin-top: 1.5rem; }
+    #out { background: #111; padding: 0.75rem; border-radius: 4px; margin-top: 1rem; word-break: break-all; font-family: ui-monospace, monospace; font-size: 0.85rem; min-height: 2rem; }
+    #pathBadge { font-size: 0.8rem; opacity: 0.85; margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>TRV Optical Receiver</h1>
+  <p class="meta">Camera · paste · file · TRVL1 · gate v2 · LT peel · Sentinel Standard</p>
+  <div id="pathBadge">Decoder path: detecting…</div>
+  <video id="vid" playsinline muted></video>
+  <canvas class="gate" id="gate"></canvas>
+  <canvas id="scan"></canvas>
+  <div>
+    <button class="go" id="camBtn">Start camera</button>
+    <button class="warn" id="camStop">Stop camera</button>
+    <button id="resetBtn" class="warn">Reset decoder</button>
+  </div>
+  <label for="frameIn">Paste <code>TRVL1.</code> lines</label>
+  <textarea id="frameIn"></textarea>
+  <button id="addBtn">Ingest paste</button>
+  <label style="display:inline-block;margin-left:0.5rem;">File <input type="file" id="fileIn" accept=".txt,.trvl,text/plain" /></label>
+  <div class="status" id="status">Idle.</div>
+  <div id="out"></div>
+  <p class="note">Gate v2: luminance mean/variance + horizontal edge energy. BarcodeDetector → jsQR → paste/file. No CDN.</p>
+  <script>
+    function crc16ibm(data) {
+      let crc = 0xffff;
+      for (let i = 0; i < data.length; i++) {
+        crc ^= data[i];
+        for (let b = 0; b < 8; b++) crc = crc & 1 ? (crc >>> 1) ^ 0xa001 : crc >>> 1;
+      }
+      return crc & 0xffff;
+    }
+    function fromBase64Url(s) {
+      const b64 = s.replace(/-/g, "+").replace(/_/g, "/");
+      const pad = b64.length % 4 === 0 ? "" : "=".repeat(4 - (b64.length % 4));
+      const raw = atob(b64 + pad);
+      const out = new Uint8Array(raw.length);
+      for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+      return out;
+    }
+    function readU16(buf, off) { return (buf[off] << 8) | buf[off + 1]; }
+    function readU32(buf, off) {
+      return ((buf[off] << 24) | (buf[off + 1] << 16) | (buf[off + 2] << 8) | buf[off + 3]) >>> 0;
+    }
+    function decodeFrame(frame) {
+      if (frame.length < 20) throw new Error("short frame");
+      if (frame[0] !== 0x54 || frame[1] !== 0x52 || frame[2] !== 0x56 || frame[3] !== 0x4c) throw new Error("bad magic");
+      if (frame[4] !== 1) throw new Error("bad version");
+      const k = readU16(frame, 6);
+      const blockSize = readU16(frame, 8);
+      const seed = readU32(frame, 10);
+      const degree = readU16(frame, 14);
+      const payloadLen = readU16(frame, 16);
+      let off = 18;
+      const indices = [];
+      for (let i = 0; i < degree; i++) { indices.push(readU16(frame, off)); off += 2; }
+      const data = frame.subarray(off, off + payloadLen);
+      off += payloadLen;
+      if (readU16(frame, off) !== crc16ibm(frame.subarray(0, off))) throw new Error("CRC fail");
+      return { k, blockSize, seed, degree, indices, data: new Uint8Array(data) };
+    }
+    class LTDecoder {
+      constructor(k, blockSize) {
+        this.k = k; this.blockSize = blockSize;
+        this.recovered = new Array(k).fill(null);
+        this.symbols = []; this.seen = new Set();
+      }
+      add(sym) {
+        const key = sym.seed + ":" + sym.indices.join(",");
+        if (this.seen.has(key)) return false;
+        this.seen.add(key); this.symbols.push(sym); this.peel(); return true;
+      }
+      get count() { return this.recovered.filter(Boolean).length; }
+      get done() { return this.count === this.k; }
+      peel() {
+        let progress = true;
+        while (progress) {
+          progress = false;
+          for (const sym of this.symbols) {
+            const unknown = sym.indices.filter((i) => this.recovered[i] === null);
+            if (unknown.length === 1) {
+              const target = unknown[0];
+              const data = new Uint8Array(sym.data);
+              for (const i of sym.indices) {
+                if (i !== target && this.recovered[i]) {
+                  const known = this.recovered[i];
+                  for (let j = 0; j < data.length; j++) data[j] ^= known[j];
+                }
+              }
+              this.recovered[target] = data; progress = true;
+            }
+          }
+        }
+      }
+      payload() {
+        if (!this.done) return null;
+        const out = new Uint8Array(this.k * this.blockSize);
+        for (let i = 0; i < this.k; i++) out.set(this.recovered[i], i * this.blockSize);
+        return out;
+      }
+    }
+    function framePassesGate(video, canvas) {
+      const w = 64, h = 48;
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(video, 0, 0, w, h);
+      const img = ctx.getImageData(0, 0, w, h).data;
+      const yPlane = new Float32Array(w * h);
+      let sum = 0, sum2 = 0, n = w * h;
+      for (let i = 0, p = 0; i < img.length; i += 4, p++) {
+        const y = 0.299 * img[i] + 0.587 * img[i + 1] + 0.114 * img[i + 2];
+        yPlane[p] = y; sum += y; sum2 += y * y;
+      }
+      const mean = sum / n;
+      const variance = sum2 / n - mean * mean;
+      let edge = 0, edgeN = 0;
+      for (let row = 0; row < h; row++) {
+        const base = row * w;
+        for (let col = 0; col < w - 1; col++) {
+          edge += Math.abs(yPlane[base + col] - yPlane[base + col + 1]);
+          edgeN++;
+        }
+      }
+      const edgeMean = edge / edgeN;
+      return mean > 25 && mean < 240 && variance > 180 && edgeMean > 8;
+    }
+    let decoder = null, ingested = 0, errors = 0, gateRejections = 0;
+    let stream = null, scanTimer = null, detector = null, decodePath = "none";
+    const statusEl = document.getElementById("status");
+    const outEl = document.getElementById("out");
+    const pathBadge = document.getElementById("pathBadge");
+    const vid = document.getElementById("vid");
+    const gate = document.getElementById("gate");
+    const scanCanvas = document.getElementById("scan");
+    const lastCodes = new Set();
+    function hasJsQR() { return typeof jsQR === "function"; }
+    function updatePathBadge() {
+      pathBadge.innerHTML = "Decoder path: " + (decodePath !== "none" ? "<span class='ok'>" + decodePath + "</span>" : "idle") +
+        " · available: " + (typeof BarcodeDetector !== "undefined" ? "BarcodeDetector " : "") +
+        (hasJsQR() ? "jsQR " : "") + "paste/file";
+    }
+    updatePathBadge();
+    function showPayload() {
+      if (!decoder || !decoder.done) return;
+      const p = decoder.payload();
+      let end = p.length; while (end > 0 && p[end - 1] === 0) end--;
+      const slim = p.subarray(0, end);
+      try { outEl.textContent = "PAYLOAD UTF-8:\n" + new TextDecoder().decode(slim); }
+      catch { outEl.textContent = "PAYLOAD hex: " + Array.from(slim.slice(0, 64)).map((b) => b.toString(16).padStart(2, "0")).join(""); }
+    }
+    function render() {
+      if (!decoder) { statusEl.textContent = "Idle. gateRejections=" + gateRejections + " (gate v2)"; return; }
+      statusEl.innerHTML = "k=" + decoder.k + " recovered <span class='ok'>" + decoder.count + "/" + decoder.k +
+        "</span> ingested=" + ingested + " errors=" + errors + " gateReject=" + gateRejections + " path=" + decodePath;
+      showPayload();
+    }
+    function ingestLine(line) {
+      let s = line.trim(); if (!s) return;
+      if (s.startsWith("TRVL1.")) s = s.slice(6);
+      const sym = decodeFrame(fromBase64Url(s));
+      if (!decoder) decoder = new LTDecoder(sym.k, sym.blockSize);
+      else if (sym.k !== decoder.k || sym.blockSize !== decoder.blockSize) throw new Error("meta mismatch");
+      if (decoder.add(sym)) ingested++;
+    }
+    function ingestText(text) {
+      for (const line of text.split(/\r?\n/)) {
+        try { ingestLine(line); } catch (e) { errors++; statusEl.innerHTML = "<span class='err'>" + e.message + "</span>"; }
+      }
+      render();
+    }
+    document.getElementById("addBtn").onclick = () => { decodePath = "paste"; updatePathBadge(); ingestText(document.getElementById("frameIn").value); document.getElementById("frameIn").value = ""; };
+    document.getElementById("fileIn").onchange = (ev) => {
+      const f = ev.target.files && ev.target.files[0]; if (!f) return;
+      const reader = new FileReader();
+      reader.onload = () => { decodePath = "file"; updatePathBadge(); ingestText(String(reader.result || "")); };
+      reader.readAsText(f);
+    };
+    document.getElementById("resetBtn").onclick = () => {
+      decoder = null; ingested = 0; errors = 0; gateRejections = 0; lastCodes.clear(); outEl.textContent = ""; decodePath = "none"; updatePathBadge(); render();
+    };
+    function tryJsQRFromVideo() {
+      if (!hasJsQR()) return;
+      const w = Math.min(640, vid.videoWidth || 640), h = Math.min(480, vid.videoHeight || 480);
+      if (!w || !h) return;
+      scanCanvas.width = w; scanCanvas.height = h;
+      const ctx = scanCanvas.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(vid, 0, 0, w, h);
+      const img = ctx.getImageData(0, 0, w, h);
+      const code = jsQR(img.data, img.width, img.height, { inversionAttempts: "dontInvert" });
+      if (code && code.data) {
+        const raw = String(code.data).trim();
+        if (raw && !lastCodes.has(raw)) {
+          lastCodes.add(raw); if (lastCodes.size > 200) lastCodes.clear();
+          decodePath = "jsQR"; updatePathBadge();
+          try { ingestLine(raw); render(); } catch (e) { errors++; }
+        }
+      }
+    }
+    async function startCam() {
+      if (!navigator.mediaDevices?.getUserMedia) { statusEl.innerHTML = "<span class='err'>No camera API</span>"; return; }
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+      vid.srcObject = stream; await vid.play();
+      detector = null;
+      if ("BarcodeDetector" in window) { try { detector = new BarcodeDetector({ formats: ["qr_code"] }); } catch { detector = null; } }
+      decodePath = detector ? "BarcodeDetector" : hasJsQR() ? "jsQR" : "camera-no-decoder";
+      updatePathBadge();
+      if (!detector && !hasJsQR()) { statusEl.innerHTML = "Camera on — <span class='err'>no decoder; use paste or file</span>"; return; }
+      statusEl.textContent = "Camera scanning (gate v2)…";
+      scanTimer = setInterval(async () => {
+        if (decoder?.done) return;
+        try {
+          if (!framePassesGate(vid, gate)) { gateRejections++; return; }
+          if (detector) {
+            const codes = await detector.detect(vid);
+            for (const c of codes) {
+              const raw = (c.rawValue || "").trim();
+              if (!raw || lastCodes.has(raw)) continue;
+              lastCodes.add(raw); if (lastCodes.size > 200) lastCodes.clear();
+              decodePath = "BarcodeDetector";
+              try { ingestLine(raw); render(); } catch (e) { errors++; }
+            }
+          } else tryJsQRFromVideo();
+        } catch (_) {}
+      }, 250);
+    }
+    function stopCam() {
+      if (scanTimer) clearInterval(scanTimer); scanTimer = null;
+      if (stream) stream.getTracks().forEach((t) => t.stop()); stream = null; vid.srcObject = null;
+    }
+    document.getElementById("camBtn").onclick = () => startCam().catch((e) => { statusEl.innerHTML = "<span class='err'>" + e.message + "</span>"; });
+    document.getElementById("camStop").onclick = stopCam;
+  </script>
+</body>
+</html>
