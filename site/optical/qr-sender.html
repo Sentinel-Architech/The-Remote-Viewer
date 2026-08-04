@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TRV Optical Air-Gap — QR Sender</title>
+  <style>
+    :root { font-family: system-ui, sans-serif; background: #0a0a0a; color: #e0e0e0; }
+    body { max-width: 640px; margin: 1rem auto; padding: 1rem; }
+    h1 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+    .meta { font-size: 0.85rem; opacity: 0.7; margin-bottom: 1rem; }
+    #qr { display: flex; justify-content: center; margin: 1.5rem 0; min-height: 300px; align-items: center; background: #111; border-radius: 8px; }
+    button { background: #1a5f2a; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 4px; cursor: pointer; margin-right: 0.5rem; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    button.stop { background: #5f1a1a; }
+    textarea { width: 100%; height: 80px; background: #111; color: #e0e0e0; border: 1px solid #333; border-radius: 4px; padding: 0.5rem; box-sizing: border-box; }
+    .status { margin-top: 1rem; font-size: 0.9rem; }
+    .note { font-size: 0.8rem; opacity: 0.6; margin-top: 2rem; }
+    label { font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <h1>TRV Optical Sender</h1>
+  <p class="meta">Offline QR · LT TRVL · Robust Soliton · FPS profiles · No CDN</p>
+
+  <label for="payload">Payload (opaque bytes — production: age ciphertext)</label>
+  <textarea id="payload">TRV-OPTICAL-TEST-PAYLOAD</textarea>
+
+  <div style="margin: 1rem 0;">
+    <label>Block size <input id="blockSize" type="number" value="32" min="8" max="64" style="width:4rem;background:#111;color:#e0e0e0;border:1px solid #333;" /></label>
+    <label style="margin-left:1rem;">Profile
+      <select id="profile" style="background:#111;color:#e0e0e0;border:1px solid #333;">
+        <option value="safe">safe (1 fps)</option>
+        <option value="normal" selected>normal (2 fps)</option>
+        <option value="fast">fast (4 fps)</option>
+        <option value="custom">custom FPS</option>
+      </select>
+    </label>
+    <label style="margin-left:1rem;">FPS <input id="fps" type="number" value="2" min="1" max="8" style="width:3rem;background:#111;color:#e0e0e0;border:1px solid #333;" /></label>
+    <label style="margin-left:1rem;">Degree
+      <select id="degreeMode" style="background:#111;color:#e0e0e0;border:1px solid #333;">
+        <option value="soliton" selected>soliton (default)</option>
+        <option value="legacy">legacy</option>
+      </select>
+    </label>
+  </div>
+
+  <div style="margin: 1rem 0;">
+    <button id="startBtn">Start LT Stream</button>
+    <button id="stopBtn" class="stop" disabled>Stop</button>
+  </div>
+
+  <div id="qr"></div>
+  <div class="status" id="status">Idle — Robust Soliton ready.</div>
+
+  <p class="note">
+    Local <code>qrcode-lite.js</code>. Frames: <code>TRVL1.</code> + base64url TRVL.
+    Degree default matches TS/Rust (c=0.1, δ=0.05). Profiles: safe=1 / normal=2 / fast=4 fps.
+  </p>
+
+  <script src="qrcode-lite.js"></script>
+  <script>
+    function idealSoliton(k) {
+      const rho = new Float64Array(k + 1);
+      rho[1] = 1 / k;
+      for (let i = 2; i <= k; i++) rho[i] = 1 / (i * (i - 1));
+      return rho;
+    }
+    function robustSoliton(k, c, delta) {
+      const rho = idealSoliton(k);
+      const R = c * Math.log(k / delta) * Math.sqrt(k);
+      const tau = new Float64Array(k + 1);
+      const threshold = Math.max(1, Math.floor(k / R) || 1);
+      for (let i = 1; i <= k; i++) {
+        if (i < threshold) tau[i] = R / (i * k);
+        else if (i === threshold) tau[i] = (R * Math.log(R / delta)) / k;
+      }
+      let beta = 0;
+      for (let i = 1; i <= k; i++) beta += rho[i] + tau[i];
+      const mu = new Float64Array(k + 1);
+      for (let i = 1; i <= k; i++) mu[i] = (rho[i] + tau[i]) / beta;
+      return mu;
+    }
+    function solitonCdf(mu) {
+      const cdf = new Float64Array(mu.length);
+      let acc = 0;
+      for (let i = 0; i < mu.length; i++) { acc += mu[i]; cdf[i] = acc; }
+      return cdf;
+    }
+    function seedToUnit(seed) {
+      return Math.abs(Math.sin(seed * 12.9898) * 43758.5453) % 1;
+    }
+    function sampleDegreeSoliton(cdf, seed, k) {
+      const u = seedToUnit(seed);
+      for (let i = 1; i <= k; i++) if (u < cdf[i]) return i;
+      return k;
+    }
+    function sampleDegreeLegacy(k, seed) {
+      const x = seedToUnit(seed);
+      if (x < 0.5) return 1;
+      if (x < 0.75) return 2;
+      if (x < 0.9) return Math.min(3, k);
+      return Math.min(1 + Math.floor(x * k), k);
+    }
+
+    function splitBlocks(payload, blockSize) {
+      const blocks = [];
+      for (let i = 0; i < payload.length || blocks.length === 0; i += blockSize) {
+        const chunk = new Uint8Array(blockSize);
+        if (i < payload.length) chunk.set(payload.subarray(i, Math.min(i + blockSize, payload.length)));
+        blocks.push(chunk);
+        if (i >= payload.length) break;
+      }
+      if (blocks.length === 0) blocks.push(new Uint8Array(blockSize));
+      return blocks;
+    }
+
+    function encodeSymbol(blocks, seed, mode, cdf) {
+      const k = blocks.length;
+      const degree =
+        mode === "legacy" ? sampleDegreeLegacy(k, seed) : sampleDegreeSoliton(cdf, seed, k);
+      const indices = [];
+      const chosen = new Set();
+      let s = seed;
+      while (indices.length < degree) {
+        s = (s * 1103515245 + 12345) & 0x7fffffff;
+        const idx = s % k;
+        if (!chosen.has(idx)) { chosen.add(idx); indices.push(idx); }
+      }
+      indices.sort((a, b) => a - b);
+      const data = new Uint8Array(blocks[0].length);
+      for (const i of indices) {
+        const src = blocks[i];
+        for (let j = 0; j < data.length; j++) data[j] ^= src[j];
+      }
+      return { degree, indices, data, seed };
+    }
+
+    function crc16ibm(data) {
+      let crc = 0xffff;
+      for (let i = 0; i < data.length; i++) {
+        crc ^= data[i];
+        for (let b = 0; b < 8; b++) crc = crc & 1 ? (crc >>> 1) ^ 0xa001 : crc >>> 1;
+      }
+      return crc & 0xffff;
+    }
+    function u16be(n) { return [(n >>> 8) & 0xff, n & 0xff]; }
+    function u32be(n) {
+      return [(n >>> 24) & 0xff, (n >>> 16) & 0xff, (n >>> 8) & 0xff, n & 0xff];
+    }
+    function encodeLTFrame(sym, k, blockSize) {
+      const parts = [];
+      parts.push(0x54, 0x52, 0x56, 0x4c);
+      parts.push(1, 1);
+      parts.push(...u16be(k), ...u16be(blockSize));
+      parts.push(...u32be(sym.seed >>> 0));
+      parts.push(...u16be(sym.degree), ...u16be(sym.data.length));
+      for (const idx of sym.indices) parts.push(...u16be(idx));
+      for (let i = 0; i < sym.data.length; i++) parts.push(sym.data[i]);
+      const body = new Uint8Array(parts);
+      const crc = crc16ibm(body);
+      const out = new Uint8Array(body.length + 2);
+      out.set(body, 0);
+      out[body.length] = (crc >>> 8) & 0xff;
+      out[body.length + 1] = crc & 0xff;
+      return out;
+    }
+    function toBase64Url(bytes) {
+      let bin = "";
+      for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    }
+
+    const payloadEl = document.getElementById("payload");
+    const qrEl = document.getElementById("qr");
+    const statusEl = document.getElementById("status");
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const blockSizeEl = document.getElementById("blockSize");
+    const fpsEl = document.getElementById("fps");
+    const degreeModeEl = document.getElementById("degreeMode");
+    const profileEl = document.getElementById("profile");
+
+    profileEl.addEventListener("change", () => {
+      const p = profileEl.value;
+      if (p === "safe") fpsEl.value = 1;
+      else if (p === "normal") fpsEl.value = 2;
+      else if (p === "fast") fpsEl.value = 4;
+    });
+
+    let timer = null;
+    let seed = 0;
+    let blocks = null;
+    let cdf = null;
+    let mode = "soliton";
+
+    function start() {
+      if (typeof TRVQR === "undefined") {
+        statusEl.textContent = "ERROR: qrcode-lite.js not loaded.";
+        return;
+      }
+      const text = payloadEl.value || "TRV-EMPTY";
+      const bytes = new TextEncoder().encode(text);
+      const blockSize = Math.max(8, Math.min(64, parseInt(blockSizeEl.value, 10) || 32));
+      blocks = splitBlocks(bytes, blockSize);
+      mode = degreeModeEl.value === "legacy" ? "legacy" : "soliton";
+      cdf = mode === "soliton" ? solitonCdf(robustSoliton(blocks.length, 0.1, 0.05)) : null;
+      seed = 0;
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      const fps = Math.max(1, Math.min(8, parseInt(fpsEl.value, 10) || 2));
+      const interval = Math.max(125, 1000 / fps);
+
+      const tick = () => {
+        try {
+          const sym = encodeSymbol(blocks, seed, mode, cdf);
+          const frame = encodeLTFrame(sym, blocks.length, blockSize);
+          const qrText = "TRVL1." + toBase64Url(frame);
+          qrEl.innerHTML = "";
+          const canvas = document.createElement("canvas");
+          TRVQR.drawCanvas(canvas, qrText, { cellSize: 3 });
+          qrEl.appendChild(canvas);
+          statusEl.textContent =
+            "profile=" + profileEl.value + " mode=" + mode + " seed=" + seed +
+            " k=" + blocks.length + " degree=" + sym.degree +
+            " fps=" + fps + " frameBytes=" + frame.length;
+          seed++;
+        } catch (e) {
+          statusEl.textContent = "Frame error: " + e.message;
+          stop();
+        }
+      };
+
+      tick();
+      timer = setInterval(tick, interval);
+    }
+
+    function stop() {
+      if (timer) clearInterval(timer);
+      timer = null;
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      statusEl.textContent = "Stopped at seed " + seed + ".";
+    }
+
+    startBtn.addEventListener("click", start);
+    stopBtn.addEventListener("click", stop);
+  </script>
+</body>
+</html>
