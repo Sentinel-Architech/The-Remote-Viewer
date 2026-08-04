@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Remote Viewer — Local-First · Zero-Trust</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --fg: #e0e0e0;
+      --accent: #00e676;
+      --muted: #888;
+      --border: #333;
+      --panel: #111;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      margin: 0;
+      padding: 0;
+      line-height: 1.5;
+    }
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 1rem;
+      text-align: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.6rem;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+    }
+    header .tag {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 0.4rem;
+    }
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 3rem;
+    }
+    h2 {
+      color: var(--accent);
+      font-size: 1.15rem;
+      margin: 2rem 0 0.6rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.3rem;
+    }
+    p, li { color: var(--fg); }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+      margin: 0.8rem 0;
+    }
+    .card h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1.05rem;
+    }
+    .card p { margin: 0.3rem 0; font-size: 0.95rem; color: var(--muted); }
+    .badge {
+      display: inline-block;
+      background: #0d3d1f;
+      color: var(--accent);
+      font-size: 0.7rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 3px;
+      margin-left: 0.4rem;
+      vertical-align: middle;
+    }
+    ul.clean { list-style: none; padding: 0; }
+    ul.clean li {
+      padding: 0.35rem 0;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    .warning {
+      background: #1a1200;
+      border: 1px solid #5c4a00;
+      color: #e0c060;
+      padding: 0.8rem 1rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin: 1.2rem 0;
+    }
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    footer strong { color: var(--accent); }
+    code {
+      background: #1a1a1a;
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>The Remote Viewer</h1>
+    <div class="tag">Local-first · Zero-trust · On-device identity · No platform custody</div>
+  </header>
+
+  <main>
+    <p>
+      Digital sovereignty is not a slogan. It is a terminal that never phones home.
+      This site is pure static HTML. No CDNs. No frameworks. No corporate runtimes.
+      Serve it from your own machine or pin the directory to IPFS.
+    </p>
+
+    <div class="warning">
+      <strong>Scaffold notice:</strong> The web client and mobile apps in the full repository remain early scaffolds.
+      Security claims are limited to what the optical air-gap pipeline has already proven on GrapheneOS + Termux.
+      Destroy = Restart still applies.
+    </div>
+
+    <h2>Live Tools (offline-capable)</h2>
+
+    <div class="card">
+      <h3><a href="optical/qr-sender.html">Optical QR Sender</a> <span class="badge">Soliton LT</span></h3>
+      <p>Offline Robust Soliton fountain → TRVL frames → QR stream. First-party qrcode-lite. No network.</p>
+    </div>
+
+    <div class="card">
+      <h3><a href="optical/qr-receiver.html">Optical QR Receiver</a> <span class="badge">Peel</span></h3>
+      <p>Camera / paste / file → gate v2 → LT peel. BarcodeDetector or local jsQR path. Pure browser.</p>
+    </div>
+
+    <div class="card">
+      <h3><a href="vending/catalog-ui.html">Digital Vending Catalog</a></h3>
+      <p>Manual / Solana-memo → age + Soliton LT optical delivery. Zero platform custody. Generate seller commands offline.</p>
+    </div>
+
+    <h2>Core Posture</h2>
+    <ul class="clean">
+      <li>Local-first keys (age) — never commit private material</li>
+      <li>Destroy = Restart</li>
+      <li>No platform custody of identity</li>
+      <li>Core path: zero Meta / Google / Microsoft runtime deps</li>
+      <li>Sentinel Standard: Robust Soliton LT (not RaptorQ default)</li>
+      <li>On-device specialists under local coordinator (llama.cpp)</li>
+    </ul>
+
+    <h2>How this site stays decentralized</h2>
+    <p>
+      Clone the full repository or just this <code>site/</code> folder.
+      Serve with any local static server. Pin the directory to a local IPFS node.
+      Share the CID. No central domain is required.
+    </p>
+    <p>
+      See <code>site/README.md</code> for exact commands (python http.server, Termux, <code>ipfs add -r</code>).
+    </p>
+
+    <h2>Full source</h2>
+    <p>
+      Repository: <a href="https://github.com/Sentinel-Archetecht/The-Remote-Viewer">Sentinel-Archetecht/The-Remote-Viewer</a><br>
+      Working branch: <code>TheRemoteViewer</code><br>
+      Optical air-gap status &amp; install docs live in the repo under <code>optical-airgap/</code>.
+    </p>
+  </main>
+
+  <footer>
+    <p><strong>YOU CHOOSE TO BURN FOR YOUR PROTECTION</strong></p>
+    <p>Destroy = Restart from Square One</p>
+  </footer>
+</body>
+</html>
