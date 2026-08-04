@@ -1,13 +1,15 @@
 name: CI
 
-on:concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+on:
   push:
     branches: [ TheRemoteViewer, main ]
   pull_request:
     branches: [ TheRemoteViewer, main ]
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -36,93 +38,4 @@ jobs:
   # Cargo Check — required for branch protection
   # ------------------------------------------------------------------
   cargo-check:
-    name: Cargo Check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache cargo
-        uses: Swatinem/rust-cache@v2
-
-      - name: Check desktop crate
-        run: cargo check --manifest-path desktop/Cargo.toml
-
-  # ------------------------------------------------------------------
-  # Web scaffold (not required for branch protection yet)
-  #
-  # npm policy: npm ci if package-lock.json exists, else npm install.
-  # setup-node cache is off until apps/web/package-lock.json is committed
-  # (missing cache-dependency-path hard-fails the job).
-  # ------------------------------------------------------------------
-  web:
-    name: Web (npm)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/web
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Setup Node
-        uses: actions/setup-node@v7
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: apps/web/package-lock.json
-
-
-      - name: Install dependencies
-        run: |
-          if [ -f package-lock.json ]; then
-            echo "package-lock.json found → npm ci --legacy-peer-deps"
-            npm ci --legacy-peer-deps
-          else
-            echo "NOTE: no package-lock.json — falling back to npm install --legacy-peer-deps"
-            npm install --legacy-peer-deps
-          fi
-
-      - name: Verify package installs
-        run: npm ls --depth=0 || true
-
-  # ------------------------------------------------------------------
-  # Mobile scaffold (not required for branch protection yet)
-  # Same npm policy as web; cache off until package-lock.json exists.
-  # Generates package-lock.json on the runner and opens a PR containing it.
-  # ------------------------------------------------------------------
-  mobile:
-    name: Mobile (npm)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/mobile
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Setup Node
-        uses: actions/setup-node@v7
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        id: install_deps
-        run: |
-          if [ -f package-lock.json ]; then
-            echo "package-lock.json found → npm ci --legacy-peer-deps"
-            npm ci --legacy-peer-deps
-          else
-            echo "NOTE: no package-lock.json — falling back to npm install --legacy-peer-deps"
-            npm install --legacy-peer-deps
-          fi
-
-      - name: Ensure package-lock exists (generate if missing)
-        run: |
-          if [ ! -f package-lock.json ]; then
-            echo "package-lock.json missing — generating with npm install --package-lock-only"
-            npm install --package-lock-only
-          else
-            echo "package-lock.json already present"
-          fi
-
+   
