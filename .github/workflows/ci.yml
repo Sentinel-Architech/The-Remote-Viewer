@@ -121,4 +121,3 @@ jobs:
             echo "package-lock.json already present"
           fi
 
-      - name: Create a PR with generated package-lock
