@@ -21,6 +21,38 @@ Repository: [github.com/Sentinel-Archetecht/The-Remote-Viewer](https://github.co
 
 ---
 
+## Decentralized Static Site (zero corps)
+
+Pure HTML. No CDNs. No frameworks. No Microsoft / Google / Meta runtime.
+
+```
+site/
+├── index.html              # landing
+├── optical/
+│   ├── qr-sender.html      # Soliton LT QR fountain
+│   ├── qr-receiver.html    # peel + camera/paste/file
+│   └── qrcode-lite.js      # first-party QR encoder
+└── vending/
+    └── catalog-ui.html     # digital vending chute
+```
+
+**Serve locally (preferred):**
+```bash
+cd site
+python3 -m http.server 8080
+# open http://127.0.0.1:8080
+```
+
+**Pin to IPFS:**
+```bash
+ipfs add -r -Q site/
+# share the CID. Run your own node. Corporate gateways are last resort only.
+```
+
+Full instructions: [site/README.md](site/README.md)
+
+---
+
 ## Start here — three paths
 
 One repo. Three real entry points.
