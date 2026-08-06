@@ -1,5 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# Interactive local chat — stays open; options shown after every reply.
+# Interactive local chat — stays open; options after every reply.
 set -euo pipefail
 
 ROOT="${TRV_ROOT:-$HOME/The-Remote-Viewer}"
@@ -26,7 +26,7 @@ fi
 
 bar() {
   echo
-  echo "[-- /note <text> | /notes | /ingest | /tag general|code|moe | /rag on|off | /exit --]"
+  echo "[-- /note <text> | /notes | /remind <text> | /remindat HH:MM <text> | /ingest | /tag … | /rag on|off | /exit --]"
 }
 
 echo "The Sentinel — local chat (stays open)"
@@ -47,46 +47,44 @@ while true; do
   case "$line" in
     /exit|/quit|/q) echo "bye"; break ;;
     /tag\ *)
-      TAG="${line#/tag }"
-      TAG="${TAG%% *}"
-      echo "[tag=$TAG]"
-      bar
-      continue
-      ;;
+      TAG="${line#/tag }"; TAG="${TAG%% *}"
+      echo "[tag=$TAG]"; bar; continue ;;
     /rag\ on) USE_RAG=1; echo "[rag=on]"; bar; continue ;;
     /rag\ off) USE_RAG=0; echo "[rag=off]"; bar; continue ;;
     /note)
-      echo "Usage: /note your fact here"
-      bar
-      continue
-      ;;
+      echo "Usage: /note your fact here"; bar; continue ;;
     /note\ *)
       fact="${line#/note }"
       printf '%s\n' "$fact" >> "$DOCS/personal.txt"
       echo "[saved to personal.txt]"
       bash "$ROOT/modules/rag/ingest.sh" >/dev/null 2>&1 || true
       USE_RAG=1
-      echo "[rag re-ingested]"
-      bar
-      continue
-      ;;
+      echo "[rag re-ingested]"; bar; continue ;;
     /notes)
       if [[ -f "$DOCS/personal.txt" ]]; then
-        echo "--- personal.txt ---"
-        cat "$DOCS/personal.txt"
-        echo "--------------------"
+        echo "--- personal.txt ---"; cat "$DOCS/personal.txt"; echo "--------------------"
       else
         echo "(no personal.txt yet — use /note ...)"
       fi
-      bar
-      continue
-      ;;
+      bar; continue ;;
+    /remind)
+      echo "Usage: /remind message"; bar; continue ;;
+    /remind\ *)
+      msg="${line#/remind }"
+      bash "$ROOT/modules/reminders/notify.sh" "$msg" || true
+      bar; continue ;;
+    /remindat\ *)
+      rest="${line#/remindat }"
+      when="${rest%% *}"
+      msg="${rest#* }"
+      if [[ "$when" == "$msg" ]]; then
+        echo "Usage: /remindat HH:MM message"; bar; continue
+      fi
+      bash "$ROOT/modules/reminders/remind-at.sh" "$when" "$msg" || true
+      bar; continue ;;
     /ingest)
       bash "$ROOT/modules/rag/ingest.sh" || true
-      USE_RAG=1
-      bar
-      continue
-      ;;
+      USE_RAG=1; bar; continue ;;
     /*) echo "unknown command"; bar; continue ;;
   esac
 
