@@ -1,6 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# Local minimization check — flag patterns that violate locked Class A / log rules
-
+# Local minimization check — quiet, fail closed on real secret leakage
 set -euo pipefail
 
 BASE="${HOME}/.local/share/remote-viewer"
@@ -11,16 +10,20 @@ echo "=== Data Minimization Check (local) ==="
 echo "Time: $(date -Iseconds)"
 echo
 
-# 1. Secrets that must never appear in logs
+# 1. Secrets under local share (identity files are expected; content must not be world-readable logs)
 if [[ -d "$BASE" ]]; then
-  if grep -R -l -E 'AGE-SECRET-KEY-|BEGIN (RSA |OPENSSH |EC )?PRIVATE' "$BASE" 2>/dev/null; then
-    echo "FAIL: Secret material found under $BASE"
+  # Look for PEM/OpenSSH private blocks in non-identity paths (logs, exports)
+  HIT=$(find "$BASE" -type f ! -path '*/identity/*' ! -name 'vault-identity.txt' ! -name 'identity.agekey' \
+    -exec grep -l -E 'AGE-SECRET-KEY-1|BEGIN (RSA |OPENSSH |EC )?PRIVATE KEY' {} + 2>/dev/null || true)
+  if [[ -n "$HIT" ]]; then
+    echo "FAIL: secret material outside identity paths:"
+    echo "$HIT"
     ISSUES=$((ISSUES + 1))
   else
-    echo "OK: No private key patterns under $BASE"
+    echo "OK: no private key patterns outside identity paths"
   fi
 else
-  echo "OK: No local share dir yet"
+  echo "OK: no local share dir yet"
 fi
 
 # 2. Identity dir permissions
@@ -43,21 +46,20 @@ if [[ -d "$BASE/identity" ]]; then
   fi
 fi
 
-# 3. Repo hygiene: no committed secrets in working tree (best-effort)
+# 3. Tracked repo: real secret blobs only (AGE-SECRET-KEY-1...), not doc mentions
 if [[ -d "$ROOT/.git" ]]; then
-  if git -C "$ROOT" grep -I -E 'AGE-SECRET-KEY-' 2>/dev/null | head -5; then
-    echo "FAIL: AGE-SECRET-KEY pattern in git-tracked content"
+  if git -C "$ROOT" grep -I -E 'AGE-SECRET-KEY-1[A-Za-z0-9]+' 2>/dev/null | head -3 | grep -q .; then
+    echo "FAIL: AGE-SECRET-KEY-1 material in git-tracked content"
     ISSUES=$((ISSUES + 1))
   else
-    echo "OK: no AGE-SECRET-KEY in tracked files (sample check)"
+    echo "OK: no AGE-SECRET-KEY-1 material in tracked files"
   fi
 fi
 
 echo
 if [[ "$ISSUES" -eq 0 ]]; then
-  echo "Result: PASS ($ISSUES issues)"
+  echo "Result: PASS (0 issues)"
   exit 0
-else
-  echo "Result: ATTENTION ($ISSUES issue(s))"
-  exit 1
 fi
+echo "Result: ATTENTION ($ISSUES issue(s))"
+exit 1
