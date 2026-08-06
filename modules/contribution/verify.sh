@@ -25,7 +25,6 @@ while IFS= read -r line || [[ -n "$line" ]]; do
   [[ -z "$line" ]] && continue
   N=$((N + 1))
 
-  # Extract prev and sha with sed (no jq required)
   GOT_PREV=$(printf '%s' "$line" | sed -n 's/.*"prev":"\([^"]*\)".*/\1/p')
   GOT_SHA=$(printf '%s' "$line" | sed -n 's/.*"sha":"\([^"]*\)".*/\1/p')
 
@@ -42,8 +41,8 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     FAIL=1
   fi
 
-  # Body is line without trailing ,"sha":"..."}
-  BODY=$(printf '%s' "$line" | sed 's/,"sha":"[^"]*"}$//')
+  # Rebuild body as hashed at record time: drop ,"sha":"..." and keep closing }
+  BODY=$(printf '%s' "$line" | sed 's/,"sha":"[^"]*"}$/}/')
   CALC=$(hash_line "$BODY")
   if [[ "$CALC" != "$GOT_SHA" ]]; then
     echo "FAIL line $N: sha mismatch"
