@@ -9,8 +9,6 @@ QUESTION="${*:-}"
 
 if [[ -z "$QUESTION" ]]; then
   echo "Usage: $0 <model-tag> <question>"
-  echo "Example: $0 general How does optical e2e work?"
-  echo "Example: $0 code What is the contribution ledger?"
   exit 1
 fi
 
@@ -32,6 +30,6 @@ QUESTION: $QUESTION
 ANSWER:"
 
 export LLAMA_CLI="${LLAMA_CLI:-$HOME/llama.cpp/build/bin/llama-cli}"
-export LLAMA_ARGS="${LLAMA_ARGS:--n 128 -c 2048 -t 4}"
+export LLAMA_ARGS="${LLAMA_ARGS:--n 128 -c 4096 -t 4}"
 
 bash "$ROOT/modules/moe-router/run-model.sh" "$TAG" "$PROMPT"

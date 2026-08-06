@@ -4,14 +4,14 @@ set -euo pipefail
 
 ROOT="${TRV_ROOT:-$HOME/The-Remote-Viewer}"
 export LLAMA_CLI="${LLAMA_CLI:-$HOME/llama.cpp/build/bin/llama-cli}"
-export LLAMA_ARGS="${LLAMA_ARGS:--n 128 -c 2048 -t 4}"
+# Default context 4096 (was 2048). Override: LLAMA_ARGS="-n 128 -c 8192 -t 4"
+export LLAMA_ARGS="${LLAMA_ARGS:--n 128 -c 4096 -t 4}"
 
 cmd="${1:-help}"
 shift || true
 
 case "$cmd" in
   talk|ask)
-    # trv talk [tag] question...
     tag="general"
     if [[ "${1:-}" =~ ^(general|code|moe|stub)$ ]]; then
       tag="$1"
@@ -62,10 +62,7 @@ TRV — one command
   trv seed                     seed + ingest TRV docs for RAG
   trv ingest                   re-chunk rag/docs
 
-Examples:
-  trv talk How does optical e2e work?
-  trv pulse
-  trv ui
+Default LLM context: 4096 (set LLAMA_ARGS to change)
 EOF
     ;;
 esac
