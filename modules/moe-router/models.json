@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "Stage B proven dual dense GGUF; Stage C sparse slot optional",
+  "description": "Stage B dual dense PROVEN; Stage C TinyMixtral sparse slot",
   "models": [
     {
       "id": "stub-general",
@@ -11,24 +11,24 @@
     },
     {
       "id": "tinyllama-general",
-      "tags": ["general", "gguf", "llama", "tinyllama", "dense"],
+      "tags": ["general", "gguf", "dense"],
       "backend": "llama.cpp",
       "path": "$HOME/.local/share/remote-viewer/models/general.gguf",
-      "notes": "Stage B PROVEN — TinyLlama 1.1B Chat Q4_K_M"
+      "notes": "Stage B PROVEN — TinyLlama 1.1B"
     },
     {
       "id": "qwen-coder",
-      "tags": ["code", "gguf", "qwen", "coder", "dense"],
+      "tags": ["code", "gguf", "dense"],
       "backend": "llama.cpp",
       "path": "$HOME/.local/share/remote-viewer/models/code.gguf",
-      "notes": "Stage B PROVEN — Qwen2.5-Coder-0.5B Instruct Q4_K_M"
+      "notes": "Stage B PROVEN — Qwen2.5-Coder-0.5B"
     },
     {
-      "id": "sparse-moe",
-      "tags": ["moe", "sparse", "stage-c"],
+      "id": "tinymixtral-moe",
+      "tags": ["moe", "sparse", "stage-c", "tinymixtral"],
       "backend": "llama.cpp",
       "path": "$HOME/.local/share/remote-viewer/models/moe.gguf",
-      "notes": "Stage C DESIGN — place a real sparse-MoE GGUF here; not proven on-device until it loads and generates"
+      "notes": "Stage C — TinyMixtral-4x248M-MoE Q4_K_M (~0.5GB). PROVEN only after on-device load+gen."
     }
   ]
 }

@@ -1,47 +1,27 @@
 # MoE Stage C — Sparse MoE weights
 
-**Status:** DESIGN / research scaffold  
-**Not PROVEN on GrapheneOS + Termux as of 2026-08-06.**
+**Phone path:** TinyMixtral-4x248M-MoE Q4_K_M (~0.5 GB)  
+**Fetch:** `bash modules/moe-router/fetch-moe-weights.sh`
 
-## What Stage C means
+Real MoE architecture (4 experts × ~248M), not a dense model with a fake tag.
 
-| Stage | Meaning |
-|-------|--------|
-| A | Process experts |
-| B | Multiple dense local models (PROVEN — TinyLlama + Qwen2.5-Coder) |
-| **C** | **Sparse** MoE: many experts, few active per token (e.g. Mixtral-class) |
-| D | Recursive IA-of-IA |
+## Prove on device
 
-Sparse MoE is a **weight architecture**, not “two GGUFs and a shell router.”
+```bash
+bash modules/moe-router/fetch-moe-weights.sh
+export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli
+export LLAMA_ARGS="-n 64 -c 512 -t 4"
+bash modules/moe-router/run-model.sh moe "Say hello in one short sentence."
+```
 
-## Phone reality
+**PROVEN** only when load + generation complete without OOM. Then record:
 
-| Constraint | Implication |
-|------------|-------------|
-| RAM | 8×7B-class MoE is not a Pixel default workload |
-| Storage | Multi-GB GGUF |
-| Thermal / battery | Sustained gen may throttle |
+```bash
+bash modules/contribution/record.sh verification 1 "moe stage C tinymixtral gen ok"
+```
 
-Stage C becomes **PROVEN** only when a sparse-MoE GGUF **loads and generates** under user control on the target device, with the event recorded in the contribution ledger and `docs/REALITY.md` updated.
+and update `docs/REALITY.md`.
 
-## Acceptance checklist (PROVEN)
+## Larger sparse MoE
 
-1. GGUF is a known sparse MoE architecture (not a dense 1B rename).  
-2. `llama.cpp` (or successor) loads it without OOM kill.  
-3. At least one generation completes.  
-4. Router can select it by tag (`moe` / model id).  
-5. REALITY.md flipped with date + device note.  
-
-## Optional slot
-
-Place a file at:
-
-`$HOME/.local/share/remote-viewer/models/moe.gguf`
-
-Register in `models.json` under id `sparse-moe` (see registry). Until the file exists and runs, Stage C stays DESIGN.
-
-## Non-goals
-
-- Cloud MoE APIs as core  
-- Claiming Stage C because Stage B works  
-- Shipping multi-GB weights in git  
+OLMoE-1B-7B (~4 GB Q4) is a stronger sparse MoE but heavy for many phones. Mixtral 8×7B is not a Pixel default.
