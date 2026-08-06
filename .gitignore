@@ -1,17 +1,77 @@
-# Private creator royalties & secrets
+# === Secrets & private material (never commit) ===
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+**/.env
 **/secrets/
+**/vault/
+**/*SECRET*
+**/*private*
+AGE-SECRET-KEY-*
+*.age
+*.key
+*.pem
+*.p12
+*.pfx
+id_ed25519
+id_rsa
+*.gguf
+*.bin
 
-# Dependencies & build
+# === Dependencies & build artifacts ===
 node_modules/
 dist/
 build/
+.target/
+target/
 .expo/
+.cache/
+.turbo/
+.parcel-cache/
+coverage/
+*.tsbuildinfo
 
-# OS / IDE
+# === Rust ===
+**/target/
+**/*.rs.bk
+Cargo.lock.bak
+
+# === Python / Termux ===
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*.egg-info/
+
+# === OS / IDE / editor ===
 .DS_Store
+Thumbs.db
 *.log
 .idea/
 .vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# === Temporary & local ===
+tmp/
+temp/
+*.tmp
+*.bak
+*.orig
+.local/
+
+# === Optical / media test artifacts ===
+*.png
+!docs/**/*.png
+!site/**/*.png
+!**/testdata/**
+*.jpg
+!TheRemoteViewer.jpg
+
+# === Misc ===
+.gitleaks-report.json
