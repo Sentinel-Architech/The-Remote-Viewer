@@ -21,6 +21,15 @@ Last updated: 2026-08-06 (cleanup/professional-structure)
 | Local age identity / keygen | **PROVEN** | `optical-airgap/rust` + `modules/local-identity/` | Destroy = Restart. No platform custody. |
 | Centralized 21+ digit key assignment | **REJECTED** | — | Conflicts with zero-trust. |
 
+## Enhanced Intelligence — The Sentinel
+
+| Concept | Status | Location | Notes |
+|---------|--------|----------|-------|
+| The Sentinel (Enhanced Intelligence) | **DESIGN** | `docs/architecture/sentinel-moe.md` | Core requirement: **minimum MoE** (Mixture-of-Experts). |
+| MoE at intelligence core | **DESIGN** | same | Stages A–D ladder; Stage A aligns with specialist supervision. |
+| Specialist process supervision | **SCAFFOLD** | `modules/self-heal/` | Supports Stage A routing/supervision. |
+| Recursive IA of IA governance | **DESIGN** | architecture notes | Depends on stable expert set + local control. |
+
 ## Resilience & Operations
 
 | Concept | Status | Location | Notes |
@@ -53,6 +62,12 @@ Last updated: 2026-08-06 (cleanup/professional-structure)
 | PQC (ML-KEM / ML-DSA / SLH-DSA) | **DESIGN** | `modules/crypto/` | NIST FIPS 203/204/205 primary sources. Use existing libs — no reinvention. |
 | Bulletproofs / ZK-STARKs / FHE | **DESIGN** | history only | Not near-term code. |
 | Media sanitization posture | **DESIGN → aligned** | SP 800-88r2 + destroy-restart | Cryptographic erase when keys destroyed. |
+
+## UI
+
+| Concept | Status | Location | Notes |
+|---------|--------|----------|-------|
+| Local console (offline-first) | **SCAFFOLD** | `apps/ui/` | Single HTML; no CDN; no telemetry. |
 
 ## How a concept becomes REALITY
 
