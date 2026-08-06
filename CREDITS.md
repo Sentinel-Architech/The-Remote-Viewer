@@ -20,32 +20,21 @@ This project uses components, design patterns, and inspiration from several open
 
 ### Web Client
 - **Vite** - [vitejs/vite](https://github.com/vitejs/vite) - MIT License
-  - Fast build tool and dev server
 - **React** - [facebook/react](https://github.com/facebook/react) - MIT License
-  - UI library for web scaffold
 - **TypeScript** - [microsoft/TypeScript](https://github.com/microsoft/TypeScript) - Apache 2.0 License
-  - Type safety across codebase
 - **@vitejs/plugin-react** - MIT License
-  - React plugin for Vite
 
 ### Mobile Client
 - **Expo** - [expo/expo](https://github.com/expo/expo) - MIT License
-  - Cross-platform React Native development framework
 - **React Native** - [facebook/react-native](https://github.com/facebook/react-native) - MIT License
-  - Mobile app framework
-- **Expo Go** - MIT License
-  - Development and testing client
 
 ### Desktop
 - **Rust** - [rust-lang/rust](https://github.com/rust-lang/rust) - MIT/Apache 2.0 Dual License
-  - Systems programming language
 - **Cargo** - Rust's package manager (included with rustup)
 
 ### CI/CD & Security
 - **GitHub Actions** - [actions](https://github.com/actions)
-  - Workflow automation
 - **Gitleaks** - [gitleaks/gitleaks-action](https://github.com/gitleaks/gitleaks-action)
-  - Secret scanning for CI
 
 ---
 
@@ -53,52 +42,31 @@ This project uses components, design patterns, and inspiration from several open
 
 ### Zero-Trust & Security Concepts
 - General principles inspired by the decentralized identity and zero-trust security communities
-- No specific code attribution, but conceptual debt to discussions in:
+- Conceptual debt to discussions in:
   - W3C DIDs (Decentralized Identifiers)
   - OpenID for Verifiable Credentials (OpenID4VC)
   - GrapheneOS hardening documentation
 
 ### Local-First Design
 - Inspired by local-first software principles and discussions in the indie developer community
-- Building on patterns from projects emphasizing user data sovereignty
 
 ---
 
-## Community & Standards
+## Licensing Note
 
-- **Apache 2.0 License** - Chosen to align with grok-build and promote open collaboration
-- **GitHub Community** - For documentation templates and best practices
+This repository itself is distributed under the **Source-Available Master License (Absolute Sovereign Edition)** — see the root `LICENSE` file. Third-party components retain their original licenses as listed above.
 
 ---
 
 ## How to Contribute with Attribution
 
-If you use code or patterns from The Remote Viewer in your own projects:
+If you use code or patterns from The Remote Viewer in your own projects (where permitted by the LICENSE):
 
 1. Link back to this repository: https://github.com/Sentinel-Archetecht/The-Remote-Viewer
-2. Mention the Apache 2.0 license
-3. Note any specific components you adapted (e.g., "adapted from TRV's desktop orchestrator")
+2. Respect the root LICENSE terms
+3. Note any specific components you adapted
 4. Include this file or a summary in your project's credits
 
-Example:
-```
-# Credits
-
-This project uses code patterns from:
-- The Remote Viewer (https://github.com/Sentinel-Archetecht/The-Remote-Viewer) - Apache 2.0
-  - Adapted desktop orchestrator structure
-```
-
 ---
 
-## Questions or Corrections?
-
-If you notice missing attributions or have questions about licensing and credit, please:
-- Open an issue: [Issues](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/issues)
-- See our [SECURITY.md](SECURITY.md) for responsible disclosure
-- Contact: See repository contact info
-
----
-
-**Last updated:** July 2026  
-**License:** This credits file is part of The Remote Viewer, licensed under Apache 2.0
+**Last updated:** August 2026
