@@ -3,142 +3,190 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="color-scheme" content="dark light">
-  <title>TRV Local Console</title>
+  <meta name="color-scheme" content="dark">
+  <title>The Sentinel — Local Console</title>
   <style>
     :root {
-      --bg: #0b0f14; --panel: #141a22; --border: #243041; --text: #e7eef8;
-      --muted: #9db0c7; --accent: #3dd6c6; --warn: #f0b429; --danger: #f07178;
-      --ok: #7fd962; --radius: 12px;
-      --font: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, sans-serif;
+      --bg: #070b10; --panel: #101820; --border: #1e2a3a; --text: #e8eef6;
+      --muted: #8fa3b8; --accent: #2ee6c5; --ok: #6bcf6b; --warn: #e6b84d;
+      --danger: #e85d6a; --radius: 14px;
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     }
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--text);
-      line-height: 1.45; min-height: 100dvh; padding: 1rem; }
-    header, main, footer { max-width: 720px; margin-left: auto; margin-right: auto; }
-    header { margin-bottom: 1.25rem; }
-    h1 { font-size: 1.25rem; margin: 0 0 0.25rem; }
-    .tag { color: var(--muted); font-size: 0.85rem; }
-    .badge {
-      display: inline-block; font-size: 0.72rem; padding: 0.15rem 0.45rem;
-      border-radius: 999px; border: 1px solid var(--ok); color: var(--ok); margin-left: 0.35rem;
+    body {
+      margin: 0; font-family: var(--font); background: var(--bg); color: var(--text);
+      min-height: 100dvh; line-height: 1.45;
     }
-    main { display: grid; gap: 0.85rem; }
-    .card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; }
-    .card h2 { margin: 0 0 0.5rem; font-size: 1rem; }
-    .card p { color: var(--muted); font-size: 0.92rem; margin: 0.35rem 0; }
-    .row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
-    button { appearance: none; border: 1px solid var(--border); background: #1a2330; color: var(--text);
-      border-radius: 8px; padding: 0.55rem 0.85rem; font: inherit; cursor: pointer; }
+    .wrap { max-width: 880px; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
+    header { margin-bottom: 1.5rem; }
+    h1 { font-size: 1.35rem; margin: 0 0 0.35rem; letter-spacing: 0.02em; }
+    .sub { color: var(--muted); font-size: 0.9rem; }
+    .pills { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+    .pill {
+      font-size: 0.72rem; padding: 0.25rem 0.55rem; border-radius: 999px;
+      border: 1px solid var(--border); color: var(--muted);
+    }
+    .pill.ok { border-color: var(--ok); color: var(--ok); }
+    .pill.accent { border-color: var(--accent); color: var(--accent); }
+    .grid { display: grid; gap: 0.85rem; }
+    @media (min-width: 640px) { .grid.two { grid-template-columns: 1fr 1fr; } }
+    .card {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1rem 1.1rem;
+    }
+    .card h2 { margin: 0 0 0.45rem; font-size: 0.95rem; }
+    .card p { margin: 0.3rem 0; color: var(--muted); font-size: 0.88rem; }
+    .card ul { margin: 0.4rem 0 0; padding-left: 1.1rem; color: var(--muted); font-size: 0.88rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.85rem; }
+    button, .btn {
+      appearance: none; border: 1px solid var(--border); background: #152030;
+      color: var(--text); border-radius: 9px; padding: 0.5rem 0.75rem;
+      font: inherit; font-size: 0.85rem; cursor: pointer;
+    }
     button.primary { border-color: var(--accent); color: var(--accent); }
-    button.danger { border-color: var(--danger); color: var(--danger); }
+    button:active { transform: translateY(1px); }
+    dialog {
+      border: 1px solid var(--border); border-radius: var(--radius);
+      background: var(--panel); color: var(--text); padding: 0;
+      max-width: min(92vw, 420px); width: 100%;
+    }
+    dialog::backdrop { background: rgba(0,0,0,0.65); }
+    .dlg { padding: 1.1rem; }
+    .dlg h3 { margin: 0 0 0.5rem; font-size: 1rem; }
+    .dlg p { color: var(--muted); font-size: 0.88rem; }
     pre.cmd {
-      margin: 0.6rem 0 0; padding: 0.65rem 0.75rem; background: #0a0e13; border-radius: 8px;
-      border: 1px solid var(--border); color: var(--accent); font-size: 0.78rem;
-      white-space: pre-wrap; word-break: break-word; display: none;
+      margin: 0.6rem 0; padding: 0.7rem; background: #0a1018; border-radius: 8px;
+      border: 1px solid var(--border); color: var(--accent); font-family: var(--mono);
+      font-size: 0.75rem; white-space: pre-wrap; word-break: break-word;
     }
-    pre.cmd.show { display: block; }
-    footer { margin-top: 1.5rem; color: var(--muted); font-size: 0.8rem; }
-    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.85em; color: var(--accent); }
-    @media (prefers-color-scheme: light) {
-      :root { --bg: #f4f7fb; --panel: #fff; --border: #d5dee9; --text: #122033; --muted: #5b6b7c; }
-      pre.cmd { background: #eef2f7; }
-    }
+    .dlg-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 0.75rem; }
+    footer { margin-top: 2rem; color: var(--muted); font-size: 0.78rem; }
+    code { font-family: var(--mono); font-size: 0.85em; color: var(--accent); }
   </style>
 </head>
 <body>
-  <header>
-    <h1>TRV Local Console</h1>
-    <div class="tag">Offline-first · MoE Stage B <span class="badge">PROVEN</span> · Defense SCAFFOLD</div>
-  </header>
-
-  <main>
-    <section class="card">
-      <h2>Status</h2>
-      <p>Optical · dual GGUF · ledger · Hydra integrity pulse (local only).</p>
-    </section>
-
-    <section class="card">
-      <h2>Defense / Hydra</h2>
-      <p>Self-defense of <em>this</em> node. No telemetry. No offensive modules.</p>
-      <div class="row">
-        <button type="button" class="primary" data-cmd="bash modules/defense/integrity-pulse.sh">Integrity pulse</button>
-        <button type="button" data-cmd="bash modules/defense/status.sh">Defense status</button>
+  <div class="wrap">
+    <header>
+      <h1>The Sentinel</h1>
+      <div class="sub">Local console · GrapheneOS / device · no phone-home</div>
+      <div class="pills">
+        <span class="pill ok">Optical PROVEN</span>
+        <span class="pill ok">MoE B PROVEN</span>
+        <span class="pill ok">MoE C PROVEN</span>
+        <span class="pill accent">Defense SCAFFOLD</span>
+        <span class="pill">127.0.0.1 only</span>
       </div>
-      <pre class="cmd"></pre>
+    </header>
+
+    <div class="grid two">
+      <section class="card">
+        <h2>Optical Air-Gap</h2>
+        <p>age → Soliton LT → peel → decrypt</p>
+        <div class="actions">
+          <button type="button" class="primary" data-title="Optical E2E" data-cmd="bash optical-airgap/scripts/e2e-age-lt.sh">Run E2E</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>MoE Models</h2>
+        <p>Dense B + sparse C on-device GGUF</p>
+        <div class="actions">
+          <button type="button" data-title="List models" data-cmd="bash modules/moe-router/list-models.sh">List</button>
+          <button type="button" class="primary" data-title="General" data-cmd="export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli&#10;bash modules/moe-router/run-model.sh general &quot;Say hello in one sentence.&quot;">General</button>
+          <button type="button" class="primary" data-title="Code" data-cmd="export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli&#10;bash modules/moe-router/run-model.sh code &quot;Write a bash one-liner.&quot;">Code</button>
+          <button type="button" data-title="Sparse MoE" data-cmd="export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli&#10;export LLAMA_ARGS='-n 64 -c 512 -t 4'&#10;bash modules/moe-router/run-model.sh moe &quot;Say hello.&quot;">MoE C</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Defense / Hydra</h2>
+        <p>Local integrity only</p>
+        <div class="actions">
+          <button type="button" class="primary" data-title="Integrity pulse" data-cmd="bash modules/defense/integrity-pulse.sh">Pulse</button>
+          <button type="button" data-title="After sync" data-cmd="bash modules/defense/check-after-sync.sh">After sync</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Ledger</h2>
+        <p>Offline hash-chain · no mint</p>
+        <div class="actions">
+          <button type="button" data-title="Verify" data-cmd="bash modules/contribution/verify.sh">Verify</button>
+          <button type="button" data-title="Tally" data-cmd="bash modules/contribution/tally.sh">Tally</button>
+          <button type="button" data-title="Export" data-cmd="bash modules/contribution/export.sh">Export</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Sync</h2>
+        <p>Fast-forward + optional defense</p>
+        <div class="actions">
+          <button type="button" class="primary" data-title="Git sync + defense" data-cmd="DEFENSE_AFTER_SYNC=1 bash scripts/git-sync.sh TheRemoteViewer">Sync + defend</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Sovereignty</h2>
+        <p>Minimize · destroy path</p>
+        <div class="actions">
+          <button type="button" data-title="Minimize" data-cmd="bash modules/data-sovereignty/minimize-check.sh">Minimize</button>
+        </div>
+      </section>
+    </div>
+
+    <section class="card" style="margin-top:0.85rem">
+      <h2>How this UI works</h2>
+      <ul>
+        <li>Served only on <code>127.0.0.1</code> — not the internet.</li>
+        <li>Buttons show Termux commands; the page cannot run shell or read keys.</li>
+        <li>Copy → paste into Termux (or use a future local bridge you control).</li>
+      </ul>
     </section>
 
-    <section class="card">
-      <h2>MoE Stage B — Models</h2>
-      <div class="row">
-        <button type="button" data-cmd="export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli">Set LLAMA_CLI</button>
-        <button type="button" data-cmd="bash modules/moe-router/list-models.sh">List models</button>
-        <button type="button" class="primary" data-cmd="bash modules/moe-router/run-model.sh general &quot;Say hello in one sentence.&quot;">Run general</button>
-        <button type="button" class="primary" data-cmd="bash modules/moe-router/run-model.sh code &quot;Write a bash one-liner to count lines in a file.&quot;">Run code</button>
+    <footer>
+      The Remote Viewer · offline-first · docs/REALITY.md is source of truth for PROVEN.
+    </footer>
+  </div>
+
+  <dialog id="dlg">
+    <div class="dlg">
+      <h3 id="dlg-title">Command</h3>
+      <p>Copy into Termux. This browser page does not execute it.</p>
+      <pre class="cmd" id="dlg-cmd"></pre>
+      <div class="dlg-actions">
+        <button type="button" id="dlg-copy" class="primary">Copy</button>
+        <button type="button" id="dlg-close">Close</button>
       </div>
-      <pre class="cmd"></pre>
-    </section>
-
-    <section class="card">
-      <h2>MoE Stage A — Process experts</h2>
-      <div class="row">
-        <button type="button" data-cmd="bash modules/moe-router/list.sh">List experts</button>
-        <button type="button" data-cmd="bash modules/moe-router/route.sh optical">Route optical</button>
-      </div>
-      <pre class="cmd"></pre>
-    </section>
-
-    <section class="card">
-      <h2>Optical Air-Gap</h2>
-      <div class="row">
-        <button type="button" class="primary" data-cmd="bash optical-airgap/scripts/e2e-age-lt.sh">E2E default</button>
-      </div>
-      <pre class="cmd"></pre>
-    </section>
-
-    <section class="card">
-      <h2>Self-Heal</h2>
-      <div class="row">
-        <button type="button" data-cmd="bash modules/self-heal/optical-pulse.sh">Pulse once</button>
-        <button type="button" data-cmd="bash modules/self-heal/healthcheck.sh">Healthcheck</button>
-      </div>
-      <pre class="cmd"></pre>
-    </section>
-
-    <section class="card">
-      <h2>Contribution</h2>
-      <div class="row">
-        <button type="button" data-cmd="bash modules/contribution/verify.sh">Verify chain</button>
-        <button type="button" data-cmd="bash modules/contribution/tally.sh">Tally</button>
-        <button type="button" data-cmd="bash modules/contribution/export.sh">Export</button>
-      </div>
-      <pre class="cmd"></pre>
-    </section>
-
-    <section class="card">
-      <h2>Sovereignty</h2>
-      <div class="row">
-        <button type="button" data-cmd="bash modules/data-sovereignty/minimize-check.sh">Minimize check</button>
-        <button type="button" class="danger" data-cmd="bash modules/data-sovereignty/destroy-restart.sh --confirm">Destroy (confirm)</button>
-      </div>
-      <pre class="cmd"></pre>
-    </section>
-  </main>
-
-  <footer>
-    Copy into Termux. Roadmap: UI → Defense (now) → MoE Stage C.<br>
-    Hydra defends this node only.
-  </footer>
+    </div>
+  </dialog>
 
   <script>
     (function () {
+      var dlg = document.getElementById('dlg');
+      var title = document.getElementById('dlg-title');
+      var cmdEl = document.getElementById('dlg-cmd');
       document.querySelectorAll('button[data-cmd]').forEach(function (btn) {
         btn.addEventListener('click', function () {
-          var card = btn.closest('.card');
-          var pre = card.querySelector('pre.cmd');
-          pre.textContent = btn.getAttribute('data-cmd');
-          pre.classList.add('show');
+          title.textContent = btn.getAttribute('data-title') || 'Command';
+          cmdEl.textContent = btn.getAttribute('data-cmd').replace(/&#10;/g, '\n');
+          dlg.showModal();
         });
+      });
+      document.getElementById('dlg-close').addEventListener('click', function () { dlg.close(); });
+      document.getElementById('dlg-copy').addEventListener('click', function () {
+        var t = cmdEl.textContent;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(t).then(function () {
+            document.getElementById('dlg-copy').textContent = 'Copied';
+            setTimeout(function () {
+              document.getElementById('dlg-copy').textContent = 'Copy';
+            }, 1200);
+          });
+        } else {
+          var r = document.createRange(); r.selectNodeContents(cmdEl);
+          var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+        }
       });
     })();
   </script>
