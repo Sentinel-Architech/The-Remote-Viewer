@@ -6,12 +6,12 @@ This repository contains the Sentinel Security Protocol (TRV PROTOCOL) — an en
 
 ## Supported Versions
 
-| Version | Supported          |
-|---------|--------------------|
-| main    | Yes                |
-| < 1.0   | Limited (research) |
+| Version / Branch     | Supported          |
+|----------------------|--------------------|
+| TheRemoteViewer      | Yes (active)       |
+| < 1.0 / other        | Limited (research) |
 
-Only the `main` branch receives active security updates. Experimental or research branches are unsupported.
+Only the `TheRemoteViewer` branch receives active security updates. Experimental or research branches are unsupported.
 
 ## Reporting a Vulnerability
 
