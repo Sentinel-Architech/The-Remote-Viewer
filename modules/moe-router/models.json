@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "Stage B — two distinct local GGUFs (general + code)",
+  "description": "Stage B proven dual dense GGUF; Stage C sparse slot optional",
   "models": [
     {
       "id": "stub-general",
@@ -11,17 +11,24 @@
     },
     {
       "id": "tinyllama-general",
-      "tags": ["general", "gguf", "llama", "tinyllama"],
+      "tags": ["general", "gguf", "llama", "tinyllama", "dense"],
       "backend": "llama.cpp",
       "path": "$HOME/.local/share/remote-viewer/models/general.gguf",
-      "notes": "TinyLlama 1.1B Chat Q4_K_M"
+      "notes": "Stage B PROVEN — TinyLlama 1.1B Chat Q4_K_M"
     },
     {
       "id": "qwen-coder",
-      "tags": ["code", "gguf", "qwen", "coder"],
+      "tags": ["code", "gguf", "qwen", "coder", "dense"],
       "backend": "llama.cpp",
       "path": "$HOME/.local/share/remote-viewer/models/code.gguf",
-      "notes": "Qwen2.5-Coder-0.5B Instruct Q4_K_M — distinct weights from general"
+      "notes": "Stage B PROVEN — Qwen2.5-Coder-0.5B Instruct Q4_K_M"
+    },
+    {
+      "id": "sparse-moe",
+      "tags": ["moe", "sparse", "stage-c"],
+      "backend": "llama.cpp",
+      "path": "$HOME/.local/share/remote-viewer/models/moe.gguf",
+      "notes": "Stage C DESIGN — place a real sparse-MoE GGUF here; not proven on-device until it loads and generates"
     }
   ]
 }

@@ -1,24 +1,26 @@
 # MoE Router
 
-**Stage A:** process experts — `list.sh` · `route.sh` · `experts.json`  
-**Stage B:** local models — `list-models.sh` · `select-model.sh` · `run-model.sh` · `models.json`
+| Stage | Status | Entry |
+|-------|--------|-------|
+| A Process experts | SCAFFOLD | `list.sh` / `route.sh` |
+| B Dense local models | **PROVEN** | `list-models.sh` / `run-model.sh` + dual GGUF |
+| C Sparse MoE weights | **DESIGN** | [STAGE-C.md](./STAGE-C.md) · optional `moe.gguf` |
+| D IA of IA | DESIGN | architecture doc |
 
-**Real weights:** [WEIGHTS.md](./WEIGHTS.md) · `fetch-weights.sh`
-
-## Quick — weights on device
+## Stage B (works today)
 
 ```bash
-bash modules/moe-router/fetch-weights.sh
-# build llama.cpp (see WEIGHTS.md), then:
 export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli
-bash modules/moe-router/run-model.sh general "Say hello in one sentence."
+bash modules/moe-router/run-model.sh general "Hello"
+bash modules/moe-router/run-model.sh code "bash one-liner"
 ```
 
-## Stage A
+## Stage C (research)
 
 ```bash
-bash modules/moe-router/list.sh
-bash modules/moe-router/route.sh optical
+# only after you place a sparse-MoE GGUF:
+ls -lh ~/.local/share/remote-viewer/models/moe.gguf
+bash modules/moe-router/run-model.sh moe "test"
 ```
 
-Fail closed. No cloud inference core. Stage C sparse MoE still DESIGN.
+Do not mark PROVEN until STAGE-C.md checklist is satisfied on-device.
