@@ -19,6 +19,10 @@
     header { margin-bottom: 1.25rem; }
     h1 { font-size: 1.25rem; margin: 0 0 0.25rem; }
     .tag { color: var(--muted); font-size: 0.85rem; }
+    .badge {
+      display: inline-block; font-size: 0.72rem; padding: 0.15rem 0.45rem;
+      border-radius: 999px; border: 1px solid var(--ok); color: var(--ok); margin-left: 0.35rem;
+    }
     main { display: grid; gap: 0.85rem; }
     .card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; }
     .card h2 { margin: 0 0 0.5rem; font-size: 1rem; }
@@ -45,45 +49,32 @@
 <body>
   <header>
     <h1>TRV Local Console</h1>
-    <div class="tag">Offline-first · device-local · no phone-home · MoE Stage A</div>
+    <div class="tag">Offline-first · no phone-home · MoE Stage B <span class="badge">PROVEN</span></div>
   </header>
 
   <main>
     <section class="card">
-      <h2>Identity</h2>
-      <p>Keys on device only. Console never reads secrets.</p>
+      <h2>Status</h2>
+      <p>Optical e2e · dual GGUF (TinyLlama + Qwen2.5-Coder) · local ledger · device keys only.</p>
+      <p><code>docs/REALITY.md</code> is source of truth for PROVEN vs SCAFFOLD.</p>
+    </section>
+
+    <section class="card">
+      <h2>MoE Stage B — Models</h2>
+      <p>Distinct weights. Set <code>LLAMA_CLI</code> first. Console does not run models — copy into Termux.</p>
       <div class="row">
-        <button type="button" data-cmd="bash modules/local-identity/keygen.sh">Keygen</button>
-        <button type="button" data-cmd="ls -la ~/.local/share/remote-viewer/identity/">List identity dir</button>
+        <button type="button" data-cmd="export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli">Set LLAMA_CLI</button>
+        <button type="button" data-cmd="bash modules/moe-router/list-models.sh">List models</button>
+        <button type="button" class="primary" data-cmd="bash modules/moe-router/run-model.sh general "Say hello in one sentence."">Run general</button>
+        <button type="button" class="primary" data-cmd="bash modules/moe-router/run-model.sh code "Write a bash one-liner to count lines in a file."">Run code</button>
+        <button type="button" data-cmd="FORCE_CODE=1 bash modules/moe-router/fetch-weights.sh">Fetch/refresh weights</button>
       </div>
       <pre class="cmd"></pre>
     </section>
 
     <section class="card">
-      <h2>Optical Air-Gap</h2>
-      <p>Proven: age → Soliton LT → peel → decrypt.</p>
-      <div class="row">
-        <button type="button" class="primary" data-cmd="bash optical-airgap/scripts/e2e-age-lt.sh">E2E default</button>
-        <button type="button" data-cmd="bash optical-airgap/scripts/e2e-age-lt.sh &quot;hello sentinel&quot;">E2E custom</button>
-      </div>
-      <pre class="cmd"></pre>
-    </section>
-
-    <section class="card">
-      <h2>Self-Heal</h2>
-      <p>Optical pulse (vault readiness). Full e2e stays on-demand.</p>
-      <div class="row">
-        <button type="button" data-cmd="bash modules/self-heal/optical-pulse.sh">Pulse once</button>
-        <button type="button" data-cmd="bash modules/self-heal/healthcheck.sh">Healthcheck</button>
-        <button type="button" data-cmd="nohup bash modules/self-heal/supervise-optical.sh &gt;&gt;~/.local/share/remote-viewer/self-heal.log 2&gt;&amp;1 &amp;">Supervise optical</button>
-        <button type="button" data-cmd="pkill -f supervise-optical">Stop supervise</button>
-      </div>
-      <pre class="cmd"></pre>
-    </section>
-
-    <section class="card">
-      <h2>MoE Router (Stage A)</h2>
-      <p>Local specialist routing. Fail closed.</p>
+      <h2>MoE Stage A — Process experts</h2>
+      <p>Optical / sovereignty / contribution routes (fail closed).</p>
       <div class="row">
         <button type="button" data-cmd="bash modules/moe-router/list.sh">List experts</button>
         <button type="button" data-cmd="bash modules/moe-router/route.sh optical">Route optical</button>
@@ -93,30 +84,58 @@
     </section>
 
     <section class="card">
-      <h2>Contribution Ledger</h2>
-      <p>Offline JSONL. No mint. No chain.</p>
+      <h2>Optical Air-Gap</h2>
+      <p>Proven: age → Soliton LT → peel → decrypt.</p>
       <div class="row">
-        <button type="button" class="primary" data-cmd="bash modules/contribution/record.sh optical_e2e 1 &quot;peel ok&quot;">Record optical_e2e</button>
-        <button type="button" data-cmd="bash modules/contribution/record.sh verification 1 &quot;optical-pulse ok&quot;">Record verification</button>
-        <button type="button" data-cmd="bash modules/contribution/status.sh">Status</button>
-        <button type="button" data-cmd="bash modules/contribution/tally.sh">Tally</button>
+        <button type="button" class="primary" data-cmd="bash optical-airgap/scripts/e2e-age-lt.sh">E2E default</button>
+        <button type="button" data-cmd="bash optical-airgap/scripts/e2e-age-lt.sh "hello sentinel"">E2E custom</button>
       </div>
       <pre class="cmd"></pre>
     </section>
 
     <section class="card">
-      <h2>Data Sovereignty</h2>
-      <p>Destroy = Restart is local and irreversible for path state.</p>
+      <h2>Self-Heal</h2>
       <div class="row">
+        <button type="button" data-cmd="bash modules/self-heal/optical-pulse.sh">Pulse once</button>
+        <button type="button" data-cmd="bash modules/self-heal/healthcheck.sh">Healthcheck</button>
+        <button type="button" data-cmd="nohup bash modules/self-heal/supervise-optical.sh >>~/.local/share/remote-viewer/self-heal.log 2>&1 &">Supervise optical</button>
+        <button type="button" data-cmd="pkill -f supervise-optical">Stop supervise</button>
+      </div>
+      <pre class="cmd"></pre>
+    </section>
+
+    <section class="card">
+      <h2>Contribution Ledger</h2>
+      <div class="row">
+        <button type="button" data-cmd="bash modules/contribution/record.sh verification 1 "moe B dual gguf"">Record verification</button>
+        <button type="button" data-cmd="bash modules/contribution/verify.sh">Verify chain</button>
+        <button type="button" data-cmd="bash modules/contribution/tally.sh">Tally</button>
+        <button type="button" data-cmd="bash modules/contribution/export.sh">Export redacted</button>
+        <button type="button" data-cmd="bash modules/contribution/claim.sh">Local AR claim</button>
+      </div>
+      <pre class="cmd"></pre>
+    </section>
+
+    <section class="card">
+      <h2>Identity & Sovereignty</h2>
+      <div class="row">
+        <button type="button" data-cmd="bash modules/local-identity/keygen.sh">Keygen</button>
         <button type="button" data-cmd="bash modules/data-sovereignty/minimize-check.sh">Minimize check</button>
         <button type="button" class="danger" data-cmd="bash modules/data-sovereignty/destroy-restart.sh --confirm">Destroy (confirm)</button>
       </div>
       <pre class="cmd"></pre>
     </section>
+
+    <section class="card">
+      <h2>Defense / Hydra</h2>
+      <p>Next build target. Local-first active defense — no cloud telemetry, no weakening optical or MoE core.</p>
+      <p><code>modules/defense/</code> — not shipped yet. Say when to scaffold.</p>
+    </section>
   </main>
 
   <footer>
-    Copy commands into Termux. This HTML does not execute shell or touch keys.
+    Copy commands into Termux. HTML never executes shell or reads keys.<br>
+    Roadmap in-console: UI (this) → Defense → MoE Stage C.
   </footer>
 
   <script>
