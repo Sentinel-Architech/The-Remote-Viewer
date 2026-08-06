@@ -1,9 +1,18 @@
 # MoE Router
 
-**Stage A (processes):** `list.sh` · `route.sh` · `experts.json`  
-**Stage B (models):** `list-models.sh` · `select-model.sh` · `run-model.sh` · `models.json`
+**Stage A:** process experts — `list.sh` · `route.sh` · `experts.json`  
+**Stage B:** local models — `list-models.sh` · `select-model.sh` · `run-model.sh` · `models.json`
 
-See [STAGE-B.md](./STAGE-B.md) and `docs/architecture/sentinel-moe.md`.
+**Real weights:** [WEIGHTS.md](./WEIGHTS.md) · `fetch-weights.sh`
+
+## Quick — weights on device
+
+```bash
+bash modules/moe-router/fetch-weights.sh
+# build llama.cpp (see WEIGHTS.md), then:
+export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli
+bash modules/moe-router/run-model.sh general "Say hello in one sentence."
+```
 
 ## Stage A
 
@@ -12,16 +21,4 @@ bash modules/moe-router/list.sh
 bash modules/moe-router/route.sh optical
 ```
 
-## Stage B
-
-```bash
-bash modules/moe-router/list-models.sh
-bash modules/moe-router/select-model.sh general
-bash modules/moe-router/run-model.sh general
-bash modules/moe-router/run-model.sh stub "ping"
-```
-
-GGUF path example: `~/.local/share/remote-viewer/models/general.gguf`  
-CLI: `LLAMA_CLI=/path/to/llama-cli`
-
-Fail closed. No cloud. Stage C sparse weights still DESIGN.
+Fail closed. No cloud inference core. Stage C sparse MoE still DESIGN.
