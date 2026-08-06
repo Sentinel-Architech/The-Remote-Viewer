@@ -1,5 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# Local integrity pulse for TRV node (Hydra scaffold)
+# Local integrity pulse for TRV node (Hydra)
 set -euo pipefail
 
 ROOT="${TRV_ROOT:-$HOME/The-Remote-Viewer}"
@@ -10,10 +10,11 @@ mkdir -p "$BASE"
 log() { echo "[$(date -Iseconds)] $*" | tee -a "$LOG"; }
 
 FAIL=0
+WARN=0
 
 log "integrity-pulse start"
 
-# 1. Repo present
+# 1. Repo
 if [[ ! -d "$ROOT/.git" ]]; then
   log "FAIL: repo root missing $ROOT"
   FAIL=1
@@ -21,12 +22,17 @@ else
   log "OK: repo root"
 fi
 
-# 2. Critical modules exist
+# 2. Critical paths
 for p in \
   optical-airgap/scripts/e2e-age-lt.sh \
   modules/moe-router/run-model.sh \
+  modules/moe-router/list-models.sh \
   modules/contribution/verify.sh \
-  modules/data-sovereignty/minimize-check.sh
+  modules/contribution/record.sh \
+  modules/data-sovereignty/minimize-check.sh \
+  modules/defense/integrity-pulse.sh \
+  modules/self-heal/optical-pulse.sh \
+  scripts/git-sync.sh
 do
   if [[ -f "$ROOT/$p" ]]; then
     log "OK: $p"
@@ -36,7 +42,7 @@ do
   fi
 done
 
-# 3. Vault identity mode (if present)
+# 3. Vault / identity modes
 if [[ -f "$HOME/vault-identity.txt" ]]; then
   MODE=$(stat -c '%a' "$HOME/vault-identity.txt" 2>/dev/null || stat -f '%Lp' "$HOME/vault-identity.txt" 2>/dev/null || echo '?')
   if [[ "$MODE" == "600" || "$MODE" == "400" ]]; then
@@ -46,7 +52,8 @@ if [[ -f "$HOME/vault-identity.txt" ]]; then
     FAIL=1
   fi
 else
-  log "WARN: no vault-identity.txt (ok if unused)"
+  log "WARN: no vault-identity.txt"
+  WARN=1
 fi
 
 if [[ -d "$BASE/identity" ]]; then
@@ -59,30 +66,46 @@ if [[ -d "$BASE/identity" ]]; then
   fi
 fi
 
-# 4. GGUF slots (optional)
-for m in general.gguf code.gguf; do
+# 4. Models (B + C)
+for m in general.gguf code.gguf moe.gguf; do
   if [[ -f "$BASE/models/$m" ]]; then
-    log "OK: model $m present"
+    log "OK: model $m"
   else
     log "WARN: model $m missing"
+    WARN=1
   fi
 done
 
-# 5. Tracked dirty (informational — not always FAIL)
+# 5. Contribution chain (if events exist)
+EV="$BASE/contribution/events.jsonl"
+if [[ -f "$EV" ]] && [[ -s "$EV" ]]; then
+  if bash "$ROOT/modules/contribution/verify.sh" >/dev/null 2>&1; then
+    log "OK: contribution chain verifies"
+  else
+    log "FAIL: contribution chain verify failed"
+    FAIL=1
+  fi
+else
+  log "WARN: no contribution events yet"
+  WARN=1
+fi
+
+# 6. Tracked dirty
 if [[ -d "$ROOT/.git" ]]; then
   DIRTY=$(git -C "$ROOT" status --porcelain | grep -v '^??' || true)
   if [[ -n "$DIRTY" ]]; then
     log "WARN: tracked files modified"
+    WARN=1
   else
     log "OK: no tracked modifications"
   fi
 fi
 
 if [[ "$FAIL" -eq 0 ]]; then
-  log "integrity-pulse RESULT=PASS"
-  echo "RESULT: PASS"
+  log "integrity-pulse RESULT=PASS (warns=$WARN)"
+  echo "RESULT: PASS (warns=$WARN)"
   exit 0
 fi
-log "integrity-pulse RESULT=FAIL"
-echo "RESULT: FAIL"
+log "integrity-pulse RESULT=FAIL (warns=$WARN)"
+echo "RESULT: FAIL (warns=$WARN)"
 exit 1
