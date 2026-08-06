@@ -1,5 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# Append a local contribution event (offline JSONL)
+# Append a local contribution event (offline JSONL + hash chain)
 set -euo pipefail
 
 KIND="${1:-}"
@@ -12,7 +12,6 @@ if [[ -z "$KIND" ]]; then
   exit 1
 fi
 
-# amount must be numeric (integer or simple decimal)
 if ! [[ "$AMOUNT" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
   echo "FAIL: amount must be numeric" >&2
   exit 1
@@ -25,13 +24,30 @@ FILE="${DIR}/events.jsonl"
 
 TS=$(date -Iseconds)
 ID="$(date +%s)-$$-$RANDOM"
-
-# Strip characters that break our minimal JSON line
 NOTE_SAFE=$(printf '%s' "$NOTE" | tr -d '\n\r"\\' | head -c 200)
 KIND_SAFE=$(printf '%s' "$KIND" | tr -d '\n\r"\\' | head -c 64)
 
-printf '{"id":"%s","ts":"%s","kind":"%s","amount":%s,"note":"%s"}\n' \
-  "$ID" "$TS" "$KIND_SAFE" "$AMOUNT" "$NOTE_SAFE" >> "$FILE"
+# Previous line hash (or genesis)
+if [[ -f "$FILE" ]] && [[ -s "$FILE" ]]; then
+  PREV=$(tail -n 1 "$FILE")
+  if command -v sha256sum >/dev/null 2>&1; then
+    PREV_SHA=$(printf '%s' "$PREV" | sha256sum | awk '{print $1}')
+  else
+    PREV_SHA=$(printf '%s' "$PREV" | sha256 | awk '{print $1}')
+  fi
+else
+  PREV_SHA="genesis"
+fi
 
+BODY=$(printf '{"id":"%s","ts":"%s","kind":"%s","amount":%s,"note":"%s","prev":"%s"}' \
+  "$ID" "$TS" "$KIND_SAFE" "$AMOUNT" "$NOTE_SAFE" "$PREV_SHA")
+
+if command -v sha256sum >/dev/null 2>&1; then
+  SHA=$(printf '%s' "$BODY" | sha256sum | awk '{print $1}')
+else
+  SHA=$(printf '%s' "$BODY" | sha256 | awk '{print $1}')
+fi
+
+printf '%s,"sha":"%s"}\n' "${BODY%\}"" "$SHA" >> "$FILE"
 chmod 600 "$FILE" 2>/dev/null || true
-echo "Recorded: $KIND_SAFE amount=$AMOUNT id=$ID"
+echo "Recorded: $KIND_SAFE amount=$AMOUNT id=$ID sha=${SHA:0:12}…"

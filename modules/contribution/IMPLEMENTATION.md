@@ -2,69 +2,54 @@
 
 **Principle:** Offline-first. No mint. No chain required for local truth.
 
-## Stage 0 — Done (SCAFFOLD)
+## Stage 0 — SCAFFOLD (done)
 
 | Item | Status |
 |------|--------|
-| Append-only JSONL under `~/.local/share/remote-viewer/contribution/` | Yes |
-| `record.sh` | Yes |
-| `tally.sh` | Yes |
-| `status.sh` | Yes |
+| Append-only JSONL | Yes |
+| `record.sh` / `status.sh` / `tally.sh` | Yes |
 | No network | Yes |
 
-## Stage 1 — Habit on device (do this next)
+## Stage 1 — Habit on device
 
-1. Record real local work kinds only:
-   - `uptime` — node/session minutes
-   - `optical_e2e` — successful e2e runs
-   - `verification` — local checks passed
-   - `presence` — intentional check-in
-   - `storage` — capacity offered (local claim only)
-2. After optical e2e success:
-   ```bash
-   bash modules/contribution/record.sh optical_e2e 1 "e2e peel ok"
-   ```
-3. After self-heal pulse OK:
-   ```bash
-   bash modules/contribution/record.sh verification 1 "optical-pulse ok"
-   ```
-4. Review:
-   ```bash
-   bash modules/contribution/status.sh
-   bash modules/contribution/tally.sh
-   ```
+```bash
+bash modules/contribution/record.sh optical_e2e 1 "peel ok"
+bash modules/contribution/record.sh verification 1 "optical-pulse ok"
+bash modules/contribution/status.sh
+bash modules/contribution/tally.sh
+```
 
-## Stage 2 — Receipt integrity (code next)
+## Stage 2 — Receipt integrity (code present)
 
-1. Add optional `sha256` of prior line (hash chain) on each append.
-2. `verify.sh` walks the chain; fails closed on break.
-3. Still offline. Still no token mint.
+| Item | Status |
+|------|--------|
+| `prev` + `sha` on each new event | Yes (`record.sh`) |
+| `verify.sh` walks chain, fail closed | Yes |
+
+```bash
+bash modules/contribution/record.sh presence 1 "check-in"
+bash modules/contribution/verify.sh
+```
+
+Note: events recorded **before** Stage 2 lack `prev`/`sha` and will fail verify until you start a fresh file or only verify post-chain events. For a clean chain:
+
+```bash
+mv ~/.local/share/remote-viewer/contribution/events.jsonl \
+   ~/.local/share/remote-viewer/contribution/events-prechain.jsonl.bak 2>/dev/null || true
+bash modules/contribution/record.sh optical_e2e 1 "fresh chain"
+bash modules/contribution/verify.sh
+```
 
 ## Stage 3 — Export for audit
 
-1. `export.sh` writes a redacted summary (kinds + counts + date range).
-2. Never export `AGE-SECRET` or vault paths into the summary.
-3. Optical-airgap can seal the export for handoff if needed.
+1. Redacted summary (kinds + counts + range)
+2. Never export secrets
+3. Optional optical seal of the export
 
-## Stage 4 — Design only until Stage 2 is boring
+## Stage 4 — Design only
 
-- Merkle root over event batches
-- AR reward *claims* (not auto-mint) from local tallies
-- Optional later: publish root to a chain of your choosing
-
-**Solana / any L1 is Stage 4+ and optional.** Local ledger is source of truth for contribution claims.
+Merkle roots, AR claims, optional L1 publish — after Stage 2 is routine.
 
 ## Anti-goals
 
-- Phone-home analytics
-- Automatic public broadcast of events
-- Corporate treasury mint keys
-- Treating local amount fields as money
-
-## Acceptance for “REALITY”
-
-Ledger is REALITY when:
-
-1. You can record and tally on GrapheneOS + Termux without network.
-2. Files stay under user-controlled `$HOME/.local/share/remote-viewer/`.
-3. Status is honest in `docs/REALITY.md`.
+Phone-home · auto-broadcast · corporate mint · treating amounts as money
