@@ -27,27 +27,29 @@ ID="$(date +%s)-$$-$RANDOM"
 NOTE_SAFE=$(printf '%s' "$NOTE" | tr -d '\n\r"\\' | head -c 200)
 KIND_SAFE=$(printf '%s' "$KIND" | tr -d '\n\r"\\' | head -c 64)
 
-# Previous line hash (or genesis)
+hash_str() {
+  if command -v sha256sum >/dev/null 2>&1; then
+    printf '%s' "$1" | sha256sum | awk '{print $1}'
+  else
+    printf '%s' "$1" | sha256 | awk '{print $1}'
+  fi
+}
+
 if [[ -f "$FILE" ]] && [[ -s "$FILE" ]]; then
   PREV=$(tail -n 1 "$FILE")
-  if command -v sha256sum >/dev/null 2>&1; then
-    PREV_SHA=$(printf '%s' "$PREV" | sha256sum | awk '{print $1}')
-  else
-    PREV_SHA=$(printf '%s' "$PREV" | sha256 | awk '{print $1}')
-  fi
+  PREV_SHA=$(hash_str "$PREV")
 else
   PREV_SHA="genesis"
 fi
 
 BODY=$(printf '{"id":"%s","ts":"%s","kind":"%s","amount":%s,"note":"%s","prev":"%s"}' \
   "$ID" "$TS" "$KIND_SAFE" "$AMOUNT" "$NOTE_SAFE" "$PREV_SHA")
+SHA=$(hash_str "$BODY")
 
-if command -v sha256sum >/dev/null 2>&1; then
-  SHA=$(printf '%s' "$BODY" | sha256sum | awk '{print $1}')
-else
-  SHA=$(printf '%s' "$BODY" | sha256 | awk '{print $1}')
-fi
+# BODY ends with }; open it to append sha field
+BODY_OPEN=$(printf '%s' "$BODY" | sed 's/}$//')
+LINE=$(printf '%s,"sha":"%s"}' "$BODY_OPEN" "$SHA")
+printf '%s\n' "$LINE" >> "$FILE"
 
-printf '%s,"sha":"%s"}\n' "${BODY%\}"" "$SHA" >> "$FILE"
 chmod 600 "$FILE" 2>/dev/null || true
-echo "Recorded: $KIND_SAFE amount=$AMOUNT id=$ID sha=${SHA:0:12}…"
+echo "Recorded: $KIND_SAFE amount=$AMOUNT id=$ID sha=${SHA:0:12}..."
