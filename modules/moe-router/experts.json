@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "description": "Local specialist registry for The Sentinel Stage A MoE router",
+  "experts": [
+    {
+      "id": "optical-e2e",
+      "tags": ["optical", "airgap", "transport"],
+      "command": "bash optical-airgap/scripts/e2e-age-lt.sh",
+      "cwd_relative": true,
+      "notes": "Proven age → Soliton LT → peel → decrypt path"
+    },
+    {
+      "id": "self-heal-watchdog",
+      "tags": ["self-heal", "ops", "supervise"],
+      "command": "bash modules/self-heal/watchdog.sh",
+      "cwd_relative": true,
+      "notes": "Process supervisor; pass target as extra args"
+    },
+    {
+      "id": "minimize-check",
+      "tags": ["sovereignty", "minimize", "audit"],
+      "command": "bash modules/data-sovereignty/minimize-check.sh",
+      "cwd_relative": true,
+      "notes": "Local data-minimization check"
+    },
+    {
+      "id": "destroy-restart",
+      "tags": ["sovereignty", "burn", "destroy"],
+      "command": "bash modules/data-sovereignty/destroy-restart.sh",
+      "cwd_relative": true,
+      "notes": "Requires --confirm; irreversible local path wipe"
+    },
+    {
+      "id": "contribution-status",
+      "tags": ["contribution", "ledger"],
+      "command": "bash modules/contribution/status.sh",
+      "cwd_relative": true,
+      "notes": "Offline contribution ledger status if present"
+    }
+  ]
+}
