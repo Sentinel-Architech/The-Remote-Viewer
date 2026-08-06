@@ -1,18 +1,27 @@
 # Concepts → Reality Status
 
-Last updated: 2026-08-06 (Stage C scaffold documented)
+Last updated: 2026-08-06 (Stage C on-device)
 
-## Enhanced Intelligence — The Sentinel
+**Rule:** No marketing. PROVEN means ran under user control on device.
 
-| Concept | Status | Notes |
-|---------|--------|-------|
-| MoE Stage A | **SCAFFOLD** | Process experts |
-| MoE Stage B | **PROVEN** | TinyLlama + Qwen2.5-Coder on-device; ~17–21 t/s |
-| MoE Stage C sparse weights | **DESIGN** | Slot `moe.gguf`; checklist in STAGE-C.md — not proven until load+gen on device |
-| MoE Stage D | **DESIGN** | |
-| Optical Air-Gap | **PROVEN** | |
-| Defense / Hydra integrity | **SCAFFOLD** | Local node only |
-| Contribution ledger 0–4 | **SCAFFOLD** | |
-| Chain settlement | **NOT STARTED** | |
+## Enhanced Intelligence — The Sentinel (MoE)
 
-**Rule:** no marketing. Stage B ≠ Stage C.
+| Stage | Status | Notes |
+|-------|--------|-------|
+| A Process experts | **SCAFFOLD** | `modules/moe-router` experts |
+| B Dense multi-model | **PROVEN** | TinyLlama + Qwen2.5-Coder; ~17–21 t/s |
+| C Sparse MoE weights | **PROVEN** | **2026-08-06** TinyMixtral-4x248M-MoE Q4_K_M; load+gen on Termux (~62 t/s gen). Quality limited by model size; architecture is real MoE. |
+| D IA of IA | **DESIGN** | |
+
+## Core
+
+| Concept | Status |
+|---------|--------|
+| Optical air-gap (age + Soliton LT) | **PROVEN** |
+| Local age identity | **PROVEN** |
+| Defense / Hydra integrity | **SCAFFOLD** |
+| Contribution ledger 0–4 | **SCAFFOLD** |
+| UI local console | **SCAFFOLD** |
+| Chain settlement | **NOT STARTED** |
+
+Optical remains the reference transport. Stages B and C are on-device intelligence proofs.
