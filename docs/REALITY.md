@@ -25,10 +25,11 @@ Last updated: 2026-08-06 (cleanup/professional-structure)
 
 | Concept | Status | Location | Notes |
 |---------|--------|----------|-------|
-| The Sentinel (Enhanced Intelligence) | **DESIGN** | `docs/architecture/sentinel-moe.md` | Core requirement: **minimum MoE** (Mixture-of-Experts). |
-| MoE at intelligence core | **DESIGN** | same | Stages A–D ladder; Stage A aligns with specialist supervision. |
-| Specialist process supervision | **SCAFFOLD** | `modules/self-heal/` | Supports Stage A routing/supervision. |
-| Recursive IA of IA governance | **DESIGN** | architecture notes | Depends on stable expert set + local control. |
+| The Sentinel (Enhanced Intelligence) | **DESIGN + Stage A scaffold** | `docs/architecture/sentinel-moe.md` | Core requirement: **minimum MoE**. |
+| MoE Stage A (specialist router) | **SCAFFOLD** | `modules/moe-router/` | Local registry + route/list; fail closed; no network. |
+| MoE Stages B–D | **DESIGN** | sentinel-moe.md | Models/adapters → sparse MoE weights → IA of IA. |
+| Specialist process supervision | **SCAFFOLD** | `modules/self-heal/` | Keeps expert processes alive. |
+| Chain settlement (e.g. Solana) | **NOT STARTED** | — | No chain dependency in core. Optional later only. |
 
 ## Resilience & Operations
 
@@ -44,7 +45,7 @@ Last updated: 2026-08-06 (cleanup/professional-structure)
 |---------|--------|----------|-------|
 | Creator royalties / treasury split | **SCAFFOLD** | `apps/shared/src/treasury/` | Integer-safe splits, fails closed. |
 | Local contribution ledger | **SCAFFOLD** | `modules/contribution/` | Offline-first. Foundation for AR design. |
-| AR Token / DePIN flywheel | **DESIGN** | `TOKENOMICS.md` | Design intent only. No live mint. |
+| AR Token / DePIN flywheel | **DESIGN** | `TOKENOMICS.md` | Design intent only. No live mint. No chain chosen. |
 
 ## Data Sovereignty
 
