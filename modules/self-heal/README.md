@@ -2,31 +2,34 @@
 
 Real process supervision for Termux / local services.
 
-This replaces the previous Java-style aspirational "Self Heal" concept notes with something that actually runs.
+## Scripts
 
-## What it does
+| Script | Purpose |
+|--------|---------|
+| `watchdog.sh` | Generic supervisor — restart target on death |
+| `healthcheck.sh` | Local status report |
+| `supervise-optical.sh` | Wrapper for optical-related long-runners |
+| `supervise-specialist.sh` | Wrapper for llama/router specialist path |
+| `install-hooks.sh` | chmod + create log dir |
 
-- Watches a target process
-- Restarts it on failure
-- Keeps a simple health log
-- Uses Termux wake-lock when available
-
-## Usage (Termux)
+## Integration (GrapheneOS + Termux)
 
 ```bash
-# Make executable once
-chmod +x modules/self-heal/watchdog.sh modules/self-heal/healthcheck.sh
+cd $HOME/The-Remote-Viewer   # or your clone path
+bash modules/self-heal/install-hooks.sh
 
-# Start supervising a script
-./modules/self-heal/watchdog.sh path/to/your-daemon.sh
+# Optical is mostly on-demand; only supervise if you run a lab loop/receiver:
+bash modules/self-heal/supervise-optical.sh 'your-optical-loop-command'
 
-# Quick health report
-./modules/self-heal/healthcheck.sh
+# Specialist / local model server:
+bash modules/self-heal/supervise-specialist.sh 'llama-server -m $HOME/models/model.gguf --port 8080'
 ```
+
+Logs: `$HOME/.local/share/remote-viewer/self-heal.log`
 
 ## Design rules
 
 - No network calls
 - No external telemetry
-- Logs stay local under `$HOME/.local/share/remote-viewer/`
 - Fail closed and restart
+- Optical e2e script remains the proven on-demand path (`optical-airgap/scripts/e2e-age-lt.sh`)
