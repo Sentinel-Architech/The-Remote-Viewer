@@ -1,27 +1,27 @@
 {
   "version": 1,
-  "description": "Stage B local GGUF registry — paths under ~/.local/share/remote-viewer/models",
+  "description": "Stage B — two distinct local GGUFs (general + code)",
   "models": [
     {
       "id": "stub-general",
-      "tags": ["stub", "default"],
+      "tags": ["stub"],
       "backend": "stub",
       "path": null,
-      "notes": "Dry-run only. Prefer general once GGUF is present."
+      "notes": "Dry-run only"
     },
     {
       "id": "tinyllama-general",
       "tags": ["general", "gguf", "llama", "tinyllama"],
       "backend": "llama.cpp",
       "path": "$HOME/.local/share/remote-viewer/models/general.gguf",
-      "notes": "TinyLlama 1.1B Chat Q4_K_M via fetch-weights.sh"
+      "notes": "TinyLlama 1.1B Chat Q4_K_M"
     },
     {
-      "id": "tinyllama-code",
-      "tags": ["code", "gguf", "llama"],
+      "id": "qwen-coder",
+      "tags": ["code", "gguf", "qwen", "coder"],
       "backend": "llama.cpp",
       "path": "$HOME/.local/share/remote-viewer/models/code.gguf",
-      "notes": "Second slot; seed copy until you add a code-tuned GGUF"
+      "notes": "Qwen2.5-Coder-0.5B Instruct Q4_K_M — distinct weights from general"
     }
   ]
 }
