@@ -2,7 +2,7 @@
 
 **Rule:** A concept is not real until it runs, is auditable, and lives under user control on GrapheneOS + Termux (or equivalent). No marketing language.
 
-Last updated: 2026-08-06 (on-device session)
+Last updated: 2026-08-06 (dual GGUF Stage B)
 
 ## Status Legend
 
@@ -17,50 +17,27 @@ Last updated: 2026-08-06 (on-device session)
 
 | Concept | Status | Location | Notes |
 |---------|--------|----------|-------|
-| Optical Air-Gap (age + Soliton LT) | **PROVEN** | `optical-airgap/` | Re-verified **2026-08-06** on Termux (e2e peel ok). |
-| Local age identity | **PROVEN** | device vault + `modules/local-identity/` | Rotated after screenshot exposure; secrets not in git. |
+| Optical Air-Gap (age + Soliton LT) | **PROVEN** | `optical-airgap/` | Re-verified 2026-08-06 (e2e peel ok). |
+| Local age identity | **PROVEN** | device vault + `modules/local-identity/` | Secrets not in git. |
 | Centralized key assignment | **REJECTED** | — | |
 
 ## Enhanced Intelligence — The Sentinel
 
 | Concept | Status | Location | Notes |
 |---------|--------|----------|-------|
-| MoE Stage A router | **SCAFFOLD** | `modules/moe-router/` | Exercised on-device (list/route). |
-| MoE Stages B–D | **DESIGN** | `docs/architecture/sentinel-moe.md` | |
-| Self-heal optical pulse | **SCAFFOLD** | `modules/self-heal/` | Pulse + supervise; e2e stays on-demand. |
-| Chain settlement | **NOT STARTED** | — | Optional later only. |
+| MoE Stage A (process experts) | **SCAFFOLD** | `modules/moe-router/` experts | list/route on-device |
+| MoE Stage B (local models) | **PROVEN** | `models.json` + GGUF | **2026-08-06:** TinyLlama general + Qwen2.5-Coder-0.5B code; router select; llama.cpp ~17–21 t/s |
+| MoE Stage C (sparse MoE weights) | **DESIGN** | — | Hardware-heavy on phone |
+| MoE Stage D (IA of IA) | **DESIGN** | — | |
+| Self-heal optical pulse | **SCAFFOLD** | `modules/self-heal/` | |
+| Chain settlement | **NOT STARTED** | — | Optional later only |
 
 ## Contribution Ledger
 
-| Stage | Status | Notes |
-|-------|--------|-------|
-| 0 JSONL record/status/tally | **SCAFFOLD** | `modules/contribution/` |
-| 1 On-device habit | **SCAFFOLD** | User records optical_e2e / verification |
-| 2 Hash chain + verify | **SCAFFOLD** | `verify.sh` fixed 2026-08-06 |
-| 3 Redacted export | **SCAFFOLD** | `export.sh` |
-| 4 Tip commitment + local AR claim | **SCAFFOLD** | Not a mint; no RPC |
+Stages 0–4 **SCAFFOLD** under `modules/contribution/` — offline hash-chain, export, local AR claim (not a mint).
 
-## Data Sovereignty
+## Data Sovereignty / UI / Ops
 
-| Concept | Status | Notes |
-|---------|--------|-------|
-| minimize-check | **SCAFFOLD** | Quiet check; real secrets only |
-| Destroy = Restart | **SCAFFOLD** | Local path wipe |
+minimize-check · Destroy=Restart · `apps/ui/` · git-sync + hooks — **SCAFFOLD**, exercised.
 
-## UI
-
-| Concept | Status | Notes |
-|---------|--------|-------|
-| Local console | **SCAFFOLD** | `apps/ui/` command panels; no remote exec |
-
-## Ops
-
-| Concept | Status | Notes |
-|---------|--------|-------|
-| git-sync + hooks | **SCAFFOLD** | Termux; hooksPath=scripts/hooks |
-
-## How something becomes PROVEN
-
-Runs under user control · no hidden network · auditable in repo · no platform key custody.
-
-**Optical air-gap remains the reference implementation.**
+**Optical air-gap remains the reference implementation.** Stage B model routing is the second on-device proof point.
