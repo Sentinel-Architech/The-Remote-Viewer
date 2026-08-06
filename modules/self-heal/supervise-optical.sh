@@ -1,15 +1,29 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# Supervise optical-airgap related long-running helpers (if any)
-# Default: no-op if nothing is running; use with watchdog for daemons you start.
-
+# Supervise optical readiness pulse (not full e2e — e2e stays on-demand).
 set -euo pipefail
 
 ROOT="${TRV_ROOT:-$HOME/The-Remote-Viewer}"
+PULSE="$ROOT/modules/self-heal/optical-pulse.sh"
+INTERVAL="${WATCHDOG_INTERVAL:-60}"
 LOG_DIR="${HOME}/.local/share/remote-viewer"
+LOG_FILE="${LOG_DIR}/self-heal.log"
+
 mkdir -p "$LOG_DIR"
+chmod +x "$PULSE" 2>/dev/null || true
 
-# Optical path is primarily on-demand (encrypt/frame/peel/decrypt).
-# This supervisor is for optional background receivers or lab loops.
-TARGET="${1:-optical-airgap}"
+log() { echo "[$(date -Iseconds)] supervise-optical: $*" | tee -a "$LOG_FILE"; }
 
-exec "$(dirname "$0")/watchdog.sh" "$TARGET"
+if command -v termux-wake-lock >/dev/null 2>&1; then
+  termux-wake-lock || true
+fi
+
+log "starting optical pulse loop interval=${INTERVAL}s"
+
+while true; do
+  if bash "$PULSE"; then
+    :
+  else
+    log "pulse failed — will retry"
+  fi
+  sleep "$INTERVAL"
+done

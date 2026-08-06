@@ -7,194 +7,122 @@
   <title>TRV Local Console</title>
   <style>
     :root {
-      --bg: #0b0f14;
-      --panel: #141a22;
-      --border: #243041;
-      --text: #e7eef8;
-      --muted: #9db0c7;
-      --accent: #3dd6c6;
-      --warn: #f0b429;
-      --danger: #f07178;
-      --ok: #7fd962;
-      --radius: 12px;
+      --bg: #0b0f14; --panel: #141a22; --border: #243041; --text: #e7eef8;
+      --muted: #9db0c7; --accent: #3dd6c6; --warn: #f0b429; --danger: #f07178;
+      --ok: #7fd962; --radius: 12px;
       --font: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, sans-serif;
     }
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.45;
-      min-height: 100dvh;
-      padding: 1rem;
-    }
-    header {
-      max-width: 720px;
-      margin: 0 auto 1.25rem;
-    }
-    h1 {
-      font-size: 1.25rem;
-      margin: 0 0 0.25rem;
-      letter-spacing: 0.02em;
-    }
-    .tag {
-      color: var(--muted);
-      font-size: 0.85rem;
-    }
-    main {
-      max-width: 720px;
-      margin: 0 auto;
-      display: grid;
-      gap: 0.85rem;
-    }
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1rem;
-    }
-    .card h2 {
-      margin: 0 0 0.5rem;
-      font-size: 1rem;
-    }
-    .card p, .card li {
-      color: var(--muted);
-      font-size: 0.92rem;
-      margin: 0.35rem 0;
-    }
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-top: 0.75rem;
-    }
-    button, .btn {
-      appearance: none;
-      border: 1px solid var(--border);
-      background: #1a2330;
-      color: var(--text);
-      border-radius: 8px;
-      padding: 0.55rem 0.85rem;
-      font: inherit;
-      cursor: pointer;
-    }
-    button:active { transform: translateY(1px); }
+    body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--text);
+      line-height: 1.45; min-height: 100dvh; padding: 1rem; }
+    header, main, footer { max-width: 720px; margin-left: auto; margin-right: auto; }
+    header { margin-bottom: 1.25rem; }
+    h1 { font-size: 1.25rem; margin: 0 0 0.25rem; }
+    .tag { color: var(--muted); font-size: 0.85rem; }
+    main { display: grid; gap: 0.85rem; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; }
+    .card h2 { margin: 0 0 0.5rem; font-size: 1rem; }
+    .card p { color: var(--muted); font-size: 0.92rem; margin: 0.35rem 0; }
+    .row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+    button { appearance: none; border: 1px solid var(--border); background: #1a2330; color: var(--text);
+      border-radius: 8px; padding: 0.55rem 0.85rem; font: inherit; cursor: pointer; }
     button.primary { border-color: var(--accent); color: var(--accent); }
     button.danger { border-color: var(--danger); color: var(--danger); }
-    .status {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-size: 0.85rem;
-      color: var(--muted);
+    pre.cmd {
+      margin: 0.6rem 0 0; padding: 0.65rem 0.75rem; background: #0a0e13; border-radius: 8px;
+      border: 1px solid var(--border); color: var(--accent); font-size: 0.78rem;
+      white-space: pre-wrap; word-break: break-word; display: none;
     }
-    .dot {
-      width: 0.55rem;
-      height: 0.55rem;
-      border-radius: 50%;
-      background: var(--muted);
-    }
-    .dot.ok { background: var(--ok); }
-    .dot.warn { background: var(--warn); }
-    footer {
-      max-width: 720px;
-      margin: 1.5rem auto 0;
-      color: var(--muted);
-      font-size: 0.8rem;
-    }
-    code {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 0.85em;
-      color: var(--accent);
-    }
+    pre.cmd.show { display: block; }
+    footer { margin-top: 1.5rem; color: var(--muted); font-size: 0.8rem; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.85em; color: var(--accent); }
     @media (prefers-color-scheme: light) {
-      :root {
-        --bg: #f4f7fb;
-        --panel: #ffffff;
-        --border: #d5dee9;
-        --text: #122033;
-        --muted: #5b6b7c;
-      }
+      :root { --bg: #f4f7fb; --panel: #fff; --border: #d5dee9; --text: #122033; --muted: #5b6b7c; }
+      pre.cmd { background: #eef2f7; }
     }
   </style>
 </head>
 <body>
   <header>
     <h1>TRV Local Console</h1>
-    <div class="tag">Offline-first · device-local · no phone-home</div>
+    <div class="tag">Offline-first · device-local · no phone-home · MoE Stage A</div>
   </header>
 
   <main>
     <section class="card">
       <h2>Identity</h2>
-      <p>Keys stay on device. This panel only reminds paths — it never reads secrets.</p>
-      <p><span class="status"><span class="dot" id="id-dot"></span> <span id="id-status">Check local vault paths in Termux</span></span></p>
+      <p>Keys on device only. Console never reads secrets.</p>
       <div class="row">
-        <button type="button" id="btn-id-help">Show keygen path</button>
+        <button type="button" data-cmd="bash modules/local-identity/keygen.sh">Keygen</button>
+        <button type="button" data-cmd="ls -la ~/.local/share/remote-viewer/identity/">List identity dir</button>
       </div>
-      <p id="id-detail" hidden></p>
+      <pre class="cmd"></pre>
+    </section>
+
+    <section class="card">
+      <h2>Optical Air-Gap</h2>
+      <p>Proven: age → Soliton LT → peel → decrypt. Re-verified on-device 2026-08-06.</p>
+      <div class="row">
+        <button type="button" class="primary" data-cmd="bash optical-airgap/scripts/e2e-age-lt.sh">E2E default</button>
+        <button type="button" data-cmd="bash optical-airgap/scripts/e2e-age-lt.sh &quot;hello sentinel&quot;">E2E custom</button>
+      </div>
+      <pre class="cmd"></pre>
     </section>
 
     <section class="card">
       <h2>Self-Heal</h2>
-      <p>Process supervision for optical helpers and local specialist services.</p>
-      <p><code>modules/self-heal/watchdog.sh</code></p>
+      <p>Optical pulse (vault readiness). Full e2e stays on-demand.</p>
       <div class="row">
-        <button type="button" id="btn-heal">Show install command</button>
+        <button type="button" data-cmd="bash modules/self-heal/optical-pulse.sh">Pulse once</button>
+        <button type="button" data-cmd="bash modules/self-heal/healthcheck.sh">Healthcheck</button>
+        <button type="button" data-cmd="nohup bash modules/self-heal/supervise-optical.sh &gt;&gt;~/.local/share/remote-viewer/self-heal.log 2&gt;&amp;1 &amp;">Supervise optical</button>
+        <button type="button" data-cmd="pkill -f supervise-optical">Stop supervise</button>
       </div>
-      <p id="heal-detail" hidden></p>
+      <pre class="cmd"></pre>
     </section>
 
     <section class="card">
-      <h2>Contribution</h2>
-      <p>Offline JSONL ledger. No network required.</p>
-      <p><code>modules/contribution/</code> · events under <code>~/.local/share/remote-viewer/contribution/</code></p>
+      <h2>MoE Router (Stage A)</h2>
+      <p>Local specialist routing. Fail closed. No cloud experts.</p>
+      <div class="row">
+        <button type="button" data-cmd="bash modules/moe-router/list.sh">List experts</button>
+        <button type="button" data-cmd="bash modules/moe-router/route.sh optical">Route optical</button>
+        <button type="button" data-cmd="bash modules/moe-router/route.sh sovereignty">Route sovereignty</button>
+      </div>
+      <pre class="cmd"></pre>
     </section>
 
     <section class="card">
       <h2>Data Sovereignty</h2>
       <p>Destroy = Restart is local and irreversible for path state.</p>
       <div class="row">
-        <button type="button" id="btn-min">Minimize check path</button>
-        <button type="button" class="danger" id="btn-burn">Destroy path reminder</button>
+        <button type="button" data-cmd="bash modules/data-sovereignty/minimize-check.sh">Minimize check</button>
+        <button type="button" class="danger" data-cmd="bash modules/data-sovereignty/destroy-restart.sh --confirm">Destroy (confirm)</button>
       </div>
-      <p id="sov-detail" hidden></p>
+      <pre class="cmd"></pre>
     </section>
 
     <section class="card">
-      <h2>Optical Air-Gap</h2>
-      <p>Proven path: age → Soliton LT → peel → decrypt.</p>
-      <p><code>optical-airgap/scripts/e2e-age-lt.sh</code></p>
+      <h2>Contribution</h2>
+      <p>Offline JSONL ledger — next after self-heal + UI habit.</p>
+      <p><code>modules/contribution/</code></p>
     </section>
   </main>
 
   <footer>
-    Local console only. No accounts. No telemetry. Open source under project LICENSE.
-    Constrained RF devices use optical/protocol paths — not this HTML surface.
+    Copy commands into Termux. This HTML does not execute shell or touch keys.
+    Beepers/pagers use optical/RF paths — not this console.
   </footer>
 
   <script>
     (function () {
-      function show(id, text) {
-        var el = document.getElementById(id);
-        if (!el) return;
-        el.hidden = false;
-        el.textContent = text;
-      }
-      document.getElementById('btn-id-help').addEventListener('click', function () {
-        show('id-detail', 'modules/local-identity/keygen.sh  →  ~/.local/share/remote-viewer/identity/');
-        document.getElementById('id-dot').className = 'dot warn';
-        document.getElementById('id-status').textContent = 'Generate only on your device; never paste secrets here';
-      });
-      document.getElementById('btn-heal').addEventListener('click', function () {
-        show('heal-detail', 'bash modules/self-heal/install-hooks.sh');
-      });
-      document.getElementById('btn-min').addEventListener('click', function () {
-        show('sov-detail', 'bash modules/data-sovereignty/minimize-check.sh');
-      });
-      document.getElementById('btn-burn').addEventListener('click', function () {
-        show('sov-detail', 'bash modules/data-sovereignty/destroy-restart.sh --confirm   # irreversible local path wipe');
+      document.querySelectorAll('button[data-cmd]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var card = btn.closest('.card');
+          var pre = card.querySelector('pre.cmd');
+          pre.textContent = btn.getAttribute('data-cmd');
+          pre.classList.add('show');
+        });
       });
     })();
   </script>
