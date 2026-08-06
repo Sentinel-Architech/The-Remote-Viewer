@@ -4,116 +4,88 @@
 
 Not a cloud AI product. Not a live DePIN network. Not an always-on oracle.
 
-**Active branch:** [`TheRemoteViewer`](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/tree/TheRemoteViewer)  
-**Truth file:** [`docs/REALITY.md`](docs/REALITY.md) — PROVEN means ran on a real device under user control.
+**Working branch:** [`TheRemoteViewer`](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/tree/TheRemoteViewer)  
+**Truth file:** [`docs/REALITY.md`](docs/REALITY.md) — PROVEN means ran on a real device under user control.  
+**Reproduce:** [`docs/TEST.md`](docs/TEST.md)
+
+```bash
+git clone -b TheRemoteViewer https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
+cd The-Remote-Viewer
+bash modules/defense/integrity-pulse.sh    # no models required
+bash scripts/chat.sh                       # local assistant (after llama.cpp + weights optional)
+```
 
 ---
 
-## What is PROVEN on-device (2026-08-06)
+## Status (2026-08-06)
 
 | Capability | Status | Notes |
 |------------|--------|-------|
-| Optical air-gap | **PROVEN** | age → Soliton LT → peel → decrypt (`optical-airgap/`) |
-| MoE Stage B (dense) | **PROVEN** | TinyLlama + Qwen2.5-Coder GGUF via `llama.cpp` |
-| MoE Stage C (sparse) | **PROVEN** | TinyMixtral-4x248M-MoE GGUF load + generate |
-| Contribution ledger | **SCAFFOLD** | Offline JSONL hash-chain; not a blockchain mint |
-| Defense / Hydra | **SCAFFOLD** | Local integrity pulse only; no offensive tooling |
-| Local RAG | **SCAFFOLD** | Keyword retrieve + prompt; not weight training |
-| Local UI | **SCAFFOLD** | `http://127.0.0.1:8765/` only |
+| Optical air-gap | **PROVEN** | age → Soliton LT → peel → decrypt |
+| MoE Stage B (dense) | **PROVEN** | TinyLlama + Qwen2.5-Coder via llama.cpp |
+| MoE Stage C (sparse) | **PROVEN** | TinyMixtral-4x248M-MoE load + generate |
+| Local RAG | **SCAFFOLD** | BM25 + TF-IDF vectors + session memory + chat |
+| Defense / Hydra | **SCAFFOLD** | integrity-pulse only; no offensive tooling |
+| Contribution ledger | **SCAFFOLD** | offline JSONL hash-chain |
+| Local UI | **SCAFFOLD** | `http://127.0.0.1:8765/` |
 | Chain settlement | **NOT STARTED** | |
 
 ---
 
-## Quick start — others can test
+## 60-second paths
 
-### A) Phone (Termux / GrapheneOS preferred)
+### Phone (Termux)
 
 ```bash
-pkg update && pkg install git python clang cmake make curl -y
+pkg update && pkg install git python -y
 git clone -b TheRemoteViewer https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
 cd The-Remote-Viewer
-
-# Front door
-bash scripts/install-trv-alias.sh && source ~/.bashrc
-
-# Defense (no models required)
-bash scripts/trv.sh pulse
-
-# Optical (requires age + vault setup — see optical-airgap/INSTALL.md)
-# bash scripts/trv.sh optical
-
-# UI
-bash scripts/trv.sh ui
-# open http://127.0.0.1:8765/
+bash modules/defense/integrity-pulse.sh
+bash modules/rag/seed-trv-docs.sh          # local notes index (BM25 + vectors)
+# optional models: build llama.cpp, fetch-weights, then:
+bash scripts/chat.sh                      # you> prompt — remembers what you say
 ```
 
-### B) Models (optional, needs disk + RAM)
+### RAG without the model
 
 ```bash
-# Build llama.cpp once
-cd $HOME && git clone https://github.com/ggml-org/llama.cpp.git && cd llama.cpp
-cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j$(nproc) --target llama-cli
-export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli
-
-cd $HOME/The-Remote-Viewer
-bash modules/moe-router/fetch-weights.sh          # TinyLlama + code slot
-FORCE_CODE=1 bash modules/moe-router/fetch-weights.sh
-bash modules/moe-router/fetch-moe-weights.sh      # sparse MoE ~0.5GB
-
-bash scripts/trv.sh talk "What is TRV?"
+RAG_PLAIN=0 bash modules/rag/retrieve.sh "what can you do"
+python3 modules/rag/bm25.py "optical e2e"
 ```
 
-### C) Desktop convenience
+### UI
 
 ```bash
-bash scripts/desktop-install.sh
-# or: docs/INSTALL-DESKTOP.md Track A (barebones)
+bash apps/ui/serve-ui.sh
+# http://127.0.0.1:8765/  (leave process running)
 ```
-
-### D) Minimal test matrix (what “works” means)
-
-See **[docs/TEST.md](docs/TEST.md)**.
 
 ---
 
-## One command (`trv`)
+## Layout
 
 ```text
-trv talk <question>     # RAG if seeded, else model
-trv pulse               # Hydra integrity
-trv sync                # git pull + defense check
-trv ui                  # localhost console
-trv optical [msg]       # optical e2e
-trv seed                # seed local RAG docs
+optical-airgap/          PROVEN transport
+modules/moe-router/      MoE B/C
+modules/rag/             BM25, vectors, memory, pipeline
+modules/defense/         Hydra integrity
+modules/contribution/    hash-chain ledger
+modules/reminders/       Termux:API notifications (optional)
+apps/ui/                 localhost console
+scripts/chat.sh          front door assistant
+scripts/trv.sh           pulse | sync | ui | talk
+docs/REALITY.md          status authority
+docs/TEST.md             how others verify
 ```
 
 ---
 
 ## What this is not
 
-- **Not** a mandatory cloud account or OAuth login  
-- **Not** a public hosted EI endpoint  
-- **Not** a live DePIN (no multi-operator physical network + settlement)  
-- **Not** real-time learning of world facts (RAG = your local files only)  
-
-GitHub holds **code**. Your keys, GGUFs, and ledger stay on **your** device.
-
----
-
-## Layout (core paths)
-
-```text
-optical-airgap/     # PROVEN transport
-modules/moe-router/ # MoE A/B/C
-modules/defense/    # Hydra integrity
-modules/contribution/
-modules/rag/
-modules/data-sovereignty/
-apps/ui/            # 127.0.0.1 console
-scripts/trv.sh      # front door
-docs/REALITY.md     # status authority
-docs/TEST.md        # reproduce steps
-```
+- No required cloud login  
+- No public hosted EI endpoint  
+- No live multi-operator DePIN  
+- Keys, GGUFs, personal notes, and ledger events stay on **your** device  
 
 ---
 
