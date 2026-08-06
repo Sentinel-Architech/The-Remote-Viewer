@@ -1,5 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# Interactive local chat — stay in the loop. Ctrl+C or /exit only if you want to quit.
+# Interactive local chat — stays open; options shown after every reply.
 set -euo pipefail
 
 ROOT="${TRV_ROOT:-$HOME/The-Remote-Viewer}"
@@ -24,12 +24,14 @@ if [[ -d "$HOME/.local/share/remote-viewer/rag/chunks" ]] && \
   USE_RAG=1
 fi
 
+bar() {
+  echo
+  echo "[-- /note <text> | /notes | /ingest | /tag general|code|moe | /rag on|off | /exit --]"
+}
+
 echo "The Sentinel — local chat (stays open)"
 echo "  model: $TAG  |  RAG: $([[ $USE_RAG -eq 1 ]] && echo on || echo off)"
-echo "  /note <text>   save a personal fact to RAG (no exit)"
-echo "  /notes         list personal notes file"
-echo "  /ingest        rebuild RAG chunks"
-echo "  /tag general|code|moe   /rag on|off   /exit"
+bar
 echo
 
 while true; do
@@ -48,12 +50,14 @@ while true; do
       TAG="${line#/tag }"
       TAG="${TAG%% *}"
       echo "[tag=$TAG]"
+      bar
       continue
       ;;
-    /rag\ on) USE_RAG=1; echo "[rag=on]"; continue ;;
-    /rag\ off) USE_RAG=0; echo "[rag=off]"; continue ;;
+    /rag\ on) USE_RAG=1; echo "[rag=on]"; bar; continue ;;
+    /rag\ off) USE_RAG=0; echo "[rag=off]"; bar; continue ;;
     /note)
       echo "Usage: /note your fact here"
+      bar
       continue
       ;;
     /note\ *)
@@ -63,6 +67,7 @@ while true; do
       bash "$ROOT/modules/rag/ingest.sh" >/dev/null 2>&1 || true
       USE_RAG=1
       echo "[rag re-ingested]"
+      bar
       continue
       ;;
     /notes)
@@ -73,14 +78,16 @@ while true; do
       else
         echo "(no personal.txt yet — use /note ...)"
       fi
+      bar
       continue
       ;;
     /ingest)
       bash "$ROOT/modules/rag/ingest.sh" || true
       USE_RAG=1
+      bar
       continue
       ;;
-    /*) echo "unknown command"; continue ;;
+    /*) echo "unknown command"; bar; continue ;;
   esac
 
   if [[ "$USE_RAG" -eq 1 ]]; then
@@ -88,5 +95,5 @@ while true; do
   else
     bash "$ROOT/modules/moe-router/run-model.sh" "$TAG" "$line" || true
   fi
-  echo
+  bar
 done
