@@ -49,46 +49,49 @@
 <body>
   <header>
     <h1>TRV Local Console</h1>
-    <div class="tag">Offline-first · no phone-home · MoE Stage B <span class="badge">PROVEN</span></div>
+    <div class="tag">Offline-first · MoE Stage B <span class="badge">PROVEN</span> · Defense SCAFFOLD</div>
   </header>
 
   <main>
     <section class="card">
       <h2>Status</h2>
-      <p>Optical e2e · dual GGUF (TinyLlama + Qwen2.5-Coder) · local ledger · device keys only.</p>
-      <p><code>docs/REALITY.md</code> is source of truth for PROVEN vs SCAFFOLD.</p>
+      <p>Optical · dual GGUF · ledger · Hydra integrity pulse (local only).</p>
+    </section>
+
+    <section class="card">
+      <h2>Defense / Hydra</h2>
+      <p>Self-defense of <em>this</em> node. No telemetry. No offensive modules.</p>
+      <div class="row">
+        <button type="button" class="primary" data-cmd="bash modules/defense/integrity-pulse.sh">Integrity pulse</button>
+        <button type="button" data-cmd="bash modules/defense/status.sh">Defense status</button>
+      </div>
+      <pre class="cmd"></pre>
     </section>
 
     <section class="card">
       <h2>MoE Stage B — Models</h2>
-      <p>Distinct weights. Set <code>LLAMA_CLI</code> first. Console does not run models — copy into Termux.</p>
       <div class="row">
         <button type="button" data-cmd="export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli">Set LLAMA_CLI</button>
         <button type="button" data-cmd="bash modules/moe-router/list-models.sh">List models</button>
-        <button type="button" class="primary" data-cmd="bash modules/moe-router/run-model.sh general "Say hello in one sentence."">Run general</button>
-        <button type="button" class="primary" data-cmd="bash modules/moe-router/run-model.sh code "Write a bash one-liner to count lines in a file."">Run code</button>
-        <button type="button" data-cmd="FORCE_CODE=1 bash modules/moe-router/fetch-weights.sh">Fetch/refresh weights</button>
+        <button type="button" class="primary" data-cmd="bash modules/moe-router/run-model.sh general &quot;Say hello in one sentence.&quot;">Run general</button>
+        <button type="button" class="primary" data-cmd="bash modules/moe-router/run-model.sh code &quot;Write a bash one-liner to count lines in a file.&quot;">Run code</button>
       </div>
       <pre class="cmd"></pre>
     </section>
 
     <section class="card">
       <h2>MoE Stage A — Process experts</h2>
-      <p>Optical / sovereignty / contribution routes (fail closed).</p>
       <div class="row">
         <button type="button" data-cmd="bash modules/moe-router/list.sh">List experts</button>
         <button type="button" data-cmd="bash modules/moe-router/route.sh optical">Route optical</button>
-        <button type="button" data-cmd="bash modules/moe-router/route.sh contribution">Route contribution</button>
       </div>
       <pre class="cmd"></pre>
     </section>
 
     <section class="card">
       <h2>Optical Air-Gap</h2>
-      <p>Proven: age → Soliton LT → peel → decrypt.</p>
       <div class="row">
         <button type="button" class="primary" data-cmd="bash optical-airgap/scripts/e2e-age-lt.sh">E2E default</button>
-        <button type="button" data-cmd="bash optical-airgap/scripts/e2e-age-lt.sh "hello sentinel"">E2E custom</button>
       </div>
       <pre class="cmd"></pre>
     </section>
@@ -98,44 +101,33 @@
       <div class="row">
         <button type="button" data-cmd="bash modules/self-heal/optical-pulse.sh">Pulse once</button>
         <button type="button" data-cmd="bash modules/self-heal/healthcheck.sh">Healthcheck</button>
-        <button type="button" data-cmd="nohup bash modules/self-heal/supervise-optical.sh >>~/.local/share/remote-viewer/self-heal.log 2>&1 &">Supervise optical</button>
-        <button type="button" data-cmd="pkill -f supervise-optical">Stop supervise</button>
       </div>
       <pre class="cmd"></pre>
     </section>
 
     <section class="card">
-      <h2>Contribution Ledger</h2>
+      <h2>Contribution</h2>
       <div class="row">
-        <button type="button" data-cmd="bash modules/contribution/record.sh verification 1 "moe B dual gguf"">Record verification</button>
         <button type="button" data-cmd="bash modules/contribution/verify.sh">Verify chain</button>
         <button type="button" data-cmd="bash modules/contribution/tally.sh">Tally</button>
-        <button type="button" data-cmd="bash modules/contribution/export.sh">Export redacted</button>
-        <button type="button" data-cmd="bash modules/contribution/claim.sh">Local AR claim</button>
+        <button type="button" data-cmd="bash modules/contribution/export.sh">Export</button>
       </div>
       <pre class="cmd"></pre>
     </section>
 
     <section class="card">
-      <h2>Identity & Sovereignty</h2>
+      <h2>Sovereignty</h2>
       <div class="row">
-        <button type="button" data-cmd="bash modules/local-identity/keygen.sh">Keygen</button>
         <button type="button" data-cmd="bash modules/data-sovereignty/minimize-check.sh">Minimize check</button>
         <button type="button" class="danger" data-cmd="bash modules/data-sovereignty/destroy-restart.sh --confirm">Destroy (confirm)</button>
       </div>
       <pre class="cmd"></pre>
     </section>
-
-    <section class="card">
-      <h2>Defense / Hydra</h2>
-      <p>Next build target. Local-first active defense — no cloud telemetry, no weakening optical or MoE core.</p>
-      <p><code>modules/defense/</code> — not shipped yet. Say when to scaffold.</p>
-    </section>
   </main>
 
   <footer>
-    Copy commands into Termux. HTML never executes shell or reads keys.<br>
-    Roadmap in-console: UI (this) → Defense → MoE Stage C.
+    Copy into Termux. Roadmap: UI → Defense (now) → MoE Stage C.<br>
+    Hydra defends this node only.
   </footer>
 
   <script>
