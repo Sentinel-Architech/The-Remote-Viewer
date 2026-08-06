@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "description": "Stage B local model/adapter registry — paths are examples; replace with your on-device GGUF paths",
+  "models": [
+    {
+      "id": "stub-general",
+      "tags": ["general", "default", "stub"],
+      "backend": "stub",
+      "path": null,
+      "notes": "Always available. Dry-run for router wiring."
+    },
+    {
+      "id": "stub-governance",
+      "tags": ["governance", "policy", "stub"],
+      "backend": "stub",
+      "path": null,
+      "notes": "Stub specialist for governance-tagged prompts."
+    },
+    {
+      "id": "local-gguf-general",
+      "tags": ["general", "gguf", "llama"],
+      "backend": "llama.cpp",
+      "path": "$HOME/.local/share/remote-viewer/models/general.gguf",
+      "notes": "Place a GGUF here or edit path. Requires llama-cli on PATH or LLAMA_CLI."
+    },
+    {
+      "id": "local-gguf-code",
+      "tags": ["code", "gguf", "llama"],
+      "backend": "llama.cpp",
+      "path": "$HOME/.local/share/remote-viewer/models/code.gguf",
+      "notes": "Optional second adapter/model for code-tagged work."
+    }
+  ]
+}

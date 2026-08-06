@@ -1,64 +1,31 @@
 # The Sentinel — Enhanced Intelligence Core (MoE)
 
-**Status:** DESIGN requirement (locked intent)  
-**Name:** The Sentinel — also called Enhanced Intelligence  
+**Status:** Stage A + B SCAFFOLD · C–D DESIGN  
+**Name:** The Sentinel — Enhanced Intelligence  
 **Core constraint:** Minimum **Mixture-of-Experts (MoE)** at the intelligence core.
 
----
+## Requirement
 
-## 1. Requirement
+1. Expert specialization  
+2. Local gating / routing  
+3. Sparse activation where feasible  
+4. Local-first (GrapheneOS + Termux)
 
-The Sentinel is not a single monolithic model path. It is an Enhanced Intelligence system whose **core routing and specialization pattern is Mixture-of-Experts**.
+## Implementation ladder
 
-Minimum means:
+| Stage | Meaning | Status |
+|-------|---------|--------|
+| A | Specialist processes + local router | **SCAFFOLD** `modules/moe-router/` experts |
+| B | Multiple local models/adapters selected by router | **SCAFFOLD** `models.json` + select/run |
+| C | True sparse MoE weights on-device | **DESIGN** |
+| D | Recursive IA of IA over expert set | **DESIGN** |
 
-1. **Expert specialization** — distinct capabilities (optical path, local governance, threat posture, domain specialists) are not collapsed into one undifferentiated weights file when a better expert exists.
-2. **Gating / routing** — a local router selects which expert(s) handle a request; default is on-device.
-3. **Sparse activation where feasible** — prefer activating a subset of experts over always running the full stack.
-4. **Local-first** — MoE does not imply cloud experts. GrapheneOS + Termux + llama.cpp (or equivalent) is the primary runtime target.
+## Non-goals
 
----
+Cloud experts as default · centralized model custody · replacing age/optical with model magic
 
-## 2. Relationship to existing modules
+## Acceptance
 
-| Piece | Role toward MoE |
-|-------|------------------|
-| `modules/self-heal/supervise-specialist.sh` | Keeps specialist processes alive |
-| `grok/router/` (if present) | Early routing surface |
-| Optical air-gap | Specialist path for sealed transport |
-| Local identity + data-sovereignty | Boundary: experts never exfiltrate Class A data |
-
-MoE is the **intelligence architecture**. Self-heal is process health. Optical is transport. They compose; they are not substitutes.
-
----
-
-## 3. Implementation ladder (honest)
-
-| Stage | What “MoE” means | Status |
-|-------|------------------|--------|
-| A | Explicit specialist processes + local router (script/daemon) | SCAFFOLD path exists |
-| B | Multiple local models / adapters selected by router | DESIGN |
-| C | True sparse MoE weights (e.g. Mixtral-class) on-device via llama.cpp or equivalent | DESIGN — hardware limited |
-| D | Recursive “IA of IA” governance over expert set | DESIGN |
-
-Do not claim Stage C or D until it runs on target hardware.
-
----
-
-## 4. Non-goals
-
-- Cloud-hosted “experts” as the default core  
-- Centralized model custody  
-- Replacing age/optical security with model magic  
-
----
-
-## 5. Acceptance for “REALITY”
-
-MoE moves from DESIGN to SCAFFOLD/PROVEN only when:
-
-- A documented router selects among ≥2 real local experts, and  
-- Fail-closed behavior is defined when no expert is available, and  
-- No expert path requires platform-held keys.
-
-**The Sentinel’s intelligence core is MoE by requirement. Implementation follows the ladder above.**
+- Stage A: ≥2 process experts, fail closed  
+- Stage B: ≥2 model registry entries, select by tag, no network  
+- Stage C: only when sparse MoE actually runs on target hardware  

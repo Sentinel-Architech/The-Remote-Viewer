@@ -1,51 +1,27 @@
-# MoE Router — Stage A (Local Specialists)
+# MoE Router
 
-**Status:** SCAFFOLD  
-**Scope:** The Sentinel (Enhanced Intelligence) — minimum MoE at core, Stage A only.
+**Stage A (processes):** `list.sh` · `route.sh` · `experts.json`  
+**Stage B (models):** `list-models.sh` · `select-model.sh` · `run-model.sh` · `models.json`
 
-Stage A = explicit specialist processes + local router. Not sparse neural MoE weights.
+See [STAGE-B.md](./STAGE-B.md) and `docs/architecture/sentinel-moe.md`.
 
-## Rules
-
-- On-device only (GrapheneOS + Termux target)
-- No network calls from the router
-- No cloud experts as default
-- Fail closed if no expert is registered or available
-- Keys and Class A data never pass through the router log
-
-## Layout
-
-| File | Purpose |
-|------|---------|
-| `experts.json` | Registry of local experts (id, command, tags) |
-| `route.sh` | Pick expert by tag/intent; print command or run |
-| `list.sh` | Show registered experts |
-| `register-example.sh` | Example registration helper |
-
-## Usage
+## Stage A
 
 ```bash
-# List
 bash modules/moe-router/list.sh
-
-# Route by tag (prints command; does not auto-exec secrets)
 bash modules/moe-router/route.sh optical
-bash modules/moe-router/route.sh specialist
-
-# Optional: run the resolved command
-bash modules/moe-router/route.sh optical --exec
 ```
 
-Registry path default: `modules/moe-router/experts.json`  
-Override: `TRV_EXPERTS=/path/to/experts.json`
+## Stage B
 
-## Ladder reminder
+```bash
+bash modules/moe-router/list-models.sh
+bash modules/moe-router/select-model.sh general
+bash modules/moe-router/run-model.sh general
+bash modules/moe-router/run-model.sh stub "ping"
+```
 
-| Stage | Meaning |
-|-------|---------|
-| A (this) | Specialist processes + local router |
-| B | Multiple local models/adapters |
-| C | Sparse MoE weights on-device |
-| D | Recursive IA-of-IA over expert set |
+GGUF path example: `~/.local/share/remote-viewer/models/general.gguf`  
+CLI: `LLAMA_CLI=/path/to/llama-cli`
 
-Do not claim B–D until they run on target hardware.
+Fail closed. No cloud. Stage C sparse weights still DESIGN.
