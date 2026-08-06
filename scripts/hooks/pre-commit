@@ -1,0 +1,47 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# Block committing secrets / vault material
+set -euo pipefail
+
+# Staged files only
+STAGED="$(git diff --cached --name-only --diff-filter=ACM || true)"
+if [[ -z "$STAGED" ]]; then
+  exit 0
+fi
+
+FAIL=0
+
+# Filename denylist
+while IFS= read -r f; do
+  [[ -z "$f" ]] && continue
+  base="$(basename "$f")"
+  case "$base" in
+    vault-identity.txt|vault-recipient.txt|identity.agekey|*.agekey|.git-credentials|.env|.env.*)
+      echo "HOOK FAIL: refusing to commit sensitive file: $f" >&2
+      FAIL=1
+      ;;
+  esac
+  case "$f" in
+    keys/*|**/vault-identity.txt|**/vault-recipient.txt)
+      echo "HOOK FAIL: refusing path: $f" >&2
+      FAIL=1
+      ;;
+  esac
+done <<< "$STAGED"
+
+# Content patterns in staged diff
+DIFF="$(git diff --cached -U0 || true)"
+if echo "$DIFF" | grep -qE 'AGE-SECRET-KEY-|BEGIN (OPENSSH |RSA |EC )?PRIVATE KEY'; then
+  echo "HOOK FAIL: staged diff looks like private key material" >&2
+  FAIL=1
+fi
+if echo "$DIFF" | grep -qiE 'ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}'; then
+  echo "HOOK FAIL: staged diff looks like a GitHub token" >&2
+  FAIL=1
+fi
+
+if [[ "$FAIL" -ne 0 ]]; then
+  echo "Commit aborted by scripts/hooks/pre-commit" >&2
+  exit 1
+fi
+
+exit 0

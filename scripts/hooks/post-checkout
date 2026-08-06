@@ -1,0 +1,7 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# After checkout: same hygiene as post-merge
+set -euo pipefail
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+chmod +x "$ROOT"/scripts/*.sh 2>/dev/null || true
+chmod +x "$ROOT"/scripts/hooks/* 2>/dev/null || true
+find "$ROOT/modules" -name '*.sh' -type f -exec chmod +x {} + 2>/dev/null || true
