@@ -6,7 +6,6 @@ set -euo pipefail
 
 ROOT="${TRV_ROOT:-}"
 if [[ -z "$ROOT" ]]; then
-  # Resolve repo root from script location when possible
   if ROOT="$(cd "$(dirname "$0")/.." && pwd 2>/dev/null)"; then
     :
   else
@@ -25,8 +24,9 @@ for a in "$@"; do
     -h|--help)
       echo "Usage: $0 [branch] [--allow-dirty] [--push]"
       echo "  Default branch: current, or \$TRV_BRANCH, or TheRemoteViewer"
-      echo "  --allow-dirty  continue even if working tree has local changes"
+      echo "  --allow-dirty  continue even if tracked files are modified"
       echo "  --push         after pull, push current branch (requires auth)"
+      echo "  Untracked files alone do NOT block sync."
       exit 0
       ;;
   esac
@@ -40,7 +40,6 @@ fi
 
 cd "$ROOT"
 
-# Determine branch
 if [[ -n "$BRANCH_ARG" && "$BRANCH_ARG" != --* ]]; then
   BRANCH="$BRANCH_ARG"
 elif [[ -n "${TRV_BRANCH:-}" ]]; then
@@ -55,19 +54,19 @@ fi
 echo "[git-sync] root=$ROOT"
 echo "[git-sync] branch=$BRANCH"
 
-# Dirty check
-if [[ -n "$(git status --porcelain 2>/dev/null)" ]]; then
+# Dirty check: tracked changes only (ignore untracked ?? lines)
+TRACKED_DIRTY="$(git status --porcelain 2>/dev/null | grep -v '^??' || true)"
+if [[ -n "$TRACKED_DIRTY" ]]; then
   if [[ "$ALLOW_DIRTY" -eq 0 ]]; then
-    echo "FAIL: working tree not clean. Commit/stash, or re-run with --allow-dirty" >&2
+    echo "FAIL: tracked files modified. Commit/stash, or re-run with --allow-dirty" >&2
     git status -sb
     exit 2
   fi
-  echo "WARN: dirty tree allowed; pull may conflict"
+  echo "WARN: dirty tracked files allowed; pull may conflict"
 fi
 
 git fetch origin
 
-# Checkout if needed
 CURRENT="$(git rev-parse --abbrev-ref HEAD)"
 if [[ "$CURRENT" != "$BRANCH" ]]; then
   if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
@@ -80,7 +79,6 @@ if [[ "$CURRENT" != "$BRANCH" ]]; then
   fi
 fi
 
-# Fast-forward only when possible
 if git rev-parse --verify "origin/$BRANCH" >/dev/null 2>&1; then
   if git merge-base --is-ancestor HEAD "origin/$BRANCH" 2>/dev/null; then
     git merge --ff-only "origin/$BRANCH"
