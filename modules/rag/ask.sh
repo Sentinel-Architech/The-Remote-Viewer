@@ -1,5 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# Normal Q&A with optional notes + session memory. Not notes-only.
+# Generate stage: packed notes + memory → llama.cpp
 set -euo pipefail
 
 ROOT="${TRV_ROOT:-$HOME/The-Remote-Viewer}"
@@ -12,26 +12,21 @@ if [[ -z "$QUESTION" ]]; then
   exit 1
 fi
 
-# Remember this user turn
 bash "$ROOT/modules/rag/memory.sh" add "$QUESTION" || true
+PACKED=$(bash "$ROOT/modules/rag/pack.sh" "$QUESTION" 2>/dev/null || true)
 
-NOTES=$(bash "$ROOT/modules/rag/retrieve.sh" "$QUESTION" 2>/dev/null || true)
-MEM=$(bash "$ROOT/modules/rag/memory.sh" dump 30 2>/dev/null || true)
+echo "[rag] pipeline: retrieve → pack → generate"
 
-PROMPT="You are The Sentinel, a local on-device assistant for the user (solo developer of The Remote Viewer). Be direct and useful.
+PROMPT="You are The Sentinel, local assistant for a solo independent developer (The Remote Viewer). Not a university lab product.
 
 Rules:
-1. Answer the question. Do not repeat the user's words back unless you truly did not understand.
-2. Use NOTES when relevant. Use MEMORY for what the user already told you — do not ask them to restate it.
-3. Do not invent universities, labs, companies, or affiliations. The user is independent and not part of a school.
-4. Do not invent medical diagnoses or claim you set phone alarms. If you cannot do something on-device, say so in one line.
-5. Keep answers short unless asked for detail.
+1. Answer the question. Do not echo the question back unless you did not understand.
+2. Prefer NOTES and MEMORY when they apply.
+3. Never invent schools, labs, employers, or telepathy.
+4. If you cannot do an action on the device (alarms, email), say you cannot in one line.
+5. Short answers.
 
-NOTES (local files, may be empty):
-${NOTES:-none}
-
-MEMORY (recent things the user said):
-${MEM:-none}
+$PACKED
 
 QUESTION: $QUESTION
 
