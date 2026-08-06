@@ -1,12 +1,15 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# Hybrid retrieve: keyword + vector (TF-IDF or llama embeddings)
+# Hybrid retrieve: BM25 + TF-IDF cosine (if vectors exist)
 set -euo pipefail
 
+ROOT="${TRV_ROOT:-$HOME/The-Remote-Viewer}"
 CHUNKS="${HOME}/.local/share/remote-viewer/rag/chunks"
 VEC="${HOME}/.local/share/remote-viewer/rag/vectors.jsonl"
 QUERY="${*:-}"
 TOP="${RAG_TOP:-6}"
 PLAIN="${RAG_PLAIN:-1}"
+K1="${BM25_K1:-1.5}"
+B="${BM25_B:-0.75}"
 
 if [[ -z "$QUERY" ]]; then
   echo "Usage: $0 <query words>" >&2
@@ -18,94 +21,90 @@ if [[ ! -d "$CHUNKS" ]] || [[ -z "$(ls -A "$CHUNKS" 2>/dev/null || true)" ]]; th
   exit 2
 fi
 
-# Auto-build vector index if missing
 if [[ ! -s "$VEC" ]]; then
-  bash "${TRV_ROOT:-$HOME/The-Remote-Viewer}/modules/rag/embed-index.sh" >/dev/null 2>&1 || true
+  bash "$ROOT/modules/rag/embed-index.sh" >/dev/null 2>&1 || true
 fi
 
-python3 - "$CHUNKS" "$VEC" "$TOP" "$QUERY" "$PLAIN" <<'PY'
-import json, os, sys, re, math, collections
-chunk_dir, vec_path, top, query, plain = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4], sys.argv[5] == "1"
-q_low = query.lower()
-terms = re.findall(r"[a-z0-9]{2,}", q_low) or [q_low]
-ability = any(w in q_low for w in ("what can", "what do you", "capabilities", "help", "how do i", "what is trv", "what is sentinel"))
+python3 - "$ROOT/modules/rag/bm25.py" "$CHUNKS" "$VEC" "$TOP" "$QUERY" "$PLAIN" "$K1" "$B" <<'PY'
+import importlib.util, json, math, os, re, sys, collections
 
-def tok(t):
-    return re.findall(r"[a-z0-9]{2,}", t.lower())
+bm25_path, chunk_dir, vec_path, top, query, plain = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4]), sys.argv[5], sys.argv[6] == "1"
+k1, b = float(sys.argv[7]), float(sys.argv[8])
 
-# load vectors
+spec = importlib.util.spec_from_file_location("bm25", bm25_path)
+bm25_mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(bm25_mod)
+
+names, paths, texts = bm25_mod.load_chunks(chunk_dir)
+if not texts:
+    sys.exit(0)
+
+bm = bm25_mod.BM25(texts, k1=k1, b=b)
+bm_scores = bm.score(query)
+
+# optional TF-IDF cosine from vectors.jsonl
+vscore = [0.0] * len(texts)
 entries = []
 if os.path.isfile(vec_path):
     with open(vec_path, encoding="utf-8") as f:
         for line in f:
-            line=line.strip()
+            line = line.strip()
             if line:
-                try: entries.append(json.loads(line))
-                except Exception: pass
+                try:
+                    entries.append(json.loads(line))
+                except Exception:
+                    pass
 
-# query vector
-method = entries[0]["method"] if entries else "keyword"
-if method == "tfidf" and entries:
-    # rebuild idf from sparse keys roughly via document frequencies in index
+if entries and entries[0].get("method") == "tfidf":
     df = collections.Counter()
     for e in entries:
-        for t in e["vec"]:
+        for t in e.get("vec", {}):
             df[t] += 1
     N = max(len(entries), 1)
-    idf = {t: math.log((N+1)/(c+1))+1.0 for t,c in df.items()}
-    qtf = collections.Counter(tok(query))
+    idf = {t: math.log((N + 1) / (c + 1)) + 1.0 for t, c in df.items()}
+    qtf = collections.Counter(bm25_mod.tokenize(query))
     L = max(sum(qtf.values()), 1)
-    qv = {t: (qtf[t]/L)*idf.get(t, 0.0) for t in qtf}
-    n = math.sqrt(sum(v*v for v in qv.values())) or 1.0
-    qv = {t: v/n for t,v in qv.items()}
-    def cos(a, b):
-        # sparse
-        if not a or not b: return 0.0
-        keys = set(a) & set(b)
-        return sum(a[k]*b[k] for k in keys)
-elif method == "llama" and entries:
-    # without re-embedding query via binary here, fall back to keyword-heavy hybrid
-    qv = None
-    def cos(a, b):
-        return 0.0
-else:
-    qv = None
-    def cos(a, b):
-        return 0.0
+    qv = {t: (qtf[t] / L) * idf.get(t, 0.0) for t in qtf}
+    nrm = math.sqrt(sum(v * v for v in qv.values())) or 1.0
+    qv = {t: v / nrm for t, v in qv.items()}
 
-scored = []
-for name in os.listdir(chunk_dir):
-    if not name.endswith(".chunk"): continue
-    path = os.path.join(chunk_dir, name)
-    try: text = open(path, encoding="utf-8", errors="ignore").read().strip()
-    except OSError: continue
-    low = text.lower()
-    kw = sum(low.count(t) for t in terms)
-    if ability and ("capabilities" in name or "can do on this device" in low):
-        kw += 20
-    vscore = 0.0
-    for e in entries:
-        if e.get("file") == name:
-            if method == "tfidf" and qv is not None and isinstance(e.get("vec"), dict):
-                vscore = cos(qv, e["vec"])
-            break
-    # hybrid
-    score = kw + 5.0 * vscore
-    if score > 0:
-        scored.append((score, kw, vscore, path, text))
+    def cos(a, b):
+        if not a or not b:
+            return 0.0
+        return sum(a[k] * b[k] for k in set(a) & set(b))
 
-if ability and not scored:
-    for name in sorted(os.listdir(chunk_dir)):
+    by_file = {e["file"]: e for e in entries if isinstance(e.get("vec"), dict)}
+    for i, name in enumerate(names):
+        e = by_file.get(name)
+        if e:
+            vscore[i] = cos(qv, e["vec"])
+
+q_low = query.lower()
+ability = any(w in q_low for w in (
+    "what can", "what do you", "capabilities", "help", "how do i",
+    "what is trv", "what is sentinel",
+))
+
+hybrid = []
+for i, name in enumerate(names):
+    s = bm_scores[i] + 2.0 * vscore[i]
+    if ability and ("capabilities" in name or "can do on this device" in texts[i].lower()):
+        s += 2.0
+    if s > 0:
+        hybrid.append((s, bm_scores[i], vscore[i], i))
+
+hybrid.sort(key=lambda x: (-x[0], x[3]))
+if ability and not hybrid:
+    for i, name in enumerate(names):
         if any(x in name for x in ("capabilities", "how-to", "trv-core")):
-            path = os.path.join(chunk_dir, name)
-            text = open(path, encoding="utf-8", errors="ignore").read().strip()
-            scored.append((1, 0, 0, path, text))
+            hybrid.append((1.0, 0.0, 0.0, i))
 
-scored.sort(key=lambda x: (-x[0], x[3]))
-for score, kw, vs, path, text in scored[:top]:
+for s, bs, vs, i in hybrid[:top]:
     if plain:
-        print(text[:1500]); print()
+        print(texts[i][:1500])
+        print()
     else:
-        print(f"--- score={score:.3f} kw={kw} vec={vs:.3f} file={os.path.basename(path)} ---")
-        print(text[:1500]); print()
+        print(f"--- score={s:.4f} bm25={bs:.4f} vec={vs:.4f} file={names[i]} ---")
+        print(texts[i][:1500])
+        print()
 PY

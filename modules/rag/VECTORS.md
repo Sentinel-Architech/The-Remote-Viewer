@@ -1,40 +1,30 @@
-# Vector embeddings (on-device)
+# Ranking: BM25 + vectors
 
-## Methods
-
-| Method | When |
-|--------|------|
-| **TF-IDF sparse vectors** | Default — pure Python, no extra model, always works on Termux |
-| **llama.cpp embeddings** | If `llama-embedding` or `llama-cli --embedding` + GGUF work on your build |
-
-## Build / rebuild
+## BM25 (Python)
 
 ```bash
-bash modules/rag/seed-trv-docs.sh   # includes ingest + embed
-# or
-bash modules/rag/ingest.sh          # chunk + embed-index
-bash modules/rag/embed-index.sh     # vectors only
+python3 modules/rag/bm25.py "what can you do"
+python3 modules/rag/bm25.py --plain -k 3 "optical e2e"
 ```
 
-Index file: `~/.local/share/remote-viewer/rag/vectors.jsonl`
+Tunable: `--k1 1.5` (default), `-b 0.75` (default).
 
-## Retrieve
-
-`retrieve.sh` is **hybrid**: keyword score + vector cosine (TF-IDF).
+Env for retrieve:
 
 ```bash
-RAG_PLAIN=0 bash modules/rag/retrieve.sh "what can you do"
-# shows score / kw / vec components
+BM25_K1=1.5 BM25_B=0.75 RAG_PLAIN=0 bash modules/rag/retrieve.sh "what can you do"
 ```
 
-## Neural upgrade later
+## Hybrid score
 
-Install/build `llama-embedding`, set:
+```text
+score = BM25(query, chunk) + 2.0 * cosine_tfidf(query, chunk) + ability_boost
+```
+
+## Vectors
 
 ```bash
-export LLAMA_EMBED=$HOME/llama.cpp/build/bin/llama-embedding
-export EMBED_MODEL=$HOME/.local/share/remote-viewer/models/general.gguf
-bash modules/rag/embed-index.sh
+bash modules/rag/embed-index.sh   # TF-IDF default; llama if available
 ```
 
-If neural embed fails, index falls back to TF-IDF automatically.
+`~/.local/share/remote-viewer/rag/vectors.jsonl`
