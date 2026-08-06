@@ -1,22 +1,32 @@
 # Contribution Module (Offline-First)
 
-Minimal local contribution ledger.
+Local contribution ledger. First code step toward AR design in `TOKENOMICS.md`.
+**Does not** mint tokens, talk to a chain, or phone home.
 
-This is the first real code step toward the AR / contribution design in TOKENOMICS.md.
-It does **not** mint tokens, talk to a chain, or phone home.
+See **[IMPLEMENTATION.md](./IMPLEMENTATION.md)** for the staged ladder.
 
-## What it does
+## Files
 
-- Records local contribution events (node uptime, verified work, etc.) as append-only JSON lines
-- Lives entirely under `$HOME/.local/share/remote-viewer/contribution/`
-- Can later be extended with cryptographic receipts or Merkle commitments
+| Script | Purpose |
+|--------|---------|
+| `record.sh` | Append one JSONL event |
+| `status.sh` | Dir/file presence + last events |
+| `tally.sh` | Counts by kind |
+| `IMPLEMENTATION.md` | Stages 0–4 |
 
-## Usage
+## Quick use
 
 ```bash
-# Record a contribution event
-./modules/contribution/record.sh "uptime" 3600 "node online 1h"
+cd ~/The-Remote-Viewer
 
-# Show current local tally
-./modules/contribution/tally.sh
+# After successful optical e2e
+bash modules/contribution/record.sh optical_e2e 1 "peel ok"
+
+# After self-heal pulse
+bash modules/contribution/record.sh verification 1 "optical-pulse ok"
+
+bash modules/contribution/status.sh
+bash modules/contribution/tally.sh
 ```
+
+Data path: `~/.local/share/remote-viewer/contribution/events.jsonl`

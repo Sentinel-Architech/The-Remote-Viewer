@@ -61,7 +61,7 @@
 
     <section class="card">
       <h2>Optical Air-Gap</h2>
-      <p>Proven: age → Soliton LT → peel → decrypt. Re-verified on-device 2026-08-06.</p>
+      <p>Proven: age → Soliton LT → peel → decrypt.</p>
       <div class="row">
         <button type="button" class="primary" data-cmd="bash optical-airgap/scripts/e2e-age-lt.sh">E2E default</button>
         <button type="button" data-cmd="bash optical-airgap/scripts/e2e-age-lt.sh &quot;hello sentinel&quot;">E2E custom</button>
@@ -83,11 +83,23 @@
 
     <section class="card">
       <h2>MoE Router (Stage A)</h2>
-      <p>Local specialist routing. Fail closed. No cloud experts.</p>
+      <p>Local specialist routing. Fail closed.</p>
       <div class="row">
         <button type="button" data-cmd="bash modules/moe-router/list.sh">List experts</button>
         <button type="button" data-cmd="bash modules/moe-router/route.sh optical">Route optical</button>
-        <button type="button" data-cmd="bash modules/moe-router/route.sh sovereignty">Route sovereignty</button>
+        <button type="button" data-cmd="bash modules/moe-router/route.sh contribution">Route contribution</button>
+      </div>
+      <pre class="cmd"></pre>
+    </section>
+
+    <section class="card">
+      <h2>Contribution Ledger</h2>
+      <p>Offline JSONL. No mint. No chain.</p>
+      <div class="row">
+        <button type="button" class="primary" data-cmd="bash modules/contribution/record.sh optical_e2e 1 &quot;peel ok&quot;">Record optical_e2e</button>
+        <button type="button" data-cmd="bash modules/contribution/record.sh verification 1 &quot;optical-pulse ok&quot;">Record verification</button>
+        <button type="button" data-cmd="bash modules/contribution/status.sh">Status</button>
+        <button type="button" data-cmd="bash modules/contribution/tally.sh">Tally</button>
       </div>
       <pre class="cmd"></pre>
     </section>
@@ -101,17 +113,10 @@
       </div>
       <pre class="cmd"></pre>
     </section>
-
-    <section class="card">
-      <h2>Contribution</h2>
-      <p>Offline JSONL ledger — next after self-heal + UI habit.</p>
-      <p><code>modules/contribution/</code></p>
-    </section>
   </main>
 
   <footer>
     Copy commands into Termux. This HTML does not execute shell or touch keys.
-    Beepers/pagers use optical/RF paths — not this console.
   </footer>
 
   <script>
