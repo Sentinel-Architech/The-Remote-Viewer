@@ -2,46 +2,32 @@
 
 **Principle:** Offline-first. No mint. No chain required for local truth.
 
-## Stage 0 — SCAFFOLD (done)
+## Stage 0–3 — done
 
-JSONL + `record` / `status` / `tally` · no network
+| Stage | Capability |
+|-------|------------|
+| 0 | JSONL record / status / tally |
+| 1 | On-device habit |
+| 2 | Hash chain + `verify.sh` |
+| 3 | Redacted `export.sh` |
 
-## Stage 1 — Habit on device
-
-```bash
-bash modules/contribution/record.sh optical_e2e 1 "peel ok"
-bash modules/contribution/status.sh
-bash modules/contribution/tally.sh
-```
-
-## Stage 2 — Receipt integrity (done)
-
-`prev` + `sha` on append · `verify.sh` fail closed
+## Stage 4 — Commitments & claims (scaffold)
 
 ```bash
 bash modules/contribution/verify.sh
+bash modules/contribution/merkle-tip.sh
+bash modules/contribution/claim.sh
 ```
 
-## Stage 3 — Export for audit (done)
+| Output | Path |
+|--------|------|
+| Tip commitment | `~/.local/share/remote-viewer/contribution/commitments/` |
+| AR claim (local) | `~/.local/share/remote-viewer/contribution/claims/` |
 
-```bash
-bash modules/contribution/export.sh
-# → ~/.local/share/remote-viewer/contribution/exports/contribution-export-*.txt
-```
+Details: [STAGE4.md](./STAGE4.md)
 
-Contents: event count, first/last ts, tip sha, counts by kind.  
-**Omits:** notes, secrets, vault paths, raw JSONL.
-
-Optional optical/age seal (you run manually):
-
-```bash
-age -r "$(cat "$HOME/vault-recipient.txt")" -o export.age /path/to/export.txt
-```
-
-## Stage 4 — Design only
-
-Merkle batch roots · AR claims · optional L1 publish — after 1–3 are routine.
+**Not included:** RPC, mint, auto-publish, Solana program.
 
 ## Anti-goals
 
-Phone-home · auto-broadcast · corporate mint · amounts-as-money
+Phone-home · auto-broadcast · corporate mint · amounts-as-money · fake “on-chain” status
