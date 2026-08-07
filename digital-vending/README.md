@@ -4,50 +4,55 @@
 
 Zero platform custody. Seller never holds buyer private keys. Buyer peels and decrypts on-device only.
 
-**P3-C:** optical delivery uses the same frames the receiver already peels (`ctrl=complete` path proven).
-
 ## Quick dry run (no payment)
 
 ```bash
 cd $HOME/The-Remote-Viewer/digital-vending
 bash e2e-optical-demo.sh hello-sentinel-demo
+rm -f $HOME/vend-demo-id.txt $HOME/vend-demo-recip.txt $HOME/vend-frames.trvl
 ```
 
-Produces throwaway Vault under `$HOME/vend-demo-*.txt`, encrypts catalog payload, streams TRVL, peels + decrypts.
-
-## Seller (after payment / manual)
+## Seller after payment
 
 ```bash
-./seller-deliver.sh <catalog-id> <buyer-age1-recipient> > $HOME/frames.trvl
+./seller-deliver.sh <catalog-id> <buyer-age1-recipient> > $HOME/trv-deliver/<sig>_item.trvl
+# or via watcher + auto-deliver.sh
 ```
 
-Catalog IDs: see `catalog.json` (`hello-sentinel-demo`, `trv-posture-lite`, …).
+Buyer recipient drop (when sig known):
+
+```bash
+mkdir -p $HOME/trv-deliver
+echo 'age1...' > $HOME/trv-deliver/<first-12-of-sig>.recipient
+```
+
+## Status (local)
+
+```bash
+bash status.sh
+# PENDING markers, frame packs, recipient drops, RPC circuit file
+```
 
 ## Buyer
 
-**CLI**
-
 ```bash
-cat $HOME/frames.trvl | ./buyer-receive.sh $HOME/vault-identity.txt
+cat frames.trvl | ./buyer-receive.sh $HOME/vault-identity.txt
 ```
 
-**Optical (paste)**
+Optical: paste frames into `optical-airgap/optical/qr-receiver.html` (peel ciphertext) then CLI decrypt with Vault identity.
 
-1. Seller: `seller-deliver.sh … > frames.trvl`
-2. Buyer: open `optical-airgap/optical/qr-receiver.html` via local HTTP
-3. Paste frames → Ingest → payload is still **age ciphertext** if you only peel in-browser
-4. CLI decrypt: `trv-optical decrypt $HOME/vault-identity.txt < ct.bin`
+## Harden checklist
 
-Browser peel recovers exact ciphertext bytes; age decrypt stays on the CLI/Vault side (identity never in the page).
+- [ ] `e2e-optical-demo.sh` green  
+- [ ] `status.sh` shows empty PENDING on a clean chute  
+- [ ] Manual: create `.recipient` drop → `auto-deliver.sh <id> <sig>` → `.trvl` + `_dm.txt`  
+- [ ] Buyer path recovers payload  
+- [ ] Destroy demo keys after tests  
+- [ ] No identity in chat/screenshots  
 
-**Optical (camera)** — second device shows QR sender with frames; receiver camera path (BarcodeDetector).
+## Watcher (optional paid path)
 
-## Resilience (paid watcher)
-
-`watch-sales-notify-v2.sh` — Solana memo / drop-file watcher with:
-
-1. Per-sale exponential backoff  
-2. RPC circuit breaker  
+`watch-sales-notify-v2.sh` — Solana memo / drop-file with backoff + RPC circuit breaker.
 
 | Param | Default |
 |-------|---------|
@@ -57,9 +62,9 @@ Browser peel recovers exact ciphertext bytes; age decrypt stays on the CLI/Vault
 ## Rules
 
 - Encrypt first. Never stream plaintext.  
-- Soliton LT only (Sentinel Standard).  
-- Identities stay in Vault.  
+- Soliton LT only.  
+- Identities in Vault only.  
 - Destroy = Restart for test material.  
-- Demo catalog items ≠ production secrets.  
+- Demo ≠ production secrets.  
 
-American-made, local-first, no BS.
+Token / mint design: see [docs/TRV-MINT-NOTES.md](../docs/TRV-MINT-NOTES.md) and root [TOKENOMICS.md](../TOKENOMICS.md).
