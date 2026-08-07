@@ -28,12 +28,12 @@
 - [x] Public docs (README / INSTALL / OPEN-SOURCE / Standard)  
 - [x] **Exact payload length in LT** (u32 BE prefix; peel returns exact bytes) — 2026-08-07  
 - [x] **Optional QR decoder switched to paulmillr/qr** (docs + receiver wiring) — 2026-08-07  
+- [x] **Cargo vendor offline path** (`scripts/vendor-offline.sh` + OFFLINE.md) — 2026-08-07  
 
 ## Not done / Phase 2 remaining
 
 - [ ] Multi-device optical lab (Acer ↔ phone) — blocked on hardware access (R10)  
 - [ ] Drop a concrete paulmillr/qr browser build under `optical/vendor/` (USB after networked pin)  
-- [ ] cargo vendor offline tree  
 - [ ] Acoustic R6 — **DEFERRED** (see PHASE2-R6.md)  
 - [ ] RDH metrics / light polish  
 - [ ] CLI / loop polish  
