@@ -12,7 +12,7 @@ Local-first, zero-trust optical transfer for The Remote Viewer.
 
 ## Checklist (public)
 
-### Done — verified 2026-07-31 (GrapheneOS\* + Termux) + 2026-08-07 length + decoder switch
+### Done — verified 2026-07-31 (GrapheneOS\* + Termux) + 2026-08-07 length / decoder / vendor
 
 - [x] age encrypt / decrypt (Rust `trv-optical` + TS `age-encryption`)
 - [x] Robust Soliton LT (default) + TRVL1 framing
@@ -28,12 +28,12 @@ Local-first, zero-trust optical transfer for The Remote Viewer.
 - [x] Install guide + Termux troubleshooting
 - [x] **Exact original length** — u32 BE prefix before LT blocks; peel returns exact bytes
 - [x] **Optional decoder** — receiver wired for paulmillr/qr (`decodeQR`); paste/file always primary
+- [x] **Cargo vendor offline path** — `rust/scripts/vendor-offline.sh` + [OFFLINE.md](./rust/OFFLINE.md)
 
 ### Not done
 
 - [ ] Acer ↔ phone optical (screen/camera) lab — blocked on hardware (R10)
 - [ ] Concrete paulmillr/qr browser build dropped under `optical/vendor/` (USB after networked pin)
-- [ ] `cargo vendor` offline tree
 - [ ] Acoustic R6 (**DEFERRED**)
 - [ ] Recursive IA-of-IA beyond hooks
 
@@ -68,6 +68,8 @@ Termux: use `$HOME` for files (not `/tmp`). Full chain: [INSTALL.md](./INSTALL.m
 ```bash
 bash scripts/e2e-age-lt.sh   # needs vault-recipient + vault-identity in $HOME
 ```
+
+Offline Rust later: `cd rust && bash scripts/vendor-offline.sh` (networked once), then `cargo test --offline`.
 
 ## Design locks
 
