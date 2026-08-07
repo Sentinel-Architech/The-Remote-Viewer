@@ -1,6 +1,6 @@
 # Concepts → Reality Status
 
-Last updated: **2026-08-07** (Integrity Verifier + Path B vending on-device)
+Last updated: **2026-08-07** (Hydra multi-head + Integrity Verifier + Path B vending)
 
 **Rule:** No marketing. **PROVEN** = ran under user control on device. Scripts in git alone are not PROVEN.
 
@@ -46,7 +46,7 @@ Last updated: **2026-08-07** (Integrity Verifier + Path B vending on-device)
 
 | Concept | Status |
 |---------|--------|
-| Defense / Hydra integrity pulse | **SCAFFOLD** (PASS on reference node) |
+| Defense / Hydra multi-head | **PROVEN** | seal + contribution + sales verifier + quarantine gate; PASS on GrapheneOS/Termux 2026-08-07 |
 | Contribution ledger | **PROVEN** | verify OK + verifier weight on reference node |
 | Termux reminders | **SCAFFOLD** |
 | UI `127.0.0.1` | **SCAFFOLD** |
