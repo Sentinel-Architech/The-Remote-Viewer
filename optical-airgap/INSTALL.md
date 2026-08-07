@@ -6,6 +6,8 @@
 | [OPEN-SOURCE.md](./OPEN-SOURCE.md) | Required OSS inventory |
 | [SENTINEL-STANDARD.md](./SENTINEL-STANDARD.md) | Normative policy |
 | [TECHNICAL.md](./TECHNICAL.md) | Architecture |
+| [VAULT.md](./VAULT.md) | Key hygiene · Destroy = Restart |
+| [COMPATIBILITY.md](./COMPATIBILITY.md) | All open-stack devices |
 | **INSTALL.md** | This file |
 | [STATUS.md](./STATUS.md) | Verification + checklist |
 
@@ -15,14 +17,14 @@
 
 ## Prerequisites
 
-### Desktop / Acer
+### Desktop
 - Git, **Node.js 20+**, optional **Rust 1.74+**
 
-### Termux on GrapheneOS (Android\*) — verified 2026-07-31
-- Termux from **F-Droid**
-- GrapheneOS only from **https://grapheneos.org/**
-- `pkg install git nodejs` · optional `pkg install rust`
-- **Use `$HOME/...` for files** — `/tmp` is often not writable on Termux
+### Mobile / Termux
+- Termux (F-Droid on Android)  
+- Any open-stack host works; **GrapheneOS** from **https://grapheneos.org/** is the hardened reference, not a gate  
+- `pkg install git nodejs` · optional `pkg install rust`  
+- **Use `$HOME/...` for files** — `/tmp` often fails on Termux  
 
 ### Not required
 Play Services · Meta/Microsoft SDKs · CDN scripts · public DNS for `@sentinel.viewer`
@@ -37,11 +39,11 @@ cd The-Remote-Viewer
 git checkout TheRemoteViewer
 ```
 
-Root `Cargo.toml` workspace includes `optical-airgap/rust` (required for `cargo run` from that crate).
+Root `Cargo.toml` workspace includes `optical-airgap/rust`.
 
 ---
 
-## 2. TypeScript (age-encryption only)
+## 2. TypeScript
 
 ```bash
 cd optical-airgap
@@ -56,65 +58,61 @@ npm run test:golden
 ```bash
 cd optical-airgap/rust
 cargo test
-cargo build --release   # optional
+# offline later: rust/OFFLINE.md + scripts/vendor-offline.sh
 ```
-
-Offline later: [rust/OFFLINE.md](./rust/OFFLINE.md).
 
 ---
 
-## 4. Security rules
+## 4. Vault (keys)
+
+See **[VAULT.md](./VAULT.md)**.
+
+```bash
+cd optical-airgap
+bash scripts/vault-setup.sh      # $HOME/vault-recipient.txt + vault-identity.txt
+bash scripts/e2e-age-lt.sh       # full age → LT → peel → decrypt
+bash scripts/vault-destroy.sh    # Destroy = Restart
+```
+
+Rules: identity never in git/chat/screenshots; burn on exposure; Destroy after experiments.
+
+---
+
+## 5. Security rules
 
 1. **Encrypt first** — never put plaintext in RDH/LT as the secret.  
 2. **Identity in Vault only** — never commit `AGE-SECRET-KEY-...`.  
 3. **Destroy = Restart** — wipe test keys and blobs after experiments.  
 4. RDH `checksumOk === false` → do not decrypt.  
 
-Burn any identity that appeared in screenshots or chat scrollback.
-
 ---
 
-## 5. Smoke tests
+## 6. Smoke tests
 
-### Golden Soliton
-
-```bash
-cd optical-airgap && npm run test:golden
-```
-
-### LT only (Termux-friendly)
+### LT only
 
 ```bash
 cd optical-airgap/rust
-echo hello-sentinel > $HOME/msg.txt
-cargo run --quiet --bin trv-optical -- frame-stream 16 40 < $HOME/msg.txt > $HOME/trvl.txt
+echo hello-sentinel | cargo run --quiet --bin trv-optical -- frame-stream 16 48 > $HOME/trvl.txt
 cargo run --quiet --bin trv-optical -- frame-peel < $HOME/trvl.txt
-# → hello-sentinel
 ```
 
-### Full chain: age → LT → peel → age (verified on device)
+### Browser receiver (feedback loop)
 
 ```bash
-cd optical-airgap/rust
-
-# Fresh Vault identity (do not reuse keys from chat/screenshots)
-cargo run --quiet --bin trv-optical -- keygen 2> $HOME/vault-identity.txt | tee $HOME/vault-recipient.txt
-chmod 600 $HOME/vault-identity.txt
-
-RECIP=$(cat $HOME/vault-recipient.txt)
-echo "secret viewer message" | cargo run --quiet --bin trv-optical -- encrypt "$RECIP" > $HOME/ct.bin
-cargo run --quiet --bin trv-optical -- frame-stream 32 0 < $HOME/ct.bin > $HOME/trvl.txt
-cargo run --quiet --bin trv-optical -- frame-peel < $HOME/trvl.txt > $HOME/ct2.bin
-cargo run --quiet --bin trv-optical -- decrypt $HOME/vault-identity.txt < $HOME/ct2.bin
-# → secret viewer message
-
-rm -f $HOME/ct.bin $HOME/ct2.bin $HOME/trvl.txt $HOME/msg.txt
+cd optical-airgap/optical
+python -m http.server 8765
+# open http://127.0.0.1:8765/qr-receiver.html
+# paste $HOME/trvl.txt → Ingest paste → ctrl=complete
 ```
 
-### Browser optical (offline)
+### Full age chain
 
-- `optical/qr-sender.html` · `optical/qr-receiver.html`  
-- Optional: vendor **paulmillr/qr** under `optical/vendor/` so global `decodeQR` is available (see vendor/README.md). Paste/file always works without it.
+```bash
+bash optical-airgap/scripts/vault-setup.sh
+bash optical-airgap/scripts/e2e-age-lt.sh
+bash optical-airgap/scripts/vault-destroy.sh
+```
 
 ---
 
@@ -122,24 +120,22 @@ rm -f $HOME/ct.bin $HOME/ct2.bin $HOME/trvl.txt $HOME/msg.txt
 
 | Symptom | Fix |
 |---------|-----|
-| workspace / not a member | `git pull` — root Cargo.toml must list `optical-airgap/rust` |
-| `Identity` Display / Decryptor::Recipients | age 0.11+ fixes — pull latest branch |
 | `/tmp` permission denied | use `$HOME/...` |
-| `\~` path errors | do not escape tilde; use `$HOME` |
-| cargo treats `--frame-peel` as its flag | space after `--`: `-- frame-peel` |
-| Missing `test:golden` | `cd optical-airgap` (not repo root only) |
+| `\~` path errors | use `$HOME`, never escaped tilde |
+| cargo treats `--frame-peel` as flag | space after `--`: `-- frame-peel` |
+| vault-setup refuses existing identity | run `vault-destroy.sh` first |
+| camera blank on `file://` | use local HTTP server |
 
 ---
 
 ## After successful install
 
 - [x] Branch `TheRemoteViewer`  
-- [x] age-encryption / Rust age  
-- [x] Golden Soliton  
-- [x] frame-stream / frame-peel  
-- [x] **Full age+LT chain on Termux (2026-07-31)**  
-- [x] Offline QR pages  
+- [x] Golden Soliton / frame-stream / frame-peel  
+- [x] Full age+LT chain  
+- [x] Offline QR + feedback controller  
 - [x] Exact original length (u32 prefix)  
+- [x] Vault setup / Destroy scripts  
 
-**Share:** INSTALL + OPEN-SOURCE + SENTINEL-STANDARD.  
+**Share:** INSTALL + OPEN-SOURCE + SENTINEL-STANDARD + VAULT.  
 **Never share:** age identities, Vault material, real payloads.
