@@ -2,6 +2,7 @@
 # Seller station helpers — Pixel / any open-stack host.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TRV_ROOT="$(cd "$ROOT/.." && pwd)"
 DELIVER_DIR="${DELIVER_DIR:-$HOME/trv-deliver}"
 
 usage() {
@@ -25,6 +26,11 @@ case "$cmd" in
       echo "--- sales.log (last 10) ---"
       tail -n 10 "${SALES_LOG:-$DELIVER_DIR/sales.log}"
     fi
+    if [[ -f "$HOME/.local/share/remote-viewer/defense/QUARANTINE" ]]; then
+      echo
+      echo "--- HYDRA QUARANTINE ACTIVE ---"
+      cat "$HOME/.local/share/remote-viewer/defense/QUARANTINE"
+    fi
     ;;
   log)
     f="${SALES_LOG:-$DELIVER_DIR/sales.log}"
@@ -33,6 +39,16 @@ case "$cmd" in
   deliver)
     id="${2:-}"; recip="${3:-}"; out="${4:-$DELIVER_DIR/${id}-$(date +%Y%m%d%H%M).trvl}"
     [[ -n "$id" && -n "$recip" ]] || usage
+    if [[ -f "$TRV_ROOT/modules/defense/hydra-gate.sh" ]]; then
+      set +e
+      bash "$TRV_ROOT/modules/defense/hydra-gate.sh"
+      gate_rc=$?
+      set -e
+      if [[ $gate_rc -ne 0 ]]; then
+        echo "ERROR: Hydra gate blocked deliver (rc=$gate_rc)" >&2
+        exit 11
+      fi
+    fi
     mkdir -p "$DELIVER_DIR"
     set +e
     "$ROOT/seller-deliver.sh" "$id" "$recip" > "$out"
