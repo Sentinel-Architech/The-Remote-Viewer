@@ -42,23 +42,74 @@ if [[ -f "$HOME/vault-recipient.txt" ]]; then
   RECIP=$(tr -d '\n\r' < "$HOME/vault-recipient.txt" | head -c 120)
 fi
 
-BODY=$(printf '{"type":"integrity_verifier_attestation","version":1,"role":"Contribution+SalesIntegrityVerifier","ts":"%s","host":"%s","overall_ok":%s,"contribution":{"ok":%s,"events":%s,"tip_sha":"%s"},"sales":{"ok":%s,"lines":%s,"fails":%s},"recipient_hint":"%s","statement":"Local integrity attestation. Not a mint. Not custody. Not a chain transaction. Transfer by file or optical path."}' \
-  "$TS" "$HOST" "$OVERALL" \
-  "$CONTRIB_OK" "$CONTRIB_EVENTS" "$CONTRIB_TIP" \
-  "$SALES_OK" "$SALES_LINES" "$SALES_FAILS" \
-  "$RECIP")
+# Escape any quotes in tip/recip for JSON safety
+json_esc() {
+  printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+TIP_ESC=$(json_esc "$CONTRIB_TIP")
+RECIP_ESC=$(json_esc "$RECIP")
+HOST_ESC=$(json_esc "$HOST")
+
+OUT="${OUT_DIR}/attest-${ID}.json"
+
+# Write body without commit first, hash it, then write final with commit
+TMP="${OUT}.tmp"
+cat > "$TMP" <<EOF
+{
+  "type": "integrity_verifier_attestation",
+  "version": 1,
+  "role": "Contribution+SalesIntegrityVerifier",
+  "ts": "$TS",
+  "host": "$HOST_ESC",
+  "overall_ok": $OVERALL,
+  "contribution": {
+    "ok": $CONTRIB_OK,
+    "events": $CONTRIB_EVENTS,
+    "tip_sha": "$TIP_ESC"
+  },
+  "sales": {
+    "ok": $SALES_OK,
+    "lines": $SALES_LINES,
+    "fails": $SALES_FAILS
+  },
+  "recipient_hint": "$RECIP_ESC",
+  "statement": "Local integrity attestation. Not a mint. Not custody. Not a chain transaction. Transfer by file or optical path."
+}
+EOF
 
 if command -v sha256sum >/dev/null 2>&1; then
-  COMMIT=$(printf '%s' "$BODY" | sha256sum | awk '{print $1}')
+  COMMIT=$(sha256sum "$TMP" | awk '{print $1}')
 elif command -v shasum >/dev/null 2>&1; then
-  COMMIT=$(printf '%s' "$BODY" | shasum -a 256 | awk '{print $1}')
+  COMMIT=$(shasum -a 256 "$TMP" | awk '{print $1}')
 else
   COMMIT="unavailable"
 fi
 
-OUT="${OUT_DIR}/attest-${ID}.json"
-# Insert commit field before final }
-printf '%s,"commit":"%s"}\n' "${BODY%\}"" "$COMMIT" > "$OUT"
+# Final file includes commit
+cat > "$OUT" <<EOF
+{
+  "type": "integrity_verifier_attestation",
+  "version": 1,
+  "role": "Contribution+SalesIntegrityVerifier",
+  "ts": "$TS",
+  "host": "$HOST_ESC",
+  "overall_ok": $OVERALL,
+  "contribution": {
+    "ok": $CONTRIB_OK,
+    "events": $CONTRIB_EVENTS,
+    "tip_sha": "$TIP_ESC"
+  },
+  "sales": {
+    "ok": $SALES_OK,
+    "lines": $SALES_LINES,
+    "fails": $SALES_FAILS
+  },
+  "recipient_hint": "$RECIP_ESC",
+  "statement": "Local integrity attestation. Not a mint. Not custody. Not a chain transaction. Transfer by file or optical path.",
+  "commit": "$COMMIT"
+}
+EOF
+rm -f "$TMP"
 chmod 600 "$OUT" 2>/dev/null || true
 
 echo "=== Attestation ==="
