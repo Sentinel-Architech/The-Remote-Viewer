@@ -8,12 +8,13 @@
 | **Path** | A / B / none |
 | **Roles** | e.g. Integrity Verifier |
 | **Contact** | |
+| **npub** | npub1… (optional — Nostr DM) |
 | **Since** | YYYY-MM |
 | **Node** | Runs The Sentinel: yes / no / sometimes |
 
 ## About
 
-<!-- Short public bio. No secrets. -->
+<!-- Short public bio. No secrets. No nsec. -->
 
 ## Proofs
 
@@ -24,3 +25,5 @@
 ## Notes
 
 <!-- Optional public notes / signed message links -->
+
+Messaging: see [`docs/public/MESSAGING.md`](../MESSAGING.md).
