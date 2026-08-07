@@ -1,30 +1,24 @@
-# The Remote Viewer (native social)
+# The Remote Viewer
 
-> **The Remote Viewer uses the network. The Sentinel (core) does not require this.**
+> This space connects over the network. The Sentinel on your device does not need it.
+
+Native social layer for Viewers — posts, photos, video, private talk, optional place.
 
 ## Run
 
 ```bash
 cd apps/remote-viewer
 python3 -m http.server 8777 --bind 127.0.0.1
-# http://127.0.0.1:8777/
+# open http://127.0.0.1:8777/
 ```
 
-Loads `nostr-tools` from the network for N3/N4 (expected).
+## What Viewers see
 
-## Status
+| Screen | Purpose |
+|--------|--------|
+| **Home** | Posts from you and people you follow |
+| **Create** | Text · photo · video · optional place |
+| **Talk** | Private messages |
+| **You** | Viewer ID · profile · people you follow |
 
-| Surface | Status |
-|---------|--------|
-| Directory + draft | **N2** |
-| Persona + proof attach | **N2** |
-| Keys / relays / E2E DM / inbox | **N3** |
-| Signed notes publish (kind:1) | **N4** |
-| Local note drafts | **N4** |
-| Following list | **N4** |
-| Unranked chronological feed | **N4** |
-| Optional hashtags on notes | **N4** |
-
-**nsec** browser-local only. Never commit.
-
-Locks: `docs/locked/18` · `19` · `20`
+No developer jargon in the interface. Media currently embeds small files (about 1.5 MB max per item). Larger media hosting can come later without changing the product language.
