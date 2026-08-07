@@ -49,24 +49,43 @@
     }
     .card h3 { margin: 0 0 0.35rem; font-size: 0.95rem; }
     label { display: block; font-size: 0.8rem; color: var(--muted); margin-top: 0.55rem; }
-    input, textarea {
+    input, textarea, select {
       width: 100%; margin-top: 0.25rem; padding: 0.5rem 0.6rem; border-radius: 8px;
       border: 1px solid var(--border); background: #0a0e14; color: var(--text); font: inherit;
     }
-    textarea { min-height: 88px; resize: vertical; }
-    .row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+    textarea { min-height: 72px; resize: vertical; }
+    .row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; align-items: center; }
     .btn {
       appearance: none; border: 1px solid var(--accent); background: transparent;
       color: var(--accent); border-radius: 8px; padding: 0.45rem 0.8rem;
       font: inherit; font-size: 0.85rem; cursor: pointer;
     }
+    .btn.danger { border-color: #e85d6a; color: #e85d6a; }
     .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn.solid { background: var(--accent); color: #0a0c10; border-color: var(--accent); }
     pre.out {
       margin-top: 0.75rem; padding: 0.65rem; background: #0a0e14; border-radius: 8px;
       border: 1px solid var(--border); font-family: var(--mono); font-size: 0.75rem;
-      white-space: pre-wrap; word-break: break-word; color: var(--muted);
+      white-space: pre-wrap; word-break: break-word; color: var(--muted); max-height: 220px; overflow: auto;
     }
+    .proof-list { margin-top: 0.5rem; }
+    .proof-item {
+      display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: flex-start;
+      padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem;
+    }
+    .proof-item .meta { flex: 1; min-width: 140px; }
+    .pill {
+      display: inline-block; font-size: 0.72rem; padding: 0.15rem 0.45rem;
+      border-radius: 999px; border: 1px solid var(--border); color: var(--muted);
+    }
+    .pill.ok { border-color: var(--ok); color: var(--ok); }
+    .grid2 { display: grid; gap: 0.5rem; }
+    @media (min-width: 640px) { .grid2 { grid-template-columns: 1fr 1fr; } }
     footer { max-width: 920px; margin: 0 auto; padding: 1rem; color: var(--muted); font-size: 0.75rem; }
+    .preview-card {
+      background: #0a0e14; border-radius: 10px; padding: 0.85rem; border: 1px solid var(--border);
+    }
+    .preview-card h3 { margin: 0 0 0.35rem; }
   </style>
 </head>
 <body>
@@ -74,7 +93,7 @@
 
   <header>
     <h1>The Remote Viewer</h1>
-    <div class="sub">Native social layer · parallel to The Sentinel (core)</div>
+    <div class="sub">Native social layer · N2 persona + proof attach · parallel to The Sentinel</div>
   </header>
 
   <nav>
@@ -87,83 +106,120 @@
   <main>
     <section id="directory" class="panel active">
       <h2>Directory</h2>
-      <p class="muted">Opt-in Viewers. Data bootstrapped from public registry; rendered natively here.</p>
+      <p class="muted">Opt-in Viewers. Bootstrap registry + your local draft (if any).</p>
       <div style="overflow-x:auto">
         <table>
           <thead>
-            <tr><th>Alias</th><th>Path</th><th>Roles</th><th>Contact</th><th>Proof</th></tr>
+            <tr><th>Alias</th><th>Path</th><th>Roles</th><th>Contact</th><th>Proofs</th></tr>
           </thead>
-          <tbody id="dir-body">
-            <tr>
-              <td>Sentinel-Archetecht</td>
-              <td>A</td>
-              <td>Originator · Integrity Verifier</td>
-              <td>X @The_Archetecht · GitHub</td>
-              <td><a href="#" data-open-persona="sentinel-archetecht">persona</a></td>
-            </tr>
-          </tbody>
+          <tbody id="dir-body"></tbody>
         </table>
       </div>
-      <p class="muted" style="margin-top:0.75rem">Join: complete in-app persona (Personas tab) then export / PR when you want the public git mirror updated.</p>
+      <p class="muted" style="margin-top:0.75rem">Your draft appears here after save. Export markdown to mirror into git when ready.</p>
     </section>
 
     <section id="personas" class="panel">
-      <h2>Persona + proofs</h2>
-      <p class="muted">Social identity only. Never paste Sentinel vault AGE-SECRET-KEY or nsec into proofs.</p>
+      <h2>Persona + proof attach</h2>
+      <p class="muted">Social identity only. Never paste Sentinel vault AGE-SECRET-KEY or nsec.</p>
+
       <div class="card">
-        <h3>Edit persona (local draft)</h3>
-        <label>Alias <input id="p-alias" placeholder="your-alias" autocomplete="off"></label>
-        <label>Path <input id="p-path" placeholder="A / B / none" autocomplete="off"></label>
-        <label>Roles <input id="p-roles" placeholder="Integrity Verifier" autocomplete="off"></label>
-        <label>Contact <input id="p-contact" placeholder="X / Matrix / email" autocomplete="off"></label>
-        <label>npub (optional) <input id="p-npub" placeholder="npub1…" autocomplete="off"></label>
-        <label>About <textarea id="p-about" placeholder="Short public bio"></textarea></label>
-        <label>Proofs (markdown table rows) <textarea id="p-proofs" placeholder="| Claim | Evidence | Date |"></textarea></label>
-        <div class="row">
-          <button type="button" class="btn" id="p-save">Save draft (browser)</button>
-          <button type="button" class="btn" id="p-export">Export markdown</button>
+        <h3>Profile</h3>
+        <div class="grid2">
+          <label>Alias <input id="p-alias" placeholder="your-alias" autocomplete="off"></label>
+          <label>Path
+            <select id="p-path">
+              <option value="">none</option>
+              <option value="A">A — invitation</option>
+              <option value="B">B — independent completion</option>
+            </select>
+          </label>
+          <label>Roles <input id="p-roles" placeholder="Integrity Verifier" autocomplete="off"></label>
+          <label>Contact <input id="p-contact" placeholder="X / Matrix / email" autocomplete="off"></label>
+          <label>npub (optional) <input id="p-npub" placeholder="npub1…" autocomplete="off"></label>
+          <label>Since <input id="p-since" placeholder="YYYY-MM" autocomplete="off"></label>
         </div>
-        <pre class="out" id="p-out">Draft stays in this browser until you export.</pre>
+        <label>About <textarea id="p-about" placeholder="Short public bio"></textarea></label>
       </div>
+
+      <div class="card">
+        <h3>Attach proof</h3>
+        <p class="muted">Sentinel → Remote Viewer claims. Evidence must be non-secret (URL, tip hash, commit).</p>
+        <div class="grid2">
+          <label>Claim type
+            <select id="pr-claim">
+              <option value="Path A">Path A originator</option>
+              <option value="Path B">Path B completion</option>
+              <option value="Integrity Verifier">Integrity Verifier</option>
+              <option value="Hydra PASS">Hydra PASS</option>
+              <option value="Contribution tip">Contribution tip hash</option>
+              <option value="Repo work">Repo / commit</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+          <label>Date <input id="pr-date" type="date"></label>
+        </div>
+        <label>Evidence (URL or hash) <input id="pr-evidence" placeholder="https://… or tip=abc…" autocomplete="off"></label>
+        <label>Note (optional) <input id="pr-note" placeholder="short public note" autocomplete="off"></label>
+        <div class="row">
+          <button type="button" class="btn solid" id="pr-add">Add proof</button>
+        </div>
+        <div class="proof-list" id="pr-list"></div>
+      </div>
+
+      <div class="card">
+        <h3>Live preview</h3>
+        <div class="preview-card" id="preview"></div>
+        <div class="row">
+          <button type="button" class="btn solid" id="p-save">Save draft</button>
+          <button type="button" class="btn" id="p-export-md">Export markdown</button>
+          <button type="button" class="btn" id="p-export-json">Export JSON</button>
+          <button type="button" class="btn danger" id="p-clear">Clear draft</button>
+        </div>
+        <pre class="out" id="p-out">Draft is local to this browser until you export.</pre>
+      </div>
+
       <div class="card" id="persona-view">
-        <h3>Originator (bootstrap)</h3>
-        <p class="muted">Alias: Sentinel-Archetecht · Path A · Originator · Integrity Verifier</p>
-        <p class="muted">Proofs: REALITY.md · Hydra PASS · Verifier overall_ok · Path B vending PROVEN (2026-08-07)</p>
+        <h3>Registry bootstrap</h3>
+        <p class="muted">Sentinel-Archetecht · Path A · Originator · Integrity Verifier</p>
+        <p class="muted">Proofs: REALITY.md · Hydra PASS · Verifier overall_ok · Path B vending (2026-08-07)</p>
       </div>
     </section>
 
     <section id="messages" class="panel">
       <h2>Messages</h2>
-      <p class="muted">Native E2E messaging shell. Wire: Nostr (locked doc 19) behind this UI — not a third-party app as the product.</p>
+      <p class="muted">Native E2E shell. Wire N3 (Nostr behind this UI).</p>
       <div class="card">
         <label>Peer npub or alias <input id="m-to" placeholder="npub1… or alias" autocomplete="off"></label>
-        <label>Message <textarea id="m-body" placeholder="E2E body — client-side encrypt before send (N3 wire)"></textarea></label>
+        <label>Message <textarea id="m-body" placeholder="Message body"></textarea></label>
         <div class="row">
           <button type="button" class="btn" id="m-send" disabled>Send (wire N3)</button>
         </div>
-        <pre class="out" id="m-out">N3: connect Nostr signer + relay list in-app. UI is native; send is gated until signer is configured.\n\nFallback: age-drop offline (MESSAGING.md) using a social age key ≠ Sentinel vault.</pre>
+        <pre class="out" id="m-out">N3 will attach in-app signer + relays. age-drop remains offline fallback.</pre>
       </div>
     </section>
 
     <section id="notes" class="panel">
       <h2>Signed notes</h2>
-      <p class="muted">Unranked board (S4 / N4). Native composer; no algorithm.</p>
+      <p class="muted">Unranked board (N4).</p>
       <div class="card">
         <label>Note <textarea id="n-body" placeholder="Public signed note…"></textarea></label>
         <div class="row">
           <button type="button" class="btn" id="n-post" disabled>Post (N4)</button>
         </div>
-        <pre class="out">Coming in N4 — signed events rendered here, unranked.</pre>
+        <pre class="out">N4 — signed events, unranked.</pre>
       </div>
     </section>
   </main>
 
   <footer>
-    The Remote Viewer · native social · docs/locked/20-Native-Remote-Viewer.md · core remains The Sentinel
+    The Remote Viewer · native N2 · docs/locked/20 · core = The Sentinel
   </footer>
 
   <script>
     (function () {
+      var STORAGE = 'rv-persona-v2';
+      var proofs = [];
+
       var tabs = document.querySelectorAll('nav button');
       var panels = document.querySelectorAll('.panel');
       tabs.forEach(function (btn) {
@@ -175,53 +231,215 @@
         });
       });
 
-      document.querySelectorAll('[data-open-persona]').forEach(function (a) {
-        a.addEventListener('click', function (e) {
-          e.preventDefault();
-          tabs.forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-tab') === 'personas'); });
-          panels.forEach(function (p) { p.classList.toggle('active', p.id === 'personas'); });
-        });
-      });
+      function field(id) { return document.getElementById(id); }
 
-      var keys = ['p-alias','p-path','p-roles','p-contact','p-npub','p-about','p-proofs'];
-      function load() {
-        keys.forEach(function (id) {
-          var v = localStorage.getItem('rv-' + id);
-          if (v != null) document.getElementById(id).value = v;
+      function today() {
+        var d = new Date();
+        return d.toISOString().slice(0, 10);
+      }
+      field('pr-date').value = today();
+
+      function getPersona() {
+        return {
+          alias: field('p-alias').value.trim(),
+          path: field('p-path').value,
+          roles: field('p-roles').value.trim(),
+          contact: field('p-contact').value.trim(),
+          npub: field('p-npub').value.trim(),
+          since: field('p-since').value.trim(),
+          about: field('p-about').value.trim(),
+          proofs: proofs.slice()
+        };
+      }
+
+      function setPersona(p) {
+        if (!p) return;
+        field('p-alias').value = p.alias || '';
+        field('p-path').value = p.path || '';
+        field('p-roles').value = p.roles || '';
+        field('p-contact').value = p.contact || '';
+        field('p-npub').value = p.npub || '';
+        field('p-since').value = p.since || '';
+        field('p-about').value = p.about || '';
+        proofs = Array.isArray(p.proofs) ? p.proofs : [];
+        renderProofs();
+        renderPreview();
+        renderDirectory();
+      }
+
+      function renderProofs() {
+        var el = field('pr-list');
+        if (!proofs.length) {
+          el.innerHTML = '<p class="muted">No proofs attached yet.</p>';
+          return;
+        }
+        el.innerHTML = proofs.map(function (pr, i) {
+          return '<div class="proof-item">'
+            + '<div class="meta"><span class="pill ok">' + escapeHtml(pr.claim) + '</span> '
+            + '<span class="muted">' + escapeHtml(pr.date || '') + '</span><br>'
+            + escapeHtml(pr.evidence || '')
+            + (pr.note ? '<br><span class="muted">' + escapeHtml(pr.note) + '</span>' : '')
+            + '</div>'
+            + '<button type="button" class="btn danger" data-rm="' + i + '">Remove</button>'
+            + '</div>';
+        }).join('');
+        el.querySelectorAll('[data-rm]').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            proofs.splice(parseInt(btn.getAttribute('data-rm'), 10), 1);
+            renderProofs(); renderPreview(); renderDirectory();
+          });
         });
       }
-      function save() {
-        keys.forEach(function (id) {
-          localStorage.setItem('rv-' + id, document.getElementById(id).value);
+
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, function (c) {
+          return ({ '&': '&', '<': '<', '>': '>', '"': '"', "'": '&#39;' })[c];
         });
-        document.getElementById('p-out').textContent = 'Draft saved in this browser (' + new Date().toISOString() + ').';
       }
-      function exportMd() {
-        var alias = document.getElementById('p-alias').value || 'alias';
-        var md = '# Persona: ' + alias + '\n\n'
-          + '> **The Remote Viewer uses the network. The Sentinel (core) does not require this.**\n\n'
-          + '| Field | Value |\n|-------|-------|\n'
-          + '| **Alias** | ' + (document.getElementById('p-alias').value || '') + ' |\n'
-          + '| **Path** | ' + (document.getElementById('p-path').value || '') + ' |\n'
-          + '| **Roles** | ' + (document.getElementById('p-roles').value || '') + ' |\n'
-          + '| **Contact** | ' + (document.getElementById('p-contact').value || '') + ' |\n'
-          + '| **npub** | ' + (document.getElementById('p-npub').value || '') + ' |\n\n'
-          + '## About\n\n' + (document.getElementById('p-about').value || '') + '\n\n'
-          + '## Proofs\n\n' + (document.getElementById('p-proofs').value || '| Claim | Evidence | Date |') + '\n';
-        document.getElementById('p-out').textContent = md;
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(md).then(function () {
-            document.getElementById('p-out').textContent = md + '\n\n— copied to clipboard —';
+
+      function renderPreview() {
+        var p = getPersona();
+        var html = '<h3>' + escapeHtml(p.alias || '(no alias)') + '</h3>'
+          + '<p class="muted">Path ' + escapeHtml(p.path || '—') + ' · '
+          + escapeHtml(p.roles || 'no roles') + '</p>'
+          + (p.contact ? '<p class="muted">' + escapeHtml(p.contact) + '</p>' : '')
+          + (p.npub ? '<p class="muted" style="font-family:var(--mono);font-size:0.78rem">' + escapeHtml(p.npub) + '</p>' : '')
+          + (p.about ? '<p>' + escapeHtml(p.about) + '</p>' : '')
+          + '<p class="muted">Proofs: ' + proofs.length + '</p>';
+        field('preview').innerHTML = html;
+      }
+
+      function renderDirectory() {
+        var body = field('dir-body');
+        var rows = [
+          {
+            alias: 'Sentinel-Archetecht', path: 'A',
+            roles: 'Originator · Integrity Verifier',
+            contact: 'X @The_Archetecht · GitHub',
+            proofs: 'registry'
+          }
+        ];
+        var p = getPersona();
+        if (p.alias) {
+          rows.push({
+            alias: p.alias + ' (draft)',
+            path: p.path || '—',
+            roles: p.roles || '—',
+            contact: p.contact || '—',
+            proofs: String(proofs.length)
           });
         }
+        body.innerHTML = rows.map(function (r) {
+          return '<tr><td>' + escapeHtml(r.alias) + '</td><td>' + escapeHtml(r.path)
+            + '</td><td>' + escapeHtml(r.roles) + '</td><td>' + escapeHtml(r.contact)
+            + '</td><td>' + escapeHtml(r.proofs) + '</td></tr>';
+        }).join('');
       }
-      document.getElementById('p-save').addEventListener('click', save);
-      document.getElementById('p-export').addEventListener('click', exportMd);
-      load();
 
-      document.getElementById('m-send').addEventListener('click', function () {
-        document.getElementById('m-out').textContent = 'Wire not connected. N3: in-app Nostr signer + relays.';
+      field('pr-add').addEventListener('click', function () {
+        var evidence = field('pr-evidence').value.trim();
+        if (!evidence) {
+          field('p-out').textContent = 'Evidence required (URL or hash).';
+          return;
+        }
+        // soft reject secrets
+        var low = evidence.toLowerCase();
+        if (low.indexOf('age-secret-key') >= 0 || low.indexOf('nsec1') === 0 || /seed phrase/i.test(evidence)) {
+          field('p-out').textContent = 'Rejected: looks like a secret. Publish only public evidence.';
+          return;
+        }
+        proofs.push({
+          claim: field('pr-claim').value,
+          evidence: evidence,
+          date: field('pr-date').value || today(),
+          note: field('pr-note').value.trim()
+        });
+        field('pr-evidence').value = '';
+        field('pr-note').value = '';
+        renderProofs(); renderPreview(); renderDirectory();
+        field('p-out').textContent = 'Proof attached (' + proofs.length + ' total). Save draft to persist.';
       });
+
+      ['p-alias','p-path','p-roles','p-contact','p-npub','p-since','p-about'].forEach(function (id) {
+        field(id).addEventListener('input', function () { renderPreview(); renderDirectory(); });
+      });
+
+      function save() {
+        var p = getPersona();
+        localStorage.setItem(STORAGE, JSON.stringify(p));
+        field('p-out').textContent = 'Draft saved locally · ' + new Date().toISOString();
+        renderDirectory();
+      }
+
+      function exportMd() {
+        var p = getPersona();
+        var alias = p.alias || 'alias';
+        var lines = [
+          '# Persona: ' + alias,
+          '',
+          '> **The Remote Viewer uses the network. The Sentinel (core) does not require this.**',
+          '',
+          '| Field | Value |',
+          '|-------|-------|',
+          '| **Alias** | ' + (p.alias || '') + ' |',
+          '| **Path** | ' + (p.path || '') + ' |',
+          '| **Roles** | ' + (p.roles || '') + ' |',
+          '| **Contact** | ' + (p.contact || '') + ' |',
+          '| **npub** | ' + (p.npub || '') + ' |',
+          '| **Since** | ' + (p.since || '') + ' |',
+          '',
+          '## About',
+          '',
+          p.about || '',
+          '',
+          '## Proofs',
+          '',
+          '| Claim | Evidence | Date | Note |',
+          '|-------|----------|------|------|'
+        ];
+        proofs.forEach(function (pr) {
+          lines.push('| ' + pr.claim + ' | ' + pr.evidence + ' | ' + (pr.date || '') + ' | ' + (pr.note || '') + ' |');
+        });
+        if (!proofs.length) lines.push('| | | | |');
+        var md = lines.join('\n');
+        field('p-out').textContent = md;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(md);
+        }
+      }
+
+      function exportJson() {
+        var p = getPersona();
+        var js = JSON.stringify(p, null, 2);
+        field('p-out').textContent = js;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(js);
+        }
+      }
+
+      function clearDraft() {
+        if (!confirm('Clear local persona draft?')) return;
+        localStorage.removeItem(STORAGE);
+        proofs = [];
+        ['p-alias','p-path','p-roles','p-contact','p-npub','p-since','p-about'].forEach(function (id) {
+          field(id).value = '';
+        });
+        renderProofs(); renderPreview(); renderDirectory();
+        field('p-out').textContent = 'Draft cleared.';
+      }
+
+      field('p-save').addEventListener('click', save);
+      field('p-export-md').addEventListener('click', exportMd);
+      field('p-export-json').addEventListener('click', exportJson);
+      field('p-clear').addEventListener('click', clearDraft);
+
+      try {
+        var raw = localStorage.getItem(STORAGE);
+        if (raw) setPersona(JSON.parse(raw));
+        else { renderProofs(); renderPreview(); renderDirectory(); }
+      } catch (e) {
+        renderProofs(); renderPreview(); renderDirectory();
+      }
     })();
   </script>
 </body>
