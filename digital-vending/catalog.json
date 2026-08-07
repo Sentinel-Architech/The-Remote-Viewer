@@ -7,7 +7,7 @@
     "description": "Core zero-trust posture pack. Local-first, Destroy=Restart rules, optical air-gap basics.",
     "payload_path": "payloads/trv-posture-lite.txt",
     "recipient_required": true,
-    "notes": "Matches existing Solana sales address memo."
+    "notes": "Primary rail: USDC memo or manual. SPL TRV mint deferred (no aarch64 Solana CLI)."
   },
   {
     "id": "trv-posture-pack",
@@ -17,7 +17,7 @@
     "description": "Full posture pack including extended Sentinel Standard docs and sample scripts.",
     "payload_path": "payloads/trv-posture-pack.txt",
     "recipient_required": true,
-    "notes": "Matches existing Solana sales address memo."
+    "notes": "Replace payload file with full pack before live sales."
   },
   {
     "id": "sentinel-skill-zk-01",
@@ -27,7 +27,7 @@
     "description": "On-device ZK membership proof notes + sample circuits for the specialist router.",
     "payload_path": "payloads/sentinel-zk-01.txt",
     "recipient_required": true,
-    "notes": "Manual-pay or future XMR. Delivery always age + Soliton LT."
+    "notes": "Manual-pay or XMR. Delivery always age + Soliton LT."
   },
   {
     "id": "hello-sentinel-demo",
@@ -37,6 +37,6 @@
     "description": "Short plaintext for end-to-end optical delivery verification.",
     "payload_path": "payloads/hello-sentinel.txt",
     "recipient_required": true,
-    "notes": "Use for dry runs. Never sell real keys or identities."
+    "notes": "Dry runs only. Never sell. Destroy demo keys after."
   }
 ]
