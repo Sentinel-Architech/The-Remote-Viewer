@@ -72,10 +72,11 @@
       <div class="sub">Local console · GrapheneOS / device · no phone-home</div>
       <div class="pills">
         <span class="pill ok">Optical PROVEN</span>
-        <span class="pill ok">MoE B PROVEN</span>
-        <span class="pill ok">MoE C PROVEN</span>
-        <span class="pill accent">Defense SCAFFOLD</span>
-        <span class="pill">127.0.0.1 only</span>
+        <span class="pill ok">Hydra PROVEN</span>
+        <span class="pill ok">Vending PROVEN</span>
+        <span class="pill ok">Verifier PROVEN</span>
+        <span class="pill ok">MoE B/C PROVEN</span>
+        <span class="pill accent">127.0.0.1 only</span>
       </div>
     </header>
 
@@ -89,22 +90,45 @@
       </section>
 
       <section class="card">
-        <h2>MoE Models</h2>
-        <p>Dense B + sparse C on-device GGUF</p>
+        <h2>Defense / Hydra</h2>
+        <p>Seal · pulse · quarantine gate</p>
         <div class="actions">
-          <button type="button" data-title="List models" data-cmd="bash modules/moe-router/list-models.sh">List</button>
-          <button type="button" class="primary" data-title="General" data-cmd="export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli&#10;bash modules/moe-router/run-model.sh general &quot;Say hello in one sentence.&quot;">General</button>
-          <button type="button" class="primary" data-title="Code" data-cmd="export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli&#10;bash modules/moe-router/run-model.sh code &quot;Write a bash one-liner.&quot;">Code</button>
-          <button type="button" data-title="Sparse MoE" data-cmd="export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli&#10;export LLAMA_ARGS='-n 64 -c 512 -t 4'&#10;bash modules/moe-router/run-model.sh moe &quot;Say hello.&quot;">MoE C</button>
+          <button type="button" class="primary" data-title="Integrity pulse" data-cmd="bash modules/defense/integrity-pulse.sh">Pulse</button>
+          <button type="button" data-title="Seal baseline" data-cmd="bash modules/defense/seal-baseline.sh">Seal</button>
+          <button type="button" data-title="Verify seal" data-cmd="bash modules/defense/verify-seal.sh">Verify seal</button>
+          <button type="button" data-title="Hydra gate" data-cmd="bash modules/defense/hydra-gate.sh">Gate</button>
+          <button type="button" data-title="After sync" data-cmd="bash modules/defense/check-after-sync.sh">After sync</button>
         </div>
       </section>
 
       <section class="card">
-        <h2>Defense / Hydra</h2>
-        <p>Local integrity only</p>
+        <h2>Integrity Verifier</h2>
+        <p>Contribution + sales.log attestation</p>
         <div class="actions">
-          <button type="button" class="primary" data-title="Integrity pulse" data-cmd="bash modules/defense/integrity-pulse.sh">Pulse</button>
-          <button type="button" data-title="After sync" data-cmd="bash modules/defense/check-after-sync.sh">After sync</button>
+          <button type="button" data-title="Verify contribution" data-cmd="bash modules/integrity-verifier/verify-contribution.sh">Contribution</button>
+          <button type="button" data-title="Verify sales" data-cmd="bash modules/integrity-verifier/verify-sales.sh">Sales</button>
+          <button type="button" class="primary" data-title="Attest" data-cmd="bash modules/integrity-verifier/attest.sh">Attest</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Digital Vending</h2>
+        <p>SKU map · status · watcher (Termux)</p>
+        <div class="actions">
+          <button type="button" data-title="memo→SKU Lite" data-cmd="bash digital-vending/memo-to-sku.sh TRV-Posture-Lite">Map Lite</button>
+          <button type="button" data-title="Seller status" data-cmd="bash digital-vending/seller-ops.sh status">Status</button>
+          <button type="button" class="primary" data-title="Start watcher" data-cmd="export SALES_ADDRESS='HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv'&#10;export SOLANA_RPC_URL='https://solana-rpc.publicnode.com'&#10;bash digital-vending/watch-termux.sh">Watcher</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>MoE Models</h2>
+        <p>Dense B + sparse C on-device GGUF</p>
+        <div class="actions">
+          <button type="button" data-title="List models" data-cmd="bash modules/moe-router/list-models.sh">List</button>
+          <button type="button" class="primary" data-title="General" data-cmd="export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli&#10;bash modules/moe-router/run-model.sh general "Say hello in one sentence."">General</button>
+          <button type="button" class="primary" data-title="Code" data-cmd="export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli&#10;bash modules/moe-router/run-model.sh code "Write a bash one-liner."">Code</button>
+          <button type="button" data-title="Sparse MoE" data-cmd="export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli&#10;export LLAMA_ARGS='-n 64 -c 512 -t 4'&#10;bash modules/moe-router/run-model.sh moe "Say hello."">MoE C</button>
         </div>
       </section>
 
@@ -141,6 +165,7 @@
         <li>Served only on <code>127.0.0.1</code> — not the internet.</li>
         <li>Buttons show Termux commands; the page cannot run shell or read keys.</li>
         <li>Copy → paste into Termux (or use a future local bridge you control).</li>
+        <li>Public buy page is separate: <code>digital-vending/buy.html</code>.</li>
       </ul>
     </section>
 
