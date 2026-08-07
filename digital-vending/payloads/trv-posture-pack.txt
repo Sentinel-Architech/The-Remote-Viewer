@@ -1,36 +1,49 @@
-TRV POSTURE PACK — Extended Sentinel Standard
-==============================================
-Includes Posture Lite plus operator depth.
+TRV POSTURE PACK — Extended Sentinel Standard v2
+=================================================
+Includes Posture Lite plus operator depth for running a phone-first chute.
 
-A. PIPELINE (normative)
-   age encrypt → Robust Soliton LT (c=0.1, δ=0.05) → TRVL1 framing
-   → peel → age decrypt. Exact original length via u32 BE prefix.
-   Golden path verified on GrapheneOS + Termux.
+A. NORMATIVE PIPELINE
+   age encrypt → Robust Soliton LT (c≈0.1, δ≈0.05) → TRVL1 framing
+   → peel → age decrypt. u32 BE length prefix. Golden path on GrapheneOS+Termux.
+   CLI: trv-optical encrypt | frame-stream | frame-peel | decrypt
 
 B. VAULT HYGIENE
-   scripts/vault-setup.sh  → $HOME/vault-recipient.txt + vault-identity.txt (600)
-   scripts/e2e-age-lt.sh   → full chain smoke
-   scripts/vault-destroy.sh → Destroy = Restart
-   Demo keys ≠ production keys. Session keys that hit chat are burned.
+   vault-setup.sh  → vault-recipient.txt + vault-identity.txt (mode 600)
+   e2e-age-lt.sh   → full chain smoke ($HOME paths)
+   vault-destroy.sh → Destroy = Restart
+   Never reuse identities from screenshots or group chats.
 
 C. OPTICAL RECEIVER
-   optical/qr-receiver.html (local HTTP, not file:// for camera)
-   Decoder: BarcodeDetector → optional decodeQR → paste/file always works
-   Controls: debounce samples, scan ms, status line ctrl=
+   optical/qr-receiver.html — serve over local HTTP (not file://) for camera.
+   Decoder order: BarcodeDetector → optional decodeQR → paste/file always works.
+   Status line: ctrl= · pending debounce · scanAttempts
+   After complete: Reset decoder before another live gate smoke.
 
-D. SELLER STATION
-   digital-vending/seller-ops.sh list|status|deliver
-   catalog.json ids: trv-posture-lite | trv-posture-pack | sentinel-skill-zk-01
-   Rail: USDC memo / manual / XMR. SPL mint deferred on aarch64 (no official CLI).
+D. SELLER STATION (phone)
+   seller-ops.sh list | status | log | deliver
+   log-sale.sh — append-only sales.log with sha256 + bytes; rejects 0-byte packs
+   watch-termux.sh — 90s poll, optional termux-api wake-lock + notify
+   watch-sales-notify-v2.sh — core Path B watcher (self-test on start)
 
-E. HARD RULES
-   - No CDN scripts in the optical path
-   - No identity in the browser page (peel ciphertext; decrypt on CLI)
-   - RDH checksumOk === false → do not decrypt
+E. PATH B (USDC memo)
+   Buyer pays USDC + memo (TRV-Posture-Lite | TRV-Posture-Pack | SENTINEL-ZK-01)
+   Buyer sends age1 only. Drop: $HOME/trv-deliver/<sig12>.recipient
+   auto-deliver.sh → .trvl + dm note + sales.log
+   Always-on requires a host that does not sleep; Pixel is best-effort only.
+
+F. HARD RULES
+   - No CDN scripts on the optical path
+   - No identity in the browser (peel ciphertext; decrypt on CLI)
+   - RDH/CRC fail → do not decrypt
    - Soliton LT only (Sentinel Standard)
+   - Empty .trvl is failure — do not log as a sale
 
-F. WHEN HARDWARE RETURNS
-   ESP32 edge is a later surface. Optical remains primary air-gap.
-   Mint TRV/SPL only from an x86 host; phone stays delivery device.
+G. PARKED
+   SPL TRV mint — needs x86 (no official aarch64 Solana CLI)
+   ESP32 edge — hardware timeline separate; optical remains primary air-gap
 
-Primary sources in-repo: SENTINEL-STANDARD.md · TECHNICAL.md · PHASE3.md · PHASE4.md
+H. OPERATOR CHECKLIST (one sale)
+   1. Verify payment  2. Receive age1  3. seller-ops deliver
+   4. Send .trvl  5. Buyer peel+decrypt  6. seller-ops log
+
+Sources: PHASE3.md · PHASE4.md · TECHNICAL.md · SENTINEL-STANDARD.md
