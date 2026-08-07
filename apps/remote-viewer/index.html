@@ -7,376 +7,382 @@
   <title>The Remote Viewer</title>
   <style>
     :root {
-      --bg: #0a0c10; --panel: #12161e; --border: #2a3344; --text: #e8eef6;
-      --muted: #8b9bb0; --accent: #5b9fd4; --warn: #e6b84d; --ok: #6bcf6b;
-      --radius: 12px; --font: system-ui, -apple-system, sans-serif;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --bg: #06080c;
+      --surface: #0e1218;
+      --surface2: #151b24;
+      --line: #243041;
+      --text: #f0f4fa;
+      --soft: #9aabbf;
+      --accent: #6eb6ff;
+      --accent-dim: #3d6f9c;
+      --warm: #e8c27a;
+      --danger: #e87a84;
+      --radius: 16px;
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     }
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100dvh; line-height: 1.45; }
-    .banner {
-      background: #2a2210; color: var(--warn); font-size: 0.8rem; padding: 0.65rem 1rem;
-      border-bottom: 1px solid #5a4a20; text-align: center;
+    html, body { margin: 0; height: 100%; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      display: flex;
+      flex-direction: column;
+      min-height: 100dvh;
     }
-    header { padding: 1.25rem 1rem 0.5rem; max-width: 920px; margin: 0 auto; }
-    h1 { margin: 0 0 0.25rem; font-size: 1.4rem; letter-spacing: 0.02em; }
-    .sub { color: var(--muted); font-size: 0.9rem; }
-    nav {
-      display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0.75rem 1rem 1rem;
-      max-width: 920px; margin: 0 auto;
+    .notice {
+      background: #1a160c;
+      color: var(--warm);
+      font-size: 0.75rem;
+      text-align: center;
+      padding: 0.55rem 0.85rem;
+      border-bottom: 1px solid #3d3420;
     }
-    nav button {
-      appearance: none; border: 1px solid var(--border); background: var(--panel);
-      color: var(--text); border-radius: 999px; padding: 0.4rem 0.85rem;
-      font: inherit; font-size: 0.85rem; cursor: pointer;
+    .top {
+      padding: 1rem 1.1rem 0.35rem;
+      max-width: 640px;
+      width: 100%;
+      margin: 0 auto;
     }
-    nav button.active { border-color: var(--accent); color: var(--accent); }
-    main { max-width: 920px; margin: 0 auto; padding: 0 1rem 3rem; }
-    .panel {
-      display: none; background: var(--panel); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 1rem 1.1rem;
+    .top h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 650;
+      letter-spacing: -0.01em;
     }
-    .panel.active { display: block; }
-    h2 { margin: 0 0 0.75rem; font-size: 1.05rem; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    th, td { text-align: left; padding: 0.45rem 0.35rem; border-bottom: 1px solid var(--border); vertical-align: top; }
-    th { color: var(--muted); font-weight: 600; }
-    .muted { color: var(--muted); font-size: 0.88rem; }
+    .top p {
+      margin: 0.2rem 0 0;
+      color: var(--soft);
+      font-size: 0.88rem;
+    }
+    .tabs {
+      display: flex;
+      gap: 0.25rem;
+      padding: 0.75rem 1rem;
+      max-width: 640px;
+      width: 100%;
+      margin: 0 auto;
+      position: sticky;
+      top: 0;
+      background: linear-gradient(var(--bg) 70%, transparent);
+      z-index: 5;
+    }
+    .tabs button {
+      flex: 1;
+      appearance: none;
+      border: none;
+      background: transparent;
+      color: var(--soft);
+      font: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 0.65rem 0.4rem;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .tabs button.on {
+      background: var(--surface2);
+      color: var(--text);
+    }
+    main {
+      flex: 1;
+      max-width: 640px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0.25rem 1rem 2.5rem;
+    }
+    .screen { display: none; }
+    .screen.on { display: block; }
     .card {
-      border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem;
-      margin: 0.6rem 0;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 0.85rem;
     }
-    .card h3 { margin: 0 0 0.35rem; font-size: 0.95rem; }
-    label { display: block; font-size: 0.8rem; color: var(--muted); margin-top: 0.55rem; }
+    .card h2 {
+      margin: 0 0 0.65rem;
+      font-size: 0.95rem;
+      font-weight: 650;
+    }
+    .soft { color: var(--soft); font-size: 0.88rem; }
+    label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--soft);
+      margin-top: 0.65rem;
+      font-weight: 500;
+    }
     input, textarea, select {
-      width: 100%; margin-top: 0.25rem; padding: 0.5rem 0.6rem; border-radius: 8px;
-      border: 1px solid var(--border); background: #0a0e14; color: var(--text); font: inherit;
+      width: 100%;
+      margin-top: 0.3rem;
+      padding: 0.7rem 0.8rem;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--surface2);
+      color: var(--text);
+      font: inherit;
     }
-    textarea { min-height: 72px; resize: vertical; }
-    .row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; align-items: center; }
+    textarea { min-height: 110px; resize: vertical; }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 0.85rem;
+    }
     .btn {
-      appearance: none; border: 1px solid var(--accent); background: transparent;
-      color: var(--accent); border-radius: 8px; padding: 0.45rem 0.8rem;
-      font: inherit; font-size: 0.85rem; cursor: pointer;
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      padding: 0.55rem 1rem;
+      font: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--line);
     }
-    .btn.danger { border-color: #e85d6a; color: #e85d6a; }
-    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-    .btn.solid { background: var(--accent); color: #0a0c10; border-color: var(--accent); }
-    pre.out {
-      margin-top: 0.75rem; padding: 0.65rem; background: #0a0e14; border-radius: 8px;
-      border: 1px solid var(--border); font-family: var(--mono); font-size: 0.75rem;
-      white-space: pre-wrap; word-break: break-word; color: var(--muted); max-height: 200px; overflow: auto;
+    .btn.primary {
+      background: var(--accent);
+      color: #061018;
+      border-color: var(--accent);
     }
-    .proof-list { margin-top: 0.5rem; }
-    .proof-item {
-      display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: flex-start;
-      padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem;
+    .btn.quiet { color: var(--soft); }
+    .btn.warn {
+      color: var(--danger);
+      border-color: #5a3038;
     }
-    .proof-item .meta { flex: 1; min-width: 140px; }
-    .pill {
-      display: inline-block; font-size: 0.72rem; padding: 0.15rem 0.45rem;
-      border-radius: 999px; border: 1px solid var(--border); color: var(--muted);
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .post {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 0.75rem;
     }
-    .pill.ok { border-color: var(--ok); color: var(--ok); }
-    .grid2 { display: grid; gap: 0.5rem; }
-    @media (min-width: 640px) { .grid2 { grid-template-columns: 1fr 1fr; } }
-    footer { max-width: 920px; margin: 0 auto; padding: 1rem; color: var(--muted); font-size: 0.75rem; }
-    .preview-card {
-      background: #0a0e14; border-radius: 10px; padding: 0.85rem; border: 1px solid var(--border);
+    .post .who {
+      font-size: 0.8rem;
+      color: var(--soft);
+      margin-bottom: 0.45rem;
     }
-    #n-feed .card { margin: 0.5rem 0; }
+    .post .body {
+      white-space: pre-wrap;
+      font-size: 0.98rem;
+    }
+    .post img, .post video {
+      display: block;
+      width: 100%;
+      max-height: 420px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-top: 0.65rem;
+      background: #000;
+    }
+    .post .place {
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--warm);
+    }
+    .media-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .media-row label.file {
+      margin: 0;
+      padding: 0.55rem 0.9rem;
+      border-radius: 999px;
+      border: 1px dashed var(--line);
+      color: var(--soft);
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .media-row input[type=file] { display: none; }
+    .preview-media {
+      margin-top: 0.65rem;
+      border-radius: 12px;
+      overflow: hidden;
+      max-height: 240px;
+      background: #000;
+    }
+    .preview-media img, .preview-media video {
+      width: 100%;
+      max-height: 240px;
+      object-fit: cover;
+      display: block;
+    }
+    .id-chip {
+      font-size: 0.78rem;
+      color: var(--soft);
+      word-break: break-all;
+      padding: 0.5rem 0;
+    }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 1.25rem;
+      transform: translateX(-50%);
+      background: var(--surface2);
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 0.65rem 1rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 20;
+      max-width: 90vw;
+    }
+    .toast.show { opacity: 1; }
+    .empty {
+      text-align: center;
+      color: var(--soft);
+      padding: 2rem 1rem;
+      font-size: 0.95rem;
+    }
+    .person {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      align-items: center;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 0.88rem;
+    }
+    .person code {
+      font-size: 0.75rem;
+      color: var(--soft);
+      word-break: break-all;
+    }
   </style>
 </head>
 <body>
-  <div class="banner">The Remote Viewer uses the network. The Sentinel (core) does not require this.</div>
+  <div class="notice">This space connects over the network. The Sentinel on your device does not need it.</div>
 
-  <header>
+  <div class="top">
     <h1>The Remote Viewer</h1>
-    <div class="sub">Native social · N2–N4 · parallel to The Sentinel</div>
-  </header>
+    <p>Find each other. Share what you choose.</p>
+  </div>
 
-  <nav>
-    <button type="button" class="active" data-tab="directory">Directory</button>
-    <button type="button" data-tab="personas">Personas</button>
-    <button type="button" data-tab="messages">Messages</button>
-    <button type="button" data-tab="notes">Notes</button>
-  </nav>
+  <div class="tabs">
+    <button type="button" class="on" data-screen="home">Home</button>
+    <button type="button" data-screen="create">Create</button>
+    <button type="button" data-screen="talk">Talk</button>
+    <button type="button" data-screen="you">You</button>
+  </div>
 
   <main>
-    <section id="directory" class="panel active">
-      <h2>Directory</h2>
-      <p class="muted">Opt-in Viewers. Bootstrap registry + your local draft (if any).</p>
-      <div style="overflow-x:auto">
-        <table>
-          <thead>
-            <tr><th>Alias</th><th>Path</th><th>Roles</th><th>Contact</th><th>Proofs</th></tr>
-          </thead>
-          <tbody id="dir-body"></tbody>
-        </table>
+    <!-- HOME -->
+    <section id="home" class="screen on">
+      <div class="actions" style="margin-bottom:0.75rem">
+        <button type="button" class="btn primary" id="refresh-home">Refresh</button>
       </div>
+      <div id="feed"><div class="empty">When you and people you follow share posts, they appear here.</div></div>
     </section>
 
-    <section id="personas" class="panel">
-      <h2>Persona + proof attach</h2>
-      <p class="muted">Social identity only. Never paste Sentinel vault AGE-SECRET-KEY or nsec.</p>
+    <!-- CREATE -->
+    <section id="create" class="screen">
       <div class="card">
-        <h3>Profile</h3>
-        <div class="grid2">
-          <label>Alias <input id="p-alias" placeholder="your-alias" autocomplete="off"></label>
-          <label>Path
-            <select id="p-path">
-              <option value="">none</option>
-              <option value="A">A — invitation</option>
-              <option value="B">B — independent completion</option>
-            </select>
-          </label>
-          <label>Roles <input id="p-roles" placeholder="Integrity Verifier" autocomplete="off"></label>
-          <label>Contact <input id="p-contact" placeholder="X / Matrix / email" autocomplete="off"></label>
-          <label>npub (optional) <input id="p-npub" placeholder="npub1…" autocomplete="off"></label>
-          <label>Since <input id="p-since" placeholder="YYYY-MM" autocomplete="off"></label>
-        </div>
-        <label>About <textarea id="p-about" placeholder="Short public bio"></textarea></label>
-      </div>
-      <div class="card">
-        <h3>Attach proof</h3>
-        <div class="grid2">
-          <label>Claim type
-            <select id="pr-claim">
-              <option value="Path A">Path A originator</option>
-              <option value="Path B">Path B completion</option>
-              <option value="Integrity Verifier">Integrity Verifier</option>
-              <option value="Hydra PASS">Hydra PASS</option>
-              <option value="Contribution tip">Contribution tip hash</option>
-              <option value="Repo work">Repo / commit</option>
-              <option value="Other">Other</option>
-            </select>
-          </label>
-          <label>Date <input id="pr-date" type="date"></label>
-        </div>
-        <label>Evidence (URL or hash) <input id="pr-evidence" placeholder="https://… or tip=abc…" autocomplete="off"></label>
-        <label>Note (optional) <input id="pr-note" placeholder="short public note" autocomplete="off"></label>
-        <div class="row">
-          <button type="button" class="btn solid" id="pr-add">Add proof</button>
-        </div>
-        <div class="proof-list" id="pr-list"></div>
-      </div>
-      <div class="card">
-        <h3>Live preview</h3>
-        <div class="preview-card" id="preview"></div>
-        <div class="row">
-          <button type="button" class="btn solid" id="p-save">Save draft</button>
-          <button type="button" class="btn" id="p-export-md">Export markdown</button>
-          <button type="button" class="btn" id="p-export-json">Export JSON</button>
-          <button type="button" class="btn danger" id="p-clear">Clear draft</button>
-        </div>
-        <pre class="out" id="p-out">Draft is local to this browser until you export.</pre>
-      </div>
-    </section>
-
-    <section id="messages" class="panel">
-      <h2>Messages</h2>
-      <p class="muted">Native E2E · Nostr wire · nsec browser-local only · never git</p>
-      <div class="card">
-        <h3>Identity</h3>
-        <p class="muted" id="m-key-status">Loading…</p>
-        <p style="font-family:var(--mono);font-size:0.78rem;word-break:break-all" id="m-npub">(no key)</p>
-        <div class="row">
-          <button type="button" class="btn solid" id="m-gen">Generate key</button>
-          <button type="button" class="btn" id="m-import">Import nsec</button>
-          <button type="button" class="btn" id="m-copy-npub">Copy npub</button>
-          <button type="button" class="btn danger" id="m-forget">Forget key</button>
-        </div>
-      </div>
-      <div class="card">
-        <h3>Relays</h3>
-        <label>wss:// relays (one per line)
-          <textarea id="m-relays" style="min-height:72px;font-family:var(--mono);font-size:0.8rem"></textarea>
+        <h2>New post</h2>
+        <label>What do you want to share?
+          <textarea id="post-text" placeholder="Write freely…"></textarea>
         </label>
-        <div class="row">
-          <button type="button" class="btn" id="m-save-relays">Save relays</button>
+        <div class="media-row">
+          <label class="file">Add photo
+            <input type="file" id="post-photo" accept="image/*">
+          </label>
+          <label class="file">Add video
+            <input type="file" id="post-video" accept="video/*">
+          </label>
+          <button type="button" class="btn quiet" id="add-place">Add place</button>
+        </div>
+        <div class="preview-media" id="media-preview" hidden></div>
+        <label id="place-wrap" hidden>Place (optional)
+          <input id="post-place" placeholder="City, trail, venue… or leave blank">
+        </label>
+        <div class="actions">
+          <button type="button" class="btn primary" id="share-post">Share</button>
+          <button type="button" class="btn" id="save-draft">Save for later</button>
         </div>
       </div>
       <div class="card">
-        <h3>Send / inbox</h3>
-        <label>Peer npub <input id="m-to" placeholder="npub1…" autocomplete="off"></label>
-        <label>Message <textarea id="m-body" placeholder="E2E message body"></textarea></label>
-        <div class="row">
-          <button type="button" class="btn solid" id="m-send" disabled>Send encrypted</button>
-          <button type="button" class="btn" id="m-inbox" disabled>Fetch inbox</button>
-        </div>
-        <pre class="out" id="m-out">Loading N3 module…</pre>
+        <h2>Saved for later</h2>
+        <div id="drafts" class="soft">Nothing saved yet.</div>
       </div>
     </section>
 
-    <section id="notes" class="panel">
-      <h2>Signed notes</h2>
-      <p class="muted">Unranked · chronological only · same key as Messages · no engagement algorithm</p>
-      <p class="muted" id="n-key-hint">Generate or import a key under Messages first.</p>
-
+    <!-- TALK -->
+    <section id="talk" class="screen">
       <div class="card">
-        <h3>Compose</h3>
-        <label>Note <textarea id="n-body" placeholder="Public signed note…"></textarea></label>
-        <label>Tags (optional, space-separated) <input id="n-tags" placeholder="trv sentinel" autocomplete="off"></label>
-        <div class="row">
-          <button type="button" class="btn solid" id="n-post" disabled>Publish signed</button>
-          <button type="button" class="btn" id="n-save-draft">Save draft</button>
+        <h2>Private message</h2>
+        <label>Their Viewer ID
+          <input id="dm-to" placeholder="Paste the ID they shared with you" autocomplete="off">
+        </label>
+        <label>Message
+          <textarea id="dm-body" placeholder="Only the two of you should read this"></textarea>
+        </label>
+        <div class="actions">
+          <button type="button" class="btn primary" id="dm-send">Send privately</button>
+          <button type="button" class="btn" id="dm-inbox">Check messages</button>
         </div>
-        <pre class="out" id="n-out">N4 log…</pre>
+        <div id="dm-log" class="soft" style="margin-top:0.75rem;white-space:pre-wrap;font-size:0.85rem"></div>
       </div>
+    </section>
 
+    <!-- YOU -->
+    <section id="you" class="screen">
       <div class="card">
-        <h3>Local drafts</h3>
-        <div id="n-drafts"></div>
-      </div>
-
-      <div class="card">
-        <h3>Following (feed authors)</h3>
-        <p class="muted">Unranked feed pulls kind:1 from you + these npubs. No likes ranking.</p>
-        <label>Add npub <input id="n-follow-input" placeholder="npub1…" autocomplete="off"></label>
-        <div class="row">
-          <button type="button" class="btn" id="n-follow-add">Follow</button>
-          <button type="button" class="btn solid" id="n-refresh">Refresh feed</button>
+        <h2>Your Viewer</h2>
+        <p class="soft" id="you-status">Set up once. You stay in control.</p>
+        <div class="id-chip" id="you-id">No identity yet</div>
+        <div class="actions">
+          <button type="button" class="btn primary" id="create-id">Create my Viewer ID</button>
+          <button type="button" class="btn" id="restore-id">I already have one</button>
+          <button type="button" class="btn" id="copy-id">Copy my ID</button>
+          <button type="button" class="btn warn" id="forget-id">Remove from this phone</button>
         </div>
-        <div id="n-following-list" style="margin-top:0.5rem"></div>
       </div>
 
       <div class="card">
-        <h3>Feed</h3>
-        <div id="n-feed"><p class="muted">Refresh to load notes.</p></div>
+        <h2>Profile</h2>
+        <label>Display name <input id="prof-name" placeholder="How others should see you"></label>
+        <label>About <textarea id="prof-about" placeholder="A few words"></textarea></label>
+        <div class="actions">
+          <button type="button" class="btn primary" id="save-profile">Save profile</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>People you follow</h2>
+        <p class="soft">Their public posts show on Home. Private messages stay private.</p>
+        <label>Add by Viewer ID
+          <input id="follow-input" placeholder="Paste their ID" autocomplete="off">
+        </label>
+        <div class="actions">
+          <button type="button" class="btn" id="follow-add">Follow</button>
+        </div>
+        <div id="follow-list"></div>
+      </div>
+
+      <div class="card">
+        <h2>Connection path</h2>
+        <p class="soft">Advanced — only if something fails to send. Most people never touch this.</p>
+        <label>Paths (one per line)
+          <textarea id="paths" style="min-height:88px;font-size:0.85rem"></textarea>
+        </label>
+        <div class="actions">
+          <button type="button" class="btn" id="save-paths">Save paths</button>
+        </div>
       </div>
     </section>
   </main>
 
-  <footer>
-    The Remote Viewer · native N2–N4 · docs/locked/20 · core = The Sentinel
-  </footer>
+  <div class="toast" id="toast"></div>
 
-  <script>
-    (function () {
-      var STORAGE = 'rv-persona-v2';
-      var proofs = [];
-      var tabs = document.querySelectorAll('nav button');
-      var panels = document.querySelectorAll('.panel');
-      tabs.forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          tabs.forEach(function (b) { b.classList.remove('active'); });
-          panels.forEach(function (p) { p.classList.remove('active'); });
-          btn.classList.add('active');
-          document.getElementById(btn.getAttribute('data-tab')).classList.add('active');
-        });
-      });
-      function field(id) { return document.getElementById(id); }
-      function today() { return new Date().toISOString().slice(0, 10); }
-      field('pr-date').value = today();
-      function getPersona() {
-        return {
-          alias: field('p-alias').value.trim(), path: field('p-path').value,
-          roles: field('p-roles').value.trim(), contact: field('p-contact').value.trim(),
-          npub: field('p-npub').value.trim(), since: field('p-since').value.trim(),
-          about: field('p-about').value.trim(), proofs: proofs.slice()
-        };
-      }
-      function setPersona(p) {
-        if (!p) return;
-        field('p-alias').value = p.alias || ''; field('p-path').value = p.path || '';
-        field('p-roles').value = p.roles || ''; field('p-contact').value = p.contact || '';
-        field('p-npub').value = p.npub || ''; field('p-since').value = p.since || '';
-        field('p-about').value = p.about || '';
-        proofs = Array.isArray(p.proofs) ? p.proofs : [];
-        renderProofs(); renderPreview(); renderDirectory();
-      }
-      function escapeHtml(s) {
-        return String(s).replace(/[&<>"']/g, function (ch) {
-          return ({ '&': '&', '<': '<', '>': '>', '"': '"', "'": '&#39;' })[ch];
-        });
-      }
-      function renderProofs() {
-        var el = field('pr-list');
-        if (!proofs.length) { el.innerHTML = '<p class="muted">No proofs attached yet.</p>'; return; }
-        el.innerHTML = proofs.map(function (pr, i) {
-          return '<div class="proof-item"><div class="meta"><span class="pill ok">' + escapeHtml(pr.claim)
-            + '</span> <span class="muted">' + escapeHtml(pr.date || '') + '</span><br>'
-            + escapeHtml(pr.evidence || '') + '</div>'
-            + '<button type="button" class="btn danger" data-rm="' + i + '">Remove</button></div>';
-        }).join('');
-        el.querySelectorAll('[data-rm]').forEach(function (btn) {
-          btn.addEventListener('click', function () {
-            proofs.splice(parseInt(btn.getAttribute('data-rm'), 10), 1);
-            renderProofs(); renderPreview(); renderDirectory();
-          });
-        });
-      }
-      function renderPreview() {
-        var p = getPersona();
-        field('preview').innerHTML = '<h3>' + escapeHtml(p.alias || '(no alias)') + '</h3>'
-          + '<p class="muted">Path ' + escapeHtml(p.path || '—') + ' · ' + escapeHtml(p.roles || 'no roles') + '</p>'
-          + '<p class="muted">Proofs: ' + proofs.length + '</p>';
-      }
-      function renderDirectory() {
-        var rows = [{ alias: 'Sentinel-Archetecht', path: 'A', roles: 'Originator · Integrity Verifier', contact: 'X @The_Archetecht', proofs: 'registry' }];
-        var p = getPersona();
-        if (p.alias) rows.push({ alias: p.alias + ' (draft)', path: p.path || '—', roles: p.roles || '—', contact: p.contact || '—', proofs: String(proofs.length) });
-        field('dir-body').innerHTML = rows.map(function (r) {
-          return '<tr><td>' + escapeHtml(r.alias) + '</td><td>' + escapeHtml(r.path) + '</td><td>'
-            + escapeHtml(r.roles) + '</td><td>' + escapeHtml(r.contact) + '</td><td>' + escapeHtml(r.proofs) + '</td></tr>';
-        }).join('');
-      }
-      field('pr-add').addEventListener('click', function () {
-        var evidence = field('pr-evidence').value.trim();
-        if (!evidence) { field('p-out').textContent = 'Evidence required'; return; }
-        var low = evidence.toLowerCase();
-        if (low.indexOf('age-secret-key') >= 0 || low.indexOf('nsec1') === 0) {
-          field('p-out').textContent = 'Rejected: looks like a secret.'; return;
-        }
-        proofs.push({ claim: field('pr-claim').value, evidence: evidence, date: field('pr-date').value || today(), note: field('pr-note').value.trim() });
-        field('pr-evidence').value = ''; field('pr-note').value = '';
-        renderProofs(); renderPreview(); renderDirectory();
-      });
-      ['p-alias','p-path','p-roles','p-contact','p-npub','p-since','p-about'].forEach(function (id) {
-        field(id).addEventListener('input', function () { renderPreview(); renderDirectory(); });
-      });
-      field('p-save').addEventListener('click', function () {
-        localStorage.setItem(STORAGE, JSON.stringify(getPersona()));
-        field('p-out').textContent = 'Draft saved · ' + new Date().toISOString();
-        renderDirectory();
-      });
-      field('p-export-md').addEventListener('click', function () {
-        var p = getPersona();
-        var lines = ['# Persona: ' + (p.alias || 'alias'), '', '| **npub** | ' + p.npub + ' |', '', '## Proofs'];
-        proofs.forEach(function (pr) { lines.push('- ' + pr.claim + ': ' + pr.evidence); });
-        var md = lines.join('\n');
-        field('p-out').textContent = md;
-        if (navigator.clipboard) navigator.clipboard.writeText(md);
-      });
-      field('p-export-json').addEventListener('click', function () {
-        var js = JSON.stringify(getPersona(), null, 2);
-        field('p-out').textContent = js;
-        if (navigator.clipboard) navigator.clipboard.writeText(js);
-      });
-      field('p-clear').addEventListener('click', function () {
-        if (!confirm('Clear draft?')) return;
-        localStorage.removeItem(STORAGE); proofs = [];
-        ['p-alias','p-path','p-roles','p-contact','p-npub','p-since','p-about'].forEach(function (id) { field(id).value = ''; });
-        renderProofs(); renderPreview(); renderDirectory();
-      });
-      try {
-        var raw = localStorage.getItem(STORAGE);
-        if (raw) setPersona(JSON.parse(raw));
-        else { renderProofs(); renderPreview(); renderDirectory(); }
-      } catch (e) { renderProofs(); renderPreview(); renderDirectory(); }
-    })();
-  </script>
-  <script type="module">
-    import { initMessaging } from './n3-messaging.js';
-    import { initNotes } from './n4-notes.js';
-    initMessaging().catch(function (e) {
-      var el = document.getElementById('m-out');
-      if (el) el.textContent = 'N3 load failed: ' + (e && e.message ? e.message : e);
-    });
-    initNotes().catch(function (e) {
-      var el = document.getElementById('n-out');
-      if (el) el.textContent = 'N4 load failed: ' + (e && e.message ? e.message : e);
-    });
-  </script>
+  <script type="module" src="./app.js"></script>
 </body>
 </html>
