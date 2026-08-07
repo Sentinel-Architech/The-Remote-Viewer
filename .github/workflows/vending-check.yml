@@ -1,0 +1,92 @@
+name: Vending Check
+
+# Read-only. No keys. No RPC. No deliver.
+on:
+  push:
+    branches: [TheRemoteViewer, main]
+    paths:
+      - "digital-vending/**"
+      - ".github/workflows/vending-check.yml"
+  pull_request:
+    branches: [TheRemoteViewer, main]
+    paths:
+      - "digital-vending/**"
+      - ".github/workflows/vending-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vending-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  vending:
+    name: Catalog · memo-SKU · buy.html
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: digital-vending
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq jq
+
+      - name: Validate catalog.json
+        run: |
+          set -euo pipefail
+          test -f catalog.json
+          jq -e 'type == "array" and length > 0' catalog.json >/dev/null
+          jq -e 'all(.[]; has("id") and has("memo") and has("payload_path"))' catalog.json >/dev/null
+          echo "catalog.json: OK ($(jq 'length' catalog.json) items)"
+
+      - name: Required SKUs present
+        run: |
+          set -euo pipefail
+          for id in trv-posture-lite trv-posture-pack; do
+            jq -e --arg id "$id" 'any(.[]; .id == $id)' catalog.json >/dev/null \
+              || { echo "FAIL: missing catalog id $id"; exit 1; }
+          done
+          echo "required SKUs: OK"
+
+      - name: memo-to-sku maps
+        run: |
+          set -euo pipefail
+          chmod +x memo-to-sku.sh
+          test "$(bash memo-to-sku.sh 'TRV-Posture-Lite')" = "trv-posture-lite"
+          test "$(bash memo-to-sku.sh 'TRV-Posture-Pack')" = "trv-posture-pack"
+          test "$(bash memo-to-sku.sh 'SENTINEL-ZK-01')" = "sentinel-skill-zk-01"
+          # unknown must fail
+          if bash memo-to-sku.sh 'NOT-A-REAL-MEMO' 2>/dev/null; then
+            echo "FAIL: unknown memo should exit non-zero"; exit 1
+          fi
+          echo "memo-to-sku: OK"
+
+      - name: buy.html has memos + address
+        run: |
+          set -euo pipefail
+          test -f buy.html
+          grep -q 'TRV-Posture-Lite' buy.html
+          grep -q 'TRV-Posture-Pack' buy.html
+          grep -q 'HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv' buy.html
+          grep -q 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v' buy.html
+          grep -q 'solana:' buy.html
+          echo "buy.html: OK"
+
+      - name: Payload files exist for catalog entries
+        run: |
+          set -euo pipefail
+          while IFS= read -r path; do
+            test -f "$path" || { echo "FAIL: missing payload $path"; exit 1; }
+          done < <(jq -r '.[].payload_path' catalog.json)
+          echo "payloads: OK"
+
+      - name: Scripts are present
+        run: |
+          set -euo pipefail
+          for s in memo-to-sku.sh deliver-from-memo.sh auto-deliver.sh log-sale.sh seller-deliver.sh buyer-receive.sh; do
+            test -f "$s" || { echo "FAIL: missing $s"; exit 1; }
+          done
+          echo "scripts: OK"
