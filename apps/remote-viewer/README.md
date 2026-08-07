@@ -2,23 +2,30 @@
 
 > This space connects over the network. The Sentinel on your device does not need it.
 
-Native social layer for Viewers — posts, photos, video, private talk, optional place.
+**DApp for anyone — open, install, enjoy in seconds.**
 
-## Run
+## For everyone (no terminal)
+
+1. Open the public link (HTTPS host of this folder).
+2. Welcome plays · Gateway Process is highlighted.
+3. Tap **Install app** when offered (or browser → Add to Home Screen).
+4. Create your Viewer ID and share.
+
+No git. No Termux. No developer tools.
+
+## For local builders
 
 ```bash
 cd apps/remote-viewer
 python3 -m http.server 8777 --bind 127.0.0.1
-# open http://127.0.0.1:8777/
+# http://127.0.0.1:8777/
 ```
 
-## What Viewers see
+## Parallel to core
 
-| Screen | Purpose |
-|--------|--------|
-| **Home** | Posts from you and people you follow |
-| **Create** | Text · photo · video · optional place |
-| **Talk** | Private messages |
-| **You** | Viewer ID · profile · people you follow |
+| Everyone | Operators |
+|----------|-----------|
+| **The Remote Viewer** (this DApp) | **The Sentinel** (`apps/ui`) |
+| Network social · shop · posts | Device-local integrity |
 
-No developer jargon in the interface. Media currently embeds small files (about 1.5 MB max per item). Larger media hosting can come later without changing the product language.
+Locks: `docs/locked/20` · `21` · `22`
