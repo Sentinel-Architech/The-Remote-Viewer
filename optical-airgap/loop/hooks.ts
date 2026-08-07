@@ -3,7 +3,7 @@
  * Policy/state stay Vault-local; wiped on Destroy = Restart.
  *
  * Phase 3: ONE measurable adaptive control loop (not a full policy engine).
- * Runs anywhere Node/TS runs — not GrapheneOS-only.
+ * Hysteresis bands + sample debounce. Portable to all open-stack hosts.
  */
 
 export type ExpertId = "security" | "protocol" | "privacy" | "coordinator";
@@ -14,7 +14,7 @@ export interface OpticalMetrics {
   recoverRatio: number; // 0..1
   crcFailures: number;
   gateRejections: number;
-  /** Scan/gate attempts — used for gateRejectRate. Defaults handled in controller. */
+  /** Scan/gate attempts — used for gateRejectRate. */
   scanAttempts?: number;
   framesPerSecond?: number;
   complete: boolean;
@@ -38,33 +38,40 @@ export type AdaptiveAction =
 export type ActionKind = AdaptiveAction["kind"];
 
 /**
- * Hysteresis / hold state for the optical control loop.
- * Keep in Vault-local memory only; never commit; Destroy = Restart wipes it.
+ * Hysteresis + debounce state for the optical control loop.
+ * Vault-local only; never commit; Destroy = Restart wipes it.
  */
 export interface OpticalControlState {
-  /** Action currently held (sticky until exit band). */
+  /** Committed action (sticky until exit band + debounce). */
   active: ActionKind;
-  /** Last suggestFps when active === lower_fps */
+  /** Candidate not yet committed. */
+  pending: ActionKind;
+  /** Consecutive samples agreeing on pending. */
+  pendingCount: number;
   suggestFps?: number;
   updatedAt: number;
 }
 
+/** Samples that must agree before a state change commits (~3 × 250ms scan). */
+export const DEBOUNCE_SAMPLES = 3;
+
 export function initialControlState(ts = Date.now()): OpticalControlState {
-  return { active: "none", updatedAt: ts };
+  return {
+    active: "none",
+    pending: "none",
+    pendingCount: 0,
+    updatedAt: ts,
+  };
 }
 
 /** Enter / exit bands — rates unless noted. */
 export const BANDS = {
-  /** CRC failures / max(ingested, 1) */
   crcEnter: 0.05,
   crcExit: 0.02,
-  /** Gate rejects / max(scanAttempts, 1) */
   gateEnter: 0.4,
   gateExit: 0.15,
-  /** recoverRatio (absolute, not rate) */
   peelEnter: 0.3,
   peelExit: 0.5,
-  /** Minimum ingested before peel rule may fire */
   peelMinSymbols: 1,
 } as const;
 
@@ -94,13 +101,11 @@ export function emitOpticalEvent(ev: LoopEvent): void {
 }
 
 function crcRate(m: OpticalMetrics): number {
-  const den = Math.max(m.symbolsIngested, 1);
-  return m.crcFailures / den;
+  return m.crcFailures / Math.max(m.symbolsIngested, 1);
 }
 
 function gateRejectRate(m: OpticalMetrics): number {
-  const den = Math.max(m.scanAttempts ?? m.gateRejections, 1);
-  return m.gateRejections / den;
+  return m.gateRejections / Math.max(m.scanAttempts ?? m.gateRejections, 1);
 }
 
 function actionFromKind(
@@ -139,73 +144,105 @@ function actionFromKind(
 }
 
 /**
- * Closed-loop optical controller with hysteresis.
- *
- * Priority when selecting a NEW action:
- *   complete > CRC > gate > slow peel > none
- *
- * While an action is active, it STAYS until its exit band clears
- * (or a higher-priority condition forces a change).
+ * Desired action from metrics + hysteresis bands (no debounce yet).
+ * Priority: complete > CRC > gate > peel > none.
  */
-export function decideOpticalAction(
+function candidateAction(
   m: OpticalMetrics,
-  state: OpticalControlState = initialControlState(m.ts)
-): { action: AdaptiveAction; state: OpticalControlState } {
-  const ts = m.ts || Date.now();
+  active: ActionKind
+): ActionKind {
+  if (m.complete) return "complete";
+
   const crc = crcRate(m);
   const gate = gateRejectRate(m);
-
-  // Terminal success always wins.
-  if (m.complete) {
-    const action = actionFromKind("complete", m, state);
-    return { action, state: { active: "complete", updatedAt: ts } };
-  }
-
-  // Higher-priority raw conditions (enter bands).
   const crcHot = crc > BANDS.crcEnter;
   const gateHot = gate > BANDS.gateEnter;
   const peelHot =
     m.symbolsIngested >= BANDS.peelMinSymbols &&
     m.recoverRatio > 0 &&
     m.recoverRatio < BANDS.peelEnter;
-
-  // Exit bands (clear sticky action).
   const crcClear = crc < BANDS.crcExit;
   const gateClear = gate < BANDS.gateExit;
   const peelClear = m.recoverRatio >= BANDS.peelExit;
 
-  let next: ActionKind = state.active;
+  if (crcHot) return "lower_fps";
+  if (gateHot && active !== "lower_fps") return "check_optics";
+  if (peelHot && active === "none") return "send_more";
 
-  // Priority upgrade: hotter higher-priority condition can preempt.
-  if (crcHot) {
-    next = "lower_fps";
-  } else if (gateHot && state.active !== "lower_fps") {
-    next = "check_optics";
-  } else if (peelHot && state.active === "none") {
-    next = "send_more";
+  switch (active) {
+    case "lower_fps":
+      if (crcClear) return gateHot ? "check_optics" : peelHot ? "send_more" : "none";
+      return "lower_fps";
+    case "check_optics":
+      if (gateClear) return peelHot ? "send_more" : "none";
+      return "check_optics";
+    case "send_more":
+      if (peelClear) return "none";
+      return "send_more";
+    case "complete":
+      return "none";
+    default:
+      return "none";
+  }
+}
+
+/**
+ * Closed-loop optical controller: hysteresis + sample debounce.
+ *
+ * A new action commits only after DEBOUNCE_SAMPLES consecutive
+ * samples agree on the candidate. `complete` commits immediately.
+ */
+export function decideOpticalAction(
+  m: OpticalMetrics,
+  state: OpticalControlState = initialControlState(m.ts)
+): { action: AdaptiveAction; state: OpticalControlState } {
+  const ts = m.ts || Date.now();
+  const desired = candidateAction(m, state.active);
+
+  // Terminal success: no debounce.
+  if (desired === "complete") {
+    const action = actionFromKind("complete", m, state);
+    return {
+      action,
+      state: {
+        active: "complete",
+        pending: "complete",
+        pendingCount: 0,
+        updatedAt: ts,
+        suggestFps: state.suggestFps,
+      },
+    };
+  }
+
+  let active = state.active;
+  let pending = state.pending;
+  let pendingCount = state.pendingCount;
+
+  if (desired === active) {
+    // Stable on committed action — clear pending.
+    pending = active;
+    pendingCount = 0;
+  } else if (desired === pending) {
+    pendingCount += 1;
+    if (pendingCount >= DEBOUNCE_SAMPLES) {
+      active = pending;
+      pendingCount = 0;
+    }
   } else {
-    // Hysteresis hold / clear
-    switch (state.active) {
-      case "lower_fps":
-        if (crcClear) next = gateHot ? "check_optics" : peelHot ? "send_more" : "none";
-        break;
-      case "check_optics":
-        if (gateClear) next = peelHot ? "send_more" : "none";
-        break;
-      case "send_more":
-        if (peelClear) next = "none";
-        break;
-      case "complete":
-        next = "none";
-        break;
-      default:
-        next = "none";
+    // New candidate — restart debounce counter.
+    pending = desired;
+    pendingCount = 1;
+    if (DEBOUNCE_SAMPLES <= 1) {
+      active = pending;
+      pendingCount = 0;
     }
   }
 
-  const action = actionFromKind(next, m, state);
+  const action = actionFromKind(active, m, state);
   const newState: OpticalControlState = {
-    active: next,
+    active,
+    pending,
+    pendingCount,
     updatedAt: ts,
     suggestFps: action.kind === "lower_fps" ? action.suggestFps : state.suggestFps,
   };
