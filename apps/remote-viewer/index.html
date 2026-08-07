@@ -66,7 +66,7 @@
     pre.out {
       margin-top: 0.75rem; padding: 0.65rem; background: #0a0e14; border-radius: 8px;
       border: 1px solid var(--border); font-family: var(--mono); font-size: 0.75rem;
-      white-space: pre-wrap; word-break: break-word; color: var(--muted); max-height: 220px; overflow: auto;
+      white-space: pre-wrap; word-break: break-word; color: var(--muted); max-height: 280px; overflow: auto;
     }
     .proof-list { margin-top: 0.5rem; }
     .proof-item {
@@ -93,7 +93,7 @@
 
   <header>
     <h1>The Remote Viewer</h1>
-    <div class="sub">Native social layer · N2 persona + proof attach · parallel to The Sentinel</div>
+    <div class="sub">Native social · N2 persona · N3 messaging · parallel to The Sentinel</div>
   </header>
 
   <nav>
@@ -115,13 +115,11 @@
           <tbody id="dir-body"></tbody>
         </table>
       </div>
-      <p class="muted" style="margin-top:0.75rem">Your draft appears here after save. Export markdown to mirror into git when ready.</p>
     </section>
 
     <section id="personas" class="panel">
       <h2>Persona + proof attach</h2>
       <p class="muted">Social identity only. Never paste Sentinel vault AGE-SECRET-KEY or nsec.</p>
-
       <div class="card">
         <h3>Profile</h3>
         <div class="grid2">
@@ -140,10 +138,8 @@
         </div>
         <label>About <textarea id="p-about" placeholder="Short public bio"></textarea></label>
       </div>
-
       <div class="card">
         <h3>Attach proof</h3>
-        <p class="muted">Sentinel → Remote Viewer claims. Evidence must be non-secret (URL, tip hash, commit).</p>
         <div class="grid2">
           <label>Claim type
             <select id="pr-claim">
@@ -165,7 +161,6 @@
         </div>
         <div class="proof-list" id="pr-list"></div>
       </div>
-
       <div class="card">
         <h3>Live preview</h3>
         <div class="preview-card" id="preview"></div>
@@ -177,24 +172,40 @@
         </div>
         <pre class="out" id="p-out">Draft is local to this browser until you export.</pre>
       </div>
-
-      <div class="card" id="persona-view">
-        <h3>Registry bootstrap</h3>
-        <p class="muted">Sentinel-Archetecht · Path A · Originator · Integrity Verifier</p>
-        <p class="muted">Proofs: REALITY.md · Hydra PASS · Verifier overall_ok · Path B vending (2026-08-07)</p>
-      </div>
     </section>
 
     <section id="messages" class="panel">
       <h2>Messages</h2>
-      <p class="muted">Native E2E shell. Wire N3 (Nostr behind this UI).</p>
+      <p class="muted">Native E2E · Nostr wire · nsec browser-local only · never git</p>
       <div class="card">
-        <label>Peer npub or alias <input id="m-to" placeholder="npub1… or alias" autocomplete="off"></label>
-        <label>Message <textarea id="m-body" placeholder="Message body"></textarea></label>
+        <h3>Identity</h3>
+        <p class="muted" id="m-key-status">Loading…</p>
+        <p style="font-family:var(--mono);font-size:0.78rem;word-break:break-all" id="m-npub">(no key)</p>
         <div class="row">
-          <button type="button" class="btn" id="m-send" disabled>Send (wire N3)</button>
+          <button type="button" class="btn solid" id="m-gen">Generate key</button>
+          <button type="button" class="btn" id="m-import">Import nsec</button>
+          <button type="button" class="btn" id="m-copy-npub">Copy npub</button>
+          <button type="button" class="btn danger" id="m-forget">Forget key</button>
         </div>
-        <pre class="out" id="m-out">N3 will attach in-app signer + relays. age-drop remains offline fallback.</pre>
+      </div>
+      <div class="card">
+        <h3>Relays</h3>
+        <label>wss:// relays (one per line)
+          <textarea id="m-relays" style="min-height:72px;font-family:var(--mono);font-size:0.8rem"></textarea>
+        </label>
+        <div class="row">
+          <button type="button" class="btn" id="m-save-relays">Save relays</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Send / inbox</h3>
+        <label>Peer npub <input id="m-to" placeholder="npub1…" autocomplete="off"></label>
+        <label>Message <textarea id="m-body" placeholder="E2E message body"></textarea></label>
+        <div class="row">
+          <button type="button" class="btn solid" id="m-send" disabled>Send encrypted</button>
+          <button type="button" class="btn" id="m-inbox" disabled>Fetch inbox</button>
+        </div>
+        <pre class="out" id="m-out">Loading N3 module…</pre>
       </div>
     </section>
 
@@ -212,14 +223,13 @@
   </main>
 
   <footer>
-    The Remote Viewer · native N2 · docs/locked/20 · core = The Sentinel
+    The Remote Viewer · native N2+N3 · docs/locked/20 · core = The Sentinel
   </footer>
 
   <script>
     (function () {
       var STORAGE = 'rv-persona-v2';
       var proofs = [];
-
       var tabs = document.querySelectorAll('nav button');
       var panels = document.querySelectorAll('.panel');
       tabs.forEach(function (btn) {
@@ -230,58 +240,39 @@
           document.getElementById(btn.getAttribute('data-tab')).classList.add('active');
         });
       });
-
       function field(id) { return document.getElementById(id); }
-
-      function today() {
-        var d = new Date();
-        return d.toISOString().slice(0, 10);
-      }
+      function today() { return new Date().toISOString().slice(0, 10); }
       field('pr-date').value = today();
-
       function getPersona() {
         return {
-          alias: field('p-alias').value.trim(),
-          path: field('p-path').value,
-          roles: field('p-roles').value.trim(),
-          contact: field('p-contact').value.trim(),
-          npub: field('p-npub').value.trim(),
-          since: field('p-since').value.trim(),
-          about: field('p-about').value.trim(),
-          proofs: proofs.slice()
+          alias: field('p-alias').value.trim(), path: field('p-path').value,
+          roles: field('p-roles').value.trim(), contact: field('p-contact').value.trim(),
+          npub: field('p-npub').value.trim(), since: field('p-since').value.trim(),
+          about: field('p-about').value.trim(), proofs: proofs.slice()
         };
       }
-
       function setPersona(p) {
         if (!p) return;
-        field('p-alias').value = p.alias || '';
-        field('p-path').value = p.path || '';
-        field('p-roles').value = p.roles || '';
-        field('p-contact').value = p.contact || '';
-        field('p-npub').value = p.npub || '';
-        field('p-since').value = p.since || '';
+        field('p-alias').value = p.alias || ''; field('p-path').value = p.path || '';
+        field('p-roles').value = p.roles || ''; field('p-contact').value = p.contact || '';
+        field('p-npub').value = p.npub || ''; field('p-since').value = p.since || '';
         field('p-about').value = p.about || '';
         proofs = Array.isArray(p.proofs) ? p.proofs : [];
-        renderProofs();
-        renderPreview();
-        renderDirectory();
+        renderProofs(); renderPreview(); renderDirectory();
       }
-
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, function (ch) {
+          return ({ '&': '&', '<': '<', '>': '>', '"': '"', "'": '&#39;' })[ch];
+        });
+      }
       function renderProofs() {
         var el = field('pr-list');
-        if (!proofs.length) {
-          el.innerHTML = '<p class="muted">No proofs attached yet.</p>';
-          return;
-        }
+        if (!proofs.length) { el.innerHTML = '<p class="muted">No proofs attached yet.</p>'; return; }
         el.innerHTML = proofs.map(function (pr, i) {
-          return '<div class="proof-item">'
-            + '<div class="meta"><span class="pill ok">' + escapeHtml(pr.claim) + '</span> '
-            + '<span class="muted">' + escapeHtml(pr.date || '') + '</span><br>'
-            + escapeHtml(pr.evidence || '')
-            + (pr.note ? '<br><span class="muted">' + escapeHtml(pr.note) + '</span>' : '')
-            + '</div>'
-            + '<button type="button" class="btn danger" data-rm="' + i + '">Remove</button>'
-            + '</div>';
+          return '<div class="proof-item"><div class="meta"><span class="pill ok">' + escapeHtml(pr.claim)
+            + '</span> <span class="muted">' + escapeHtml(pr.date || '') + '</span><br>'
+            + escapeHtml(pr.evidence || '') + '</div>'
+            + '<button type="button" class="btn danger" data-rm="' + i + '">Remove</button></div>';
         }).join('');
         el.querySelectorAll('[data-rm]').forEach(function (btn) {
           btn.addEventListener('click', function () {
@@ -290,157 +281,74 @@
           });
         });
       }
-
-      function escapeHtml(s) {
-        return String(s).replace(/[&<>"']/g, function (c) {
-          return ({ '&': '&', '<': '<', '>': '>', '"': '"', "'": '&#39;' })[c];
-        });
-      }
-
       function renderPreview() {
         var p = getPersona();
-        var html = '<h3>' + escapeHtml(p.alias || '(no alias)') + '</h3>'
-          + '<p class="muted">Path ' + escapeHtml(p.path || '—') + ' · '
-          + escapeHtml(p.roles || 'no roles') + '</p>'
-          + (p.contact ? '<p class="muted">' + escapeHtml(p.contact) + '</p>' : '')
-          + (p.npub ? '<p class="muted" style="font-family:var(--mono);font-size:0.78rem">' + escapeHtml(p.npub) + '</p>' : '')
-          + (p.about ? '<p>' + escapeHtml(p.about) + '</p>' : '')
+        field('preview').innerHTML = '<h3>' + escapeHtml(p.alias || '(no alias)') + '</h3>'
+          + '<p class="muted">Path ' + escapeHtml(p.path || '—') + ' · ' + escapeHtml(p.roles || 'no roles') + '</p>'
           + '<p class="muted">Proofs: ' + proofs.length + '</p>';
-        field('preview').innerHTML = html;
       }
-
       function renderDirectory() {
-        var body = field('dir-body');
-        var rows = [
-          {
-            alias: 'Sentinel-Archetecht', path: 'A',
-            roles: 'Originator · Integrity Verifier',
-            contact: 'X @The_Archetecht · GitHub',
-            proofs: 'registry'
-          }
-        ];
+        var rows = [{ alias: 'Sentinel-Archetecht', path: 'A', roles: 'Originator · Integrity Verifier', contact: 'X @The_Archetecht', proofs: 'registry' }];
         var p = getPersona();
-        if (p.alias) {
-          rows.push({
-            alias: p.alias + ' (draft)',
-            path: p.path || '—',
-            roles: p.roles || '—',
-            contact: p.contact || '—',
-            proofs: String(proofs.length)
-          });
-        }
-        body.innerHTML = rows.map(function (r) {
-          return '<tr><td>' + escapeHtml(r.alias) + '</td><td>' + escapeHtml(r.path)
-            + '</td><td>' + escapeHtml(r.roles) + '</td><td>' + escapeHtml(r.contact)
-            + '</td><td>' + escapeHtml(r.proofs) + '</td></tr>';
+        if (p.alias) rows.push({ alias: p.alias + ' (draft)', path: p.path || '—', roles: p.roles || '—', contact: p.contact || '—', proofs: String(proofs.length) });
+        field('dir-body').innerHTML = rows.map(function (r) {
+          return '<tr><td>' + escapeHtml(r.alias) + '</td><td>' + escapeHtml(r.path) + '</td><td>'
+            + escapeHtml(r.roles) + '</td><td>' + escapeHtml(r.contact) + '</td><td>' + escapeHtml(r.proofs) + '</td></tr>';
         }).join('');
       }
-
       field('pr-add').addEventListener('click', function () {
         var evidence = field('pr-evidence').value.trim();
-        if (!evidence) {
-          field('p-out').textContent = 'Evidence required (URL or hash).';
-          return;
-        }
-        // soft reject secrets
+        if (!evidence) { field('p-out').textContent = 'Evidence required'; return; }
         var low = evidence.toLowerCase();
-        if (low.indexOf('age-secret-key') >= 0 || low.indexOf('nsec1') === 0 || /seed phrase/i.test(evidence)) {
-          field('p-out').textContent = 'Rejected: looks like a secret. Publish only public evidence.';
-          return;
+        if (low.indexOf('age-secret-key') >= 0 || low.indexOf('nsec1') === 0) {
+          field('p-out').textContent = 'Rejected: looks like a secret.'; return;
         }
-        proofs.push({
-          claim: field('pr-claim').value,
-          evidence: evidence,
-          date: field('pr-date').value || today(),
-          note: field('pr-note').value.trim()
-        });
-        field('pr-evidence').value = '';
-        field('pr-note').value = '';
+        proofs.push({ claim: field('pr-claim').value, evidence: evidence, date: field('pr-date').value || today(), note: field('pr-note').value.trim() });
+        field('pr-evidence').value = ''; field('pr-note').value = '';
         renderProofs(); renderPreview(); renderDirectory();
-        field('p-out').textContent = 'Proof attached (' + proofs.length + ' total). Save draft to persist.';
       });
-
       ['p-alias','p-path','p-roles','p-contact','p-npub','p-since','p-about'].forEach(function (id) {
         field(id).addEventListener('input', function () { renderPreview(); renderDirectory(); });
       });
-
-      function save() {
-        var p = getPersona();
-        localStorage.setItem(STORAGE, JSON.stringify(p));
-        field('p-out').textContent = 'Draft saved locally · ' + new Date().toISOString();
+      field('p-save').addEventListener('click', function () {
+        localStorage.setItem(STORAGE, JSON.stringify(getPersona()));
+        field('p-out').textContent = 'Draft saved · ' + new Date().toISOString();
         renderDirectory();
-      }
-
-      function exportMd() {
+      });
+      field('p-export-md').addEventListener('click', function () {
         var p = getPersona();
-        var alias = p.alias || 'alias';
-        var lines = [
-          '# Persona: ' + alias,
-          '',
-          '> **The Remote Viewer uses the network. The Sentinel (core) does not require this.**',
-          '',
-          '| Field | Value |',
-          '|-------|-------|',
-          '| **Alias** | ' + (p.alias || '') + ' |',
-          '| **Path** | ' + (p.path || '') + ' |',
-          '| **Roles** | ' + (p.roles || '') + ' |',
-          '| **Contact** | ' + (p.contact || '') + ' |',
-          '| **npub** | ' + (p.npub || '') + ' |',
-          '| **Since** | ' + (p.since || '') + ' |',
-          '',
-          '## About',
-          '',
-          p.about || '',
-          '',
-          '## Proofs',
-          '',
-          '| Claim | Evidence | Date | Note |',
-          '|-------|----------|------|------|'
-        ];
-        proofs.forEach(function (pr) {
-          lines.push('| ' + pr.claim + ' | ' + pr.evidence + ' | ' + (pr.date || '') + ' | ' + (pr.note || '') + ' |');
-        });
-        if (!proofs.length) lines.push('| | | | |');
+        var lines = ['# Persona: ' + (p.alias || 'alias'), '', '| Field | Value |', '|-------|-------|',
+          '| **Alias** | ' + p.alias + ' |', '| **Path** | ' + p.path + ' |', '| **npub** | ' + p.npub + ' |', '', '## Proofs', ''];
+        proofs.forEach(function (pr) { lines.push('- ' + pr.claim + ': ' + pr.evidence + ' (' + pr.date + ')'); });
         var md = lines.join('\n');
         field('p-out').textContent = md;
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(md);
-        }
-      }
-
-      function exportJson() {
-        var p = getPersona();
-        var js = JSON.stringify(p, null, 2);
+        if (navigator.clipboard) navigator.clipboard.writeText(md);
+      });
+      field('p-export-json').addEventListener('click', function () {
+        var js = JSON.stringify(getPersona(), null, 2);
         field('p-out').textContent = js;
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(js);
-        }
-      }
-
-      function clearDraft() {
-        if (!confirm('Clear local persona draft?')) return;
-        localStorage.removeItem(STORAGE);
-        proofs = [];
-        ['p-alias','p-path','p-roles','p-contact','p-npub','p-since','p-about'].forEach(function (id) {
-          field(id).value = '';
-        });
+        if (navigator.clipboard) navigator.clipboard.writeText(js);
+      });
+      field('p-clear').addEventListener('click', function () {
+        if (!confirm('Clear draft?')) return;
+        localStorage.removeItem(STORAGE); proofs = [];
+        ['p-alias','p-path','p-roles','p-contact','p-npub','p-since','p-about'].forEach(function (id) { field(id).value = ''; });
         renderProofs(); renderPreview(); renderDirectory();
-        field('p-out').textContent = 'Draft cleared.';
-      }
-
-      field('p-save').addEventListener('click', save);
-      field('p-export-md').addEventListener('click', exportMd);
-      field('p-export-json').addEventListener('click', exportJson);
-      field('p-clear').addEventListener('click', clearDraft);
-
+      });
       try {
         var raw = localStorage.getItem(STORAGE);
         if (raw) setPersona(JSON.parse(raw));
         else { renderProofs(); renderPreview(); renderDirectory(); }
-      } catch (e) {
-        renderProofs(); renderPreview(); renderDirectory();
-      }
+      } catch (e) { renderProofs(); renderPreview(); renderDirectory(); }
     })();
+  </script>
+  <script type="module">
+    import { initMessaging } from './n3-messaging.js';
+    initMessaging().catch(function (e) {
+      var el = document.getElementById('m-out');
+      if (el) el.textContent = 'N3 load failed: ' + (e && e.message ? e.message : e)
+        + '\nNeeds network to fetch nostr-tools (Remote Viewer is labeled network).';
+    });
   </script>
 </body>
 </html>
