@@ -12,45 +12,41 @@
 | **Optical or file** | Handoff |
 | **SPL TRV mint** | **Deferred** — no official aarch64 Solana CLI |
 
-Mint does **not** block sales. Catalog prices stay USDC/manual until an x86 host creates a mint.
-
 ## Seller checklist (one sale)
 
-1. Buyer pays (USDC memo / cash / XMR) — you verify.  
-2. Buyer sends **`age1…` only** (never their identity).  
+1. Buyer pays — you verify.  
+2. Buyer sends **`age1…` only**.  
 3. Deliver:
 
 ```bash
 cd $HOME/The-Remote-Viewer/digital-vending
-mkdir -p $HOME/trv-deliver
-./seller-deliver.sh trv-posture-lite 'age1...' > $HOME/trv-deliver/sale.trvl
+bash seller-ops.sh deliver trv-posture-lite 'age1...'
 ```
 
-4. Send `sale.trvl` (or optical paste path).  
-5. Buyer: `./buyer-receive.sh $HOME/vault-identity.txt < sale.trvl`  
-6. You: no buyer identity stored; optional `bash status.sh`
+4. Send the `.trvl` file (or optical paste).  
+5. Buyer: `./buyer-receive.sh $HOME/vault-identity.txt < sale.trvl`
 
-## Demo vs production payloads
+## Payloads (content)
 
-| ID | Use |
-|----|-----|
-| `hello-sentinel-demo` | Test only — price 0 |
-| `trv-posture-lite` / `pack` | Real catalog text — replace files under `payloads/` before charging |
-| `sentinel-skill-zk-01` | Same — put real content in payload file |
+| ID | File | Notes |
+|----|------|--------|
+| trv-posture-lite | payloads/trv-posture-lite.txt | Core rules — sellable |
+| trv-posture-pack | payloads/trv-posture-pack.txt | Extended operator pack |
+| sentinel-skill-zk-01 | payloads/sentinel-zk-01.txt | ZK membership notes |
+| hello-sentinel-demo | payloads/hello-sentinel.txt | Test only — price 0 |
 
-**Never** ship Vault identities or mint authorities inside payloads.
+Edit those files to revise what buyers receive. Re-run deliver after edits.
 
-## Ops helpers
+## Ops
 
 ```bash
-bash seller-ops.sh list          # catalog ids
-bash seller-ops.sh status        # chute inventory
-bash seller-ops.sh deliver <id> <age1...> [outfile]
-bash e2e-optical-demo.sh         # dry run + wipe demo keys after
+bash seller-ops.sh list
+bash seller-ops.sh status
+bash e2e-optical-demo.sh hello-sentinel-demo   # dry run
 ```
 
-## Non-goals (Phase 4 product)
+## Non-goals
 
 - On-phone Solana mint  
 - Platform custody of buyer keys  
-- Auto-posting secrets to chat  
+- Yield / investment framing  

@@ -1,1 +1,35 @@
-TRV Posture Lite — core zero-trust rules, optical air-gap, Destroy = Restart. American-made sovereign stack. No platform custody.
+TRV POSTURE LITE — Sentinel Standard (local-first)
+====================================================
+American-made sovereign stack. No platform custody.
+
+1. ENCRYPT FIRST
+   Plaintext never rides RDH/LT/QR as the secret.
+   age encrypt → then Soliton LT (TRVL) → optical or file.
+
+2. IDENTITY IN VAULT ONLY
+   AGE-SECRET-KEY stays on device. Never git, chat, or screenshots.
+   age1… recipient may leave the device. Identity never does.
+
+3. DESTROY = RESTART
+   After tests or exposure: wipe identity + experiment blobs.
+   Burn any key that appeared in scrollback. Keygen again.
+
+4. OPTICAL AIR-GAP
+   TRVL1 frames · gate v2 · exact length (u32 prefix).
+   Robust Soliton LT only (not RaptorQ).
+   Paste path and camera path both valid; paste proves peel without optics.
+
+5. FEEDBACK LOOP (receiver)
+   Rate metrics + hysteresis + debounce.
+   Actions: lower_fps | check_optics | send_more | complete.
+   Prefer Destroy residual buffers after complete.
+
+6. DEVICES
+   All open-stack hosts. GrapheneOS = hardened reference, not a gate.
+   Use $HOME paths on Termux — never /tmp, never escaped tilde.
+
+7. VENDING
+   Payment signal (USDC/manual/XMR) is separate from delivery.
+   Delivery is always age + TRVL. Seller never holds buyer identity.
+
+Verify: optical-airgap INSTALL.md · VAULT.md · digital-vending PRODUCT.md

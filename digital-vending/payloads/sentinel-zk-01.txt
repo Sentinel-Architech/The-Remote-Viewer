@@ -1,1 +1,31 @@
-ZK Membership Skill — sample notes for on-device membership proofs under the Sentinel coordinator. Primary sources only.
+SENTINEL ZK MEMBERSHIP SKILL PACK — Notes (on-device)
+=====================================================
+Design notes for specialist router / membership proofs.
+Not a circuit dump. Not a custody service.
+
+1. GOAL
+   Prove membership in a set without revealing which member.
+   Keep witness and identity local. Verify on edge or peer.
+
+2. BOUNDARIES
+   - No trusted third party holding witnesses
+   - No “proof as login to our cloud”
+   - Optical/Vault path remains independent of any chain
+
+3. SKETCH
+   - Commit set Merkle root (or equivalent) offline
+   - Member holds leaf + path; produces proof on device
+   - Verifier checks against published root only
+   - Rotate roots on explicit governance events
+
+4. ANTI-PATTERNS
+   - Shipping private witnesses in chat
+   - Reusing demo provers as production keys
+   - Binding proofs to phone numbers or email
+
+5. FIT WITH TRV
+   Delivery of this pack uses the same chute: age → TRVL → buyer decrypt.
+   Payment rail separate. Destroy demo material after study.
+
+Next implementation step (when you schedule it): pick one proving system,
+lock a root format, and add a local verifier binary — still offline-first.
