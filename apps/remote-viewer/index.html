@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <title>The Remote Viewer</title>
+  <style>
+    :root {
+      --bg: #0a0c10; --panel: #12161e; --border: #2a3344; --text: #e8eef6;
+      --muted: #8b9bb0; --accent: #5b9fd4; --warn: #e6b84d; --ok: #6bcf6b;
+      --radius: 12px; --font: system-ui, -apple-system, sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100dvh; line-height: 1.45; }
+    .banner {
+      background: #2a2210; color: var(--warn); font-size: 0.8rem; padding: 0.65rem 1rem;
+      border-bottom: 1px solid #5a4a20; text-align: center;
+    }
+    header { padding: 1.25rem 1rem 0.5rem; max-width: 920px; margin: 0 auto; }
+    h1 { margin: 0 0 0.25rem; font-size: 1.4rem; letter-spacing: 0.02em; }
+    .sub { color: var(--muted); font-size: 0.9rem; }
+    nav {
+      display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0.75rem 1rem 1rem;
+      max-width: 920px; margin: 0 auto;
+    }
+    nav button {
+      appearance: none; border: 1px solid var(--border); background: var(--panel);
+      color: var(--text); border-radius: 999px; padding: 0.4rem 0.85rem;
+      font: inherit; font-size: 0.85rem; cursor: pointer;
+    }
+    nav button.active { border-color: var(--accent); color: var(--accent); }
+    main { max-width: 920px; margin: 0 auto; padding: 0 1rem 3rem; }
+    .panel {
+      display: none; background: var(--panel); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1rem 1.1rem;
+    }
+    .panel.active { display: block; }
+    h2 { margin: 0 0 0.75rem; font-size: 1.05rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td { text-align: left; padding: 0.45rem 0.35rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; }
+    a { color: var(--accent); }
+    .muted { color: var(--muted); font-size: 0.88rem; }
+    .card {
+      border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem;
+      margin: 0.6rem 0;
+    }
+    .card h3 { margin: 0 0 0.35rem; font-size: 0.95rem; }
+    label { display: block; font-size: 0.8rem; color: var(--muted); margin-top: 0.55rem; }
+    input, textarea {
+      width: 100%; margin-top: 0.25rem; padding: 0.5rem 0.6rem; border-radius: 8px;
+      border: 1px solid var(--border); background: #0a0e14; color: var(--text); font: inherit;
+    }
+    textarea { min-height: 88px; resize: vertical; }
+    .row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+    .btn {
+      appearance: none; border: 1px solid var(--accent); background: transparent;
+      color: var(--accent); border-radius: 8px; padding: 0.45rem 0.8rem;
+      font: inherit; font-size: 0.85rem; cursor: pointer;
+    }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    pre.out {
+      margin-top: 0.75rem; padding: 0.65rem; background: #0a0e14; border-radius: 8px;
+      border: 1px solid var(--border); font-family: var(--mono); font-size: 0.75rem;
+      white-space: pre-wrap; word-break: break-word; color: var(--muted);
+    }
+    footer { max-width: 920px; margin: 0 auto; padding: 1rem; color: var(--muted); font-size: 0.75rem; }
+  </style>
+</head>
+<body>
+  <div class="banner">The Remote Viewer uses the network. The Sentinel (core) does not require this.</div>
+
+  <header>
+    <h1>The Remote Viewer</h1>
+    <div class="sub">Native social layer · parallel to The Sentinel (core)</div>
+  </header>
+
+  <nav>
+    <button type="button" class="active" data-tab="directory">Directory</button>
+    <button type="button" data-tab="personas">Personas</button>
+    <button type="button" data-tab="messages">Messages</button>
+    <button type="button" data-tab="notes">Notes</button>
+  </nav>
+
+  <main>
+    <section id="directory" class="panel active">
+      <h2>Directory</h2>
+      <p class="muted">Opt-in Viewers. Data bootstrapped from public registry; rendered natively here.</p>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr><th>Alias</th><th>Path</th><th>Roles</th><th>Contact</th><th>Proof</th></tr>
+          </thead>
+          <tbody id="dir-body">
+            <tr>
+              <td>Sentinel-Archetecht</td>
+              <td>A</td>
+              <td>Originator · Integrity Verifier</td>
+              <td>X @The_Archetecht · GitHub</td>
+              <td><a href="#" data-open-persona="sentinel-archetecht">persona</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted" style="margin-top:0.75rem">Join: complete in-app persona (Personas tab) then export / PR when you want the public git mirror updated.</p>
+    </section>
+
+    <section id="personas" class="panel">
+      <h2>Persona + proofs</h2>
+      <p class="muted">Social identity only. Never paste Sentinel vault AGE-SECRET-KEY or nsec into proofs.</p>
+      <div class="card">
+        <h3>Edit persona (local draft)</h3>
+        <label>Alias <input id="p-alias" placeholder="your-alias" autocomplete="off"></label>
+        <label>Path <input id="p-path" placeholder="A / B / none" autocomplete="off"></label>
+        <label>Roles <input id="p-roles" placeholder="Integrity Verifier" autocomplete="off"></label>
+        <label>Contact <input id="p-contact" placeholder="X / Matrix / email" autocomplete="off"></label>
+        <label>npub (optional) <input id="p-npub" placeholder="npub1…" autocomplete="off"></label>
+        <label>About <textarea id="p-about" placeholder="Short public bio"></textarea></label>
+        <label>Proofs (markdown table rows) <textarea id="p-proofs" placeholder="| Claim | Evidence | Date |"></textarea></label>
+        <div class="row">
+          <button type="button" class="btn" id="p-save">Save draft (browser)</button>
+          <button type="button" class="btn" id="p-export">Export markdown</button>
+        </div>
+        <pre class="out" id="p-out">Draft stays in this browser until you export.</pre>
+      </div>
+      <div class="card" id="persona-view">
+        <h3>Originator (bootstrap)</h3>
+        <p class="muted">Alias: Sentinel-Archetecht · Path A · Originator · Integrity Verifier</p>
+        <p class="muted">Proofs: REALITY.md · Hydra PASS · Verifier overall_ok · Path B vending PROVEN (2026-08-07)</p>
+      </div>
+    </section>
+
+    <section id="messages" class="panel">
+      <h2>Messages</h2>
+      <p class="muted">Native E2E messaging shell. Wire: Nostr (locked doc 19) behind this UI — not a third-party app as the product.</p>
+      <div class="card">
+        <label>Peer npub or alias <input id="m-to" placeholder="npub1… or alias" autocomplete="off"></label>
+        <label>Message <textarea id="m-body" placeholder="E2E body — client-side encrypt before send (N3 wire)"></textarea></label>
+        <div class="row">
+          <button type="button" class="btn" id="m-send" disabled>Send (wire N3)</button>
+        </div>
+        <pre class="out" id="m-out">N3: connect Nostr signer + relay list in-app. UI is native; send is gated until signer is configured.\n\nFallback: age-drop offline (MESSAGING.md) using a social age key ≠ Sentinel vault.</pre>
+      </div>
+    </section>
+
+    <section id="notes" class="panel">
+      <h2>Signed notes</h2>
+      <p class="muted">Unranked board (S4 / N4). Native composer; no algorithm.</p>
+      <div class="card">
+        <label>Note <textarea id="n-body" placeholder="Public signed note…"></textarea></label>
+        <div class="row">
+          <button type="button" class="btn" id="n-post" disabled>Post (N4)</button>
+        </div>
+        <pre class="out">Coming in N4 — signed events rendered here, unranked.</pre>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    The Remote Viewer · native social · docs/locked/20-Native-Remote-Viewer.md · core remains The Sentinel
+  </footer>
+
+  <script>
+    (function () {
+      var tabs = document.querySelectorAll('nav button');
+      var panels = document.querySelectorAll('.panel');
+      tabs.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          tabs.forEach(function (b) { b.classList.remove('active'); });
+          panels.forEach(function (p) { p.classList.remove('active'); });
+          btn.classList.add('active');
+          document.getElementById(btn.getAttribute('data-tab')).classList.add('active');
+        });
+      });
+
+      document.querySelectorAll('[data-open-persona]').forEach(function (a) {
+        a.addEventListener('click', function (e) {
+          e.preventDefault();
+          tabs.forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-tab') === 'personas'); });
+          panels.forEach(function (p) { p.classList.toggle('active', p.id === 'personas'); });
+        });
+      });
+
+      var keys = ['p-alias','p-path','p-roles','p-contact','p-npub','p-about','p-proofs'];
+      function load() {
+        keys.forEach(function (id) {
+          var v = localStorage.getItem('rv-' + id);
+          if (v != null) document.getElementById(id).value = v;
+        });
+      }
+      function save() {
+        keys.forEach(function (id) {
+          localStorage.setItem('rv-' + id, document.getElementById(id).value);
+        });
+        document.getElementById('p-out').textContent = 'Draft saved in this browser (' + new Date().toISOString() + ').';
+      }
+      function exportMd() {
+        var alias = document.getElementById('p-alias').value || 'alias';
+        var md = '# Persona: ' + alias + '\n\n'
+          + '> **The Remote Viewer uses the network. The Sentinel (core) does not require this.**\n\n'
+          + '| Field | Value |\n|-------|-------|\n'
+          + '| **Alias** | ' + (document.getElementById('p-alias').value || '') + ' |\n'
+          + '| **Path** | ' + (document.getElementById('p-path').value || '') + ' |\n'
+          + '| **Roles** | ' + (document.getElementById('p-roles').value || '') + ' |\n'
+          + '| **Contact** | ' + (document.getElementById('p-contact').value || '') + ' |\n'
+          + '| **npub** | ' + (document.getElementById('p-npub').value || '') + ' |\n\n'
+          + '## About\n\n' + (document.getElementById('p-about').value || '') + '\n\n'
+          + '## Proofs\n\n' + (document.getElementById('p-proofs').value || '| Claim | Evidence | Date |') + '\n';
+        document.getElementById('p-out').textContent = md;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(md).then(function () {
+            document.getElementById('p-out').textContent = md + '\n\n— copied to clipboard —';
+          });
+        }
+      }
+      document.getElementById('p-save').addEventListener('click', save);
+      document.getElementById('p-export').addEventListener('click', exportMd);
+      load();
+
+      document.getElementById('m-send').addEventListener('click', function () {
+        document.getElementById('m-out').textContent = 'Wire not connected. N3: in-app Nostr signer + relays.';
+      });
+    })();
+  </script>
+</body>
+</html>
