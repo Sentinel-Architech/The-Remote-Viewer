@@ -1,11 +1,13 @@
 /* The Remote Viewer — installable DApp shell */
-const CACHE = 'trv-shell-v2';
+const CACHE = 'trv-shell-v3';
 const SHELL = [
   './',
   './index.html',
   './app.js',
   './shop.js',
   './shop-boot.js',
+  './lock.js',
+  './service-learning.js',
   './manifest.webmanifest',
   './icon.svg',
 ];
