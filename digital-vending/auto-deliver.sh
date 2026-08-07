@@ -8,14 +8,6 @@
 #   2  — missing or invalid age recipient (pending)
 #   3  — encrypt or frame-stream failed
 #   4  — catalog / payload problem
-#
-# Recipient discovery order:
-#   1. 3rd argument
-#   2. $RECIPIENT env
-#   3. Drop file: $DELIVER_DIR/<sig-prefix>.recipient
-#
-# On missing recipient a PENDING marker is written so the seller can see
-# which sales are waiting.
 
 set -euo pipefail
 
@@ -41,7 +33,6 @@ PENDING_FILE="$DELIVER_DIR/${PREFIX}_${ID}.PENDING"
 FRAMES_OUT="$DELIVER_DIR/${PREFIX}_${ID}.trvl"
 DM_OUT="$DELIVER_DIR/${PREFIX}_${ID}_dm.txt"
 
-# Resolve recipient
 if [[ -z "$RECIPIENT" ]]; then
   DROP="$DELIVER_DIR/${PREFIX}.recipient"
   if [[ -f "$DROP" ]]; then
@@ -50,12 +41,10 @@ if [[ -z "$RECIPIENT" ]]; then
   fi
 fi
 
-# Validate recipient
 if [[ -z "$RECIPIENT" ]]; then
   err "No age recipient supplied"
   err "Create drop file:  echo 'age1...' > $DELIVER_DIR/${PREFIX}.recipient"
   err "Then re-run:       $0 $ID $SIG"
-  # Write pending marker so watcher / seller can see it
   cat > "$PENDING_FILE" << EOF
 PENDING age recipient
 catalog_id=$ID
@@ -80,10 +69,8 @@ EOF
   exit 2
 fi
 
-# Clean any previous pending marker
 rm -f "$PENDING_FILE"
 
-# Catalog / payload check (seller-deliver will also fail, but catch early)
 if [[ ! -f "$ROOT/catalog.json" ]]; then
   err "catalog.json missing in $ROOT"
   exit 4
@@ -92,7 +79,6 @@ fi
 log "Generating age+LT for $ID → $FRAMES_OUT"
 log "Recipient: ${RECIPIENT:0:12}...${RECIPIENT: -6}"
 
-# Run seller-deliver; capture failure cleanly
 set +e
 "$ROOT/seller-deliver.sh" "$ID" "$RECIPIENT" "$BLOCK_SIZE" > "$FRAMES_OUT" 2>"$DELIVER_DIR/${PREFIX}_${ID}.log"
 rc=$?
@@ -109,7 +95,6 @@ if [[ ! -s "$FRAMES_OUT" ]]; then
   exit 3
 fi
 
-# Write DM
 cat > "$DM_OUT" << EOF
 Thanks for the payment. Sig: ${SIG}
 
@@ -124,6 +109,8 @@ Or feed the same frames into the optical QR path.
 
 Destroy = Restart. Never reuse identities that appeared in chat.
 EOF
+
+bash "$ROOT/log-sale.sh" "$ID" "auto sig=${SIG:0:12}" "$FRAMES_OUT" || true
 
 log "SUCCESS Frames: $FRAMES_OUT ($(wc -c < "$FRAMES_OUT") bytes)"
 log "SUCCESS DM:     $DM_OUT"
