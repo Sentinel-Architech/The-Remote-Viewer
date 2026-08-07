@@ -114,7 +114,7 @@ rm -f $HOME/ct.bin $HOME/ct2.bin $HOME/trvl.txt $HOME/msg.txt
 ### Browser optical (offline)
 
 - `optical/qr-sender.html` · `optical/qr-receiver.html`  
-- Optional: vendor `jsQR` under `optical/vendor/`  
+- Optional: vendor **paulmillr/qr** under `optical/vendor/` so global `decodeQR` is available (see vendor/README.md). Paste/file always works without it.
 
 ---
 
@@ -123,7 +123,7 @@ rm -f $HOME/ct.bin $HOME/ct2.bin $HOME/trvl.txt $HOME/msg.txt
 | Symptom | Fix |
 |---------|-----|
 | workspace / not a member | `git pull` — root Cargo.toml must list `optical-airgap/rust` |
-| `Identity` Display / Decryptor::Recipients | age 0.11 fixes — pull latest branch |
+| `Identity` Display / Decryptor::Recipients | age 0.11+ fixes — pull latest branch |
 | `/tmp` permission denied | use `$HOME/...` |
 | `\~` path errors | do not escape tilde; use `$HOME` |
 | cargo treats `--frame-peel` as its flag | space after `--`: `-- frame-peel` |
@@ -139,6 +139,7 @@ rm -f $HOME/ct.bin $HOME/ct2.bin $HOME/trvl.txt $HOME/msg.txt
 - [x] frame-stream / frame-peel  
 - [x] **Full age+LT chain on Termux (2026-07-31)**  
 - [x] Offline QR pages  
+- [x] Exact original length (u32 prefix)  
 
 **Share:** INSTALL + OPEN-SOURCE + SENTINEL-STANDARD.  
 **Never share:** age identities, Vault material, real payloads.

@@ -12,7 +12,7 @@ Local-first, zero-trust optical transfer for The Remote Viewer.
 
 ## Checklist (public)
 
-### Done — verified 2026-07-31 (GrapheneOS\* + Termux) + 2026-08-07 length prefix
+### Done — verified 2026-07-31 (GrapheneOS\* + Termux) + 2026-08-07 length + decoder switch
 
 - [x] age encrypt / decrypt (Rust `trv-optical` + TS `age-encryption`)
 - [x] Robust Soliton LT (default) + TRVL1 framing
@@ -26,12 +26,13 @@ Local-first, zero-trust optical transfer for The Remote Viewer.
 - [x] OSS inventory (no Meta / Google / Microsoft core)
 - [x] Workspace membership for `cargo run`
 - [x] Install guide + Termux troubleshooting
-- [x] **Exact original length** — u32 BE prefix before LT blocks; peel returns exact bytes (no trailing-zero heuristic)
+- [x] **Exact original length** — u32 BE prefix before LT blocks; peel returns exact bytes
+- [x] **Optional decoder** — receiver wired for paulmillr/qr (`decodeQR`); paste/file always primary
 
 ### Not done
 
 - [ ] Acer ↔ phone optical (screen/camera) lab — blocked on hardware (R10)
-- [ ] Optional jsQR under `optical/vendor/`
+- [ ] Concrete paulmillr/qr browser build dropped under `optical/vendor/` (USB after networked pin)
 - [ ] `cargo vendor` offline tree
 - [ ] Acoustic R6 (**DEFERRED**)
 - [ ] Recursive IA-of-IA beyond hooks

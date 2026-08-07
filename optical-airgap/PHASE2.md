@@ -1,6 +1,6 @@
 # Optical Air-Gap — Phase 2
 
-**Phase 1:** complete ([STATUS.md](./STATUS.md), issue #38).  
+**Phase 1:** complete ([STATUS.md](./STATUS.md)).  
 **This file:** tasks · base hours · buffer · **risk contingency**.  
 **R6 (acoustic) full detail:** [PHASE2-R6.md](./PHASE2-R6.md)
 
@@ -22,7 +22,7 @@
 
 | ID | Theme | Base | Buffer | **Planned** | Contingency pool (if triggered) |
 |----|--------|------|--------|-------------|----------------------------------|
-| P2-1 | jsQR fallback | 6–10 h | +3–4 h | **9–14 h** | +4–8 h |
+| P2-1 | paulmillr/qr optional decoder | 6–10 h | +3–4 h | **9–14 h** | +4–8 h |
 | P2-2 | Robust Soliton | 8–14 h | +3–5 h | **11–19 h** | +4–10 h |
 | P2-3 | Cargo vendor | 2–4 h | +1–2 h | **3–6 h** | +2–4 h |
 | P2-4 | Optical reliability | 12–20 h | +5–8 h | **17–28 h** | +8–16 h |
@@ -35,6 +35,8 @@
 | **Core Phase 2** | no P2-5, no P2-6b | ~41–74 h | ~18–29 h | **~59–103 h** | **+27–56 h if many risks fire** |
 
 **Scheduling rule:** plan **Planned** only. Pull from contingency **per trigger**, log which risk, prefer **cut scope** over unbounded hours. **P2-5 never spends core P2 budget.**
+
+**Progress (2026-08-07):** Exact original length done. P2-1 docs + receiver wiring switched to paulmillr/qr (concrete browser build still optional USB drop).
 
 ---
 
@@ -56,7 +58,7 @@
 |--|--|
 | **Risk** | No usable pure decoder under license rules; or canvas decode too slow/inaccurate on target devices |
 | **Trigger** | >4 h stuck without a decoding path that passes one known TRVL frame |
-| **Response** | (1) Try alternate MIT decoder (2) **Ship paste-only + file import of frame lines** as supported mode (3) Document camera as best-effort |
+| **Response** | (1) Use paulmillr/qr (preferred) (2) **Ship paste-only + file import of frame lines** as supported mode (3) Document camera as best-effort |
 | **Contingency** | +4–8 h |
 | **Hard cut** | Camera decode deferred; paste/file remains Phase 2 acceptance for P2-1 |
 
@@ -201,7 +203,7 @@
 ## Suggested issue titles
 
 ```
-optical-airgap P2-1: jsQR fallback (planned 9–14h, R1 cont.)
+optical-airgap P2-1: paulmillr/qr optional decoder (planned 9–14h, R1 cont.)
 optical-airgap P2-2: Robust Soliton default (planned 11–19h, R2 cont.)
 optical-airgap P2-3: cargo vendor offline (planned 3–6h, R3 cont.)
 optical-airgap P2-4: optical reliability (planned 17–28h, R4/R5 cont.)
