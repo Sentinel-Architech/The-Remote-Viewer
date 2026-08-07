@@ -1,6 +1,7 @@
 # Membership Benefits (Locked)
 
 **Status:** Locked — July 25, 2026  
+**Last extended:** August 07, 2026  
 **Classification:** Permanent benefit structure
 
 ---
@@ -23,33 +24,43 @@ This approach keeps the benefit aligned with the Identity Layer’s non-negotiab
 
 ## Founding Sovereign Viewer Benefits
 
-(See the dedicated document: `04-Founding-Sovereign-Viewer.md`)
+(See the dedicated document: [`04-Founding-Sovereign-Viewer.md`](./04-Founding-Sovereign-Viewer.md))
 
-Summary of benefits:
+Two paths:
+
+- **Path A — Personal invitation** (originator discretion)
+- **Path B — Independent Completion** (verified finish of the full system)
+
+Summary of benefits (both paths):
 
 - Highest Paid Tier for Life
-- Permanent title: Founding Sovereign Viewer
+- Permanent title: Founding Sovereign Viewer / Founding Member
 - Additional 2.50% discount on any native TRV in-app shop purchase
 
-These benefits are granted only to individuals personally invited by the project originator and are not available for general purchase.
+**Path B only:** option to operate the first validating node role — **Integrity Verifier**  
+See [`17-Validator-Node-First-Role.md`](./17-Validator-Node-First-Role.md).
+
+**Explicit:** Path B does **not** include free catalog packs. Packs remain paid per item.
 
 ---
 
 ## Design Principle
 
-Membership benefits exist to recognize two distinct forms of participation:
+Membership benefits exist to recognize distinct forms of participation:
 
 1. **Broad participation** — The 17.76% American citizen discount acknowledges a specific national relationship to the project’s origin and goals, while still requiring a privacy-preserving proof rather than open self-declaration.
-2. **Founding support** — Founding Sovereign Viewer status recognizes the personal trust and early support of those the originator chose to share the project with directly.
+2. **Founding support** — Path A recognizes personal trust and early support from those the originator shared the project with directly.
+3. **Independent completion** — Path B recognizes those who finish the full system without invitation, with optional Integrity Verifier node rights.
 
-Both forms of recognition are implemented through the sovereign Identity Layer so that they remain consistent with the project’s core privacy and control guarantees.
+All forms of recognition are implemented through the sovereign Identity Layer so that they remain consistent with the project’s core privacy and control guarantees.
 
 ---
 
 ## Interaction with Other Locked Principles
 
-- **Identity Layer** — Both the citizenship discount and Founding status depend on high-assurance, user-controlled credentials and zero-knowledge where applicable.
-- **Vault Principles & Destroy Rule** — All membership status and discounts are tied to the active identity path. A confirmed burn extinguishes every benefit associated with that path.
+- **Identity Layer** — Citizenship discount and Founding status depend on high-assurance, user-controlled credentials and zero-knowledge where applicable.
+- **Vault Principles & Destroy Rule** — All membership status, discounts, and node rights are tied to the active identity path. A confirmed burn extinguishes every benefit associated with that path.
+- **Validator constraints** — Integrity Verifier inherits all non-negotiable constraints in doc 17 (no custody, no yield, no free packs, offline-capable, etc.).
 - **No exceptions for convenience** — Benefits cannot be granted by bypassing the identity proofs or by creating residual records that would survive a burn.
 
 ---
@@ -59,5 +70,6 @@ Both forms of recognition are implemented through the sovereign Identity Layer s
 - Discounts are applied at the point of membership purchase or renewal.
 - Stacking rules (if any future discounts are introduced) must be explicitly defined so that pricing never becomes negative or ambiguous.
 - The system must be able to verify the relevant attestations without retaining unnecessary personal data after the proof has been accepted.
+- Node option (Path B) is opt-in and extinguishes with Destroy = Restart.
 
 All benefits remain subordinate to the higher principles of user sovereignty, Vault integrity, and the absolute nature of Destroy = Restart from Square One.
