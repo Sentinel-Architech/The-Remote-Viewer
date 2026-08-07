@@ -10,7 +10,7 @@ Phase 2: code-complete for no-hardware path. Field optical (Acer↔phone) still 
 
 ## Locked decisions
 
-1. **Primary track = P3-D** — one control loop with hysteresis, not a full policy engine.  
+1. **Primary track = P3-D** — one control loop with hysteresis + debounce, not a full policy engine.  
 2. **Access = universal open-stack** — Linux, Windows, macOS, Android (GMS or de-Googled), SBCs, Termux. GrapheneOS preferred when available, never required.  
 3. **No cloud Vault, no Big Tech runtime in core.**  
 
@@ -22,10 +22,11 @@ Phase 2: code-complete for no-hardware path. Field optical (Acer↔phone) still 
 |------|--------|
 | Rate metrics (`crcRate`, `gateRejectRate`) | **shipped** |
 | Enter/exit bands + hysteresis state | **shipped** (`OpticalControlState`) |
+| Sample debounce (`DEBOUNCE_SAMPLES`) | **shipped** |
 | `decideOpticalAction(metrics, state)` | **shipped** in `loop/hooks.ts` |
 | Actions: lower_fps / check_optics / send_more / complete / none | **shipped** |
-| Wire into QR receiver status line | next |
-| On-device smoke (any host) | next |
+| Wire into QR receiver status + config UI | **shipped** (`optical/qr-receiver.html` + site) |
+| On-device smoke (any host) | operator |
 
 ### Bands (defaults in `BANDS`)
 
@@ -35,7 +36,7 @@ Phase 2: code-complete for no-hardware path. Field optical (Acer↔phone) still 
 | Gate reject rate | > 40% | < 15% |
 | recoverRatio | < 0.3 | ≥ 0.5 |
 
-Priority: complete > CRC > gate > slow peel > none. Sticky until exit band clears (no chatter).
+Debounce: 3 consecutive samples (tunable in receiver UI). Priority: complete > CRC > gate > slow peel > none.
 
 ---
 
