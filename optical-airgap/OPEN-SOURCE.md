@@ -49,7 +49,7 @@ Declared in root [package.json](./package.json).
 
 | Crate | License | Why |
 |-------|---------|-----|
-| **age** 0.11 | MIT OR Apache-2.0 | age encrypt/decrypt |
+| **age** 0.11+ | MIT OR Apache-2.0 | age encrypt/decrypt |
 | **zeroize** | Apache-2.0 OR MIT | Best-effort key wipe |
 | **sha2** | MIT OR Apache-2.0 | RDH header integrity |
 | **thiserror** | MIT OR Apache-2.0 | Error types |
@@ -62,8 +62,8 @@ See `rust/Cargo.toml`. Offline: `rust/OFFLINE.md` (`cargo vendor`).
 
 | Component | License | Use |
 |-----------|---------|-----|
-| **jsQR** (cozmo) | Apache-2.0 | Camera QR decode when BarcodeDetector missing |
-| **paulmillr/qr** | MIT OR Apache-2.0 | Alternate QR read/write |
+| **paulmillr/qr** | MIT OR Apache-2.0 | Preferred camera QR decode when BarcodeDetector missing |
+| jsQR (cozmo) | Apache-2.0 | Legacy / unmaintained — not preferred |
 
 Drop under `optical/vendor/` per [optical/vendor/NOTICE](./optical/vendor/NOTICE). **Never** load from CDN at scan time.
 
@@ -113,7 +113,7 @@ GrapheneOS: **https://grapheneos.org/** only (Android\* footnote).
 [plaintext]
 ```
 
-Everything above is open source. Optional jsQR is the only extra binary drop for some browsers.
+Everything above is open source. Optional paulmillr/qr is the only extra binary drop for some browsers.
 
 ---
 
