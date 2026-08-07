@@ -26,7 +26,7 @@
 </head>
 <body>
   <h1>TRV Optical Receiver</h1>
-  <p class="meta">Camera · paste · file · TRVL1 · gate v2 · LT peel · Sentinel Standard</p>
+  <p class="meta">Camera · paste · file · TRVL1 · gate v2 · LT peel · exact length · Sentinel Standard</p>
   <div id="pathBadge">Decoder path: detecting…</div>
   <video id="vid" playsinline muted></video>
   <canvas class="gate" id="gate"></canvas>
@@ -42,7 +42,9 @@
   <label style="display:inline-block;margin-left:0.5rem;">File <input type="file" id="fileIn" accept=".txt,.trvl,text/plain" /></label>
   <div class="status" id="status">Idle.</div>
   <div id="out"></div>
-  <p class="note">Gate v2: luminance mean/variance + horizontal edge energy. BarcodeDetector → jsQR → paste/file. No CDN.</p>
+  <p class="note">Gate v2: luminance mean/variance + horizontal edge energy. BarcodeDetector → paulmillr/qr (decodeQR) → paste/file. Exact length via u32 prefix. No CDN.</p>
+  <!-- Optional: load local vendor build that exposes global decodeQR before this script -->
+  <!-- <script src="vendor/qr-decode.js"></script> -->
   <script>
     function crc16ibm(data) {
       let crc = 0xffff;
@@ -81,6 +83,12 @@
       if (readU16(frame, off) !== crc16ibm(frame.subarray(0, off))) throw new Error("CRC fail");
       return { k, blockSize, seed, degree, indices, data: new Uint8Array(data) };
     }
+    function stripLengthPrefix(recovered) {
+      if (recovered.length < 4) throw new Error("recovered too short for length prefix");
+      const origLen = ((recovered[0] << 24) | (recovered[1] << 16) | (recovered[2] << 8) | recovered[3]) >>> 0;
+      if (4 + origLen > recovered.length) throw new Error("length prefix exceeds recovered");
+      return recovered.subarray(4, 4 + origLen);
+    }
     class LTDecoder {
       constructor(k, blockSize) {
         this.k = k; this.blockSize = blockSize;
@@ -118,7 +126,7 @@
         if (!this.done) return null;
         const out = new Uint8Array(this.k * this.blockSize);
         for (let i = 0; i < this.k; i++) out.set(this.recovered[i], i * this.blockSize);
-        return out;
+        return stripLengthPrefix(out);
       }
     }
     function framePassesGate(video, canvas) {
@@ -155,20 +163,20 @@
     const gate = document.getElementById("gate");
     const scanCanvas = document.getElementById("scan");
     const lastCodes = new Set();
-    function hasJsQR() { return typeof jsQR === "function"; }
+    function hasDecodeQR() { return typeof decodeQR === "function"; }
     function updatePathBadge() {
       pathBadge.innerHTML = "Decoder path: " + (decodePath !== "none" ? "<span class='ok'>" + decodePath + "</span>" : "idle") +
         " · available: " + (typeof BarcodeDetector !== "undefined" ? "BarcodeDetector " : "") +
-        (hasJsQR() ? "jsQR " : "") + "paste/file";
+        (hasDecodeQR() ? "decodeQR " : "") + "paste/file";
     }
     updatePathBadge();
     function showPayload() {
       if (!decoder || !decoder.done) return;
-      const p = decoder.payload();
-      let end = p.length; while (end > 0 && p[end - 1] === 0) end--;
-      const slim = p.subarray(0, end);
-      try { outEl.textContent = "PAYLOAD UTF-8:\n" + new TextDecoder().decode(slim); }
-      catch { outEl.textContent = "PAYLOAD hex: " + Array.from(slim.slice(0, 64)).map((b) => b.toString(16).padStart(2, "0")).join(""); }
+      let p;
+      try { p = decoder.payload(); } catch (e) { outEl.textContent = "LENGTH PREFIX ERROR: " + e.message; return; }
+      if (!p) return;
+      try { outEl.textContent = "PAYLOAD UTF-8 (exact " + p.length + " B):\n" + new TextDecoder().decode(p); }
+      catch { outEl.textContent = "PAYLOAD hex (exact " + p.length + " B): " + Array.from(p.slice(0, 64)).map((b) => b.toString(16).padStart(2, "0")).join(""); }
     }
     function render() {
       if (!decoder) { statusEl.textContent = "Idle. gateRejections=" + gateRejections + " (gate v2)"; return; }
@@ -200,20 +208,25 @@
     document.getElementById("resetBtn").onclick = () => {
       decoder = null; ingested = 0; errors = 0; gateRejections = 0; lastCodes.clear(); outEl.textContent = ""; decodePath = "none"; updatePathBadge(); render();
     };
-    function tryJsQRFromVideo() {
-      if (!hasJsQR()) return;
+    function tryDecodeQRFromVideo() {
+      if (!hasDecodeQR()) return;
       const w = Math.min(640, vid.videoWidth || 640), h = Math.min(480, vid.videoHeight || 480);
       if (!w || !h) return;
       scanCanvas.width = w; scanCanvas.height = h;
       const ctx = scanCanvas.getContext("2d", { willReadFrequently: true });
       ctx.drawImage(vid, 0, 0, w, h);
       const img = ctx.getImageData(0, 0, w, h);
-      const code = jsQR(img.data, img.width, img.height, { inversionAttempts: "dontInvert" });
-      if (code && code.data) {
-        const raw = String(code.data).trim();
+      let raw;
+      try {
+        raw = decodeQR({ width: img.width, height: img.height, data: img.data });
+      } catch (_) {
+        return;
+      }
+      if (raw) {
+        raw = String(raw).trim();
         if (raw && !lastCodes.has(raw)) {
           lastCodes.add(raw); if (lastCodes.size > 200) lastCodes.clear();
-          decodePath = "jsQR"; updatePathBadge();
+          decodePath = "decodeQR"; updatePathBadge();
           try { ingestLine(raw); render(); } catch (e) { errors++; }
         }
       }
@@ -224,9 +237,9 @@
       vid.srcObject = stream; await vid.play();
       detector = null;
       if ("BarcodeDetector" in window) { try { detector = new BarcodeDetector({ formats: ["qr_code"] }); } catch { detector = null; } }
-      decodePath = detector ? "BarcodeDetector" : hasJsQR() ? "jsQR" : "camera-no-decoder";
+      decodePath = detector ? "BarcodeDetector" : hasDecodeQR() ? "decodeQR" : "camera-no-decoder";
       updatePathBadge();
-      if (!detector && !hasJsQR()) { statusEl.innerHTML = "Camera on — <span class='err'>no decoder; use paste or file</span>"; return; }
+      if (!detector && !hasDecodeQR()) { statusEl.innerHTML = "Camera on — <span class='err'>no decoder; use paste or file</span>"; return; }
       statusEl.textContent = "Camera scanning (gate v2)…";
       scanTimer = setInterval(async () => {
         if (decoder?.done) return;
@@ -241,7 +254,7 @@
               decodePath = "BarcodeDetector";
               try { ingestLine(raw); render(); } catch (e) { errors++; }
             }
-          } else tryJsQRFromVideo();
+          } else tryDecodeQRFromVideo();
         } catch (_) {}
       }, 250);
     }
