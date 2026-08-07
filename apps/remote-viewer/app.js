@@ -22,6 +22,9 @@ const DEFAULT_PATHS = [
   'wss://relay.nostr.band',
 ];
 
+const WELCOME_WORDS =
+  'Welcome to The Remote Viewer. Find each other. Share what you choose. Open The Gateway Process when you are ready.';
+
 const $ = (id) => document.getElementById(id);
 
 function toast(msg) {
@@ -30,6 +33,34 @@ function toast(msg) {
   el.classList.add('show');
   clearTimeout(toast._t);
   toast._t = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+function speakWelcome() {
+  try {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(WELCOME_WORDS);
+    u.rate = 0.95;
+    u.pitch = 1;
+    u.lang = 'en-US';
+    window.speechSynthesis.speak(u);
+  } catch (_) {
+    /* silent if speech blocked */
+  }
+}
+
+function showWelcomeGate() {
+  const gate = $('welcome-gate');
+  if (!gate) return;
+  gate.hidden = false;
+  // Browsers often require a user gesture for speech — try on load, and again on Enter/replay
+  speakWelcome();
+}
+
+function dismissWelcome() {
+  const gate = $('welcome-gate');
+  if (gate) gate.hidden = true;
+  sessionStorage.setItem('rv-welcomed', '1');
 }
 
 function loadPaths() {
@@ -141,7 +172,8 @@ function saveProfile(p) {
 function refreshYou() {
   const sk = getSk();
   if (!sk) {
-    $('you-status').textContent = 'Create an ID to post and message. It stays on this phone unless you copy it somewhere safe.';
+    $('you-status').textContent =
+      'Create an ID to post and message. It stays on this phone unless you copy it somewhere safe.';
     $('you-id').textContent = 'No identity yet';
     return;
   }
@@ -151,6 +183,12 @@ function refreshYou() {
   const p = loadProfile();
   $('prof-name').value = p.name || '';
   $('prof-about').value = p.about || '';
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) =>
+    ({ '&': '&', '<': '<', '>': '>', '"': '"', "'": '&#39;' }[c])
+  );
 }
 
 function renderFollows() {
@@ -201,9 +239,7 @@ function renderDrafts() {
       if (!d) return;
       $('post-text').value = d.text || '';
       $('post-place').value = d.place || '';
-      if (d.place) {
-        $('place-wrap').hidden = false;
-      }
+      if (d.place) $('place-wrap').hidden = false;
       toast('Draft loaded');
     };
   });
@@ -217,16 +253,11 @@ function renderDrafts() {
   });
 }
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, (c) =>
-    ({ '&': '&', '<': '<', '>': '>', '"': '"', "'": '&#39;' }[c])
-  );
-}
-
 function renderFeed(events) {
   const box = $('feed');
   if (!events.length) {
-    box.innerHTML = '<div class="empty">No posts yet. Share something, or follow people you trust.</div>';
+    box.innerHTML =
+      '<div class="empty">No posts yet. Share something, or follow people you trust.</div>';
     return;
   }
   events.sort((a, b) => b.created_at - a.created_at);
@@ -237,12 +268,9 @@ function renderFeed(events) {
       let body = ev.content || '';
       let mediaHtml = '';
       let place = '';
-
-      // Extract simple media markers we embed
       const imgMatch = body.match(/\n\n\[photo\]\n(data:image\/[^\s]+)/);
       const vidMatch = body.match(/\n\n\[video\]\n(data:video\/[^\s]+)/);
       const placeMatch = body.match(/\n\n\[place\] (.+)$/m);
-
       if (imgMatch) {
         mediaHtml = `<img src="${imgMatch[1]}" alt="">`;
         body = body.replace(imgMatch[0], '');
@@ -255,7 +283,6 @@ function renderFeed(events) {
         place = placeMatch[1];
         body = body.replace(placeMatch[0], '');
       }
-
       return (
         `<article class="post">` +
         `<div class="who">${escapeHtml(name)} · ${escapeHtml(when)}</div>` +
@@ -268,12 +295,11 @@ function renderFeed(events) {
     .join('');
 }
 
-let mediaData = null; // { type: 'image'|'video', dataUrl }
+let mediaData = null;
 
 function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
     if (!file) return resolve(null);
-    // soft limit ~1.5MB for embed path
     if (file.size > 1.6e6) {
       reject(new Error('Please choose a smaller photo or video for now (about 1.5 MB max).'));
       return;
@@ -292,7 +318,6 @@ function showMediaPreview(dataUrl, kind) {
   else box.innerHTML = `<video controls src="${dataUrl}"></video>`;
 }
 
-// Tabs
 document.querySelectorAll('.tabs button').forEach((btn) => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tabs button').forEach((b) => b.classList.remove('on'));
@@ -303,7 +328,6 @@ document.querySelectorAll('.tabs button').forEach((btn) => {
   });
 });
 
-// Identity
 $('create-id').onclick = () => {
   const sk = generateSecretKey();
   setSk(sk);
@@ -312,7 +336,7 @@ $('create-id').onclick = () => {
 };
 
 $('restore-id').onclick = () => {
-  const raw = prompt('Paste the private restore code you saved (starts with nsec)');
+  const raw = prompt('Paste the private restore code you saved');
   if (!raw) return;
   try {
     const sk = parseSk(raw);
@@ -348,7 +372,6 @@ $('save-profile').onclick = () => {
   toast('Profile saved on this phone');
 };
 
-// Paths (relays) — soft language
 $('paths').value = loadPaths().join('\n');
 $('save-paths').onclick = () => {
   const list = $('paths')
@@ -360,7 +383,6 @@ $('save-paths').onclick = () => {
   toast('Saved');
 };
 
-// Follow
 $('follow-add').onclick = () => {
   const raw = $('follow-input').value.trim();
   try {
@@ -377,7 +399,6 @@ $('follow-add').onclick = () => {
   }
 };
 
-// Media pickers
 $('post-photo').onchange = async (e) => {
   try {
     const file = e.target.files && e.target.files[0];
@@ -416,9 +437,7 @@ $('add-place').onclick = () => {
         }
         toast('Place filled from this device — edit or clear anytime');
       },
-      () => {
-        /* user denied — fine */
-      },
+      () => {},
       { enableHighAccuracy: false, timeout: 8000 }
     );
   }
@@ -428,11 +447,7 @@ $('save-draft').onclick = () => {
   const text = $('post-text').value.trim();
   if (!text && !mediaData) return toast('Write something first');
   const drafts = loadDrafts();
-  drafts.unshift({
-    text,
-    place: $('post-place').value.trim(),
-    at: Date.now(),
-  });
+  drafts.unshift({ text, place: $('post-place').value.trim(), at: Date.now() });
   saveDrafts(drafts);
   renderDrafts();
   toast('Saved for later');
@@ -444,16 +459,12 @@ $('share-post').onclick = async () => {
   let text = $('post-text').value.trim();
   const place = $('post-place').value.trim();
   if (!text && !mediaData) return toast('Add text, a photo, or a video');
-
   if (mediaData?.type === 'image') text += `\n\n[photo]\n${mediaData.dataUrl}`;
   if (mediaData?.type === 'video') text += `\n\n[video]\n${mediaData.dataUrl}`;
   if (place) text += `\n\n[place] ${place}`;
-
-  // soft size guard for network posts
   if (text.length > 180000) {
     return toast('That media is still too large to share this way. Try a smaller file.');
   }
-
   $('share-post').disabled = true;
   toast('Sharing…');
   try {
@@ -522,7 +533,6 @@ $('refresh-home').onclick = async () => {
   }
 };
 
-// DM
 function dmLog(msg) {
   const el = $('dm-log');
   el.textContent = (el.textContent ? el.textContent + '\n' : '') + msg;
@@ -604,7 +614,42 @@ $('dm-inbox').onclick = async () => {
   }
 };
 
+// Welcome gate
+const enterBtn = $('welcome-enter');
+const replayBtn = $('welcome-replay');
+const hearBtn = $('hear-welcome');
+if (enterBtn) {
+  enterBtn.onclick = () => {
+    speakWelcome();
+    dismissWelcome();
+  };
+}
+if (replayBtn) {
+  replayBtn.onclick = () => speakWelcome();
+}
+if (hearBtn) {
+  hearBtn.onclick = () => speakWelcome();
+}
+// Tap anywhere on the gold Gateway link still opens the document;
+// also ensure speech can unlock after first gesture on mobile
+document.addEventListener(
+  'click',
+  function unlockSpeechOnce() {
+    if (!sessionStorage.getItem('rv-speech-unlocked')) {
+      sessionStorage.setItem('rv-speech-unlocked', '1');
+      // no-op speak to unlock audio on some mobile browsers
+      try {
+        const u = new SpeechSynthesisUtterance('');
+        window.speechSynthesis.speak(u);
+        window.speechSynthesis.cancel();
+      } catch (_) {}
+    }
+  },
+  { once: true, capture: true }
+);
+
 // boot
 refreshYou();
 renderFollows();
 renderDrafts();
+showWelcomeGate();
