@@ -35,6 +35,10 @@ coverage/
 **/target/
 **/*.rs.bk
 Cargo.lock.bak
+**/vendor/
+**/.cargo/config.toml
+!**/\.cargo/config.toml.example
+trv-rust-vendor.tgz
 
 # === Python / Termux ===
 __pycache__/
