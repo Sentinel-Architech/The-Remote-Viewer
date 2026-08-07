@@ -1,13 +1,21 @@
 /**
- * Injects Shop tab + Aurora TRV shop if not already in HTML.
+ * Injects Shop tab + Aurora TRV shop + USD lock panel.
  */
 import {
   becomeValidated,
-  isValidated,
   renderShopUI,
   restoreSkin,
-  getCredits,
 } from './shop.js';
+import { renderLockUI } from './lock.js';
+
+function toastFn(m) {
+  const t = document.getElementById('toast');
+  if (t) {
+    t.textContent = m;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2600);
+  }
+}
 
 function ensureShopUI() {
   const tabs = document.querySelector('.tabs');
@@ -28,14 +36,14 @@ function ensureShopUI() {
     sec.innerHTML = `
       <div class="card">
         <h2>TRV Shop</h2>
-        <p class="soft">Credits only work here. Aurora Borealis looks for your colors and profile — nothing else.</p>
-        <p>Your TRV: <strong id="trv-balance">0</strong></p>
+        <p class="soft">Aurora looks and locks live here — parallel to The Sentinel core.</p>
+        <p>Your TRV credits: <strong id="trv-balance">0</strong></p>
         <p class="soft" id="validated-status">Not yet a Validated Viewer</p>
         <div class="actions">
           <button type="button" class="btn primary" id="become-validated">Become a Validated Viewer</button>
         </div>
-        <p class="soft" style="margin-top:0.65rem">Opt in as a node. You receive TRV credits for this shop only — not for outside trading.</p>
       </div>
+      <div class="card" id="lock-panel"></div>
       <div class="card">
         <h2>Aurora Borealis</h2>
         <p class="soft">Redeem credits to wear a northern-lights look. These options only.</p>
@@ -43,7 +51,6 @@ function ensureShopUI() {
       </div>`;
     main.appendChild(sec);
 
-    // minimal styles
     const st = document.createElement('style');
     st.textContent = `
       .shop-item{display:flex;flex-wrap:wrap;gap:.65rem;align-items:center;padding:.75rem;margin:.5rem 0;border:1px solid var(--line);border-radius:14px;background:var(--surface2)}
@@ -53,9 +60,16 @@ function ensureShopUI() {
       .shop-meta .soft{font-size:.8rem}
     `;
     document.head.appendChild(st);
+  } else if (!document.getElementById('lock-panel')) {
+    const shop = document.getElementById('shop');
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.id = 'lock-panel';
+    const aurora = shop.querySelector('#shop-grid')?.closest('.card');
+    if (aurora) shop.insertBefore(card, aurora);
+    else shop.appendChild(card);
   }
 
-  // rebind tab clicks for dynamic button
   document.querySelectorAll('.tabs button').forEach((btn) => {
     btn.onclick = () => {
       document.querySelectorAll('.tabs button').forEach((b) => b.classList.remove('on'));
@@ -64,14 +78,8 @@ function ensureShopUI() {
       const screen = document.getElementById(btn.dataset.screen);
       if (screen) screen.classList.add('on');
       if (btn.dataset.screen === 'shop') {
-        renderShopUI((m) => {
-          const t = document.getElementById('toast');
-          if (t) {
-            t.textContent = m;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 2600);
-          }
-        });
+        renderShopUI(toastFn);
+        renderLockUI(toastFn);
       }
     };
   });
@@ -80,25 +88,16 @@ function ensureShopUI() {
   if (become) {
     become.onclick = () => {
       const r = becomeValidated();
-      const toast = (m) => {
-        const t = document.getElementById('toast');
-        if (t) {
-          t.textContent = m;
-          t.classList.add('show');
-          setTimeout(() => t.classList.remove('show'), 2800);
-        }
-      };
-      if (!r.ok && r.reason === 'already') {
-        toast('You are already a Validated Viewer');
-      } else if (r.ok) {
-        toast(`Validated · +${r.granted} TRV credits`);
-      }
-      renderShopUI(toast);
+      if (!r.ok && r.reason === 'already') toastFn('You are already a Validated Viewer');
+      else if (r.ok) toastFn(`Validated · +${r.granted} TRV credits`);
+      renderShopUI(toastFn);
+      renderLockUI(toastFn);
     };
   }
 
   restoreSkin();
   renderShopUI(() => {});
+  renderLockUI(() => {});
 }
 
 ensureShopUI();
