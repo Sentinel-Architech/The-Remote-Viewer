@@ -167,24 +167,20 @@
 
     <section class="card network" style="margin-top:0.85rem">
       <h2>The Remote Viewer</h2>
-      <p>Parallel social plane · directory · personas · Nostr DM</p>
+      <p>Native social layer (parallel brand) · not this core console</p>
       <div class="warn-banner">The Remote Viewer uses the network. The Sentinel (core) does not require this.</div>
       <div class="actions">
-        <a class="btn primary" href="https://github.com/Sentinel-Archetecht/The-Remote-Viewer/blob/TheRemoteViewer/docs/public/VIEWERS.md" target="_blank" rel="noopener noreferrer">Directory</a>
-        <a class="btn primary" href="https://github.com/Sentinel-Archetecht/The-Remote-Viewer/blob/TheRemoteViewer/docs/public/MESSAGING.md" target="_blank" rel="noopener noreferrer">Messaging</a>
-        <a class="btn" href="https://github.com/Sentinel-Archetecht/The-Remote-Viewer/blob/TheRemoteViewer/docs/public/personas/README.md" target="_blank" rel="noopener noreferrer">Personas + proofs</a>
-        <a class="btn" href="https://github.com/Sentinel-Archetecht/The-Remote-Viewer/blob/TheRemoteViewer/docs/locked/19-Messaging-Transport.md" target="_blank" rel="noopener noreferrer">Transport (19)</a>
+        <button type="button" class="primary" data-title="Serve native Remote Viewer" data-cmd="cd apps/remote-viewer && python3 -m http.server 8777 --bind 127.0.0.1&#10;# then open http://127.0.0.1:8777/">Serve RV app</button>
+        <a class="btn" href="https://github.com/Sentinel-Archetecht/The-Remote-Viewer/blob/TheRemoteViewer/docs/locked/20-Native-Remote-Viewer.md" target="_blank" rel="noopener noreferrer">Native lock (20)</a>
       </div>
     </section>
 
     <section class="card" style="margin-top:0.85rem">
       <h2>How this UI works</h2>
       <ul>
-        <li>Served only on <code>127.0.0.1</code> — The Sentinel core, not the social network.</li>
+        <li>This page is <strong>The Sentinel</strong> core on <code>127.0.0.1</code> only.</li>
         <li>Buttons show Termux commands; the page cannot run shell or read keys.</li>
-        <li>Copy → paste into Termux.</li>
-        <li>Public buy page: <code>digital-vending/buy.html</code>.</li>
-        <li>Remote Viewer links leave localhost on purpose (labeled network).</li>
+        <li><strong>The Remote Viewer</strong> is a separate native app: <code>apps/remote-viewer/</code>.</li>
       </ul>
     </section>
 
@@ -213,7 +209,7 @@
       document.querySelectorAll('button[data-cmd]').forEach(function (btn) {
         btn.addEventListener('click', function () {
           title.textContent = btn.getAttribute('data-title') || 'Command';
-          cmdEl.textContent = btn.getAttribute('data-cmd').replace(/&#10;/g, '\n');
+          cmdEl.textContent = btn.getAttribute('data-cmd').replace(/&#10;/g, '\n').replace(/&/g, '&');
           dlg.showModal();
         });
       });
