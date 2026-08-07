@@ -185,7 +185,7 @@ fn main() {
                 k: k as u16,
                 block_size: block_size as u16,
             };
-            eprintln!("frame-stream: k={k} block_size={block_size} symbols={n} mode=soliton");
+            eprintln!("frame-stream: k={k} block_size={block_size} symbols={n} mode=soliton exact-len");
             for _ in 0..n {
                 let sym = enc.next();
                 let frame = encode_lt_frame(&sym, &meta).expect("frame");
@@ -248,11 +248,9 @@ fn main() {
             }
             match decoder {
                 Some(dec) if dec.is_complete() => {
-                    let mut out = dec.payload().unwrap();
-                    while out.last() == Some(&0) {
-                        out.pop();
-                    }
-                    eprintln!("peel ok ingested={ingested} errors={errors}");
+                    // Exact length already stripped inside LtDecoder::payload()
+                    let out = dec.payload().expect("payload after complete peel");
+                    eprintln!("peel ok ingested={ingested} errors={errors} exact_len={}", out.len());
                     io::stdout().write_all(&out).unwrap();
                 }
                 Some(dec) => {

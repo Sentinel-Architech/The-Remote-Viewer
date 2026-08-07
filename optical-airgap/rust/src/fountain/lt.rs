@@ -1,6 +1,9 @@
 //! LT encoder / peel decoder.
 //! Degree sampling: Robust Soliton by default (c=0.1, delta=0.05).
 //! Use DegreeMode::Legacy for Phase-1 heuristic interop.
+//!
+//! Exact original length: every payload is prefixed with a u32 BE length
+//! before block split. payload() returns the exact original bytes.
 
 use super::frame::LtSymbol;
 use super::soliton::{robust_soliton, sample_degree_legacy, sample_degree_soliton, soliton_cdf};
@@ -20,6 +23,33 @@ impl Default for DegreeMode {
 pub struct SourceBlock {
     pub index: usize,
     pub data: Vec<u8>,
+}
+
+/// Prefix payload with u32 big-endian original length (Sentinel Optical Fountain).
+pub fn with_length_prefix(payload: &[u8]) -> Vec<u8> {
+    let len = payload.len();
+    if len > u32::MAX as usize {
+        panic!("payload too large for u32 length prefix");
+    }
+    let mut out = Vec::with_capacity(4 + len);
+    out.extend_from_slice(&(len as u32).to_be_bytes());
+    out.extend_from_slice(payload);
+    out
+}
+
+/// Extract exact original bytes using the leading u32 BE length.
+pub fn strip_length_prefix(recovered: &[u8]) -> Result<Vec<u8>, String> {
+    if recovered.len() < 4 {
+        return Err("recovered too short for length prefix".into());
+    }
+    let orig_len = u32::from_be_bytes([recovered[0], recovered[1], recovered[2], recovered[3]]) as usize;
+    if 4 + orig_len > recovered.len() {
+        return Err(format!(
+            "length prefix {orig_len} exceeds recovered {}",
+            recovered.len() - 4
+        ));
+    }
+    Ok(recovered[4..4 + orig_len].to_vec())
 }
 
 pub fn split_into_blocks(payload: &[u8], block_size: usize) -> Vec<SourceBlock> {
@@ -111,7 +141,9 @@ impl LtEncoder {
     }
 
     pub fn with_opts(payload: &[u8], block_size: usize, opts: EncodeOpts) -> Self {
-        let blocks = split_into_blocks(payload, block_size);
+        // Exact length: always prefix original length before splitting into blocks.
+        let prefixed = with_length_prefix(payload);
+        let blocks = split_into_blocks(&prefixed, block_size);
         let cdf = if opts.mode == DegreeMode::Soliton {
             soliton_cdf(&robust_soliton(blocks.len(), opts.c, opts.delta))
         } else {
@@ -223,6 +255,7 @@ impl LtDecoder {
         }
     }
 
+    /// Assembles blocks then strips the leading u32 length prefix.
     pub fn payload(&self) -> Option<Vec<u8>> {
         if !self.is_complete() {
             return None;
@@ -232,7 +265,7 @@ impl LtDecoder {
             out[i * self.block_size..(i + 1) * self.block_size]
                 .copy_from_slice(self.recovered[i].as_ref().unwrap());
         }
-        Some(out)
+        strip_length_prefix(&out).ok()
     }
 }
 
@@ -254,8 +287,7 @@ mod tests {
             }
         }
         assert!(dec.is_complete(), "recovered {}", dec.recovered_count());
-        let mut out = dec.payload().unwrap();
-        out.truncate(msg.len());
+        let out = dec.payload().unwrap();
         assert_eq!(&out[..], msg);
     }
 
@@ -278,8 +310,24 @@ mod tests {
             }
         }
         assert!(dec.is_complete());
-        let mut out = dec.payload().unwrap();
-        out.truncate(msg.len());
+        let out = dec.payload().unwrap();
+        assert_eq!(&out[..], msg);
+    }
+
+    #[test]
+    fn exact_length_with_trailing_zeros() {
+        // Payload that legitimately ends with zeros must survive.
+        let msg = b"data\0\0\0";
+        let mut enc = LtEncoder::new(msg, 8);
+        let mut dec = LtDecoder::new(enc.k(), 8);
+        for _ in 0..enc.k() * 6 {
+            dec.add_symbol(enc.next());
+            if dec.is_complete() {
+                break;
+            }
+        }
+        assert!(dec.is_complete());
+        let out = dec.payload().unwrap();
         assert_eq!(&out[..], msg);
     }
 
