@@ -24,12 +24,15 @@
       border-radius: 6px; font-size: 0.95rem;
     }
     a.pay:hover { filter: brightness(1.1); }
+    a.pay.disabled, .pay-disabled {
+      background: #333; color: #888; pointer-events: none;
+    }
     pre { background:#111; padding:0.6rem; overflow:auto; font-size:0.8rem; border-radius:4px; }
     .qr-wrap {
       margin-top: 0.85rem; padding: 0.75rem; background: #fff; border-radius: 8px;
       display: inline-block; line-height: 0;
     }
-    .qr-wrap canvas, .qr-wrap img { display: block; }
+    .qr-wrap canvas { display: block; }
     .qr-label { margin-top: 0.4rem; font-size: 0.8rem; color: var(--muted); }
     .qr-fallback { color: var(--muted); font-size: 0.85rem; margin-top: 0.5rem; }
   </style>
@@ -41,37 +44,11 @@
 
   <div class="card">
     <div class="muted">USDC sales address (Solana mainnet)</div>
-    <div class="addr">HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv</div>
+    <div class="addr" id="sales-addr">HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv</div>
   </div>
 
-  <div class="card">
-    <h2>TRV Posture Lite</h2>
-    <div class="price">11 USDC</div>
-    <p>Core zero-trust / optical / Vault rules.</p>
-    <div>Memo: <span class="memo">TRV-Posture-Lite</span></div>
-    <a class="pay" id="pay-lite"
-       href="solana:HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv?amount=11&spl-token=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&label=The%20Remote%20Viewer&message=Posture%20Lite&memo=TRV-Posture-Lite">Pay with Phantom</a>
-    <div class="qr-wrap" id="qr-lite"></div>
-    <div class="qr-label">Scan with Phantom / Solflare camera</div>
-  </div>
-
-  <div class="card">
-    <h2>TRV Posture Pack</h2>
-    <div class="price">25 USDC</div>
-    <p>Full operator pack (install, security, Obtainium, threat model).</p>
-    <div>Memo: <span class="memo">TRV-Posture-Pack</span></div>
-    <a class="pay" id="pay-pack"
-       href="solana:HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv?amount=25&spl-token=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&label=The%20Remote%20Viewer&message=Posture%20Pack&memo=TRV-Posture-Pack">Pay with Phantom</a>
-    <div class="qr-wrap" id="qr-pack"></div>
-    <div class="qr-label">Scan with Phantom / Solflare camera</div>
-  </div>
-
-  <div class="card">
-    <h2>ZK Membership Skill Pack</h2>
-    <div class="price">Manual / XMR — or ask seller</div>
-    <p>On-device membership proof notes.</p>
-    <div>Memo (if USDC): <span class="memo">SENTINEL-ZK-01</span></div>
-  </div>
+  <!-- All packs rendered from one catalog -->
+  <div id="packs"></div>
 
   <h2>Buyer steps</h2>
   <ol>
@@ -87,18 +64,57 @@
   <p class="muted">If you pay before sending <code>age1</code>, delivery stays PENDING until the seller has your recipient.<br>
   Destroy = Restart for test keys. Not financial advice.</p>
 
-  <!-- QRCode.js — client-side only; no payment data leaves the browser except wallet open -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
   <script>
     (function () {
-      function renderQr(elId, linkId) {
-        var host = document.getElementById(elId);
-        var link = document.getElementById(linkId);
-        if (!host || !link || typeof QRCode === 'undefined') {
-          if (host) host.innerHTML = '<div class="qr-fallback">QR unavailable — use Pay button</div>';
+      var SALES = 'HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv';
+      var USDC = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+
+      // ONE catalog — keep in sync with catalog.json
+      var catalog = [
+        {
+          id: 'trv-posture-lite',
+          title: 'TRV Posture Lite',
+          priceLabel: '11 USDC',
+          amount: 11,
+          memo: 'TRV-Posture-Lite',
+          description: 'Core zero-trust / optical / Vault rules.',
+          solanaPay: true
+        },
+        {
+          id: 'trv-posture-pack',
+          title: 'TRV Posture Pack',
+          priceLabel: '25 USDC',
+          amount: 25,
+          memo: 'TRV-Posture-Pack',
+          description: 'Full operator pack (install, security, Obtainium, threat model).',
+          solanaPay: true
+        },
+        {
+          id: 'sentinel-skill-zk-01',
+          title: 'ZK Membership Skill Pack',
+          priceLabel: 'Manual / XMR — or ask seller',
+          amount: null,
+          memo: 'SENTINEL-ZK-01',
+          description: 'On-device membership proof notes.',
+          solanaPay: false
+        }
+      ];
+
+      function solanaUri(item) {
+        return 'solana:' + SALES +
+          '?amount=' + encodeURIComponent(String(item.amount)) +
+          '&spl-token=' + USDC +
+          '&label=' + encodeURIComponent('The Remote Viewer') +
+          '&message=' + encodeURIComponent(item.title) +
+          '&memo=' + encodeURIComponent(item.memo);
+      }
+
+      function renderQr(host, uri) {
+        if (typeof QRCode === 'undefined') {
+          host.innerHTML = '<div class="qr-fallback">QR unavailable — use Pay button</div>';
           return;
         }
-        var uri = link.getAttribute('href');
         QRCode.toCanvas(uri, {
           width: 200,
           margin: 2,
@@ -113,14 +129,41 @@
           host.appendChild(canvas);
         });
       }
-      function go() {
-        renderQr('qr-lite', 'pay-lite');
-        renderQr('qr-pack', 'pay-pack');
+
+      function renderAll() {
+        var root = document.getElementById('packs');
+        root.innerHTML = '';
+        catalog.forEach(function (item, i) {
+          var card = document.createElement('div');
+          card.className = 'card';
+
+          var html = '<h2>' + item.title + '</h2>' +
+            '<div class="price">' + item.priceLabel + '</div>' +
+            '<p>' + item.description + '</p>' +
+            '<div>Memo: <span class="memo">' + item.memo + '</span></div>';
+
+          if (item.solanaPay && item.amount != null) {
+            var uri = solanaUri(item);
+            var payId = 'pay-' + i;
+            var qrId = 'qr-' + i;
+            html += '<a class="pay" id="' + payId + '" href="' + uri + '">Pay with Phantom</a>';
+            html += '<div class="qr-wrap" id="' + qrId + '"></div>';
+            html += '<div class="qr-label">Scan with Phantom / Solflare camera</div>';
+            card.innerHTML = html;
+            root.appendChild(card);
+            renderQr(document.getElementById(qrId), uri);
+          } else {
+            html += '<p class="muted" style="margin-top:0.7rem">No Solana Pay button — contact seller (XMR / manual).</p>';
+            card.innerHTML = html;
+            root.appendChild(card);
+          }
+        });
       }
+
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', go);
+        document.addEventListener('DOMContentLoaded', renderAll);
       } else {
-        go();
+        renderAll();
       }
     })();
   </script>
