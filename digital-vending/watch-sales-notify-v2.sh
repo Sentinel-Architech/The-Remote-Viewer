@@ -4,6 +4,7 @@
 # Env:
 #   SOLANA_RPC_URLS="url1,url2,url3"   (preferred)
 #   SOLANA_RPC_URL=single-url          (fallback)
+#   SALES_ADDRESS, DELIVER_DIR, STATE_FILE, DISCORD_WEBHOOK
 #   RPC_RETRIES, RPC_RETRY_DELAY_SEC
 #   CIRCUIT_FAILURE_THRESHOLD, CIRCUIT_COOLDOWN_SECONDS
 #   MAX_TRANSIENT_RETRIES, BACKOFF_*
@@ -24,7 +25,8 @@ RPC_INDEX=0
 RPC="${RPC_LIST[$RPC_INDEX]}"
 RPC_COUNT=${#RPC_LIST[@]}
 
-STATE_FILE="${STATE_FILE:-/tmp/trv-sales-last-sig}"
+DELIVER_DIR="${DELIVER_DIR:-$HOME/trv-deliver}"
+STATE_FILE="${STATE_FILE:-$DELIVER_DIR/last-sig}"
 POLL_SECONDS="${POLL_SECONDS:-45}"
 DISCORD_WEBHOOK="${DISCORD_WEBHOOK:-}"
 MAX_TRANSIENT_RETRIES="${MAX_TRANSIENT_RETRIES:-3}"
@@ -35,7 +37,6 @@ CIRCUIT_COOLDOWN_SECONDS="${CIRCUIT_COOLDOWN_SECONDS:-120}"
 RPC_RETRIES="${RPC_RETRIES:-3}"
 RPC_RETRY_DELAY_SEC="${RPC_RETRY_DELAY_SEC:-2}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-DELIVER_DIR="${DELIVER_DIR:-$HOME/trv-deliver}"
 DIST_DIR="${ROOT}/dist"
 VENDING_DIR="${ROOT}/digital-vending"
 RETRY_STATE="${DELIVER_DIR}/.retry-state"
@@ -50,6 +51,7 @@ echo " Address : $SALES_ADDRESS"
 echo " RPC     : $RPC  ($((RPC_INDEX+1))/$RPC_COUNT endpoints)"
 echo " Discord : ${DISCORD_WEBHOOK:+configured}${DISCORD_WEBHOOK:-not set}"
 echo " Deliver : $DELIVER_DIR"
+echo " State   : $STATE_FILE"
 echo " Vending : $VENDING_DIR"
 echo " Retries : max=$MAX_TRANSIENT_RETRIES  backoff base=${BACKOFF_BASE_SECONDS}s max=${BACKOFF_MAX_SECONDS}s"
 echo " Circuit : threshold=$CIRCUIT_FAILURE_THRESHOLD  cooldown=${CIRCUIT_COOLDOWN_SECONDS}s"
@@ -197,9 +199,10 @@ prepare_delivery() {
     if [[ -f "$zip_src" ]]; then cp -f "$zip_src" "$dest"; echo "  [prepare] Copied $zip_name → $dest"
     else echo "  [prepare] WARNING: $zip_src missing"; dest="(ZIP missing)"; fi
   fi
-  if [[ -n "$catalog_id" && -x "$VENDING_DIR/auto-deliver.sh" ]]; then
+  if [[ -n "$catalog_id" ]]; then
+    chmod +x "$VENDING_DIR/auto-deliver.sh" 2>/dev/null || true
     echo "  [prepare] age+LT for $catalog_id"
-    set +e; "$VENDING_DIR/auto-deliver.sh" "$catalog_id" "$sig"; rc=$?; set -e
+    set +e; bash "$VENDING_DIR/auto-deliver.sh" "$catalog_id" "$sig"; rc=$?; set -e
     case $rc in
       0) echo "  [prepare] age+LT frames ready" ;;
       2) echo "  [prepare] PENDING — need recipient drop file" ;;
