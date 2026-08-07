@@ -1,6 +1,6 @@
 # Concepts → Reality Status
 
-Last updated: **2026-08-07** (Hydra multi-head + Integrity Verifier + Path B vending)
+Last updated: **2026-08-07** (Hydra multi-head + local UI + Integrity Verifier + Path B vending)
 
 **Rule:** No marketing. **PROVEN** = ran under user control on device. Scripts in git alone are not PROVEN.
 
@@ -30,6 +30,7 @@ Last updated: **2026-08-07** (Hydra multi-head + Integrity Verifier + Path B ven
 | Integrity Verifier (contribution + sales) | **PROVEN** | overall_ok=1 attestation on-device 2026-08-07 |
 | Contribution weight from verifier | **PROVEN** | record-weight → events.jsonl |
 | Path B Founding + node option (design) | **LOCKED** | `docs/locked/04` + `17` |
+| Public buy page (`buy.html` + QR) | **OPEN** | static storefront |
 
 ## RAG & chat
 
@@ -48,8 +49,8 @@ Last updated: **2026-08-07** (Hydra multi-head + Integrity Verifier + Path B ven
 |---------|--------|
 | Defense / Hydra multi-head | **PROVEN** | seal + contribution + sales verifier + quarantine gate; PASS on GrapheneOS/Termux 2026-08-07 |
 | Contribution ledger | **PROVEN** | verify OK + verifier weight on reference node |
+| Local operator UI `127.0.0.1` | **PROVEN** | `apps/ui` console — copy-to-Termux commands; Hydra/vending/verifier heads; no shell exec in browser |
 | Termux reminders | **SCAFFOLD** |
-| UI `127.0.0.1` | **SCAFFOLD** |
 | Chain settlement / live DePIN | **NOT STARTED** |
 
 ## Reference environment
