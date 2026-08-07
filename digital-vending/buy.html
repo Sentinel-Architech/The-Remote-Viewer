@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TRV Buy — USDC memo</title>
+  <style>
+    :root { --bg:#0a0a0a; --fg:#e8e8e8; --accent:#00e676; --muted:#888; --card:#141414; }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--fg);
+           margin: 0; padding: 1rem; max-width: 640px; margin-inline: auto; line-height: 1.45; }
+    h1 { color: var(--accent); font-size: 1.35rem; }
+    h2 { font-size: 1.05rem; margin-top: 1.5rem; }
+    .card { background: var(--card); border: 1px solid #333; border-radius: 8px; padding: 1rem; margin: 0.8rem 0; }
+    .price { color: var(--accent); font-weight: 700; }
+    .memo { font-family: ui-monospace, monospace; background: #000; padding: 0.4rem 0.6rem; border-radius: 4px; display: inline-block; }
+    .addr { font-family: ui-monospace, monospace; font-size: 0.8rem; word-break: break-all; }
+    ol { padding-left: 1.2rem; }
+    .muted { color: var(--muted); font-size: 0.9rem; }
+    code { font-size: 0.85em; }
+  </style>
+</head>
+<body>
+  <h1>TRV Digital Vending</h1>
+  <p>Pay <strong>USDC on Solana</strong> with the exact memo → receive <strong>age-encrypted TRVL</strong> frames. Zero platform custody of your keys.</p>
+
+  <p class="muted">Seller sets the sales address. Replace the placeholder before publishing this page.</p>
+  <div class="card">
+    <div class="muted">USDC sales address</div>
+    <div class="addr" id="salesAddr">PASTE_SALES_ADDRESS_HERE</div>
+  </div>
+
+  <div class="card">
+    <h2>TRV Posture Lite</h2>
+    <div class="price">11 USDC</div>
+    <p>Core zero-trust / optical / Vault rules.</p>
+    <div>Memo: <span class="memo">TRV-Posture-Lite</span></div>
+  </div>
+
+  <div class="card">
+    <h2>TRV Posture Pack</h2>
+    <div class="price">25 USDC</div>
+    <p>Extended operator pack.</p>
+    <div>Memo: <span class="memo">TRV-Posture-Pack</span></div>
+  </div>
+
+  <div class="card">
+    <h2>ZK Membership Skill Pack</h2>
+    <div class="price">Manual / XMR — or ask seller</div>
+    <p>On-device membership proof notes.</p>
+    <div>Memo (if USDC): <span class="memo">SENTINEL-ZK-01</span></div>
+  </div>
+
+  <h2>Steps</h2>
+  <ol>
+    <li>In your wallet, send USDC to the sales address with the <strong>memo exactly</strong> as shown.</li>
+    <li>On your device, create an age identity. Keep <code>AGE-SECRET-KEY</code> private.</li>
+    <li>Send the seller only your <code>age1…</code> public recipient and the transaction signature.</li>
+    <li>Receive a <code>.trvl</code> file (or optical frames).</li>
+    <li>Decrypt locally:
+      <pre style="background:#111;padding:0.6rem;overflow:auto;font-size:0.8rem">cat sale.trvl | ./buyer-receive.sh /path/to/your-identity.txt</pre>
+    </li>
+  </ol>
+
+  <p class="muted">If you pay before sending <code>age1</code>, delivery stays PENDING until the seller has your recipient. Destroy = Restart for test keys. Not financial advice.</p>
+</body>
+</html>
