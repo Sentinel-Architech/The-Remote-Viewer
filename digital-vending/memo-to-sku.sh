@@ -18,9 +18,13 @@ if [[ ! -f "$CATALOG" ]]; then
   exit 1
 fi
 
-# Match if catalog memo appears as substring of the on-chain memo (Phantom may prefix)
+# Bind catalog .memo before piping $m — otherwise jq evaluates .memo on the string.
+# Match if catalog memo is a substring of the on-chain memo (Phantom may prefix).
 ID=$(jq -r --arg m "$MEMO" '
-  .[] | select(.memo != null and .memo != "" and ($m | contains(.memo))) | .id
+  .[]
+  | .memo as $cat
+  | select($cat != null and $cat != "" and ($m | contains($cat)))
+  | .id
 ' "$CATALOG" | head -1)
 
 if [[ -z "$ID" || "$ID" == "null" ]]; then
