@@ -19,14 +19,18 @@
     .status { margin-top: 0.75rem; font-size: 0.9rem; white-space: pre-wrap; }
     .ok { color: #6d6; }
     .err { color: #f66; }
+    .ctrl { color: #6af; }
     .note { font-size: 0.8rem; opacity: 0.6; margin-top: 1.5rem; }
     #out { background: #111; padding: 0.75rem; border-radius: 4px; margin-top: 1rem; word-break: break-all; font-family: ui-monospace, monospace; font-size: 0.85rem; min-height: 2rem; }
     #pathBadge { font-size: 0.8rem; opacity: 0.85; margin-bottom: 0.5rem; }
+    .cfg { font-size: 0.8rem; opacity: 0.75; margin: 0.5rem 0; }
+    .cfg label { margin-right: 0.75rem; }
+    .cfg input { width: 3rem; background: #111; color: #e0e0e0; border: 1px solid #333; border-radius: 3px; padding: 0.15rem 0.3rem; }
   </style>
 </head>
 <body>
   <h1>TRV Optical Receiver</h1>
-  <p class="meta">Camera · paste · file · TRVL1 · gate v2 · LT peel · exact length · Sentinel Standard</p>
+  <p class="meta">Camera · paste · file · TRVL1 · gate v2 · LT peel · exact length · feedback loop · Sentinel Standard</p>
   <div id="pathBadge">Decoder path: detecting…</div>
   <video id="vid" playsinline muted></video>
   <canvas class="gate" id="gate"></canvas>
@@ -36,16 +40,116 @@
     <button class="warn" id="camStop">Stop camera</button>
     <button id="resetBtn" class="warn">Reset decoder</button>
   </div>
+  <div class="cfg">
+    <label>Debounce samples <input type="number" id="cfgDebounce" min="1" max="20" value="3" /></label>
+    <label>Scan ms <input type="number" id="cfgScanMs" min="100" max="2000" step="50" value="250" /></label>
+  </div>
   <label for="frameIn">Paste <code>TRVL1.</code> lines</label>
   <textarea id="frameIn"></textarea>
   <button id="addBtn">Ingest paste</button>
   <label style="display:inline-block;margin-left:0.5rem;">File <input type="file" id="fileIn" accept=".txt,.trvl,text/plain" /></label>
   <div class="status" id="status">Idle.</div>
   <div id="out"></div>
-  <p class="note">Gate v2: luminance mean/variance + horizontal edge energy. BarcodeDetector → paulmillr/qr (decodeQR) → paste/file. Exact length via u32 prefix. No CDN.</p>
-  <!-- Optional: load local vendor build that exposes global decodeQR before this script -->
+  <p class="note">Gate v2 + feedback controller (hysteresis + debounce). BarcodeDetector → decodeQR → paste/file. Exact length via u32 prefix. No CDN. All open-stack devices.</p>
   <!-- <script src="vendor/qr-decode.js"></script> -->
   <script>
+    const CONTROL = {
+      DEBOUNCE_SAMPLES: 3,
+      SCAN_MS: 250,
+      BANDS: {
+        crcEnter: 0.05, crcExit: 0.02,
+        gateEnter: 0.4, gateExit: 0.15,
+        peelEnter: 0.3, peelExit: 0.5,
+        peelMinSymbols: 1,
+      },
+    };
+    function readControlConfig() {
+      const d = parseInt(document.getElementById("cfgDebounce").value, 10);
+      const s = parseInt(document.getElementById("cfgScanMs").value, 10);
+      if (Number.isFinite(d) && d >= 1) CONTROL.DEBOUNCE_SAMPLES = d;
+      if (Number.isFinite(s) && s >= 100) CONTROL.SCAN_MS = s;
+    }
+    function initialControlState() {
+      return { active: "none", pending: "none", pendingCount: 0, suggestFps: undefined, updatedAt: Date.now() };
+    }
+    let controlState = initialControlState();
+    let lastActionNote = "optical path nominal";
+    function crcRate(m) { return m.crcFailures / Math.max(m.symbolsIngested, 1); }
+    function gateRejectRate(m) {
+      return m.gateRejections / Math.max(m.scanAttempts || m.gateRejections, 1);
+    }
+    function candidateAction(m, active) {
+      const B = CONTROL.BANDS;
+      if (m.complete) return "complete";
+      const crc = crcRate(m), gate = gateRejectRate(m);
+      const crcHot = crc > B.crcEnter;
+      const gateHot = gate > B.gateEnter;
+      const peelHot = m.symbolsIngested >= B.peelMinSymbols && m.recoverRatio > 0 && m.recoverRatio < B.peelEnter;
+      const crcClear = crc < B.crcExit;
+      const gateClear = gate < B.gateExit;
+      const peelClear = m.recoverRatio >= B.peelExit;
+      if (crcHot) return "lower_fps";
+      if (gateHot && active !== "lower_fps") return "check_optics";
+      if (peelHot && active === "none") return "send_more";
+      switch (active) {
+        case "lower_fps":
+          if (crcClear) return gateHot ? "check_optics" : peelHot ? "send_more" : "none";
+          return "lower_fps";
+        case "check_optics":
+          if (gateClear) return peelHot ? "send_more" : "none";
+          return "check_optics";
+        case "send_more":
+          if (peelClear) return "none";
+          return "send_more";
+        default: return "none";
+      }
+    }
+    function actionNote(kind, m) {
+      if (kind === "complete") return "optical transfer complete; prefer Destroy residual buffers";
+      if (kind === "lower_fps") {
+        const cur = m.framesPerSecond || controlState.suggestFps || 4;
+        const fps = Math.max(1, Math.floor(cur / 2));
+        controlState.suggestFps = fps;
+        return "high CRC rate (" + (crcRate(m) * 100).toFixed(1) + "%); suggest FPS ≤ " + fps;
+      }
+      if (kind === "check_optics") return "high gate reject rate (" + (gateRejectRate(m) * 100).toFixed(0) + "%); check focus/contrast/distance";
+      if (kind === "send_more") return "peel slow (recover=" + m.recoverRatio.toFixed(2) + "); send more symbols";
+      return "optical path nominal";
+    }
+    function decideOpticalAction(m) {
+      const desired = candidateAction(m, controlState.active);
+      if (desired === "complete") {
+        controlState = { active: "complete", pending: "complete", pendingCount: 0, suggestFps: controlState.suggestFps, updatedAt: m.ts };
+        lastActionNote = actionNote("complete", m);
+        return controlState.active;
+      }
+      let { active, pending, pendingCount } = controlState;
+      if (desired === active) { pending = active; pendingCount = 0; }
+      else if (desired === pending) {
+        pendingCount += 1;
+        if (pendingCount >= CONTROL.DEBOUNCE_SAMPLES) { active = pending; pendingCount = 0; }
+      } else {
+        pending = desired; pendingCount = 1;
+        if (CONTROL.DEBOUNCE_SAMPLES <= 1) { active = pending; pendingCount = 0; }
+      }
+      controlState = { active, pending, pendingCount, suggestFps: controlState.suggestFps, updatedAt: m.ts };
+      lastActionNote = actionNote(active, m);
+      return active;
+    }
+    function runController() {
+      const m = {
+        symbolsIngested: ingested,
+        symbolsUnique: decoder ? decoder.seen.size : 0,
+        recoverRatio: decoder && decoder.k ? decoder.count / decoder.k : 0,
+        crcFailures: errors,
+        gateRejections: gateRejections,
+        scanAttempts: scanAttempts,
+        framesPerSecond: CONTROL.SCAN_MS > 0 ? 1000 / CONTROL.SCAN_MS : 4,
+        complete: !!(decoder && decoder.done),
+        ts: Date.now(),
+      };
+      decideOpticalAction(m);
+    }
     function crc16ibm(data) {
       let crc = 0xffff;
       for (let i = 0; i < data.length; i++) {
@@ -63,16 +167,13 @@
       return out;
     }
     function readU16(buf, off) { return (buf[off] << 8) | buf[off + 1]; }
-    function readU32(buf, off) {
-      return ((buf[off] << 24) | (buf[off + 1] << 16) | (buf[off + 2] << 8) | buf[off + 3]) >>> 0;
-    }
     function decodeFrame(frame) {
       if (frame.length < 20) throw new Error("short frame");
       if (frame[0] !== 0x54 || frame[1] !== 0x52 || frame[2] !== 0x56 || frame[3] !== 0x4c) throw new Error("bad magic");
       if (frame[4] !== 1) throw new Error("bad version");
       const k = readU16(frame, 6);
       const blockSize = readU16(frame, 8);
-      const seed = readU32(frame, 10);
+      const seed = ((frame[10] << 24) | (frame[11] << 16) | (frame[12] << 8) | frame[13]) >>> 0;
       const degree = readU16(frame, 14);
       const payloadLen = readU16(frame, 16);
       let off = 18;
@@ -154,7 +255,7 @@
       const edgeMean = edge / edgeN;
       return mean > 25 && mean < 240 && variance > 180 && edgeMean > 8;
     }
-    let decoder = null, ingested = 0, errors = 0, gateRejections = 0;
+    let decoder = null, ingested = 0, errors = 0, gateRejections = 0, scanAttempts = 0;
     let stream = null, scanTimer = null, detector = null, decodePath = "none";
     const statusEl = document.getElementById("status");
     const outEl = document.getElementById("out");
@@ -179,9 +280,20 @@
       catch { outEl.textContent = "PAYLOAD hex (exact " + p.length + " B): " + Array.from(p.slice(0, 64)).map((b) => b.toString(16).padStart(2, "0")).join(""); }
     }
     function render() {
-      if (!decoder) { statusEl.textContent = "Idle. gateRejections=" + gateRejections + " (gate v2)"; return; }
+      runController();
+      const act = controlState.active;
+      const pend = controlState.pending !== controlState.active
+        ? " pending=" + controlState.pending + "×" + controlState.pendingCount + "/" + CONTROL.DEBOUNCE_SAMPLES
+        : "";
+      if (!decoder) {
+        statusEl.innerHTML = "Idle. gateReject=" + gateRejections + " scans=" + scanAttempts +
+          " <span class='ctrl'>ctrl=" + act + pend + "</span>\n" + lastActionNote;
+        return;
+      }
       statusEl.innerHTML = "k=" + decoder.k + " recovered <span class='ok'>" + decoder.count + "/" + decoder.k +
-        "</span> ingested=" + ingested + " errors=" + errors + " gateReject=" + gateRejections + " path=" + decodePath;
+        "</span> ingested=" + ingested + " errors=" + errors + " gateReject=" + gateRejections +
+        " scans=" + scanAttempts + " path=" + decodePath +
+        " <span class='ctrl'>ctrl=" + act + pend + "</span>\n" + lastActionNote;
       showPayload();
     }
     function ingestLine(line) {
@@ -194,7 +306,7 @@
     }
     function ingestText(text) {
       for (const line of text.split(/\r?\n/)) {
-        try { ingestLine(line); } catch (e) { errors++; statusEl.innerHTML = "<span class='err'>" + e.message + "</span>"; }
+        try { ingestLine(line); } catch (e) { errors++; }
       }
       render();
     }
@@ -206,7 +318,10 @@
       reader.readAsText(f);
     };
     document.getElementById("resetBtn").onclick = () => {
-      decoder = null; ingested = 0; errors = 0; gateRejections = 0; lastCodes.clear(); outEl.textContent = ""; decodePath = "none"; updatePathBadge(); render();
+      decoder = null; ingested = 0; errors = 0; gateRejections = 0; scanAttempts = 0;
+      lastCodes.clear(); outEl.textContent = ""; decodePath = "none";
+      controlState = initialControlState(); lastActionNote = "optical path nominal";
+      updatePathBadge(); render();
     };
     function tryDecodeQRFromVideo() {
       if (!hasDecodeQR()) return;
@@ -217,34 +332,39 @@
       ctx.drawImage(vid, 0, 0, w, h);
       const img = ctx.getImageData(0, 0, w, h);
       let raw;
-      try {
-        raw = decodeQR({ width: img.width, height: img.height, data: img.data });
-      } catch (_) {
-        return;
-      }
+      try { raw = decodeQR({ width: img.width, height: img.height, data: img.data }); }
+      catch (_) { return; }
       if (raw) {
         raw = String(raw).trim();
         if (raw && !lastCodes.has(raw)) {
           lastCodes.add(raw); if (lastCodes.size > 200) lastCodes.clear();
           decodePath = "decodeQR"; updatePathBadge();
-          try { ingestLine(raw); render(); } catch (e) { errors++; }
+          try { ingestLine(raw); } catch (e) { errors++; }
+          render();
         }
       }
     }
     async function startCam() {
-      if (!navigator.mediaDevices?.getUserMedia) { statusEl.innerHTML = "<span class='err'>No camera API</span>"; return; }
+      readControlConfig();
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        statusEl.innerHTML = "<span class='err'>No camera API</span>"; return;
+      }
       stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
       vid.srcObject = stream; await vid.play();
       detector = null;
-      if ("BarcodeDetector" in window) { try { detector = new BarcodeDetector({ formats: ["qr_code"] }); } catch { detector = null; } }
+      if ("BarcodeDetector" in window) { try { detector = new BarcodeDetector({ formats: ["qr_code"] }); } catch (e) { detector = null; } }
       decodePath = detector ? "BarcodeDetector" : hasDecodeQR() ? "decodeQR" : "camera-no-decoder";
       updatePathBadge();
-      if (!detector && !hasDecodeQR()) { statusEl.innerHTML = "Camera on — <span class='err'>no decoder; use paste or file</span>"; return; }
-      statusEl.textContent = "Camera scanning (gate v2)…";
+      if (!detector && !hasDecodeQR()) {
+        statusEl.innerHTML = "Camera on — <span class='err'>no decoder; use paste or file</span>"; return;
+      }
+      statusEl.textContent = "Camera scanning (gate v2 + feedback)…";
+      if (scanTimer) clearInterval(scanTimer);
       scanTimer = setInterval(async () => {
-        if (decoder?.done) return;
+        if (decoder && decoder.done) { render(); return; }
+        scanAttempts++;
         try {
-          if (!framePassesGate(vid, gate)) { gateRejections++; return; }
+          if (!framePassesGate(vid, gate)) { gateRejections++; render(); return; }
           if (detector) {
             const codes = await detector.detect(vid);
             for (const c of codes) {
@@ -252,11 +372,12 @@
               if (!raw || lastCodes.has(raw)) continue;
               lastCodes.add(raw); if (lastCodes.size > 200) lastCodes.clear();
               decodePath = "BarcodeDetector";
-              try { ingestLine(raw); render(); } catch (e) { errors++; }
+              try { ingestLine(raw); } catch (e) { errors++; }
             }
-          } else tryDecodeQRFromVideo();
-        } catch (_) {}
-      }, 250);
+            render();
+          } else { tryDecodeQRFromVideo(); render(); }
+        } catch (e) { render(); }
+      }, CONTROL.SCAN_MS);
     }
     function stopCam() {
       if (scanTimer) clearInterval(scanTimer); scanTimer = null;
@@ -264,6 +385,8 @@
     }
     document.getElementById("camBtn").onclick = () => startCam().catch((e) => { statusEl.innerHTML = "<span class='err'>" + e.message + "</span>"; });
     document.getElementById("camStop").onclick = stopCam;
+    document.getElementById("cfgDebounce").onchange = readControlConfig;
+    document.getElementById("cfgScanMs").onchange = readControlConfig;
   </script>
 </body>
 </html>
