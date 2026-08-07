@@ -55,7 +55,7 @@ Not a cloud AI product. Not a live DePIN network. Not an always-on oracle.
 ```bash
 git clone -b TheRemoteViewer https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
 cd The-Remote-Viewer
-bash modules/defense/integrity-pulse.sh    # no models required
+bash modules/defense/integrity-pulse.sh    # Hydra multi-head
 bash scripts/chat.sh                       # local assistant (after llama.cpp + weights optional)
 ```
 
@@ -67,14 +67,14 @@ bash scripts/chat.sh                       # local assistant (after llama.cpp + 
 |------------|--------|-------|
 | Optical air-gap | **PROVEN** | age → Soliton LT → peel → decrypt |
 | Digital vending (Path B) | **PROVEN** | Solana USDC memo → TRVL deliver on-device |
-| Integrity Verifier (first node role) | **PROVEN** | contribution + sales.log attestation on GrapheneOS/Termux |
+| Integrity Verifier (first node role) | **PROVEN** | contribution + sales.log attestation |
+| Defense / Hydra multi-head | **PROVEN** | seal + verifier + quarantine deliver gate |
 | MoE Stage B (dense) | **PROVEN** | TinyLlama + Qwen2.5-Coder via llama.cpp |
 | MoE Stage C (sparse) | **PROVEN** | TinyMixtral-4x248M-MoE load + generate |
-| Local RAG | **SCAFFOLD** | BM25 + TF-IDF vectors + session memory + chat |
-| Defense / Hydra | **SCAFFOLD** | integrity-pulse only; no offensive tooling |
 | Contribution ledger | **PROVEN** | offline JSONL hash-chain + verifier weight |
-| Local UI | **SCAFFOLD** | `http://127.0.0.1:8765/` |
-| Public buy page | **OPEN** | `digital-vending/buy.html` + README links |
+| Local operator UI | **PROVEN** | `http://127.0.0.1:8765/` — copy-to-Termux console |
+| Public buy page | **OPEN** | `digital-vending/buy.html` + QR |
+| Local RAG | **SCAFFOLD** | BM25 + TF-IDF + session memory + chat |
 | Chain settlement | **NOT STARTED** | |
 
 ---
@@ -117,8 +117,9 @@ digital-vending/buy.html     Public storefront (Pay + QR)
 digital-vending/PROTOCOL.md  Vending machine protocol
 docs/public/BUY.md           Buyer-facing steps
 optical-airgap/              PROVEN transport
+modules/defense/             Hydra multi-head (PROVEN)
 modules/integrity-verifier/  First validator role (PROVEN)
-apps/ui/                     Local operator console
+apps/ui/                     Local operator console (PROVEN)
 docs/REALITY.md              Status authority
 docs/TEST.md                 How others verify
 ```
