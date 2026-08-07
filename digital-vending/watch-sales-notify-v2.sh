@@ -146,12 +146,11 @@ circuit_failure() {
   fi
 }
 
+# SKU map from catalog.json (single source of truth)
 map_memo_to_id() {
-  local memo="$1"
-  if [[ "$memo" == *"TRV-Posture-Lite"* ]]; then echo "trv-posture-lite"
-  elif [[ "$memo" == *"TRV-Posture-Pack"* ]]; then echo "trv-posture-pack"
-  elif [[ "$memo" == *"SENTINEL-ZK-01"* ]]; then echo "sentinel-skill-zk-01"
-  else echo ""; fi
+  local memo="$1" id
+  id=$(bash "$VENDING_DIR/memo-to-sku.sh" "$memo" 2>/dev/null) || id=""
+  echo "$id"
 }
 get_retry_state() {
   local key="$1" line; line=$(grep -E "^${key}=" "$RETRY_STATE" 2>/dev/null | tail -1 || true)
@@ -206,9 +205,9 @@ retry_pending() {
 prepare_delivery() {
   local memo="$1" sig="$2" pack="" zip_src="" zip_name="" catalog_id=""
   catalog_id=$(map_memo_to_id "$memo")
-  if [[ "$memo" == *"TRV-Posture-Lite"* ]]; then pack="Lite"; zip_name="trv-posture-lite.zip"; zip_src="${DIST_DIR}/trv-posture-lite.zip"
-  elif [[ "$memo" == *"TRV-Posture-Pack"* ]]; then pack="Pack"; zip_name="trv-posture-pack.zip"; zip_src="${DIST_DIR}/trv-posture-pack.zip"
-  else echo "  [prepare] Unknown memo — skipping ZIP"; fi
+  if [[ "$catalog_id" == "trv-posture-lite" ]]; then pack="Lite"; zip_name="trv-posture-lite.zip"; zip_src="${DIST_DIR}/trv-posture-lite.zip"
+  elif [[ "$catalog_id" == "trv-posture-pack" ]]; then pack="Pack"; zip_name="trv-posture-pack.zip"; zip_src="${DIST_DIR}/trv-posture-pack.zip"
+  elif [[ -z "$catalog_id" ]]; then echo "  [prepare] Unknown memo — skipping SKU deliver"; fi
   local dest=""
   if [[ -n "$zip_name" ]]; then
     dest="${DELIVER_DIR}/${sig:0:12}_${zip_name}"
@@ -216,7 +215,7 @@ prepare_delivery() {
     else echo "  [prepare] WARNING: $zip_src missing"; dest="(ZIP missing)"; fi
   fi
   if [[ -n "$catalog_id" ]]; then
-    echo "  [prepare] age+LT for $catalog_id"
+    echo "  [prepare] age+LT for $catalog_id (SKU from catalog.json)"
     set +e; bash "$VENDING_DIR/auto-deliver.sh" "$catalog_id" "$sig"; rc=$?; set -e
     case $rc in
       0) echo "  [prepare] age+LT frames ready" ;;
@@ -245,9 +244,13 @@ EOF
 notify_discord() {
   local sig="$1" memo="$2" amount="$3"
   [[ -z "$DISCORD_WEBHOOK" ]] && return 0
-  local pack_hint="Unknown" zip_hint=""
-  [[ "$memo" == *"TRV-Posture-Lite"* ]] && { pack_hint="**TRV Posture Lite** (11 USDC)"; zip_hint="age/LT frames"; }
-  [[ "$memo" == *"TRV-Posture-Pack"* ]] && { pack_hint="**TRV Posture Pack** (25 USDC)"; zip_hint="age/LT frames"; }
+  local pack_hint="Unknown" zip_hint="" catalog_id
+  catalog_id=$(map_memo_to_id "$memo")
+  case "$catalog_id" in
+    trv-posture-lite) pack_hint="**TRV Posture Lite** (11 USDC)"; zip_hint="age/LT frames" ;;
+    trv-posture-pack) pack_hint="**TRV Posture Pack** (25 USDC)"; zip_hint="age/LT frames" ;;
+    sentinel-skill-zk-01) pack_hint="**ZK Membership Skill**"; zip_hint="age/LT frames" ;;
+  esac
   local content; content=$(jq -n --arg sig "$sig" --arg memo "$memo" --arg amount "$amount" --arg pack "$pack_hint" \
     --arg zip "$zip_hint" --arg explorer "https://solscan.io/tx/${sig}" --arg deliver "$DELIVER_DIR" \
     '{content:("**New TRV Sale**\nPack: "+$pack+"\nAmount: "+$amount+"\nMemo: `"+$memo+"`\nSig: `"+$sig+"`\n"+$explorer+"\n\n"+$zip+"\nReady: `"+$deliver+"`")}')
