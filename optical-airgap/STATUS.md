@@ -2,7 +2,8 @@
 
 **Policy:** [SENTINEL-STANDARD.md](./SENTINEL-STANDARD.md)  
 **OSS:** [OPEN-SOURCE.md](./OPEN-SOURCE.md)  
-**Install:** [INSTALL.md](./INSTALL.md)
+**Install:** [INSTALL.md](./INSTALL.md)  
+**Phase 3 draft:** [PHASE3.md](./PHASE3.md)
 
 ## Verification (2026-07-31)
 
@@ -26,14 +27,15 @@
 - [x] QR HTML offline + gate v2  
 - [x] RDH optional path  
 - [x] Public docs (README / INSTALL / OPEN-SOURCE / Standard)  
-- [x] **Exact payload length in LT** (u32 BE prefix; peel returns exact bytes) — 2026-08-07  
-- [x] **Optional QR decoder switched to paulmillr/qr** (docs + receiver wiring) — 2026-08-07  
-- [x] **Cargo vendor offline path** (`scripts/vendor-offline.sh` + OFFLINE.md) — 2026-08-07  
+- [x] **Exact payload length in LT** (u32 BE prefix) — 2026-08-07  
+- [x] **Optional QR decoder → paulmillr/qr** (docs + receiver) — 2026-08-07  
+- [x] **Cargo vendor offline** (`scripts/vendor-offline.sh`, on-device `--offline` tests) — 2026-08-07  
+- [x] **CLI / e2e polish (P2-8)** — 2026-08-07  
 
-## Not done / Phase 2 remaining
+## Phase 2 remaining (non-code / blocked)
 
-- [ ] Multi-device optical lab (Acer ↔ phone) — blocked on hardware access (R10)  
-- [ ] Drop a concrete paulmillr/qr browser build under `optical/vendor/` (USB after networked pin)  
-- [ ] Acoustic R6 — **DEFERRED** (see PHASE2-R6.md)  
-- [ ] RDH metrics / light polish  
-- [ ] CLI / loop polish  
+- [ ] Multi-device optical lab (Acer ↔ phone) — blocked on hardware (R10)  
+- [ ] Concrete paulmillr/qr browser build under `optical/vendor/` (USB drop)  
+- [ ] Acoustic R6 — **DEFERRED**  
+
+**Phase 2 posture:** code-complete for no-hardware path. Field optical still pending devices.

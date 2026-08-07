@@ -13,17 +13,28 @@ use trv_optical_airgap::{
 
 fn usage() {
     eprintln!(
-        "trv-optical (Sentinel Standard — Soliton LT)\n\
-         keygen\n\
-         encrypt <age1-recipient>\n\
-         decrypt <identity-file>\n\
-         rdh-cap <cover-file>\n\
-         address <local> <vault-fp>\n\
-         lt-demo\n\
-         frame-stream [block_size] [count]\n\
-         frame-peel\n\
-         rdh-embed-demo\n"
+        "trv-optical — Sentinel Standard (Soliton LT, exact length)\n\
+         \n\
+         keygen                              recipient → stdout; identity → stderr (Vault)\n\
+         encrypt <age1-recipient>            stdin plaintext → age ciphertext\n\
+         decrypt <identity-file>             stdin ciphertext → plaintext\n\
+         frame-stream [block_size] [count]   stdin → TRVL1. lines (default block=32, count=auto)\n\
+         frame-peel                          TRVL1. lines → exact payload\n\
+         rdh-cap <cover-file>                estimate RDH capacity (bytes)\n\
+         rdh-embed-demo                      stdin secret into flat cover (demo)\n\
+         address [local] [vault-fp]          @local.sentinel.viewer#fp\n\
+         lt-demo                             emit a few framed symbols (debug)\n\
+         \n\
+         Offline: see rust/OFFLINE.md (cargo vendor). Termux: use $HOME paths.\n"
     );
+}
+
+fn need_arg(name: &str, v: Option<String>) -> String {
+    v.unwrap_or_else(|| {
+        eprintln!("error: missing argument <{name}>");
+        usage();
+        std::process::exit(1);
+    })
 }
 
 fn to_base64url(bytes: &[u8]) -> String {
@@ -112,38 +123,55 @@ fn main() {
     match cmd.as_str() {
         "keygen" => {
             let kp = generate_identity_pair();
-            // Recipient implements Display (age1…)
             println!("{}", kp.recipient);
-            // Identity does not implement Display in age 0.11 — string is SecretString
             let id = kp.identity.to_string();
             eprintln!("{}", id.expose_secret());
-            eprintln!("(identity on stderr — Vault only)");
+            eprintln!("(identity on stderr — Vault only; never commit)");
         }
         "encrypt" => {
-            let recip_str = args.next().expect("recipient");
-            let recipient: age::x25519::Recipient = recip_str.parse().expect("recipient");
+            let recip_str = need_arg("age1-recipient", args.next());
+            let recipient: age::x25519::Recipient = recip_str.parse().unwrap_or_else(|e| {
+                eprintln!("error: bad recipient: {e}");
+                std::process::exit(1);
+            });
             let mut pt = Vec::new();
             io::stdin().read_to_end(&mut pt).unwrap();
+            if pt.is_empty() {
+                eprintln!("error: empty stdin");
+                std::process::exit(1);
+            }
             let ct = encrypt_for_recipient(&pt, &recipient).expect("encrypt");
             io::stdout().write_all(&ct).unwrap();
         }
         "decrypt" => {
-            let path = args.next().expect("identity file");
-            let id_str = std::fs::read_to_string(&path).expect("read identity");
+            let path = need_arg("identity-file", args.next());
+            let id_str = std::fs::read_to_string(&path).unwrap_or_else(|e| {
+                eprintln!("error: read identity {path}: {e}");
+                std::process::exit(1);
+            });
             let identity: age::x25519::Identity = id_str
                 .lines()
                 .find(|l| l.starts_with("AGE-SECRET-KEY-"))
                 .unwrap_or(id_str.trim())
                 .parse()
-                .expect("parse identity");
+                .unwrap_or_else(|e| {
+                    eprintln!("error: parse identity: {e}");
+                    std::process::exit(1);
+                });
             let mut ct = Vec::new();
             io::stdin().read_to_end(&mut ct).unwrap();
-            let pt = decrypt_blob(&ct, &identity).expect("decrypt");
+            let pt = decrypt_blob(&ct, &identity).unwrap_or_else(|e| {
+                eprintln!("error: decrypt: {e}");
+                std::process::exit(1);
+            });
             io::stdout().write_all(&pt).unwrap();
         }
         "rdh-cap" => {
-            let path = args.next().expect("cover path");
-            let cover = std::fs::read(path).expect("read");
+            let path = need_arg("cover-file", args.next());
+            let cover = std::fs::read(&path).unwrap_or_else(|e| {
+                eprintln!("error: read cover {path}: {e}");
+                std::process::exit(1);
+            });
             println!("{}", estimate_capacity(&cover));
         }
         "address" => {
@@ -174,6 +202,10 @@ fn main() {
             let count_arg: usize = args.next().and_then(|s| s.parse().ok()).unwrap_or(0);
             let mut pt = Vec::new();
             io::stdin().read_to_end(&mut pt).unwrap();
+            if pt.is_empty() {
+                eprintln!("error: empty stdin");
+                std::process::exit(1);
+            }
             let mut enc = LtEncoder::new(&pt, block_size);
             let k = enc.k();
             let n = if count_arg == 0 {
@@ -185,7 +217,9 @@ fn main() {
                 k: k as u16,
                 block_size: block_size as u16,
             };
-            eprintln!("frame-stream: k={k} block_size={block_size} symbols={n} mode=soliton exact-len");
+            eprintln!(
+                "frame-stream: k={k} block_size={block_size} symbols={n} mode=soliton exact-len"
+            );
             for _ in 0..n {
                 let sym = enc.next();
                 let frame = encode_lt_frame(&sym, &meta).expect("frame");
@@ -248,9 +282,11 @@ fn main() {
             }
             match decoder {
                 Some(dec) if dec.is_complete() => {
-                    // Exact length already stripped inside LtDecoder::payload()
                     let out = dec.payload().expect("payload after complete peel");
-                    eprintln!("peel ok ingested={ingested} errors={errors} exact_len={}", out.len());
+                    eprintln!(
+                        "peel ok ingested={ingested} errors={errors} exact_len={}",
+                        out.len()
+                    );
                     io::stdout().write_all(&out).unwrap();
                 }
                 Some(dec) => {
@@ -278,6 +314,7 @@ fn main() {
             );
         }
         _ => {
+            eprintln!("error: unknown command '{cmd}'");
             usage();
             std::process::exit(1);
         }
