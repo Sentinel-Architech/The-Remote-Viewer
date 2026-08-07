@@ -34,8 +34,22 @@ case "$cmd" in
     id="${2:-}"; recip="${3:-}"; out="${4:-$DELIVER_DIR/${id}-$(date +%Y%m%d%H%M).trvl}"
     [[ -n "$id" && -n "$recip" ]] || usage
     mkdir -p "$DELIVER_DIR"
+    set +e
     "$ROOT/seller-deliver.sh" "$id" "$recip" > "$out"
-    echo "Wrote $out ($(wc -l < "$out") lines)" >&2
+    rc=$?
+    set -e
+    if [[ $rc -ne 0 ]]; then
+      echo "ERROR: seller-deliver failed (exit $rc)" >&2
+      rm -f "$out"
+      exit "$rc"
+    fi
+    if [[ ! -s "$out" ]]; then
+      echo "ERROR: frames output is empty: $out" >&2
+      echo "ERROR: not logging — check trv-optical / payload / recipient" >&2
+      rm -f "$out"
+      exit 3
+    fi
+    echo "Wrote $out ($(wc -c < "$out" | tr -d ' ') bytes, $(wc -l < "$out" | tr -d ' ') lines)" >&2
     bash "$ROOT/log-sale.sh" "$id" "manual deliver" "$out"
     echo "$out"
     ;;
