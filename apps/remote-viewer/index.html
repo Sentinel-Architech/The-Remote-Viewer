@@ -7,101 +7,63 @@
   <title>The Remote Viewer</title>
   <style>
     :root {
-      --bg: #06080c;
-      --surface: #0e1218;
-      --surface2: #151b24;
-      --line: #243041;
-      --text: #f0f4fa;
-      --soft: #9aabbf;
-      --accent: #6eb6ff;
-      --warm: #e8c27a;
-      --danger: #e87a84;
-      --radius: 16px;
+      --bg: #06080c; --surface: #0e1218; --surface2: #151b24; --line: #243041;
+      --text: #f0f4fa; --soft: #9aabbf; --accent: #6eb6ff; --warm: #e8c27a;
+      --danger: #e87a84; --radius: 16px;
       --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     }
     * { box-sizing: border-box; }
     html, body { margin: 0; height: 100%; }
     body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.45;
-      display: flex;
-      flex-direction: column;
-      min-height: 100dvh;
+      font-family: var(--font); background: var(--bg); color: var(--text);
+      line-height: 1.45; display: flex; flex-direction: column; min-height: 100dvh;
     }
     .notice {
-      background: #1a160c;
-      color: var(--warm);
-      font-size: 0.75rem;
-      text-align: center;
-      padding: 0.55rem 0.85rem;
-      border-bottom: 1px solid #3d3420;
+      background: #1a160c; color: var(--warm); font-size: 0.75rem; text-align: center;
+      padding: 0.55rem 0.85rem; border-bottom: 1px solid #3d3420;
     }
-    .top {
-      padding: 1rem 1.1rem 0.35rem;
-      max-width: 640px;
-      width: 100%;
-      margin: 0 auto;
-    }
+    .top { padding: 1rem 1.1rem 0.35rem; max-width: 640px; width: 100%; margin: 0 auto; }
     .top h1 { margin: 0; font-size: 1.25rem; font-weight: 650; letter-spacing: -0.01em; }
     .top p { margin: 0.2rem 0 0; color: var(--soft); font-size: 0.88rem; }
     .tabs {
-      display: flex; gap: 0.25rem; padding: 0.75rem 1rem;
-      max-width: 640px; width: 100%; margin: 0 auto;
-      position: sticky; top: 0;
-      background: linear-gradient(var(--bg) 70%, transparent);
-      z-index: 5;
+      display: flex; gap: 0.25rem; padding: 0.75rem 1rem; max-width: 640px; width: 100%;
+      margin: 0 auto; position: sticky; top: 0;
+      background: linear-gradient(var(--bg) 70%, transparent); z-index: 5;
     }
     .tabs button {
-      flex: 1; appearance: none; border: none; background: transparent;
-      color: var(--soft); font: inherit; font-size: 0.88rem; font-weight: 600;
-      padding: 0.65rem 0.4rem; border-radius: 999px; cursor: pointer;
+      flex: 1; appearance: none; border: none; background: transparent; color: var(--soft);
+      font: inherit; font-size: 0.82rem; font-weight: 600; padding: 0.65rem 0.3rem;
+      border-radius: 999px; cursor: pointer;
     }
     .tabs button.on { background: var(--surface2); color: var(--text); }
-    main {
-      flex: 1; max-width: 640px; width: 100%; margin: 0 auto;
-      padding: 0.25rem 1rem 2.5rem;
-    }
+    main { flex: 1; max-width: 640px; width: 100%; margin: 0 auto; padding: 0.25rem 1rem 2.5rem; }
     .screen { display: none; }
     .screen.on { display: block; }
     .card {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 1rem;
-      margin-bottom: 0.85rem;
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 1rem; margin-bottom: 0.85rem;
     }
     .card h2 { margin: 0 0 0.65rem; font-size: 0.95rem; font-weight: 650; }
     .soft { color: var(--soft); font-size: 0.88rem; }
-    label {
-      display: block; font-size: 0.78rem; color: var(--soft);
-      margin-top: 0.65rem; font-weight: 500;
-    }
-    input, textarea, select {
-      width: 100%; margin-top: 0.3rem; padding: 0.7rem 0.8rem;
-      border-radius: 12px; border: 1px solid var(--line);
-      background: var(--surface2); color: var(--text); font: inherit;
+    label { display: block; font-size: 0.78rem; color: var(--soft); margin-top: 0.65rem; font-weight: 500; }
+    input, textarea {
+      width: 100%; margin-top: 0.3rem; padding: 0.7rem 0.8rem; border-radius: 12px;
+      border: 1px solid var(--line); background: var(--surface2); color: var(--text); font: inherit;
     }
     textarea { min-height: 110px; resize: vertical; }
-    .actions {
-      display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.85rem;
-    }
+    .actions { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.85rem; }
     .btn {
-      appearance: none; border: none; border-radius: 999px;
-      padding: 0.55rem 1rem; font: inherit; font-size: 0.88rem; font-weight: 600;
-      cursor: pointer; background: var(--surface2); color: var(--text);
-      border: 1px solid var(--line);
+      appearance: none; border: none; border-radius: 999px; padding: 0.55rem 1rem;
+      font: inherit; font-size: 0.88rem; font-weight: 600; cursor: pointer;
+      background: var(--surface2); color: var(--text); border: 1px solid var(--line);
     }
-    .btn.primary {
-      background: var(--accent); color: #061018; border-color: var(--accent);
-    }
+    .btn.primary { background: var(--accent); color: #061018; border-color: var(--accent); }
     .btn.quiet { color: var(--soft); }
     .btn.warn { color: var(--danger); border-color: #5a3038; }
     .btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .post {
-      background: var(--surface); border: 1px solid var(--line);
-      border-radius: var(--radius); padding: 1rem; margin-bottom: 0.75rem;
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 1rem; margin-bottom: 0.75rem;
     }
     .post .who { font-size: 0.8rem; color: var(--soft); margin-bottom: 0.45rem; }
     .post .body { white-space: pre-wrap; font-size: 0.98rem; }
@@ -110,24 +72,15 @@
       border-radius: 12px; margin-top: 0.65rem; background: #000;
     }
     .post .place { margin-top: 0.5rem; font-size: 0.8rem; color: var(--warm); }
-    .media-row {
-      display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem;
-    }
+    .media-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
     .media-row label.file {
-      margin: 0; padding: 0.55rem 0.9rem; border-radius: 999px;
-      border: 1px dashed var(--line); color: var(--soft); font-size: 0.85rem; cursor: pointer;
+      margin: 0; padding: 0.55rem 0.9rem; border-radius: 999px; border: 1px dashed var(--line);
+      color: var(--soft); font-size: 0.85rem; cursor: pointer;
     }
     .media-row input[type=file] { display: none; }
-    .preview-media {
-      margin-top: 0.65rem; border-radius: 12px; overflow: hidden;
-      max-height: 240px; background: #000;
-    }
-    .preview-media img, .preview-media video {
-      width: 100%; max-height: 240px; object-fit: cover; display: block;
-    }
-    .id-chip {
-      font-size: 0.78rem; color: var(--soft); word-break: break-all; padding: 0.5rem 0;
-    }
+    .preview-media { margin-top: 0.65rem; border-radius: 12px; overflow: hidden; max-height: 240px; background: #000; }
+    .preview-media img, .preview-media video { width: 100%; max-height: 240px; object-fit: cover; display: block; }
+    .id-chip { font-size: 0.78rem; color: var(--soft); word-break: break-all; padding: 0.5rem 0; }
     .toast {
       position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%);
       background: var(--surface2); border: 1px solid var(--line); color: var(--text);
@@ -135,92 +88,49 @@
       opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 20; max-width: 90vw;
     }
     .toast.show { opacity: 1; }
-    .empty {
-      text-align: center; color: var(--soft); padding: 2rem 1rem; font-size: 0.95rem;
-    }
+    .empty { text-align: center; color: var(--soft); padding: 2rem 1rem; font-size: 0.95rem; }
     .person {
       display: flex; justify-content: space-between; gap: 0.5rem; align-items: center;
       padding: 0.55rem 0; border-bottom: 1px solid var(--line); font-size: 0.88rem;
     }
     .person code { font-size: 0.75rem; color: var(--soft); word-break: break-all; }
-
-    /* Welcome gate */
     .welcome-gate {
-      position: fixed; inset: 0; z-index: 40;
-      background: rgba(4, 6, 10, 0.92);
-      display: flex; align-items: center; justify-content: center;
-      padding: 1.25rem;
+      position: fixed; inset: 0; z-index: 40; background: rgba(4, 6, 10, 0.92);
+      display: flex; align-items: center; justify-content: center; padding: 1.25rem;
     }
     .welcome-gate[hidden] { display: none !important; }
     .welcome-card {
-      max-width: 420px; width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      padding: 1.5rem 1.25rem 1.25rem;
-      text-align: center;
+      max-width: 420px; width: 100%; background: var(--surface); border: 1px solid var(--line);
+      border-radius: 20px; padding: 1.5rem 1.25rem 1.25rem; text-align: center;
       box-shadow: 0 20px 60px rgba(0,0,0,0.45);
     }
-    .welcome-card h2 {
-      margin: 0 0 0.5rem;
-      font-size: 1.35rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-    .welcome-card p {
-      margin: 0.4rem 0;
-      color: var(--soft);
-      font-size: 0.95rem;
-    }
+    .welcome-card h2 { margin: 0 0 0.5rem; font-size: 1.35rem; font-weight: 700; }
+    .welcome-card p { margin: 0.4rem 0; color: var(--soft); font-size: 0.95rem; }
     a.gateway-link {
-      display: block;
-      margin: 1.15rem 0 0.85rem;
-      padding: 0.95rem 1rem;
-      border-radius: 14px;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 1.05rem;
-      letter-spacing: 0.01em;
-      color: #0a0c10;
+      display: block; margin: 1.15rem 0 0.85rem; padding: 0.95rem 1rem; border-radius: 14px;
+      text-decoration: none; font-weight: 700; font-size: 1.05rem; color: #0a0c10;
       background: linear-gradient(135deg, #f0d78c 0%, #e8c27a 40%, #c9a227 100%);
       border: 2px solid #ffe6a0;
-      box-shadow:
-        0 0 0 3px rgba(232, 194, 122, 0.25),
-        0 8px 28px rgba(201, 162, 39, 0.35);
+      box-shadow: 0 0 0 3px rgba(232, 194, 122, 0.25), 0 8px 28px rgba(201, 162, 39, 0.35);
       animation: gateway-pulse 2.4s ease-in-out infinite;
     }
-    a.gateway-link:active { transform: scale(0.98); }
     @keyframes gateway-pulse {
       0%, 100% { box-shadow: 0 0 0 3px rgba(232, 194, 122, 0.25), 0 8px 28px rgba(201, 162, 39, 0.35); }
       50% { box-shadow: 0 0 0 6px rgba(232, 194, 122, 0.4), 0 8px 36px rgba(201, 162, 39, 0.5); }
     }
-    .gateway-sub {
-      font-size: 0.78rem;
-      color: var(--soft);
-      margin-top: -0.35rem;
-      margin-bottom: 0.5rem;
-    }
+    .gateway-sub { font-size: 0.78rem; color: var(--soft); margin-top: -0.35rem; margin-bottom: 0.5rem; }
   </style>
 </head>
 <body>
   <div class="notice">This space connects over the network. The Sentinel on your device does not need it.</div>
 
-  <!-- Audible welcome for every Viewer -->
   <div class="welcome-gate" id="welcome-gate" role="dialog" aria-labelledby="welcome-title">
     <div class="welcome-card">
       <h2 id="welcome-title">Welcome</h2>
       <p>You are entering <strong style="color:var(--text)">The Remote Viewer</strong>.</p>
       <p>Find each other. Share what you choose.</p>
-
-      <a class="gateway-link"
-         id="gateway-link"
-         href="https://www.cia.gov/readingroom/document/cia-rdp96-00788r001700210016-5"
-         target="_blank"
-         rel="noopener noreferrer">
-        The Gateway Process
-      </a>
-      <p class="gateway-sub">Open the Gateway Process — highlighted path for every Viewer</p>
-
+      <a class="gateway-link" href="https://www.cia.gov/readingroom/document/cia-rdp96-00788r001700210016-5" target="_blank" rel="noopener noreferrer">The Gateway Process</a>
+      <p class="gateway-sub">Open the Gateway Process — for every Viewer</p>
       <div class="actions" style="justify-content:center">
         <button type="button" class="btn primary" id="welcome-enter">Enter</button>
         <button type="button" class="btn quiet" id="welcome-replay">Hear welcome again</button>
@@ -244,7 +154,7 @@
     <section id="home" class="screen on">
       <div class="card" style="border-color:#5a4a20">
         <a class="gateway-link" style="margin:0" href="https://www.cia.gov/readingroom/document/cia-rdp96-00788r001700210016-5" target="_blank" rel="noopener noreferrer">The Gateway Process</a>
-        <p class="gateway-sub">Always available · open anytime</p>
+        <p class="gateway-sub">Always available</p>
       </div>
       <div class="actions" style="margin-bottom:0.75rem">
         <button type="button" class="btn primary" id="refresh-home">Refresh</button>
@@ -318,7 +228,7 @@
       </div>
       <div class="card">
         <h2>People you follow</h2>
-        <p class="soft">Their public posts show on Home. Private messages stay private.</p>
+        <p class="soft">Their public posts show on Home.</p>
         <label>Add by Viewer ID
           <input id="follow-input" placeholder="Paste their ID" autocomplete="off">
         </label>
@@ -329,7 +239,7 @@
       </div>
       <div class="card">
         <h2>Connection path</h2>
-        <p class="soft">Only if something fails to send. Most people never touch this.</p>
+        <p class="soft">Only if something fails to send.</p>
         <label>Paths (one per line)
           <textarea id="paths" style="min-height:88px;font-size:0.85rem"></textarea>
         </label>
@@ -342,5 +252,6 @@
 
   <div class="toast" id="toast"></div>
   <script type="module" src="./app.js"></script>
+  <script type="module" src="./shop-boot.js"></script>
 </body>
 </html>
