@@ -42,7 +42,9 @@
   <label style="display:inline-block;margin-left:0.5rem;">File <input type="file" id="fileIn" accept=".txt,.trvl,text/plain" /></label>
   <div class="status" id="status">Idle.</div>
   <div id="out"></div>
-  <p class="note">Gate v2: luminance mean/variance + horizontal edge energy. BarcodeDetector → jsQR → paste/file. Exact length via u32 prefix. No CDN.</p>
+  <p class="note">Gate v2: luminance mean/variance + horizontal edge energy. BarcodeDetector → paulmillr/qr (decodeQR) → paste/file. Exact length via u32 prefix. No CDN.</p>
+  <!-- Optional: load local vendor build that exposes global decodeQR before this script -->
+  <!-- <script src="vendor/qr-decode.js"></script> -->
   <script>
     function crc16ibm(data) {
       let crc = 0xffff;
@@ -161,11 +163,11 @@
     const gate = document.getElementById("gate");
     const scanCanvas = document.getElementById("scan");
     const lastCodes = new Set();
-    function hasJsQR() { return typeof jsQR === "function"; }
+    function hasDecodeQR() { return typeof decodeQR === "function"; }
     function updatePathBadge() {
       pathBadge.innerHTML = "Decoder path: " + (decodePath !== "none" ? "<span class='ok'>" + decodePath + "</span>" : "idle") +
         " · available: " + (typeof BarcodeDetector !== "undefined" ? "BarcodeDetector " : "") +
-        (hasJsQR() ? "jsQR " : "") + "paste/file";
+        (hasDecodeQR() ? "decodeQR " : "") + "paste/file";
     }
     updatePathBadge();
     function showPayload() {
@@ -206,20 +208,26 @@
     document.getElementById("resetBtn").onclick = () => {
       decoder = null; ingested = 0; errors = 0; gateRejections = 0; lastCodes.clear(); outEl.textContent = ""; decodePath = "none"; updatePathBadge(); render();
     };
-    function tryJsQRFromVideo() {
-      if (!hasJsQR()) return;
+    function tryDecodeQRFromVideo() {
+      if (!hasDecodeQR()) return;
       const w = Math.min(640, vid.videoWidth || 640), h = Math.min(480, vid.videoHeight || 480);
       if (!w || !h) return;
       scanCanvas.width = w; scanCanvas.height = h;
       const ctx = scanCanvas.getContext("2d", { willReadFrequently: true });
       ctx.drawImage(vid, 0, 0, w, h);
       const img = ctx.getImageData(0, 0, w, h);
-      const code = jsQR(img.data, img.width, img.height, { inversionAttempts: "dontInvert" });
-      if (code && code.data) {
-        const raw = String(code.data).trim();
+      let raw;
+      try {
+        // paulmillr/qr: decodeQR throws when no code is found
+        raw = decodeQR({ width: img.width, height: img.height, data: img.data });
+      } catch (_) {
+        return; // frame miss — normal
+      }
+      if (raw) {
+        raw = String(raw).trim();
         if (raw && !lastCodes.has(raw)) {
           lastCodes.add(raw); if (lastCodes.size > 200) lastCodes.clear();
-          decodePath = "jsQR"; updatePathBadge();
+          decodePath = "decodeQR"; updatePathBadge();
           try { ingestLine(raw); render(); } catch (e) { errors++; }
         }
       }
@@ -230,9 +238,9 @@
       vid.srcObject = stream; await vid.play();
       detector = null;
       if ("BarcodeDetector" in window) { try { detector = new BarcodeDetector({ formats: ["qr_code"] }); } catch { detector = null; } }
-      decodePath = detector ? "BarcodeDetector" : hasJsQR() ? "jsQR" : "camera-no-decoder";
+      decodePath = detector ? "BarcodeDetector" : hasDecodeQR() ? "decodeQR" : "camera-no-decoder";
       updatePathBadge();
-      if (!detector && !hasJsQR()) { statusEl.innerHTML = "Camera on — <span class='err'>no decoder; use paste or file</span>"; return; }
+      if (!detector && !hasDecodeQR()) { statusEl.innerHTML = "Camera on — <span class='err'>no decoder; use paste or file</span>"; return; }
       statusEl.textContent = "Camera scanning (gate v2)…";
       scanTimer = setInterval(async () => {
         if (decoder?.done) return;
@@ -247,7 +255,7 @@
               decodePath = "BarcodeDetector";
               try { ingestLine(raw); render(); } catch (e) { errors++; }
             }
-          } else tryJsQRFromVideo();
+          } else tryDecodeQRFromVideo();
         } catch (_) {}
       }, 250);
     }
