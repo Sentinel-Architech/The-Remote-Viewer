@@ -22,6 +22,8 @@ Anyone who independently builds the full system from the open materials and cont
 
 This path is earned by verifiable independent work, not by invitation. Upon recognition the Founding Member is granted the **option** to operate a validating node for The Sentinel.
 
+**Path B does not include free packs.** Catalog items (Posture Lite, Posture Pack, ZK notes, etc.) remain paid per pack at the normal prices. Founding status is recognition and node eligibility only.
+
 Both paths produce the same core recognition status. Path B is a branch of Path A, not a parallel or lesser category.
 
 ---
@@ -42,6 +44,8 @@ Founding Sovereign Viewers (both paths) receive:
 4. **Validating Node Option (Path B only)**  
    Independent Completion Founding Members receive the explicit option to become a validating node for The Sentinel network.
 
+**Explicit exclusion:** Path B does not waive or refund catalog pack purchases. Packs stay paid per item.
+
 These benefits are cumulative with any other applicable discounts only where explicitly stated; they do not stack in ways that would create negative pricing.
 
 ---
@@ -51,6 +55,7 @@ These benefits are cumulative with any other applicable discounts only where exp
 - The designation is **open-ended**. There is no numerical cap.
 - **Path A** is granted solely by the originator’s personal choice.
 - **Path B** is granted upon verified independent completion of the full system.
+- Path B recognition does **not** include free access to paid catalog packs.
 - It cannot be claimed unilaterally without the corresponding path criteria, purchased, or transferred through ordinary means.
 - The originator retains the sole authority to define any future explicit transfer or succession mechanisms, if any are ever created, and to define the verification standard for “FINISHED” under Path B.
 
@@ -76,4 +81,4 @@ The status is intended to be durable for the life of the identity path. It is ex
 
 ## Design Intent
 
-This mechanism allows the originator to directly reward the people who were trusted with the project in its earliest form, while also recognizing those who independently complete the full system without personal invitation. It keeps the founding relationship personal where it is personal, and merit-based where it is earned by work, without turning recognition into a public sale or a leaderboard. The resulting benefits remain clear, permanent, and technically enforceable through the identity layer.
+This mechanism allows the originator to directly reward the people who were trusted with the project in its earliest form, while also recognizing those who independently complete the full system without personal invitation. It keeps the founding relationship personal where it is personal, and merit-based where it is earned by work, without turning recognition into a public sale or a leaderboard. Packs remain a separate commercial rail. The resulting benefits remain clear, permanent, and technically enforceable through the identity layer.
