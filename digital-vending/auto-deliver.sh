@@ -8,10 +8,12 @@
 #   2  — missing or invalid age recipient (pending)
 #   3  — encrypt or frame-stream failed
 #   4  — catalog / payload problem
+#  11  — Hydra quarantine (integrity FAIL)
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TRV_ROOT="$(cd "$ROOT/.." && pwd)"
 DELIVER_DIR="${DELIVER_DIR:-$HOME/trv-deliver}"
 mkdir -p "$DELIVER_DIR"
 
@@ -26,6 +28,18 @@ err()  { echo "[auto] ERROR: $*" >&2; }
 if [[ -z "$ID" || -z "$SIG" ]]; then
   err "Usage: $0 <catalog-id> <tx-sig> [age-recipient] [block_size]"
   exit 1
+fi
+
+# Hydra gate — fail closed
+if [[ -f "$TRV_ROOT/modules/defense/hydra-gate.sh" ]]; then
+  set +e
+  bash "$TRV_ROOT/modules/defense/hydra-gate.sh"
+  gate_rc=$?
+  set -e
+  if [[ $gate_rc -ne 0 ]]; then
+    err "Hydra gate blocked deliver (rc=$gate_rc)"
+    exit 11
+  fi
 fi
 
 PREFIX="${SIG:0:12}"
