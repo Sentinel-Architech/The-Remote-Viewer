@@ -41,7 +41,6 @@
     table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
     th, td { text-align: left; padding: 0.45rem 0.35rem; border-bottom: 1px solid var(--border); vertical-align: top; }
     th { color: var(--muted); font-weight: 600; }
-    a { color: var(--accent); }
     .muted { color: var(--muted); font-size: 0.88rem; }
     .card {
       border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem;
@@ -66,7 +65,7 @@
     pre.out {
       margin-top: 0.75rem; padding: 0.65rem; background: #0a0e14; border-radius: 8px;
       border: 1px solid var(--border); font-family: var(--mono); font-size: 0.75rem;
-      white-space: pre-wrap; word-break: break-word; color: var(--muted); max-height: 280px; overflow: auto;
+      white-space: pre-wrap; word-break: break-word; color: var(--muted); max-height: 200px; overflow: auto;
     }
     .proof-list { margin-top: 0.5rem; }
     .proof-item {
@@ -85,7 +84,7 @@
     .preview-card {
       background: #0a0e14; border-radius: 10px; padding: 0.85rem; border: 1px solid var(--border);
     }
-    .preview-card h3 { margin: 0 0 0.35rem; }
+    #n-feed .card { margin: 0.5rem 0; }
   </style>
 </head>
 <body>
@@ -93,7 +92,7 @@
 
   <header>
     <h1>The Remote Viewer</h1>
-    <div class="sub">Native social · N2 persona · N3 messaging · parallel to The Sentinel</div>
+    <div class="sub">Native social · N2–N4 · parallel to The Sentinel</div>
   </header>
 
   <nav>
@@ -211,19 +210,45 @@
 
     <section id="notes" class="panel">
       <h2>Signed notes</h2>
-      <p class="muted">Unranked board (N4).</p>
+      <p class="muted">Unranked · chronological only · same key as Messages · no engagement algorithm</p>
+      <p class="muted" id="n-key-hint">Generate or import a key under Messages first.</p>
+
       <div class="card">
+        <h3>Compose</h3>
         <label>Note <textarea id="n-body" placeholder="Public signed note…"></textarea></label>
+        <label>Tags (optional, space-separated) <input id="n-tags" placeholder="trv sentinel" autocomplete="off"></label>
         <div class="row">
-          <button type="button" class="btn" id="n-post" disabled>Post (N4)</button>
+          <button type="button" class="btn solid" id="n-post" disabled>Publish signed</button>
+          <button type="button" class="btn" id="n-save-draft">Save draft</button>
         </div>
-        <pre class="out">N4 — signed events, unranked.</pre>
+        <pre class="out" id="n-out">N4 log…</pre>
+      </div>
+
+      <div class="card">
+        <h3>Local drafts</h3>
+        <div id="n-drafts"></div>
+      </div>
+
+      <div class="card">
+        <h3>Following (feed authors)</h3>
+        <p class="muted">Unranked feed pulls kind:1 from you + these npubs. No likes ranking.</p>
+        <label>Add npub <input id="n-follow-input" placeholder="npub1…" autocomplete="off"></label>
+        <div class="row">
+          <button type="button" class="btn" id="n-follow-add">Follow</button>
+          <button type="button" class="btn solid" id="n-refresh">Refresh feed</button>
+        </div>
+        <div id="n-following-list" style="margin-top:0.5rem"></div>
+      </div>
+
+      <div class="card">
+        <h3>Feed</h3>
+        <div id="n-feed"><p class="muted">Refresh to load notes.</p></div>
       </div>
     </section>
   </main>
 
   <footer>
-    The Remote Viewer · native N2+N3 · docs/locked/20 · core = The Sentinel
+    The Remote Viewer · native N2–N4 · docs/locked/20 · core = The Sentinel
   </footer>
 
   <script>
@@ -317,9 +342,8 @@
       });
       field('p-export-md').addEventListener('click', function () {
         var p = getPersona();
-        var lines = ['# Persona: ' + (p.alias || 'alias'), '', '| Field | Value |', '|-------|-------|',
-          '| **Alias** | ' + p.alias + ' |', '| **Path** | ' + p.path + ' |', '| **npub** | ' + p.npub + ' |', '', '## Proofs', ''];
-        proofs.forEach(function (pr) { lines.push('- ' + pr.claim + ': ' + pr.evidence + ' (' + pr.date + ')'); });
+        var lines = ['# Persona: ' + (p.alias || 'alias'), '', '| **npub** | ' + p.npub + ' |', '', '## Proofs'];
+        proofs.forEach(function (pr) { lines.push('- ' + pr.claim + ': ' + pr.evidence); });
         var md = lines.join('\n');
         field('p-out').textContent = md;
         if (navigator.clipboard) navigator.clipboard.writeText(md);
@@ -344,10 +368,14 @@
   </script>
   <script type="module">
     import { initMessaging } from './n3-messaging.js';
+    import { initNotes } from './n4-notes.js';
     initMessaging().catch(function (e) {
       var el = document.getElementById('m-out');
-      if (el) el.textContent = 'N3 load failed: ' + (e && e.message ? e.message : e)
-        + '\nNeeds network to fetch nostr-tools (Remote Viewer is labeled network).';
+      if (el) el.textContent = 'N3 load failed: ' + (e && e.message ? e.message : e);
+    });
+    initNotes().catch(function (e) {
+      var el = document.getElementById('n-out');
+      if (el) el.textContent = 'N4 load failed: ' + (e && e.message ? e.message : e);
     });
   </script>
 </body>
