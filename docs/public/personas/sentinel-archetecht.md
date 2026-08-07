@@ -8,6 +8,7 @@
 | **Path** | A |
 | **Roles** | Originator · Integrity Verifier |
 | **Contact** | X: [@The_Archetecht](https://x.com/The_Archetecht) · GitHub: [Sentinel-Archetecht](https://github.com/Sentinel-Archetecht) |
+| **npub** | _add when published — never commit nsec_ |
 | **Since** | 2026-04 |
 | **Node** | Runs The Sentinel: yes |
 
@@ -28,3 +29,5 @@ Builder of The Sentinel (core) and The Remote Viewer (social). Reference environ
 ## Notes
 
 Packs stay paid. Society membership does not waive catalog prices.
+
+Messaging: [MESSAGING.md](../MESSAGING.md) · transport lock [19](../../locked/19-Messaging-Transport.md).
