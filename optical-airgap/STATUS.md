@@ -3,7 +3,8 @@
 **Policy:** [SENTINEL-STANDARD.md](./SENTINEL-STANDARD.md)  
 **OSS:** [OPEN-SOURCE.md](./OPEN-SOURCE.md)  
 **Install:** [INSTALL.md](./INSTALL.md)  
-**Phase 3 draft:** [PHASE3.md](./PHASE3.md)
+**Compatibility:** [COMPATIBILITY.md](./COMPATIBILITY.md) — all open-stack devices; GrapheneOS = reference  
+**Phase 3:** [PHASE3.md](./PHASE3.md)
 
 ## Verification (2026-07-31)
 
@@ -17,25 +18,27 @@
 | Full chain | encrypt → stream → peel → decrypt → plaintext |
 | Automation | `scripts/e2e-age-lt.sh` recovered `secret viewer message` |
 
-\* [grapheneos.org](https://grapheneos.org/)
+\* [grapheneos.org](https://grapheneos.org/) — preferred hardened path, **not** exclusive.
 
-## Done
+## Phase 2 — done (code path)
 
 - [x] age + Soliton LT + TRVL + golden k=8  
-- [x] CLI encrypt/decrypt/stream/peel/keygen  
-- [x] e2e scripts (`$HOME`)  
+- [x] CLI + e2e + exact length prefix  
 - [x] QR HTML offline + gate v2  
-- [x] RDH optional path  
-- [x] Public docs (README / INSTALL / OPEN-SOURCE / Standard)  
-- [x] **Exact payload length in LT** (u32 BE prefix) — 2026-08-07  
-- [x] **Optional QR decoder → paulmillr/qr** (docs + receiver) — 2026-08-07  
-- [x] **Cargo vendor offline** (`scripts/vendor-offline.sh`, on-device `--offline` tests) — 2026-08-07  
-- [x] **CLI / e2e polish (P2-8)** — 2026-08-07  
+- [x] paulmillr/qr wiring  
+- [x] cargo vendor offline (on-device `--offline` green)  
+- [x] CLI / e2e polish  
 
-## Phase 2 remaining (non-code / blocked)
+## Phase 2 — remaining non-code
 
-- [ ] Multi-device optical lab (Acer ↔ phone) — blocked on hardware (R10)  
-- [ ] Concrete paulmillr/qr browser build under `optical/vendor/` (USB drop)  
+- [ ] Multi-device optical lab — blocked on hardware (R10)  
+- [ ] Concrete paulmillr/qr binary drop (USB)  
 - [ ] Acoustic R6 — **DEFERRED**  
 
-**Phase 2 posture:** code-complete for no-hardware path. Field optical still pending devices.
+## Phase 3 — started
+
+- [x] Primary = governance/IA (one adaptive rule)  
+- [x] Access posture = all open-stack devices  
+- [x] `decideOpticalAction` in `loop/hooks.ts`  
+- [ ] Wire action into receiver / CLI status  
+- [ ] Smoke on non-GrapheneOS host when available  

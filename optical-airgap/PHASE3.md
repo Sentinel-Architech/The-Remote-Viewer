@@ -1,48 +1,49 @@
-# Optical Air-Gap — Phase 3 (draft scope)
+# Optical Air-Gap — Phase 3
 
-**Phase 2:** code-complete for no-hardware path (exact length, paulmillr/qr wiring, cargo vendor, CLI polish).  
-**Field optical (Acer↔phone)** remains blocked on hardware (R10). Acoustic stays deferred.
+**Status:** started 2026-08-07  
+**Primary:** governance / IA — **one measurable adaptive rule**  
+**Access posture:** **all devices** that can run the open stack (Git + Node 20+ or Rust/`age`), not GrapheneOS-only. GrapheneOS remains the **verified hardened reference**.
 
-Phase 3 is **not started**. This file is a decision menu, not a commitment.
-
----
-
-## Candidate tracks (pick 1–2 primary)
-
-| ID | Track | Why it fits TRV | Hardware need | Rough posture |
-|----|--------|-----------------|---------------|---------------|
-| P3-A | **Edge / ESP32 integration** | On-device sentinel sensors, optical trigger, local only | ESP32 already in play | High fit |
-| P3-B | **Optical field verification** | Close the only real Phase 2 gap | Second screen/camera | Blocked until device access |
-| P3-C | **Digital vending ↔ optical delivery** | Automated digital goods via proven air-gap path | None | Product path |
-| P3-D | **IA-of-IA / loop policy (one rule)** | Measurable adaptive behavior on CRC/gate metrics | None | Keep tiny |
-| P3-E | **Vault UX on GrapheneOS** | Safer keygen / Destroy=Restart flows in Termux | None | Ops hygiene |
-| P3-F | **Sovereign stablecoin / Ghost Tax design only** | Docs + threat model; no chain deps in core | None | Design track |
+Phase 2: code-complete for no-hardware path. Field optical (Acer↔phone) still blocked on hardware (R10).
 
 ---
 
-## Explicit non-goals (carry forward)
+## Locked decisions
 
-- Cloud Vault / hosted keys  
-- Meta / Google / Microsoft runtime in core  
-- Always-on mic or acoustic as optical rescue  
-- Public DNS for `@sentinel.viewer`  
-- Claiming multi-device optical success without trials  
+1. **Primary track = P3-D** — one IA-of-IA rule, not a full policy engine.  
+2. **Access = universal open-stack** — Linux, Windows, macOS, Android (GMS or de-Googled), SBCs, Termux. GrapheneOS is preferred when available, never required.  
+3. **No cloud Vault, no Big Tech runtime in core.**  
 
 ---
 
-## Suggested entry order (if unconstrained)
+## P3-D first slice (in progress)
 
-1. **P3-E** Vault hygiene on phone (cheap, locks Destroy=Restart practice)  
-2. **P3-A** ESP32 edge path that consumes or signals optical events  
-3. **P3-C** Vending that emits TRVL packages  
-4. **P3-B** when second device is available  
+| Item | State |
+|------|--------|
+| `decideOpticalAction(metrics)` pure function | **shipped** in `loop/hooks.ts` |
+| Actions: lower_fps / check_optics / send_more / complete / none | **shipped** |
+| Wire into QR receiver status line | next |
+| On-device smoke (any host) | next |
+
+Rule priority: complete → CRC → gate rejects → slow peel → nominal.
 
 ---
 
-## Open questions for you
+## Other tracks (parked)
 
-1. Primary objective after optical lock: **edge hardware**, **product/vending**, or **governance/IA**?  
-2. Is ESP32 still the next physical surface?  
-3. Any hard deadline or public demo target?  
+| ID | Track | When |
+|----|--------|------|
+| P3-A | ESP32 edge | after one-rule proven |
+| P3-B | Multi-device optical field | hardware available |
+| P3-C | Vending → optical delivery | product push |
+| P3-E | Vault UX hygiene | anytime, cheap |
+| P3-F | Ghost Tax design only | docs track |
 
-Answer those and Phase 3 becomes a real plan instead of a menu.
+---
+
+## Non-goals
+
+- GrapheneOS as exclusive gate  
+- Multi-agent policy debate loops  
+- Always-on mic / acoustic rescue  
+- Hosted keys  

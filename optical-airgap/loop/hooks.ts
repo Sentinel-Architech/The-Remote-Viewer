@@ -1,6 +1,9 @@
 /**
  * Recursive expert loop — optical event hooks (schema → typed events).
  * Policy updates stay Vault-local; wiped on Destroy = Restart.
+ *
+ * Phase 3: ONE measurable adaptive rule (not a full policy engine).
+ * Runs anywhere Node/TS runs — not GrapheneOS-only.
  */
 
 export type ExpertId = "security" | "protocol" | "privacy" | "coordinator";
@@ -21,6 +24,14 @@ export interface LoopEvent {
   metrics: OpticalMetrics;
   note?: string;
 }
+
+/** Structured reaction from the single adaptive rule. */
+export type AdaptiveAction =
+  | { kind: "none"; note: string }
+  | { kind: "lower_fps"; note: string; suggestFps: number }
+  | { kind: "check_optics"; note: string }
+  | { kind: "send_more"; note: string }
+  | { kind: "complete"; note: string };
 
 export type LoopListener = (ev: LoopEvent, expert: ExpertId) => void;
 
@@ -47,11 +58,50 @@ export function emitOpticalEvent(ev: LoopEvent): void {
   }
 }
 
-/** Example coordinator policy stub — replace with on-device IA-of-IA. */
+/**
+ * Phase 3 — ONE adaptive rule (IA-of-IA minimal).
+ *
+ * Priority:
+ * 1. complete → destroy residual buffers
+ * 2. high CRC → lower FPS suggestion
+ * 3. high gate rejects → optics check
+ * 4. slow peel → send more symbols
+ * 5. else nominal
+ *
+ * Portable: pure function, no OS assumptions.
+ */
+export function decideOpticalAction(m: OpticalMetrics): AdaptiveAction {
+  if (m.complete) {
+    return {
+      kind: "complete",
+      note: "optical transfer complete; prefer Destroy residual buffers",
+    };
+  }
+  if (m.crcFailures > 10) {
+    const current = m.framesPerSecond ?? 4;
+    const suggestFps = Math.max(1, Math.floor(current / 2));
+    return {
+      kind: "lower_fps",
+      note: `high CRC loss (${m.crcFailures}); lower FPS or improve lighting`,
+      suggestFps,
+    };
+  }
+  if (m.gateRejections > 50) {
+    return {
+      kind: "check_optics",
+      note: `quality gate strict (${m.gateRejections} rejects); check focus/contrast/distance`,
+    };
+  }
+  if (m.recoverRatio > 0 && m.recoverRatio < 0.3) {
+    return {
+      kind: "send_more",
+      note: `peel slow (recover=${m.recoverRatio.toFixed(2)}); send more symbols`,
+    };
+  }
+  return { kind: "none", note: "optical path nominal" };
+}
+
+/** Back-compat note string for UIs that only show text. */
 export function defaultCoordinatorNote(m: OpticalMetrics): string {
-  if (m.complete) return "optical transfer complete; prefer Destroy residual buffers";
-  if (m.crcFailures > 10) return "high CRC loss; lower FPS or improve lighting";
-  if (m.gateRejections > 50) return "quality gate strict; check focus/contrast";
-  if (m.recoverRatio > 0 && m.recoverRatio < 0.3) return "peel slow; send more symbols";
-  return "optical path nominal";
+  return decideOpticalAction(m).note;
 }
