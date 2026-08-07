@@ -12,7 +12,7 @@ Local-first, zero-trust optical transfer for The Remote Viewer.
 
 ## Checklist (public)
 
-### Done — verified 2026-07-31 (GrapheneOS\* + Termux)
+### Done — verified 2026-07-31 (GrapheneOS\* + Termux) + 2026-08-07 length prefix
 
 - [x] age encrypt / decrypt (Rust `trv-optical` + TS `age-encryption`)
 - [x] Robust Soliton LT (default) + TRVL1 framing
@@ -26,14 +26,14 @@ Local-first, zero-trust optical transfer for The Remote Viewer.
 - [x] OSS inventory (no Meta / Google / Microsoft core)
 - [x] Workspace membership for `cargo run`
 - [x] Install guide + Termux troubleshooting
+- [x] **Exact original length** — u32 BE prefix before LT blocks; peel returns exact bytes (no trailing-zero heuristic)
 
 ### Not done
 
-- [ ] Acer ↔ phone optical (screen/camera) lab
+- [ ] Acer ↔ phone optical (screen/camera) lab — blocked on hardware (R10)
 - [ ] Optional jsQR under `optical/vendor/`
 - [ ] `cargo vendor` offline tree
-- [ ] Acoustic R6 (deferred)
-- [ ] Exact LT payload length field
+- [ ] Acoustic R6 (**DEFERRED**)
 - [ ] Recursive IA-of-IA beyond hooks
 
 \* GrapheneOS only from [grapheneos.org](https://grapheneos.org/).
@@ -72,3 +72,4 @@ bash scripts/e2e-age-lt.sh   # needs vault-recipient + vault-identity in $HOME
 
 Encrypt-first · Soliton LT (not RaptorQ) · Zero Meta/Google/Microsoft core ·  
 Destroy = Restart · `@sentinel.viewer` local-only · GrapheneOS official source only  
+Exact original length via u32 prefix  
