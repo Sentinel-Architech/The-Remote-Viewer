@@ -7,9 +7,9 @@ import {
   getPublicKey,
   finalizeEvent,
   nip04,
+  nip19,
   SimplePool,
 } from 'https://esm.sh/nostr-tools@2.10.4';
-import { nip19 } from 'https://esm.sh/nostr-tools@2.10.4';
 
 const KEY_STORAGE = 'rv-n3-nsec';
 const RELAY_STORAGE = 'rv-n3-relays';
@@ -53,7 +53,6 @@ function parseSecret(input) {
     if (dec.type !== 'nsec') throw new Error('not nsec');
     return dec.data;
   }
-  // hex sk
   if (/^[0-9a-fA-F]{64}$/.test(t)) {
     const out = new Uint8Array(32);
     for (let i = 0; i < 32; i++) out[i] = parseInt(t.slice(i * 2, i * 2 + 2), 16);
@@ -76,7 +75,7 @@ function parsePeer(input) {
   if (t.startsWith('npub1')) {
     const dec = nip19.decode(t);
     if (dec.type !== 'npub') throw new Error('invalid npub');
-    return dec.data; // hex pubkey
+    return dec.data;
   }
   if (/^[0-9a-fA-F]{64}$/.test(t)) return t.toLowerCase();
   throw new Error('peer must be npub1… or hex pubkey');
@@ -104,12 +103,14 @@ function refreshKeyUi() {
     npubEl.textContent = '(no key)';
     status.textContent = 'Generate or import an nsec to send DMs.';
     $('m-send').disabled = true;
+    $('m-inbox').disabled = true;
     return;
   }
   const npub = skToNpub(sk);
   npubEl.textContent = npub;
   status.textContent = 'Key ready · nsec stays in this browser only';
   $('m-send').disabled = false;
+  $('m-inbox').disabled = false;
 }
 
 export function initMessaging() {
@@ -120,7 +121,7 @@ export function initMessaging() {
     const sk = generateSecretKey();
     setSk(sk);
     refreshKeyUi();
-    log('Generated new key. Export nsec only to a safe offline place. Never git.');
+    log('Generated new key. Backup nsec offline only. Never git.');
     log('npub ' + skToNpub(sk));
   });
 
@@ -214,7 +215,7 @@ export function initMessaging() {
           ok++;
           log('OK ' + relays[i]);
         } else {
-          log('FAIL ' + relays[i] + ' · ' + (r.reason && r.reason.message ? r.reason.message : r.reason));
+          log('FAIL ' + relays[i] + ' · ' + (r.reason && r.reason.message ? r.reason.message : String(r.reason)));
         }
       });
       pool.close(relays);
@@ -227,7 +228,6 @@ export function initMessaging() {
     } catch (e) {
       log('Send error: ' + (e.message || e));
     } finally {
-      $('m-send').disabled = false;
       refreshKeyUi();
     }
   });
@@ -240,7 +240,7 @@ export function initMessaging() {
     }
     const pk = getPublicKey(sk);
     const relays = loadRelays();
-    log('Listening for kind:4 to your pubkey (15s)…');
+    log('Querying kind:4 DMs (last 3 days)…');
     const pool = new SimplePool();
     const since = Math.floor(Date.now() / 1000) - 86400 * 3;
     try {
@@ -258,8 +258,8 @@ export function initMessaging() {
           try {
             const peer = ev.pubkey;
             const plain = await nip04.decrypt(sk, peer, ev.content);
-            const from = nip19.npubEncode(peer).slice(0, 16) + '…';
-            log('From ' + from + ' · ' + plain.slice(0, 200));
+            const from = nip19.npubEncode(peer).slice(0, 18) + '…';
+            log('From ' + from + ' · ' + plain.slice(0, 240));
           } catch {
             log('From ' + ev.pubkey.slice(0, 12) + '… · (decrypt failed)');
           }
@@ -273,5 +273,5 @@ export function initMessaging() {
   });
 
   refreshKeyUi();
-  log('N3 ready · network labeled · nsec never leaves this browser via our code paths.');
+  log('N3 ready · native UI · Nostr wire · nsec browser-local only.');
 }
