@@ -25,6 +25,13 @@
     }
     a.pay:hover { filter: brightness(1.1); }
     pre { background:#111; padding:0.6rem; overflow:auto; font-size:0.8rem; border-radius:4px; }
+    .qr-wrap {
+      margin-top: 0.85rem; padding: 0.75rem; background: #fff; border-radius: 8px;
+      display: inline-block; line-height: 0;
+    }
+    .qr-wrap canvas, .qr-wrap img { display: block; }
+    .qr-label { margin-top: 0.4rem; font-size: 0.8rem; color: var(--muted); }
+    .qr-fallback { color: var(--muted); font-size: 0.85rem; margin-top: 0.5rem; }
   </style>
 </head>
 <body>
@@ -42,7 +49,10 @@
     <div class="price">11 USDC</div>
     <p>Core zero-trust / optical / Vault rules.</p>
     <div>Memo: <span class="memo">TRV-Posture-Lite</span></div>
-    <a class="pay" href="solana:HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv?amount=11&spl-token=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&label=The%20Remote%20Viewer&message=Posture%20Lite&memo=TRV-Posture-Lite">Pay with Phantom</a>
+    <a class="pay" id="pay-lite"
+       href="solana:HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv?amount=11&spl-token=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&label=The%20Remote%20Viewer&message=Posture%20Lite&memo=TRV-Posture-Lite">Pay with Phantom</a>
+    <div class="qr-wrap" id="qr-lite"></div>
+    <div class="qr-label">Scan with Phantom / Solflare camera</div>
   </div>
 
   <div class="card">
@@ -50,7 +60,10 @@
     <div class="price">25 USDC</div>
     <p>Full operator pack (install, security, Obtainium, threat model).</p>
     <div>Memo: <span class="memo">TRV-Posture-Pack</span></div>
-    <a class="pay" href="solana:HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv?amount=25&spl-token=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&label=The%20Remote%20Viewer&message=Posture%20Pack&memo=TRV-Posture-Pack">Pay with Phantom</a>
+    <a class="pay" id="pay-pack"
+       href="solana:HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv?amount=25&spl-token=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&label=The%20Remote%20Viewer&message=Posture%20Pack&memo=TRV-Posture-Pack">Pay with Phantom</a>
+    <div class="qr-wrap" id="qr-pack"></div>
+    <div class="qr-label">Scan with Phantom / Solflare camera</div>
   </div>
 
   <div class="card">
@@ -62,7 +75,7 @@
 
   <h2>Buyer steps</h2>
   <ol>
-    <li>Tap a <strong>Pay with Phantom</strong> button (or send USDC manually with the exact memo).</li>
+    <li>Scan a QR or tap <strong>Pay with Phantom</strong> (exact memo is pre-filled).</li>
     <li>On your device create an age identity. Keep the <code>AGE-SECRET-KEY</code> private.</li>
     <li>Send the seller only your <code>age1…</code> public recipient + the transaction signature.</li>
     <li>Receive a <code>.trvl</code> file (or optical frames).</li>
@@ -73,5 +86,43 @@
 
   <p class="muted">If you pay before sending <code>age1</code>, delivery stays PENDING until the seller has your recipient.<br>
   Destroy = Restart for test keys. Not financial advice.</p>
+
+  <!-- QRCode.js — client-side only; no payment data leaves the browser except wallet open -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <script>
+    (function () {
+      function renderQr(elId, linkId) {
+        var host = document.getElementById(elId);
+        var link = document.getElementById(linkId);
+        if (!host || !link || typeof QRCode === 'undefined') {
+          if (host) host.innerHTML = '<div class="qr-fallback">QR unavailable — use Pay button</div>';
+          return;
+        }
+        var uri = link.getAttribute('href');
+        QRCode.toCanvas(uri, {
+          width: 200,
+          margin: 2,
+          color: { dark: '#000000', light: '#ffffff' },
+          errorCorrectionLevel: 'M'
+        }, function (err, canvas) {
+          if (err) {
+            host.innerHTML = '<div class="qr-fallback">QR error — use Pay button</div>';
+            return;
+          }
+          host.innerHTML = '';
+          host.appendChild(canvas);
+        });
+      }
+      function go() {
+        renderQr('qr-lite', 'pay-lite');
+        renderQr('qr-pack', 'pay-pack');
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', go);
+      } else {
+        go();
+      }
+    })();
+  </script>
 </body>
 </html>
