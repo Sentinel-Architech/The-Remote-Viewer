@@ -1,20 +1,34 @@
-#!/data/data/com.termux/files/usr/bin/bash
-# Local integrity pulse for TRV node (Hydra)
+#!/usr/bin/env bash
+# Local integrity pulse for TRV node (Hydra) — multi-head
+# Heads: structure · seal · contribution · sales/verifier · alert · quarantine flag
 set -euo pipefail
 
 ROOT="${TRV_ROOT:-$HOME/The-Remote-Viewer}"
 BASE="${HOME}/.local/share/remote-viewer"
+DEF="${BASE}/defense"
 LOG="${BASE}/defense.log"
-mkdir -p "$BASE"
+FLAG_Q="${DEF}/QUARANTINE"
+FLAG_PASS="${DEF}/LAST_PASS"
+mkdir -p "$BASE" "$DEF"
 
 log() { echo "[$(date -Iseconds)] $*" | tee -a "$LOG"; }
 
 FAIL=0
 WARN=0
 
-log "integrity-pulse start"
+notify_fail() {
+  local msg="$*"
+  if command -v termux-notification >/dev/null 2>&1; then
+    termux-notification -t "TRV Hydra FAIL" -c "$msg" --priority high 2>/dev/null || true
+  fi
+  if command -v termux-toast >/dev/null 2>&1; then
+    termux-toast "Hydra FAIL: $msg" 2>/dev/null || true
+  fi
+}
 
-# 1. Repo
+log "integrity-pulse start (Hydra multi-head)"
+
+# --- Head 1: structure ---
 if [[ ! -d "$ROOT/.git" ]]; then
   log "FAIL: repo root missing $ROOT"
   FAIL=1
@@ -22,17 +36,16 @@ else
   log "OK: repo root"
 fi
 
-# 2. Critical paths
 for p in \
   optical-airgap/scripts/e2e-age-lt.sh \
   modules/moe-router/run-model.sh \
-  modules/moe-router/list-models.sh \
   modules/contribution/verify.sh \
-  modules/contribution/record.sh \
-  modules/data-sovereignty/minimize-check.sh \
   modules/defense/integrity-pulse.sh \
-  modules/self-heal/optical-pulse.sh \
-  scripts/git-sync.sh
+  modules/defense/hydra-gate.sh \
+  modules/defense/verify-seal.sh \
+  modules/integrity-verifier/attest.sh \
+  digital-vending/auto-deliver.sh \
+  digital-vending/catalog.json
 do
   if [[ -f "$ROOT/$p" ]]; then
     log "OK: $p"
@@ -42,7 +55,7 @@ do
   fi
 done
 
-# 3. Vault / identity modes
+# Vault modes
 if [[ -f "$HOME/vault-identity.txt" ]]; then
   MODE=$(stat -c '%a' "$HOME/vault-identity.txt" 2>/dev/null || stat -f '%Lp' "$HOME/vault-identity.txt" 2>/dev/null || echo '?')
   if [[ "$MODE" == "600" || "$MODE" == "400" ]]; then
@@ -66,7 +79,6 @@ if [[ -d "$BASE/identity" ]]; then
   fi
 fi
 
-# 4. Models (B + C)
 for m in general.gguf code.gguf moe.gguf; do
   if [[ -f "$BASE/models/$m" ]]; then
     log "OK: model $m"
@@ -76,7 +88,25 @@ for m in general.gguf code.gguf moe.gguf; do
   fi
 done
 
-# 5. Contribution chain (if events exist)
+# --- Head 2: hash seal ---
+if [[ -f "$DEF/baseline.sha256" ]]; then
+  set +e
+  seal_out=$(bash "$ROOT/modules/defense/verify-seal.sh" 2>&1)
+  seal_rc=$?
+  set -e
+  if [[ $seal_rc -eq 0 ]]; then
+    log "OK: seal matches"
+  else
+    log "FAIL: seal verify"
+    echo "$seal_out" | while read -r line; do log "  $line"; done
+    FAIL=1
+  fi
+else
+  log "WARN: no baseline seal (run modules/defense/seal-baseline.sh)"
+  WARN=1
+fi
+
+# --- Head 3: contribution ---
 EV="$BASE/contribution/events.jsonl"
 if [[ -f "$EV" ]] && [[ -s "$EV" ]]; then
   if bash "$ROOT/modules/contribution/verify.sh" >/dev/null 2>&1; then
@@ -90,7 +120,40 @@ else
   WARN=1
 fi
 
-# 6. Tracked dirty
+# --- Head 3b/4: integrity verifier + sales (if tooling present) ---
+if [[ -f "$ROOT/modules/integrity-verifier/verify-contribution.sh" ]]; then
+  set +e
+  bash "$ROOT/modules/integrity-verifier/verify-contribution.sh" >/dev/null 2>&1
+  vc_rc=$?
+  set -e
+  if [[ $vc_rc -eq 0 ]]; then
+    log "OK: integrity-verifier contribution"
+  else
+    log "WARN: integrity-verifier contribution rc=$vc_rc"
+    WARN=1
+  fi
+fi
+
+if [[ -f "$ROOT/modules/integrity-verifier/verify-sales.sh" ]]; then
+  SALES_LOG="${SALES_LOG:-$HOME/trv-deliver/sales.log}"
+  if [[ -f "$SALES_LOG" ]]; then
+    set +e
+    bash "$ROOT/modules/integrity-verifier/verify-sales.sh" >/dev/null 2>&1
+    vs_rc=$?
+    set -e
+    if [[ $vs_rc -eq 0 ]]; then
+      log "OK: integrity-verifier sales.log"
+    else
+      log "FAIL: sales.log integrity (empty frame or chain)"
+      FAIL=1
+    fi
+  else
+    log "WARN: no sales.log yet"
+    WARN=1
+  fi
+fi
+
+# Dirty tree
 if [[ -d "$ROOT/.git" ]]; then
   DIRTY=$(git -C "$ROOT" status --porcelain | grep -v '^??' || true)
   if [[ -n "$DIRTY" ]]; then
@@ -101,11 +164,19 @@ if [[ -d "$ROOT/.git" ]]; then
   fi
 fi
 
+# --- Head 5: quarantine flag + alert ---
 if [[ "$FAIL" -eq 0 ]]; then
+  rm -f "$FLAG_Q"
+  date -u +%Y-%m-%dT%H:%M:%SZ > "$FLAG_PASS"
   log "integrity-pulse RESULT=PASS (warns=$WARN)"
   echo "RESULT: PASS (warns=$WARN)"
   exit 0
 fi
-log "integrity-pulse RESULT=FAIL (warns=$WARN)"
+
+echo "quarantine=1" > "$FLAG_Q"
+echo "at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$FLAG_Q"
+echo "warns=$WARN" >> "$FLAG_Q"
+log "integrity-pulse RESULT=FAIL (warns=$WARN) — QUARANTINE set"
+notify_fail "integrity FAIL — deliver quarantined"
 echo "RESULT: FAIL (warns=$WARN)"
 exit 1
