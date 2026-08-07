@@ -1,66 +1,65 @@
-# TRV Digital Vending Chute — Level 2.5 (circuit + backoff)
+# TRV Digital Vending Chute
 
-**Catalog + Solana memo / manual-pay → age encrypt → Robust Soliton LT (TRVL) → optical or file delivery.**
+**Catalog → (pay) → age encrypt → Robust Soliton LT (TRVL) → file or optical delivery.**
 
 Zero platform custody. Seller never holds buyer private keys. Buyer peels and decrypts on-device only.
 
-## Resilience layers
+**P3-C:** optical delivery uses the same frames the receiver already peels (`ctrl=complete` path proven).
 
-1. **Per-sale exponential backoff** — encrypt/stream failures back off (30s → 60s → 120s … cap 30 min).
-2. **RPC circuit breaker** — consecutive Solana failures open the circuit. While open the watcher skips the poll and only runs local PENDING retries. After cooldown it probes once (half-open). Success → closed. Failure → open again.
-
-## Circuit breaker defaults
-
-| Param | Default | Meaning |
-|-------|---------|--------|
-| `CIRCUIT_FAILURE_THRESHOLD` | 5 | Consecutive RPC failures before open |
-| `CIRCUIT_COOLDOWN_SECONDS` | 120 | Seconds to stay open before half-open probe |
-
-State lives in `$DELIVER_DIR/.circuit-rpc`.
-
-## Tunables
+## Quick dry run (no payment)
 
 ```bash
-export MAX_TRANSIENT_RETRIES=3
-export BACKOFF_BASE_SECONDS=30
-export BACKOFF_MAX_SECONDS=1800
-export CIRCUIT_FAILURE_THRESHOLD=5
-export CIRCUIT_COOLDOWN_SECONDS=120
-./digital-vending/watch-sales-notify-v2.sh
+cd $HOME/The-Remote-Viewer/digital-vending
+bash e2e-optical-demo.sh hello-sentinel-demo
 ```
 
-## Drop file (encrypted delivery)
+Produces throwaway Vault under `$HOME/vend-demo-*.txt`, encrypts catalog payload, streams TRVL, peels + decrypts.
+
+## Seller (after payment / manual)
 
 ```bash
-echo "age1..." > $HOME/trv-deliver/<first-12-of-sig>.recipient
+./seller-deliver.sh <catalog-id> <buyer-age1-recipient> > $HOME/frames.trvl
 ```
 
-## Exit codes (auto-deliver.sh)
+Catalog IDs: see `catalog.json` (`hello-sentinel-demo`, `trv-posture-lite`, …).
 
-| Code | Meaning |
-|------|---------|
-| 0 | Success |
-| 1 | Bad usage |
-| 2 | Missing / invalid age recipient (PENDING) |
-| 3 | Encrypt or frame-stream failed |
-| 4 | Catalog / payload problem |
+## Buyer
 
-## Quick test
+**CLI**
 
 ```bash
-cd $HOME/The-Remote-Viewer/optical-airgap/rust
-cargo run --quiet --bin trv-optical -- keygen 2> $HOME/test-id.txt | tee $HOME/test-recip.txt
-chmod 600 $HOME/test-id.txt
-cd ../../digital-vending
-./seller-deliver.sh hello-sentinel-demo $(cat $HOME/test-recip.txt) > $HOME/frames.trvl
-cat $HOME/frames.trvl | ./buyer-receive.sh $HOME/test-id.txt
+cat $HOME/frames.trvl | ./buyer-receive.sh $HOME/vault-identity.txt
 ```
+
+**Optical (paste)**
+
+1. Seller: `seller-deliver.sh … > frames.trvl`
+2. Buyer: open `optical-airgap/optical/qr-receiver.html` via local HTTP
+3. Paste frames → Ingest → payload is still **age ciphertext** if you only peel in-browser
+4. CLI decrypt: `trv-optical decrypt $HOME/vault-identity.txt < ct.bin`
+
+Browser peel recovers exact ciphertext bytes; age decrypt stays on the CLI/Vault side (identity never in the page).
+
+**Optical (camera)** — second device shows QR sender with frames; receiver camera path (BarcodeDetector).
+
+## Resilience (paid watcher)
+
+`watch-sales-notify-v2.sh` — Solana memo / drop-file watcher with:
+
+1. Per-sale exponential backoff  
+2. RPC circuit breaker  
+
+| Param | Default |
+|-------|---------|
+| `CIRCUIT_FAILURE_THRESHOLD` | 5 |
+| `CIRCUIT_COOLDOWN_SECONDS` | 120 |
 
 ## Rules
 
-- Encrypt first. Never stream plaintext.
-- Soliton LT only (Sentinel Standard).
-- Identities stay in Vault.
-- Destroy = Restart for test material.
+- Encrypt first. Never stream plaintext.  
+- Soliton LT only (Sentinel Standard).  
+- Identities stay in Vault.  
+- Destroy = Restart for test material.  
+- Demo catalog items ≠ production secrets.  
 
 American-made, local-first, no BS.
