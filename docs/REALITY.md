@@ -1,6 +1,6 @@
 # Concepts → Reality Status
 
-Last updated: **2026-08-06** (RAG BM25 + vectors + chat memory)
+Last updated: **2026-08-07** (Integrity Verifier + Path B vending on-device)
 
 **Rule:** No marketing. **PROVEN** = ran under user control on device. Scripts in git alone are not PROVEN.
 
@@ -21,6 +21,16 @@ Last updated: **2026-08-06** (RAG BM25 + vectors + chat memory)
 | Local age identity | **PROVEN** (device-held; not in git) |
 | Centralized key assignment | **REJECTED** |
 
+## Digital vending & first validator role
+
+| Concept | Status |
+|---------|--------|
+| Path B USDC memo + TRVL deliver | **PROVEN** | Solana memo → local deliver on GrapheneOS/Termux |
+| `sales.log` sha256 + empty-frame refuse | **PROVEN** | log-sale + verifier |
+| Integrity Verifier (contribution + sales) | **PROVEN** | overall_ok=1 attestation on-device 2026-08-07 |
+| Contribution weight from verifier | **PROVEN** | record-weight → events.jsonl |
+| Path B Founding + node option (design) | **LOCKED** | `docs/locked/04` + `17` |
+
 ## RAG & chat
 
 | Concept | Status |
@@ -37,11 +47,11 @@ Last updated: **2026-08-06** (RAG BM25 + vectors + chat memory)
 | Concept | Status |
 |---------|--------|
 | Defense / Hydra integrity pulse | **SCAFFOLD** (PASS on reference node) |
-| Contribution ledger | **SCAFFOLD** (verify OK on reference node) |
+| Contribution ledger | **PROVEN** | verify OK + verifier weight on reference node |
 | Termux reminders | **SCAFFOLD** |
 | UI `127.0.0.1` | **SCAFFOLD** |
 | Chain settlement / live DePIN | **NOT STARTED** |
 
 ## Reference environment
 
-GrapheneOS + Termux, branch `TheRemoteViewer`, 2026-08-06.
+GrapheneOS + Termux, branch `TheRemoteViewer`, 2026-08-07.
