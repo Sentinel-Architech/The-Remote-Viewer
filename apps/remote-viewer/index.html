@@ -4,6 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#06080c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Remote Viewer">
+  <meta name="description" content="The Remote Viewer — find each other, share what you choose.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icon.svg">
   <title>The Remote Viewer</title>
   <style>
     :root {
@@ -133,6 +142,7 @@
       <p class="gateway-sub">Open the Gateway Process — for every Viewer</p>
       <div class="actions" style="justify-content:center">
         <button type="button" class="btn primary" id="welcome-enter">Enter</button>
+        <button type="button" class="btn primary" id="install-app" hidden>Install app</button>
         <button type="button" class="btn quiet" id="welcome-replay">Hear welcome again</button>
       </div>
     </div>
@@ -158,6 +168,7 @@
       </div>
       <div class="actions" style="margin-bottom:0.75rem">
         <button type="button" class="btn primary" id="refresh-home">Refresh</button>
+        <button type="button" class="btn" id="install-app-home" hidden>Install app</button>
       </div>
       <div id="feed"><div class="empty">When you and people you follow share posts, they appear here.</div></div>
     </section>
@@ -253,5 +264,28 @@
   <div class="toast" id="toast"></div>
   <script type="module" src="./app.js"></script>
   <script type="module" src="./shop-boot.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(function () {});
+    }
+    var deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      var a = document.getElementById('install-app');
+      var b = document.getElementById('install-app-home');
+      if (a) a.hidden = false;
+      if (b) b.hidden = false;
+    });
+    function doInstall() {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.finally(function () { deferredPrompt = null; });
+    }
+    var ia = document.getElementById('install-app');
+    var ih = document.getElementById('install-app-home');
+    if (ia) ia.addEventListener('click', doInstall);
+    if (ih) ih.addEventListener('click', doInstall);
+  </script>
 </body>
 </html>
