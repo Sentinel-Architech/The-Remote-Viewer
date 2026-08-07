@@ -41,6 +41,7 @@ function normalizeLine(line: string): string | null {
 
 /**
  * Ingest TRVL1 lines (or bare base64url frames), peel, decrypt.
+ * LTDecoder.getPayload() already returns exact original length (u32 prefix).
  */
 export async function peelTrvlToPlaintext(
   lines: string[] | string,
@@ -82,10 +83,8 @@ export async function peelTrvlToPlaintext(
     );
   }
 
+  // Exact length already stripped inside LTDecoder.getPayload()
   let payload = decoder.getPayload()!;
-  let end = payload.length;
-  while (end > 0 && payload[end - 1] === 0) end--;
-  payload = payload.subarray(0, end);
 
   let ciphertext = payload;
   let usedRdh = false;

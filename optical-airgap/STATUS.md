@@ -26,11 +26,13 @@
 - [x] QR HTML offline + gate v2  
 - [x] RDH optional path  
 - [x] Public docs (README / INSTALL / OPEN-SOURCE / Standard)  
+- [x] **Exact payload length in LT** (u32 BE prefix before block split; peel returns exact bytes) — 2026-08-07  
 
-## Not done
+## Not done / Phase 2 remaining
 
-- [ ] Multi-device optical lab  
-- [ ] jsQR optional vendor  
-- [ ] cargo vendor  
-- [ ] Acoustic R6 (deferred)  
-- [ ] Exact payload length in LT  
+- [ ] Multi-device optical lab (Acer ↔ phone) — blocked on hardware access (R10)  
+- [ ] jsQR optional vendor drop  
+- [ ] cargo vendor offline tree  
+- [ ] Acoustic R6 — **DEFERRED** (see PHASE2-R6.md)  
+- [ ] RDH metrics / light polish  
+- [ ] CLI / loop polish  
