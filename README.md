@@ -1,5 +1,36 @@
 # The Remote Viewer (TRV) / The Sentinel
 
+## Buy packs (public)
+
+**USDC on Solana · age-encrypted TRVL delivery · zero platform custody**
+
+| Pack | Price | Memo |
+|------|------:|------|
+| **TRV Posture Lite** | 11 USDC | `TRV-Posture-Lite` |
+| **TRV Posture Pack** | 25 USDC | `TRV-Posture-Pack` |
+| ZK Membership Skill | Manual / XMR | `SENTINEL-ZK-01` |
+
+**Sales address:** `HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv`
+
+### Storefront (Pay + QR)
+
+- **In-repo:** [`digital-vending/buy.html`](digital-vending/buy.html)
+- **Preview in browser:** [htmlpreview — buy.html](https://htmlpreview.github.io/?https://github.com/Sentinel-Archetecht/The-Remote-Viewer/blob/TheRemoteViewer/digital-vending/buy.html)
+- **jsDelivr:** [buy.html via CDN](https://cdn.jsdelivr.net/gh/Sentinel-Archetecht/The-Remote-Viewer@TheRemoteViewer/digital-vending/buy.html)
+
+### After you pay
+
+1. Create an age identity on **your** device (`age-keygen`). Keep the secret.
+2. Send the seller only: your **`age1…` public key** + **tx signature**.
+3. Receive a `.trvl` file → decrypt locally:
+   ```bash
+   cat sale.trvl | bash buyer-receive.sh /path/to/your-identity.txt
+   ```
+
+Protocol: [`digital-vending/PROTOCOL.md`](digital-vending/PROTOCOL.md) · Buyer steps: [`docs/public/BUY.md`](docs/public/BUY.md)
+
+---
+
 ## Viewer count
 
 | Path | Count | Notes |
@@ -8,7 +39,7 @@
 | **Path B** — Independent completion | **0** | Verified finishers only |
 | **Total Founding Sovereign Viewers** | **1** | |
 
-Path B earns Founding Member status + optional Integrity Verifier node. Packs stay paid per item.  
+Path B earns Founding Member status + optional Integrity Verifier node. **Packs stay paid per item.**  
 See [`docs/locked/04-Founding-Sovereign-Viewer.md`](docs/locked/04-Founding-Sovereign-Viewer.md) and [`docs/locked/17-Validator-Node-First-Role.md`](docs/locked/17-Validator-Node-First-Role.md).
 
 ---
@@ -43,6 +74,7 @@ bash scripts/chat.sh                       # local assistant (after llama.cpp + 
 | Defense / Hydra | **SCAFFOLD** | integrity-pulse only; no offensive tooling |
 | Contribution ledger | **PROVEN** | offline JSONL hash-chain + verifier weight |
 | Local UI | **SCAFFOLD** | `http://127.0.0.1:8765/` |
+| Public buy page | **OPEN** | `digital-vending/buy.html` + README links |
 | Chain settlement | **NOT STARTED** | |
 
 ---
@@ -56,9 +88,8 @@ pkg update && pkg install git python -y
 git clone -b TheRemoteViewer https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
 cd The-Remote-Viewer
 bash modules/defense/integrity-pulse.sh
-bash modules/rag/seed-trv-docs.sh          # local notes index (BM25 + vectors)
-# optional models: build llama.cpp, fetch-weights, then:
-bash scripts/chat.sh                      # you> prompt — remembers what you say
+bash modules/rag/seed-trv-docs.sh
+bash scripts/chat.sh
 ```
 
 ### Integrity Verifier (Path B option)
@@ -70,18 +101,11 @@ bash modules/integrity-verifier/attest.sh
 bash modules/integrity-verifier/record-weight.sh pass "note"
 ```
 
-### RAG without the model
-
-```bash
-RAG_PLAIN=0 bash modules/rag/retrieve.sh "what can you do"
-python3 modules/rag/bm25.py "optical e2e"
-```
-
-### UI
+### Operator UI
 
 ```bash
 bash apps/ui/serve-ui.sh
-# http://127.0.0.1:8765/  (leave process running)
+# http://127.0.0.1:8765/
 ```
 
 ---
@@ -89,20 +113,14 @@ bash apps/ui/serve-ui.sh
 ## Layout
 
 ```text
+digital-vending/buy.html     Public storefront (Pay + QR)
+digital-vending/PROTOCOL.md  Vending machine protocol
+docs/public/BUY.md           Buyer-facing steps
 optical-airgap/              PROVEN transport
 modules/integrity-verifier/  First validator role (PROVEN)
-modules/moe-router/          MoE B/C
-modules/rag/                 BM25, vectors, memory, pipeline
-modules/defense/             Hydra integrity
-modules/contribution/        hash-chain ledger
-modules/reminders/           Termux:API notifications (optional)
-digital-vending/             Solana Path B chute
-apps/ui/                     localhost console
-scripts/chat.sh              front door assistant
-scripts/trv.sh               pulse | sync | ui | talk
-docs/locked/                 Permanent design rules
-docs/REALITY.md              status authority
-docs/TEST.md                 how others verify
+apps/ui/                     Local operator console
+docs/REALITY.md              Status authority
+docs/TEST.md                 How others verify
 ```
 
 ---
