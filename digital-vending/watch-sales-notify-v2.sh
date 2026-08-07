@@ -1,18 +1,16 @@
 #!/usr/bin/env bash
 # watch-sales-notify-v2.sh — Level 2.5 + circuit + soft-retry + multi-RPC failover
-#
-# Env:
-#   SOLANA_RPC_URLS="url1,url2,url3"   (preferred)
-#   SOLANA_RPC_URL=single-url          (fallback)
-#   SALES_ADDRESS, DELIVER_DIR, STATE_FILE, DISCORD_WEBHOOK
-#   RPC_RETRIES, RPC_RETRY_DELAY_SEC
-#   CIRCUIT_FAILURE_THRESHOLD, CIRCUIT_COOLDOWN_SECONDS
-#   MAX_TRANSIENT_RETRIES, BACKOFF_*
-
 set -euo pipefail
 
-SALES_ADDRESS="${SALES_ADDRESS:-HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv}"
-_DEFAULT_RPCS="https://api.mainnet-beta.solana.com,https://solana-mainnet.g.alchemy.com/v2/demo"
+# Trim whitespace / CR from address (Termux paste often adds junk)
+SALES_ADDRESS="${SALES_ADDRESS:-}"
+SALES_ADDRESS="$(printf '%s' "$SALES_ADDRESS" | tr -d '[:space:]')"
+if [[ -z "$SALES_ADDRESS" ]]; then
+  echo "ERROR: set SALES_ADDRESS to your Solana receive address" >&2
+  exit 1
+fi
+
+_DEFAULT_RPCS="https://api.mainnet-beta.solana.com"
 if [[ -n "${SOLANA_RPC_URLS:-}" ]]; then
   IFS=',' read -r -a RPC_LIST <<< "$SOLANA_RPC_URLS"
 elif [[ -n "${SOLANA_RPC_URL:-}" ]]; then
@@ -48,15 +46,35 @@ touch "$RETRY_STATE"
 echo "════════════════════════════════════════"
 echo " TRV Sales Watcher (Level 2.5 — failover)"
 echo " Address : $SALES_ADDRESS"
+echo " AddrLen : $(printf '%s' "$SALES_ADDRESS" | wc -c | tr -d ' ')"
 echo " RPC     : $RPC  ($((RPC_INDEX+1))/$RPC_COUNT endpoints)"
 echo " Discord : ${DISCORD_WEBHOOK:+configured}${DISCORD_WEBHOOK:-not set}"
 echo " Deliver : $DELIVER_DIR"
 echo " State   : $STATE_FILE"
 echo " Vending : $VENDING_DIR"
-echo " Retries : max=$MAX_TRANSIENT_RETRIES  backoff base=${BACKOFF_BASE_SECONDS}s max=${BACKOFF_MAX_SECONDS}s"
-echo " Circuit : threshold=$CIRCUIT_FAILURE_THRESHOLD  cooldown=${CIRCUIT_COOLDOWN_SECONDS}s"
-echo " RPC soft-retry : attempts=$RPC_RETRIES  base-delay=${RPC_RETRY_DELAY_SEC}s"
 echo "════════════════════════════════════════"
+
+# Build JSON the same way as the known-good curl test
+build_sigs_payload() {
+  jq -n --arg a "$SALES_ADDRESS" \
+    '{jsonrpc:"2.0",id:1,method:"getSignaturesForAddress",params:[$a,{limit:8}]}'
+}
+
+echo "[self-test] RPC getSignaturesForAddress..."
+_st_payload=$(build_sigs_payload)
+_st_body=$(curl -sS --max-time 20 "$RPC" -X POST -H "Content-Type: application/json" -d "$_st_payload" || true)
+if echo "$_st_body" | jq -e '.result != null' >/dev/null 2>&1; then
+  echo "[self-test] OK"
+elif echo "$_st_body" | jq -e '.error' >/dev/null 2>&1; then
+  echo "[self-test] FAIL: $(echo "$_st_body" | jq -r '.error.message // .error')" >&2
+  echo "[self-test] payload: $_st_payload" >&2
+  echo "ERROR: fix SALES_ADDRESS or RPC before watching" >&2
+  exit 1
+else
+  echo "[self-test] FAIL: empty/non-JSON response" >&2
+  echo "$_st_body" >&2
+  exit 1
+fi
 echo "Ctrl+C to stop"
 echo
 
@@ -97,7 +115,6 @@ circuit_success() {
   [[ "$state" != "closed" ]] && echo "[circuit] RPC recovered → closed" >&2
   circuit_write "closed" 0 0
 }
-
 rotate_rpc() {
   if [[ $RPC_COUNT -le 1 ]]; then
     echo "[rpc-failover] only one endpoint configured — no rotation" >&2
@@ -109,7 +126,6 @@ rotate_rpc() {
   circuit_write "closed" 0 0
   return 0
 }
-
 circuit_failure() {
   local now state failures opened_at; now=$(date +%s)
   read -r state failures opened_at <<< "$(circuit_read)"
@@ -173,7 +189,7 @@ retry_pending() {
     [[ "$next_ts" -gt 0 && "$now" -lt "$next_ts" ]] && { echo "  [retry] $key in backoff — $((next_ts - now))s"; continue; }
     echo "  [retry] $key ready (attempt $((count+1)))"
     local real_sig; real_sig=$(grep -E '^sig=' "$pending" 2>/dev/null | cut -d= -f2- || echo "${prefix}000000000000")
-    set +e; "$VENDING_DIR/auto-deliver.sh" "$catalog_id" "$real_sig"; rc=$?; set -e
+    set +e; bash "$VENDING_DIR/auto-deliver.sh" "$catalog_id" "$real_sig"; rc=$?; set -e
     case $rc in
       0) echo "  [retry] SUCCESS"; clear_retry_state "$key" ;;
       2) echo "  [retry] still PENDING (recipient)" ;;
@@ -200,7 +216,6 @@ prepare_delivery() {
     else echo "  [prepare] WARNING: $zip_src missing"; dest="(ZIP missing)"; fi
   fi
   if [[ -n "$catalog_id" ]]; then
-    chmod +x "$VENDING_DIR/auto-deliver.sh" 2>/dev/null || true
     echo "  [prepare] age+LT for $catalog_id"
     set +e; bash "$VENDING_DIR/auto-deliver.sh" "$catalog_id" "$sig"; rc=$?; set -e
     case $rc in
@@ -213,13 +228,11 @@ prepare_delivery() {
       *) echo "  [prepare] auto-deliver rc=$rc" ;;
     esac
   fi
-  if [[ -n "$pack" && ! -f "${DELIVER_DIR}/${sig:0:12}_${catalog_id}_dm.txt" ]]; then
+  if [[ -n "$pack" && ! -f "${DELIVER_DIR}/${sig:0:12}_dm.txt" ]]; then
     cat > "${DELIVER_DIR}/${sig:0:12}_dm.txt" << EOF
 Thanks for the payment.
 
-Here’s your TRV Posture ${pack}.
-
-(Attach the file: ${dest})
+Here's your TRV Posture ${pack}.
 
 Sig verified: ${sig}
 
@@ -233,8 +246,8 @@ notify_discord() {
   local sig="$1" memo="$2" amount="$3"
   [[ -z "$DISCORD_WEBHOOK" ]] && return 0
   local pack_hint="Unknown" zip_hint=""
-  [[ "$memo" == *"TRV-Posture-Lite"* ]] && { pack_hint="**TRV Posture Lite** (11 USDC)"; zip_hint="trv-posture-lite.zip + age/LT"; }
-  [[ "$memo" == *"TRV-Posture-Pack"* ]] && { pack_hint="**TRV Posture Pack** (25 USDC)"; zip_hint="trv-posture-pack.zip + age/LT"; }
+  [[ "$memo" == *"TRV-Posture-Lite"* ]] && { pack_hint="**TRV Posture Lite** (11 USDC)"; zip_hint="age/LT frames"; }
+  [[ "$memo" == *"TRV-Posture-Pack"* ]] && { pack_hint="**TRV Posture Pack** (25 USDC)"; zip_hint="age/LT frames"; }
   local content; content=$(jq -n --arg sig "$sig" --arg memo "$memo" --arg amount "$amount" --arg pack "$pack_hint" \
     --arg zip "$zip_hint" --arg explorer "https://solscan.io/tx/${sig}" --arg deliver "$DELIVER_DIR" \
     '{content:("**New TRV Sale**\nPack: "+$pack+"\nAmount: "+$amount+"\nMemo: `"+$memo+"`\nSig: `"+$sig+"`\n"+$explorer+"\n\n"+$zip+"\nReady: `"+$deliver+"`")}')
@@ -270,7 +283,8 @@ rpc_call() {
       else
         local err; err=$(echo "$RPC_RESP" | jq -r '.error.message // empty' 2>/dev/null || true)
         if [[ -n "$err" ]]; then
-          echo "[rpc] attempt $attempt/$max_attempts: JSON-RPC error: $err" >&2; last_rc=3
+          echo "[rpc] attempt $attempt/$max_attempts: JSON-RPC error: $err" >&2
+          last_rc=3
         else
           return 0
         fi
@@ -311,8 +325,7 @@ get_tx_details() {
 while true; do
   retry_pending
   if circuit_allow; then
-    payload=$(jq -n --arg addr "$SALES_ADDRESS" \
-      '{jsonrpc:"2.0",id:1,method:"getSignaturesForAddress",params:[$addr,{limit:8}]}')
+    payload=$(build_sigs_payload)
     if rpc_call "$payload"; then
       circuit_success
       newest=$(echo "$RPC_RESP" | jq -r '.result[0].signature // empty' 2>/dev/null || true)
