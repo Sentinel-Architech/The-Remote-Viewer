@@ -1,5 +1,5 @@
 /* The Remote Viewer — installable DApp shell */
-const CACHE = 'trv-shell-v1';
+const CACHE = 'trv-shell-v2';
 const SHELL = [
   './',
   './index.html',
@@ -7,8 +7,7 @@ const SHELL = [
   './shop.js',
   './shop-boot.js',
   './manifest.webmanifest',
-  './icon-192.png',
-  './icon-512.png',
+  './icon.svg',
 ];
 
 self.addEventListener('install', (event) => {
@@ -29,7 +28,6 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  // Network-first for app modules; cache fallback for shell
   if (url.origin === self.location.origin) {
     event.respondWith(
       fetch(req)
