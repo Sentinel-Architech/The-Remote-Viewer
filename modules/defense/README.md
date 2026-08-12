@@ -14,6 +14,22 @@ Self-defense of **this** device only. No telemetry. No offensive modules.
 | Sales / verifier | integrity-verifier on contribution + sales.log |
 | **Alert** | Termux notification on FAIL |
 | **Quarantine** | `QUARANTINE` flag + `hydra-gate.sh` blocks deliver |
+| **Adaptive (new)** | Hash-chained local incident log — learn from failures on this device |
+
+## Adaptive Learning (local only)
+
+Incidents are recorded as an append-only, hash-chained JSONL under:
+`~/.local/share/remote-viewer/defense/incidents/events.jsonl`
+
+```bash
+# Record an incident (normally called by the pulse on FAIL)
+bash modules/defense/record-incident.sh "integrity_fail" "seal,structure" "optional details"
+
+# Verify the chain
+bash modules/defense/verify-incidents.sh
+```
+
+Same pattern as the contribution ledger. Stays on-device. No mesh export.
 
 ## First-time setup
 
@@ -37,6 +53,8 @@ bash modules/defense/verify-seal.sh
 bash modules/defense/hydra-gate.sh      # exit 11 if quarantined
 bash modules/defense/status.sh
 bash modules/defense/check-after-sync.sh
+bash modules/defense/record-incident.sh
+bash modules/defense/verify-incidents.sh
 
 # optional background (every 300s default)
 nohup bash modules/defense/supervise-defense.sh >>~/.local/share/remote-viewer/defense.log 2>&1 &
