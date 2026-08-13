@@ -98,6 +98,23 @@
     }
     .media-row input[type=file] { display: none; }
     .preview-media { margin-top: 0.65rem; border-radius: 12px; overflow: hidden; max-height: 240px; background: #000; }
+    .avatar-row { display:flex; align-items:center; gap:0.85rem; margin:0.75rem 0 0.25rem; }
+    .avatar-preview {
+      width:72px; height:72px; border-radius:50%; object-fit:cover;
+      border:2px solid var(--line); background:var(--surface2); flex-shrink:0;
+    }
+    .avatar-preview.empty {
+      display:flex; align-items:center; justify-content:center;
+      color:var(--soft); font-size:0.72rem; text-align:center; padding:0.25rem;
+    }
+    .avatar-actions { display:flex; flex-direction:column; gap:0.35rem; }
+    .avatar-actions label.file { margin:0; }
+    .avatar-actions label.file.btn {
+      display:inline-block; margin:0; padding:0.55rem 1rem; cursor:pointer;
+      border-radius:999px; border:1px solid var(--line); background:var(--surface2);
+      color:var(--text); font-size:0.88rem; font-weight:600;
+    }
+    .avatar-actions input[type=file] { display:none; }
   </style>
 </head>
 <body>
@@ -159,6 +176,14 @@
       <div class="card" id="viewer-profile-card">
         <h2>Viewer Profile</h2>
         <p class="soft" id="you-status">Set up once. You stay in control.</p>
+        <div class="avatar-row">
+          <img id="avatar-preview" class="avatar-preview" alt="Avatar" hidden>
+          <div id="avatar-placeholder" class="avatar-preview empty">No photo</div>
+          <div class="avatar-actions">
+            <label class="file btn">Upload photo<input type="file" id="avatar-file" accept="image/*" capture="environment"></label>
+            <button type="button" class="btn quiet" id="avatar-remove" hidden>Remove photo</button>
+          </div>
+        </div>
         <div class="id-chip" id="you-id">No identity yet</div>
         <div class="actions">
           <button type="button" class="btn primary" id="create-id">Create my Viewer ID</button>
