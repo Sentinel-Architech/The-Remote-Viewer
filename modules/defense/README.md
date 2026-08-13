@@ -14,15 +14,15 @@ Self-defense of **this** device only. No telemetry. No offensive modules.
 | Sales / verifier | integrity-verifier on contribution + sales.log |
 | **Alert** | Termux notification on FAIL |
 | **Quarantine** | `QUARANTINE` flag + `hydra-gate.sh` blocks deliver |
-| **Adaptive (new)** | Hash-chained local incident log — learn from failures on this device |
+| **Adaptive** | Hash-chained local incident log — auto-recorded on FAIL |
 
 ## Adaptive Learning (local only)
 
-Incidents are recorded as an append-only, hash-chained JSONL under:
+On every integrity FAIL the pulse automatically appends a hash-chained incident to:
 `~/.local/share/remote-viewer/defense/incidents/events.jsonl`
 
 ```bash
-# Record an incident (normally called by the pulse on FAIL)
+# Manual record (rarely needed)
 bash modules/defense/record-incident.sh "integrity_fail" "seal,structure" "optional details"
 
 # Verify the chain
@@ -30,6 +30,7 @@ bash modules/defense/verify-incidents.sh
 ```
 
 Same pattern as the contribution ledger. Stays on-device. No mesh export.
+Recorder failure never blocks quarantine (fail-closed priority).
 
 ## First-time setup
 
