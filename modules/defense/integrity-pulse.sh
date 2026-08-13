@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Local integrity pulse for TRV node (Hydra) — multi-head
-# Heads: structure · seal · contribution · sales/verifier · alert · quarantine flag
+# Heads: structure · seal · contribution · sales/verifier · alert · quarantine · adaptive incident
 set -euo pipefail
 
 ROOT="${TRV_ROOT:-$HOME/The-Remote-Viewer}"
@@ -164,13 +164,22 @@ if [[ -d "$ROOT/.git" ]]; then
   fi
 fi
 
-# --- Head 5: quarantine flag + alert ---
+# --- Head 5: quarantine flag + alert + adaptive record ---
 if [[ "$FAIL" -eq 0 ]]; then
   rm -f "$FLAG_Q"
   date -u +%Y-%m-%dT%H:%M:%SZ > "$FLAG_PASS"
   log "integrity-pulse RESULT=PASS (warns=$WARN)"
   echo "RESULT: PASS (warns=$WARN)"
   exit 0
+fi
+
+# Adaptive learning: record the failure on-device (hash-chained)
+# Recorder failure must never prevent quarantine (fail-closed priority)
+if [[ -f "$ROOT/modules/defense/record-incident.sh" ]]; then
+  bash "$ROOT/modules/defense/record-incident.sh" \
+    "integrity_fail" \
+    "multi" \
+    "FAIL warns=$WARN — full log in defense.log" || true
 fi
 
 echo "quarantine=1" > "$FLAG_Q"
