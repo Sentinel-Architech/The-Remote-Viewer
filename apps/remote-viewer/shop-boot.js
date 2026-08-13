@@ -1,5 +1,6 @@
 /**
- * Injects Shop tab + Aurora TRV shop + USD lock panel.
+ * Shop lives inside Viewer Profile (no top-level tab).
+ * Aurora TRV shop + USD lock panel.
  */
 import {
   becomeValidated,
@@ -18,24 +19,16 @@ function toastFn(m) {
 }
 
 function ensureShopUI() {
-  const tabs = document.querySelector('.tabs');
-  if (tabs && !tabs.querySelector('[data-screen="shop"]')) {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.dataset.screen = 'shop';
-    b.textContent = 'Shop';
-    tabs.appendChild(b);
-  }
+  // Shop now lives inside Viewer Profile (no top-level tab)
+  const host = document.getElementById('shop-in-profile');
+  if (!host) return;
 
   if (!document.getElementById('shop')) {
-    const main = document.querySelector('main');
-    if (!main) return;
-    const sec = document.createElement('section');
+    const sec = document.createElement('div');
     sec.id = 'shop';
-    sec.className = 'screen';
     sec.innerHTML = `
       <div class="card">
-        <h2>TRV Shop</h2>
+        <h2>Shop</h2>
         <p class="soft">Aurora looks and locks live here — parallel to The Sentinel core.</p>
         <p>Your TRV credits: <strong id="trv-balance">0</strong></p>
         <p class="soft" id="validated-status">Not yet a Validated Viewer</p>
@@ -49,7 +42,7 @@ function ensureShopUI() {
         <p class="soft">Redeem credits to wear a northern-lights look. These options only.</p>
         <div id="shop-grid"></div>
       </div>`;
-    main.appendChild(sec);
+    host.appendChild(sec);
 
     const st = document.createElement('style');
     st.textContent = `
@@ -70,6 +63,7 @@ function ensureShopUI() {
     else shop.appendChild(card);
   }
 
+  // Keep tab switching working; refresh shop when opening Viewer Profile
   document.querySelectorAll('.tabs button').forEach((btn) => {
     btn.onclick = () => {
       document.querySelectorAll('.tabs button').forEach((b) => b.classList.remove('on'));
@@ -77,7 +71,7 @@ function ensureShopUI() {
       btn.classList.add('on');
       const screen = document.getElementById(btn.dataset.screen);
       if (screen) screen.classList.add('on');
-      if (btn.dataset.screen === 'shop') {
+      if (btn.dataset.screen === 'you') {
         renderShopUI(toastFn);
         renderLockUI(toastFn);
       }

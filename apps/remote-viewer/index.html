@@ -50,13 +50,13 @@
     .screen.on { display: block; }
     .card {
       background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
-      padding: 1rem; margin-bottom: 0.85rem;
+      padding: 1rem; margin-bottom: 0.75rem;
     }
-    .card h2 { margin: 0 0 0.65rem; font-size: 0.95rem; font-weight: 650; }
+    .card h2 { margin: 0 0 0.45rem; font-size: 1rem; }
     .soft { color: var(--soft); font-size: 0.88rem; }
-    label { display: block; font-size: 0.78rem; color: var(--soft); margin-top: 0.65rem; font-weight: 500; }
+    label { display: block; font-size: 0.85rem; color: var(--soft); margin: 0.65rem 0 0.25rem; }
     input, textarea {
-      width: 100%; margin-top: 0.3rem; padding: 0.7rem 0.8rem; border-radius: 12px;
+      width: 100%; margin-top: 0.25rem; padding: 0.7rem 0.8rem; border-radius: 12px;
       border: 1px solid var(--line); background: var(--surface2); color: var(--text); font: inherit;
     }
     textarea { min-height: 110px; resize: vertical; }
@@ -98,55 +98,16 @@
     }
     .toast.show { opacity: 1; }
     .empty { text-align: center; color: var(--soft); padding: 2rem 1rem; font-size: 0.95rem; }
-    .person {
-      display: flex; justify-content: space-between; gap: 0.5rem; align-items: center;
-      padding: 0.55rem 0; border-bottom: 1px solid var(--line); font-size: 0.88rem;
+    .gateway-link {
+      display: block; text-align: center; padding: 0.85rem 1rem; border-radius: 14px;
+      background: linear-gradient(135deg, #c9a227, #e8c27a); color: #1a1408;
+      font-weight: 700; text-decoration: none; margin-bottom: 0.35rem;
     }
-    .person code { font-size: 0.75rem; color: var(--soft); word-break: break-all; }
-    .welcome-gate {
-      position: fixed; inset: 0; z-index: 40; background: rgba(4, 6, 10, 0.92);
-      display: flex; align-items: center; justify-content: center; padding: 1.25rem;
-    }
-    .welcome-gate[hidden] { display: none !important; }
-    .welcome-card {
-      max-width: 420px; width: 100%; background: var(--surface); border: 1px solid var(--line);
-      border-radius: 20px; padding: 1.5rem 1.25rem 1.25rem; text-align: center;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.45);
-    }
-    .welcome-card h2 { margin: 0 0 0.5rem; font-size: 1.35rem; font-weight: 700; }
-    .welcome-card p { margin: 0.4rem 0; color: var(--soft); font-size: 0.95rem; }
-    a.gateway-link {
-      display: block; margin: 1.15rem 0 0.85rem; padding: 0.95rem 1rem; border-radius: 14px;
-      text-decoration: none; font-weight: 700; font-size: 1.05rem; color: #0a0c10;
-      background: linear-gradient(135deg, #f0d78c 0%, #e8c27a 40%, #c9a227 100%);
-      border: 2px solid #ffe6a0;
-      box-shadow: 0 0 0 3px rgba(232, 194, 122, 0.25), 0 8px 28px rgba(201, 162, 39, 0.35);
-      animation: gateway-pulse 2.4s ease-in-out infinite;
-    }
-    @keyframes gateway-pulse {
-      0%, 100% { box-shadow: 0 0 0 3px rgba(232, 194, 122, 0.25), 0 8px 28px rgba(201, 162, 39, 0.35); }
-      50% { box-shadow: 0 0 0 6px rgba(232, 194, 122, 0.4), 0 8px 36px rgba(201, 162, 39, 0.5); }
-    }
-    .gateway-sub { font-size: 0.78rem; color: var(--soft); margin-top: -0.35rem; margin-bottom: 0.5rem; }
+    .gateway-sub { text-align: center; font-size: 0.78rem; color: var(--soft); margin: 0; }
   </style>
 </head>
 <body>
   <div class="notice">This space connects over the network. The Sentinel on your device does not need it.</div>
-
-  <div class="welcome-gate" id="welcome-gate" role="dialog" aria-labelledby="welcome-title">
-    <div class="welcome-card">
-      <h2 id="welcome-title">Welcome</h2>
-      <p>You are entering <strong style="color:var(--text)">The Remote Viewer</strong>.</p>
-      <p>Find each other. Share what you choose.</p>
-      <a class="gateway-link" href="https://www.cia.gov/readingroom/document/cia-rdp96-00788r001700210016-5" target="_blank" rel="noopener noreferrer">The Gateway Process</a>
-      <p class="gateway-sub">Open the Gateway Process — for every Viewer</p>
-      <div class="actions" style="justify-content:center">
-        <button type="button" class="btn primary" id="welcome-enter">Enter</button>
-        <button type="button" class="btn primary" id="install-app" hidden>Install app</button>
-        <button type="button" class="btn quiet" id="welcome-replay">Hear welcome again</button>
-      </div>
-    </div>
-  </div>
 
   <div class="top">
     <h1>The Remote Viewer</h1>
@@ -154,10 +115,9 @@
   </div>
 
   <div class="tabs">
-    <button type="button" class="on" data-screen="home">Home</button>
-    <button type="button" data-screen="create">Create</button>
     <button type="button" data-screen="talk">Talk</button>
-    <button type="button" data-screen="you">You</button>
+    <button type="button" class="on" data-screen="home">Hub</button>
+    <button type="button" data-screen="you">Viewer Profile</button>
   </div>
 
   <main>
@@ -173,7 +133,70 @@
       <div id="feed"><div class="empty">When you and people you follow share posts, they appear here.</div></div>
     </section>
 
-    <section id="create" class="screen">
+    <section id="talk" class="screen">
+      <div class="card">
+        <h2>Private message</h2>
+        <label>Their Viewer ID
+          <input id="dm-to" placeholder="Paste the ID they shared with you" autocomplete="off">
+        </label>
+        <label>Message
+          <textarea id="dm-body" placeholder="Only the two of you should read this"></textarea>
+        </label>
+        <div class="actions">
+          <button type="button" class="btn primary" id="dm-send">Send privately</button>
+          <button type="button" class="btn" id="dm-inbox">Check messages</button>
+        </div>
+        <div id="dm-log" class="soft" style="margin-top:0.75rem;white-space:pre-wrap;font-size:0.85rem"></div>
+      </div>
+    </section>
+
+    <section id="you" class="screen">
+      <div class="card">
+        <h2>Viewer Profile</h2>
+        <p class="soft" id="you-status">Set up once. You stay in control.</p>
+        <div class="id-chip" id="you-id">No identity yet</div>
+        <div class="actions">
+          <button type="button" class="btn primary" id="create-id">Create my Viewer ID</button>
+          <button type="button" class="btn" id="restore-id">I already have one</button>
+          <button type="button" class="btn" id="copy-id">Copy my ID</button>
+          <button type="button" class="btn warn" id="forget-id">Remove from this phone</button>
+          <button type="button" class="btn quiet" id="hear-welcome">Hear welcome</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Profile</h2>
+        <label>Display name <input id="prof-name" placeholder="How others should see you"></label>
+        <label>About <textarea id="prof-about" placeholder="A few words"></textarea></label>
+        <div class="actions">
+          <button type="button" class="btn primary" id="save-profile">Save profile</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>People you follow</h2>
+        <p class="soft">Their public posts show on Hub.</p>
+        <label>Add by Viewer ID
+          <input id="follow-input" placeholder="Paste their ID" autocomplete="off">
+        </label>
+        <div class="actions">
+          <button type="button" class="btn" id="follow-add">Follow</button>
+        </div>
+        <div id="follow-list"></div>
+      </div>
+      <div class="card">
+        <h2>Connection path</h2>
+        <p class="soft">Only if something fails to send.</p>
+        <label>Paths (one per line)
+          <textarea id="paths" style="min-height:88px;font-size:0.85rem"></textarea>
+        </label>
+        <div class="actions">
+          <button type="button" class="btn" id="save-paths">Save paths</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:0.85rem">
+        <h2>Create</h2>
+        <p class="soft">Compose and save posts from your profile.</p>
+      </div>
       <div class="card">
         <h2>New post</h2>
         <label>What do you want to share?
@@ -197,67 +220,7 @@
         <h2>Saved for later</h2>
         <div id="drafts" class="soft">Nothing saved yet.</div>
       </div>
-    </section>
-
-    <section id="talk" class="screen">
-      <div class="card">
-        <h2>Private message</h2>
-        <label>Their Viewer ID
-          <input id="dm-to" placeholder="Paste the ID they shared with you" autocomplete="off">
-        </label>
-        <label>Message
-          <textarea id="dm-body" placeholder="Only the two of you should read this"></textarea>
-        </label>
-        <div class="actions">
-          <button type="button" class="btn primary" id="dm-send">Send privately</button>
-          <button type="button" class="btn" id="dm-inbox">Check messages</button>
-        </div>
-        <div id="dm-log" class="soft" style="margin-top:0.75rem;white-space:pre-wrap;font-size:0.85rem"></div>
-      </div>
-    </section>
-
-    <section id="you" class="screen">
-      <div class="card">
-        <h2>Your Viewer</h2>
-        <p class="soft" id="you-status">Set up once. You stay in control.</p>
-        <div class="id-chip" id="you-id">No identity yet</div>
-        <div class="actions">
-          <button type="button" class="btn primary" id="create-id">Create my Viewer ID</button>
-          <button type="button" class="btn" id="restore-id">I already have one</button>
-          <button type="button" class="btn" id="copy-id">Copy my ID</button>
-          <button type="button" class="btn warn" id="forget-id">Remove from this phone</button>
-          <button type="button" class="btn quiet" id="hear-welcome">Hear welcome</button>
-        </div>
-      </div>
-      <div class="card">
-        <h2>Profile</h2>
-        <label>Display name <input id="prof-name" placeholder="How others should see you"></label>
-        <label>About <textarea id="prof-about" placeholder="A few words"></textarea></label>
-        <div class="actions">
-          <button type="button" class="btn primary" id="save-profile">Save profile</button>
-        </div>
-      </div>
-      <div class="card">
-        <h2>People you follow</h2>
-        <p class="soft">Their public posts show on Home.</p>
-        <label>Add by Viewer ID
-          <input id="follow-input" placeholder="Paste their ID" autocomplete="off">
-        </label>
-        <div class="actions">
-          <button type="button" class="btn" id="follow-add">Follow</button>
-        </div>
-        <div id="follow-list"></div>
-      </div>
-      <div class="card">
-        <h2>Connection path</h2>
-        <p class="soft">Only if something fails to send.</p>
-        <label>Paths (one per line)
-          <textarea id="paths" style="min-height:88px;font-size:0.85rem"></textarea>
-        </label>
-        <div class="actions">
-          <button type="button" class="btn" id="save-paths">Save paths</button>
-        </div>
-      </div>
+      <div id="shop-in-profile"></div>
     </section>
   </main>
 
