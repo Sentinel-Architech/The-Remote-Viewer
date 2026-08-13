@@ -124,6 +124,17 @@
         <button type="button" class="btn primary" id="refresh-home">Refresh</button>
         <button type="button" class="btn" id="install-app-home" hidden>Install app</button>
       </div>
+      <div class="card">
+        <h2>Quick post</h2>
+        <p class="soft">Publishes to the network — not only this phone.</p>
+        <label>Say something
+          <textarea id="hub-post-text" placeholder="Visible to people who follow you" style="min-height:88px"></textarea>
+        </label>
+        <div class="actions">
+          <button type="button" class="btn primary" id="hub-post">Post</button>
+          <button type="button" class="btn" id="hub-share-invite">Invite friends</button>
+        </div>
+      </div>
       <div id="feed"><div class="empty">When you and people you follow share posts, they appear here.</div></div>
     </section>
 
@@ -152,7 +163,7 @@
         <div class="actions">
           <button type="button" class="btn primary" id="create-id">Create my Viewer ID</button>
           <button type="button" class="btn" id="restore-id">I already have one</button>
-          <button type="button" class="btn" id="copy-id">Copy my ID</button>
+          <button type="button" class="btn" id="copy-id">Share with friends</button>
           <button type="button" class="btn" id="export-secret">Export secret</button>
           <button type="button" class="btn warn" id="forget-id">Remove from this phone</button>
           <button type="button" class="btn quiet" id="hear-welcome">Hear welcome</button>
@@ -167,7 +178,7 @@
         <label>Display name <input id="prof-name" placeholder="How others should see you"></label>
         <label>About <textarea id="prof-about" placeholder="A few words"></textarea></label>
         <div class="actions">
-          <button type="button" class="btn primary" id="save-profile">Save profile</button>
+          <button type="button" class="btn primary" id="save-profile">Save & publish</button>
         </div>
       </div>
       <div class="card">
@@ -194,7 +205,7 @@
 
       <div class="card" style="margin-top:0.85rem">
         <h2>Create</h2>
-        <p class="soft">Compose and save posts from your profile.</p>
+        <p class="soft">Compose and post to the network.</p>
       </div>
       <div class="card">
         <h2>New post</h2>
@@ -211,7 +222,7 @@
           <input id="post-place" placeholder="City, trail, venue… or leave blank">
         </label>
         <div class="actions">
-          <button type="button" class="btn primary" id="share-post">Share</button>
+          <button type="button" class="btn primary" id="share-post">Post to network</button>
           <button type="button" class="btn" id="save-draft">Save for later</button>
         </div>
       </div>
