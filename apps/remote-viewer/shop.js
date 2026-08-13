@@ -111,6 +111,34 @@ export function becomeValidated() {
   return { ok: true, granted: REWARD_ON_VALIDATE, balance: next };
 }
 
+export function grantCreditsFromPayment({ amount, wallet, signature, lamports }) {
+  const n = Number(amount);
+  if (!Number.isFinite(n) || n <= 0) return { ok: false, reason: 'amount' };
+  if (!wallet || !signature) return { ok: false, reason: 'proof' };
+  try {
+    const log = JSON.parse(localStorage.getItem('rv-credit-purchases') || '[]');
+    if (log.some((x) => x.signature === signature)) {
+      return { ok: false, reason: 'duplicate', balance: loadCredits() };
+    }
+  } catch {}
+  const next = loadCredits() + n;
+  saveCredits(next);
+  try {
+    const log = JSON.parse(localStorage.getItem('rv-credit-purchases') || '[]');
+    log.unshift({
+      at: Date.now(),
+      amount: n,
+      wallet,
+      signature,
+      lamports: lamports || null,
+      chain: 'solana',
+      balance: next,
+    });
+    localStorage.setItem('rv-credit-purchases', JSON.stringify(log.slice(0, 50)));
+  } catch {}
+  return { ok: true, granted: n, balance: next, wallet, signature };
+}
+
 export function buyCreditsWithWallet(amount) {
   const wallet = localStorage.getItem('rv-wallet-pubkey') || '';
   if (!wallet) return { ok: false, reason: 'wallet' };
