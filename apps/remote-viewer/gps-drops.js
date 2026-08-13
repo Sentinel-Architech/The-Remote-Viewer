@@ -1,7 +1,7 @@
 /**
  * GPS + camera AR field drops.
- * Animated TRV token markers + live distance HUD (US customary units).
- * Claim → Shop TRV credits.
+ * Fullscreen animated TRV tokens + live distance.
+ * On claim → close AR and return to private credits vault (Viewer Profile / Shop).
  */
 import { getCredits } from './shop.js';
 
@@ -10,7 +10,6 @@ const CREDITS_KEY = 'rv-trv-credits';
 const CELL = 0.001;
 const CLAIM_RADIUS_M = 120;
 
-/** Format meters as US customary: in, ft, or mi */
 function formatImperial(meters) {
   const m = Number(meters);
   if (!Number.isFinite(m) || m < 0) return '—';
@@ -125,11 +124,16 @@ export function claimDrop(drop, lat, lon) {
 let arStream = null;
 let watchId = null;
 let heading = null;
+let arHudTimer = null;
 
 function stopAr() {
   if (watchId != null) {
     navigator.geolocation.clearWatch(watchId);
     watchId = null;
+  }
+  if (arHudTimer != null) {
+    clearInterval(arHudTimer);
+    arHudTimer = null;
   }
   if (arStream) {
     arStream.getTracks().forEach((t) => t.stop());
@@ -137,6 +141,9 @@ function stopAr() {
   }
   window.removeEventListener('deviceorientationabsolute', onOrient);
   window.removeEventListener('deviceorientation', onOrient);
+  const overlay = document.getElementById('ar-fullscreen');
+  if (overlay) overlay.remove();
+  document.body.style.overflow = '';
 }
 
 function onOrient(e) {
@@ -145,13 +152,53 @@ function onOrient(e) {
   else if (e.alpha != null) heading = 360 - e.alpha;
 }
 
+/** After claim: leave AR and open private credits vault on Viewer Profile */
+function returnToPrivateVault(balance, reward, toast) {
+  stopAr();
+
+  // Switch to Viewer Profile tab
+  document.querySelectorAll('.tabs button').forEach((b) => {
+    b.classList.toggle('on', b.getAttribute('data-screen') === 'you');
+  });
+  document.querySelectorAll('.screen').forEach((s) => {
+    s.classList.toggle('on', s.id === 'you');
+  });
+
+  // Refresh visible balance
+  const bal = document.getElementById('trv-balance');
+  if (bal) bal.textContent = String(balance);
+
+  // Scroll shop / vault into view
+  const vault =
+    document.getElementById('shop-in-profile') ||
+    document.getElementById('trv-balance') ||
+    document.getElementById('viewer-profile-card');
+  if (vault && vault.scrollIntoView) {
+    setTimeout(() => vault.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+  }
+
+  const status = document.getElementById('field-status');
+  if (status) status.textContent = 'Captured · returned to private vault';
+
+  if (toast) toast(`+${reward} TRV secured in private vault · balance ${balance}`);
+}
+
 function ensureArStyles() {
   if (document.getElementById('ar-field-css')) return;
   const st = document.createElement('style');
   st.id = 'ar-field-css';
   st.textContent = `
-    .ar-stage{position:relative;width:100%;aspect-ratio:3/4;max-height:70vh;border-radius:14px;overflow:hidden;background:#000;margin-top:0.65rem}
-    .ar-stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    #ar-fullscreen{
+      position:fixed;inset:0;z-index:9999;background:#000;
+      display:flex;flex-direction:column;
+    }
+    #ar-fullscreen .ar-stage{
+      position:relative;flex:1;width:100%;height:100%;
+      border-radius:0;margin:0;overflow:hidden;background:#000;
+    }
+    #ar-fullscreen .ar-stage video{
+      position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+    }
     .ar-hud{position:absolute;inset:0;pointer-events:none;z-index:2}
     .ar-token{
       position:absolute;transform:translate(-50%,-50%);pointer-events:auto;
@@ -159,30 +206,44 @@ function ensureArStyles() {
       text-align:center;color:#f0f4fa;font-size:0.75rem;
     }
     .ar-token-coin{
-      width:3.1rem;height:3.1rem;border-radius:50%;
+      width:3.4rem;height:3.4rem;border-radius:50%;
       background:radial-gradient(circle at 35% 30%, #7dffd4 0%, #2ee6c5 35%, #0a7a6a 75%, #043d36 100%);
       border:2px solid rgba(126,255,212,0.85);
-      box-shadow:0 0 14px rgba(46,230,197,0.45), inset 0 0 10px rgba(255,255,255,0.18);
+      box-shadow:0 0 16px rgba(46,230,197,0.5), inset 0 0 10px rgba(255,255,255,0.18);
       display:flex;align-items:center;justify-content:center;
-      font-weight:700;font-size:0.72rem;letter-spacing:0.02em;color:#041a16;
+      font-weight:700;font-size:0.78rem;letter-spacing:0.02em;color:#041a16;
       animation:ar-spin 4.5s linear infinite, ar-float 2.4s ease-in-out infinite;
     }
     .ar-token.near .ar-token-coin{
       border-color:#b8ffe8;
-      box-shadow:0 0 22px rgba(93,255,192,0.7), inset 0 0 12px rgba(255,255,255,0.25);
+      box-shadow:0 0 26px rgba(93,255,192,0.75), inset 0 0 12px rgba(255,255,255,0.25);
       animation:ar-spin 2.8s linear infinite, ar-pulse 1.1s ease-in-out infinite;
     }
     .ar-token-label{
-      min-width:6.5rem;padding:0.28rem 0.45rem;border-radius:10px;
-      background:rgba(6,12,20,0.82);border:1px solid rgba(110,182,255,0.4);
+      min-width:6.8rem;padding:0.3rem 0.5rem;border-radius:10px;
+      background:rgba(6,12,20,0.85);border:1px solid rgba(110,182,255,0.4);
       backdrop-filter:blur(6px);
     }
     .ar-token.near .ar-token-label{border-color:rgba(93,255,192,0.55)}
-    .ar-token-label strong{display:block;font-size:0.82rem}
+    .ar-token-label strong{display:block;font-size:0.84rem}
     .ar-token-label .dist{color:#9aabbf;font-size:0.7rem;margin-top:0.1rem}
     .ar-token button{margin-top:0.15rem;pointer-events:auto}
-    .ar-top{position:absolute;top:0.5rem;left:0.5rem;right:0.5rem;z-index:3;display:flex;justify-content:space-between;gap:0.5rem;pointer-events:none}
-    .ar-badge{background:rgba(6,12,20,0.75);border:1px solid #243041;border-radius:999px;padding:0.3rem 0.65rem;font-size:0.72rem;color:#9aabbf}
+    .ar-top{
+      position:absolute;top:0;left:0;right:0;z-index:3;
+      display:flex;justify-content:space-between;align-items:center;gap:0.5rem;
+      padding:calc(0.65rem + env(safe-area-inset-top,0px)) 0.75rem 0.5rem;
+      pointer-events:none;
+      background:linear-gradient(rgba(0,0,0,0.55), transparent);
+    }
+    .ar-badge{
+      background:rgba(6,12,20,0.8);border:1px solid #243041;border-radius:999px;
+      padding:0.35rem 0.7rem;font-size:0.72rem;color:#9aabbf;pointer-events:auto;
+    }
+    .ar-close{
+      appearance:none;border:1px solid #3a4a5c;background:rgba(6,12,20,0.85);
+      color:#f0f4fa;border-radius:999px;padding:0.4rem 0.85rem;font:inherit;font-size:0.78rem;
+      cursor:pointer;pointer-events:auto;
+    }
     @keyframes ar-spin{
       0%{transform:rotateY(0deg)}
       100%{transform:rotateY(360deg)}
@@ -215,21 +276,17 @@ export function renderFieldUI(toast) {
 
   host.innerHTML = `
     <h2>Field claim</h2>
-    <p class="soft">Animated TRV tokens · live distance. Claim within ~${CLAIM_RADIUS_FT} ft → Shop credits.</p>
+    <p class="soft">Fullscreen AR · animated TRV tokens · live distance. Claim within ~${CLAIM_RADIUS_FT} ft → private vault.</p>
     <p class="soft" id="field-status">Camera & location off</p>
     <div class="actions">
       <button type="button" class="btn primary" id="field-ar">Open AR</button>
       <button type="button" class="btn" id="field-scan">List scan</button>
-      <button type="button" class="btn quiet" id="field-stop" hidden>Stop</button>
     </div>
-    <div id="ar-root" hidden></div>
     <div id="field-list" style="margin-top:0.75rem"></div>
   `;
 
   const status = document.getElementById('field-status');
   const list = document.getElementById('field-list');
-  const arRoot = document.getElementById('ar-root');
-  const stopBtn = document.getElementById('field-stop');
 
   function paintList(lat, lon, drops) {
     if (!drops.length) {
@@ -260,9 +317,7 @@ export function renderFieldUI(toast) {
           else toast('Could not claim');
           return;
         }
-        toast(`+${r.reward} TRV · ${formatImperial(r.dist)}`);
-        const bal = document.getElementById('trv-balance');
-        if (bal) bal.textContent = String(r.balance);
+        returnToPrivateVault(r.balance, r.reward, toast);
         btn.closest('.card')?.remove();
       };
     });
@@ -310,18 +365,22 @@ export function renderFieldUI(toast) {
       return;
     }
 
-    arRoot.hidden = false;
-    stopBtn.hidden = false;
-    arRoot.innerHTML = `
+    document.body.style.overflow = 'hidden';
+    const overlay = document.createElement('div');
+    overlay.id = 'ar-fullscreen';
+    overlay.innerHTML = `
       <div class="ar-stage">
         <video id="ar-video" playsinline autoplay muted></video>
         <div class="ar-top">
           <span class="ar-badge" id="ar-gps-badge">GPS…</span>
           <span class="ar-badge" id="ar-count-badge">0 drops</span>
+          <button type="button" class="ar-close" id="ar-close">Close</button>
         </div>
         <div class="ar-hud" id="ar-hud"></div>
       </div>
     `;
+    document.body.appendChild(overlay);
+
     const video = document.getElementById('ar-video');
     video.srcObject = arStream;
     try {
@@ -336,7 +395,7 @@ export function renderFieldUI(toast) {
       } catch {}
     }
 
-    status.textContent = 'AR on · animated tokens';
+    status.textContent = 'AR fullscreen · animated tokens';
     const hud = document.getElementById('ar-hud');
     const gpsBadge = document.getElementById('ar-gps-badge');
     const countBadge = document.getElementById('ar-count-badge');
@@ -348,7 +407,7 @@ export function renderFieldUI(toast) {
     function drawHud() {
       if (!hud || lastLat == null) return;
       const drops = lastDrops.slice(0, 6);
-      countBadge.textContent = drops.length + ' drops';
+      if (countBadge) countBadge.textContent = drops.length + ' drops';
       hud.innerHTML = '';
       drops.forEach((d) => {
         const pos = placePin(d.bearing, d.dist);
@@ -379,16 +438,18 @@ export function renderFieldUI(toast) {
             else toast('Could not claim');
             return;
           }
-          toast(`+${r.reward} TRV · ${formatImperial(r.dist)}`);
-          const bal = document.getElementById('trv-balance');
-          if (bal) bal.textContent = String(r.balance);
-          lastDrops = scanNearby(lastLat, lastLon);
-          drawHud();
+          // Capture complete → leave fullscreen AR and open private vault
+          returnToPrivateVault(r.balance, r.reward, toast);
         };
       });
     }
 
-    setInterval(() => {
+    document.getElementById('ar-close').onclick = () => {
+      stopAr();
+      status.textContent = 'AR closed';
+    };
+
+    arHudTimer = setInterval(() => {
       if (arStream) drawHud();
     }, 400);
 
@@ -396,24 +457,16 @@ export function renderFieldUI(toast) {
       (pos) => {
         lastLat = pos.coords.latitude;
         lastLon = pos.coords.longitude;
-        gpsBadge.textContent = `±${formatImperial(pos.coords.accuracy || 0)}`;
+        if (gpsBadge) gpsBadge.textContent = `±${formatImperial(pos.coords.accuracy || 0)}`;
         lastDrops = scanNearby(lastLat, lastLon);
         drawHud();
         paintList(lastLat, lastLon, lastDrops);
       },
       () => {
-        gpsBadge.textContent = 'GPS denied';
+        if (gpsBadge) gpsBadge.textContent = 'GPS denied';
         toast('Allow location for AR distances');
       },
       { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 }
     );
-  };
-
-  document.getElementById('field-stop').onclick = () => {
-    stopAr();
-    arRoot.hidden = true;
-    arRoot.innerHTML = '';
-    stopBtn.hidden = true;
-    status.textContent = 'AR stopped';
   };
 }
