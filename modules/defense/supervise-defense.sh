@@ -12,6 +12,9 @@ fi
 
 echo "[$(date -Iseconds)] supervise-defense interval=${INTERVAL}s" | tee -a "$LOG"
 while true; do
+  # Rotate logs if needed (cheap check)
+  bash "$ROOT/modules/defense/rotate-logs.sh" >/dev/null 2>&1 || true
+
   bash "$ROOT/modules/defense/integrity-pulse.sh" || true
   sleep "$INTERVAL"
 done
