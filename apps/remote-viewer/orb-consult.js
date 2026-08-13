@@ -45,9 +45,7 @@ const LOCAL_KNOWLEDGE = [
 
 function orbFormat(body, source) {
   const lines = [`${ORB_PREFIX}:`, '', body.trim()];
-  if (source) {
-    lines.push('', `Source: ${source}`);
-  }
+  if (source) lines.push('', `Source: ${source}`);
   lines.push('', 'The Sentinel is protecting you. Keys stay on your device.');
   return lines.join('\n');
 }
@@ -72,13 +70,9 @@ async function wikiAnswer(q) {
     const sData = await sRes.json();
     const title = sData && sData[1] && sData[1][0];
     if (!title) return null;
-
     const sumUrl =
-      'https://en.wikipedia.org/api/rest_v1/page/summary/' +
-      encodeURIComponent(title);
-    const sumRes = await fetch(sumUrl, {
-      headers: { Accept: 'application/json' },
-    });
+      'https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title);
+    const sumRes = await fetch(sumUrl, { headers: { Accept: 'application/json' } });
     if (!sumRes.ok) return null;
     const sum = await sumRes.json();
     const extract = (sum.extract || '').trim();
@@ -95,13 +89,10 @@ async function wikiAnswer(q) {
 async function consultOrb(question) {
   const q = (question || '').trim();
   if (!q) return orbFormat('Ask a clear question. Orb answers what it can verify or hold on-device.');
-
   const local = localAnswer(q);
   if (local) return local;
-
   const wiki = await wikiAnswer(q);
   if (wiki) return wiki;
-
   return orbFormat(
     'No solid public reference locked for that yet. Reframe the question more specifically, or ask about Viewer ID, login, Sentinel protection, Gateway, or TRV operations — those are held on-device. Edge AI on your phone can deepen this later without a central vault.'
   );
@@ -115,17 +106,33 @@ function toast(msg) {
   setTimeout(() => t.classList.remove('show'), 2600);
 }
 
-function applySentinelLogo() {
-  document.querySelectorAll('[data-sentinel-logo]').forEach((el) => {
-    if (el.tagName === 'IMG') {
-      el.src = SENTINEL_LOGO_DATA_URL;
-      el.alt = 'Sentinel';
-    }
-  });
+function ensureOrbLogo() {
+  const card = document.querySelector('#orb .card');
+  if (!card) return;
+  let img = document.querySelector('[data-sentinel-logo]');
+  if (!img) {
+    const h2 = card.querySelector('h2');
+    if (!h2) return;
+    const wrap = document.createElement('div');
+    wrap.style.cssText =
+      'display:flex;align-items:center;gap:0.75rem;margin-bottom:0.35rem';
+    img = document.createElement('img');
+    img.setAttribute('data-sentinel-logo', '');
+    img.alt = 'Sentinel';
+    img.width = 48;
+    img.height = 48;
+    img.style.cssText =
+      'width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid #3d5a40;flex-shrink:0;background:#151b24';
+    h2.style.margin = '0';
+    wrap.appendChild(img);
+    wrap.appendChild(h2);
+    card.insertBefore(wrap, card.firstChild);
+  }
+  img.src = SENTINEL_LOGO_DATA_URL;
 }
 
 export function wireOrbConsult() {
-  applySentinelLogo();
+  ensureOrbLogo();
 
   const askBtn = document.getElementById('orb-ask');
   const input = document.getElementById('orb-question');
@@ -142,8 +149,7 @@ export function wireOrbConsult() {
     out.classList.remove('soft-empty');
     out.textContent = 'Orb is looking…';
     try {
-      const answer = await consultOrb(q);
-      out.textContent = answer;
+      out.textContent = await consultOrb(q);
     } catch (e) {
       console.error(e);
       out.textContent = orbFormat('Consult path failed. Stay on-device. Try again.');
