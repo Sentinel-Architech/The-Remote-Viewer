@@ -1,5 +1,30 @@
 # The Remote Viewer (TRV) / The Sentinel
 
+**Solo-built · local-first · zero-custody · optical air-gap systems**
+
+Path B Independent Completion is **open**.  
+Recognition is earned by work on a machine you control — not by invitation and not by payment.  
+Packs remain paid per item.
+
+**Builder guide:** [`docs/public/PATH-B-BUILDER.md`](docs/public/PATH-B-BUILDER.md)
+
+---
+
+## Path B (Independent Completion)
+
+| Path | Count | Notes |
+|------|------:|-------|
+| **Path A** — Personal invitation | **1** | Originator |
+| **Path B** — Independent completion | **0** | Verified finishers only |
+| **Total Founding Sovereign Viewers** | **1** | |
+
+Path B earns Founding Member status + optional Integrity Verifier node.  
+**Packs stay paid.** No free catalog items.
+
+See [`docs/public/PATH-B-FINISHED.md`](docs/public/PATH-B-FINISHED.md) · [`docs/public/PATH-B-SUBMISSION.md`](docs/public/PATH-B-SUBMISSION.md) · locked docs 04 & 17.
+
+---
+
 ## Buy packs (public)
 
 **USDC on Solana · age-encrypted TRVL delivery · zero platform custody**
@@ -15,32 +40,15 @@
 ### Storefront (Pay + QR)
 
 - **In-repo:** [`digital-vending/buy.html`](digital-vending/buy.html)
-- **Preview in browser:** [htmlpreview — buy.html](https://htmlpreview.github.io/?https://github.com/Sentinel-Archetecht/The-Remote-Viewer/blob/TheRemoteViewer/digital-vending/buy.html)
-- **jsDelivr:** [buy.html via CDN](https://cdn.jsdelivr.net/gh/Sentinel-Archetecht/The-Remote-Viewer@TheRemoteViewer/digital-vending/buy.html)
+- **Preview:** [htmlpreview — buy.html](https://htmlpreview.github.io/?https://github.com/Sentinel-Archetecht/The-Remote-Viewer/blob/TheRemoteViewer/digital-vending/buy.html)
 
 ### After you pay
 
 1. Create an age identity on **your** device (`age-keygen`). Keep the secret.
 2. Send the seller only: your **`age1…` public key** + **tx signature**.
-3. Receive a `.trvl` file → decrypt locally:
-   ```bash
-   cat sale.trvl | bash buyer-receive.sh /path/to/your-identity.txt
-   ```
+3. Receive a `.trvl` file → decrypt locally.
 
 Protocol: [`digital-vending/PROTOCOL.md`](digital-vending/PROTOCOL.md) · Buyer steps: [`docs/public/BUY.md`](docs/public/BUY.md)
-
----
-
-## Viewer count
-
-| Path | Count | Notes |
-|------|------:|-------|
-| **Path A** — Personal invitation | **1** | Originator |
-| **Path B** — Independent completion | **0** | Verified finishers only |
-| **Total Founding Sovereign Viewers** | **1** | |
-
-Path B earns Founding Member status + optional Integrity Verifier node. **Packs stay paid per item.**  
-See [`docs/locked/04-Founding-Sovereign-Viewer.md`](docs/locked/04-Founding-Sovereign-Viewer.md) and [`docs/locked/17-Validator-Node-First-Role.md`](docs/locked/17-Validator-Node-First-Role.md).
 
 ---
 
@@ -68,12 +76,15 @@ bash scripts/chat.sh                       # local assistant (after llama.cpp + 
 | Optical air-gap | **PROVEN** | age → Soliton LT → peel → decrypt |
 | Digital vending (Path B) | **PROVEN** | Solana USDC memo → TRVL deliver on-device |
 | Integrity Verifier (first node role) | **PROVEN** | contribution + sales.log attestation |
+| Path B recognition loop | **OPERATIONAL** | collect → attest → verify → issue → install |
+| Community Pool gross visibility | **OPERATIONAL** | public Solana memo volume; no custody |
+| Validated-node count + tips | **OPERATIONAL** | per identity path; no central registry |
 | Defense / Hydra multi-head | **PROVEN** | seal + verifier + quarantine deliver gate |
 | MoE Stage B (dense) | **PROVEN** | TinyLlama + Qwen2.5-Coder via llama.cpp |
 | MoE Stage C (sparse) | **PROVEN** | TinyMixtral-4x248M-MoE load + generate |
 | Contribution ledger | **PROVEN** | offline JSONL hash-chain + verifier weight |
 | Local operator UI | **PROVEN** | `http://127.0.0.1:8765/` — copy-to-Termux console |
-| Mobile client UI | **DEMONSTRATED** | Hub / Viewer Profile / Shop (TRV credits + Solana + NFT + Aurora) / Talk / Field claim on-device 2026-08-13 |
+| Mobile client UI | **DEMONSTRATED** | Hub / Viewer Profile / Shop / Talk on-device 2026-08-13 |
 | Public buy page | **OPEN** | `digital-vending/buy.html` + QR |
 | Local RAG | **SCAFFOLD** | BM25 + TF-IDF + session memory + chat |
 | Chain settlement | **NOT STARTED** | |
@@ -82,6 +93,17 @@ bash scripts/chat.sh                       # local assistant (after llama.cpp + 
 
 ## 60-second paths
 
+### Path B (Independent Completion)
+
+```bash
+bash modules/path-b-recognition/collect-proof.sh
+bash modules/path-b-recognition/make-attestation.sh
+# Transfer attestation → originator → receive founding-member-*.json
+bash modules/path-b-recognition/install-founding.sh /path/to/founding-member-*.json
+```
+
+Full guide: [`docs/public/PATH-B-BUILDER.md`](docs/public/PATH-B-BUILDER.md)
+
 ### Phone (Termux)
 
 ```bash
@@ -89,17 +111,6 @@ pkg update && pkg install git python -y
 git clone -b TheRemoteViewer https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
 cd The-Remote-Viewer
 bash modules/defense/integrity-pulse.sh
-bash modules/rag/seed-trv-docs.sh
-bash scripts/chat.sh
-```
-
-### Integrity Verifier (Path B option)
-
-```bash
-bash modules/integrity-verifier/verify-contribution.sh
-bash modules/integrity-verifier/verify-sales.sh
-bash modules/integrity-verifier/attest.sh
-bash modules/integrity-verifier/record-weight.sh pass "note"
 ```
 
 ### Operator UI
@@ -109,21 +120,29 @@ bash apps/ui/serve-ui.sh
 # http://127.0.0.1:8765/
 ```
 
+### Pool / Nodes
+
+```bash
+bash modules/pool/gross.sh
+bash modules/nodes/count.sh
+```
+
 ---
 
 ## Layout
 
 ```text
-digital-vending/buy.html     Public storefront (Pay + QR)
-digital-vending/PROTOCOL.md  Vending machine protocol
-docs/public/BUY.md           Buyer-facing steps
-optical-airgap/              PROVEN transport
-modules/defense/             Hydra multi-head (PROVEN)
-modules/integrity-verifier/  First validator role (PROVEN)
-apps/ui/                     Local operator console (PROVEN)
-apps/mobile/                 Mobile client (Hub/Profile/Shop/Talk demonstrated)
-docs/REALITY.md              Status authority
-docs/TEST.md                 How others verify
+docs/public/PATH-B-BUILDER.md   Independent Completion guide
+docs/public/PATH-B-FINISHED.md  FINISHED checklist
+modules/path-b-recognition/     Recognition package
+modules/pool/                   Community Pool gross visibility
+modules/nodes/                  Validated-node count + tips
+digital-vending/buy.html        Public storefront (Pay + QR)
+optical-airgap/                 PROVEN transport
+modules/defense/                Hydra multi-head (PROVEN)
+modules/integrity-verifier/     First validator role (PROVEN)
+apps/ui/                        Local operator console (PROVEN)
+docs/REALITY.md                 Status authority
 ```
 
 ---
@@ -133,6 +152,7 @@ docs/TEST.md                 How others verify
 - No required cloud login  
 - No public hosted EI endpoint  
 - No live multi-operator DePIN  
+- No free packs via Path B  
 - Keys, GGUFs, personal notes, and ledger events stay on **your** device  
 
 ---
