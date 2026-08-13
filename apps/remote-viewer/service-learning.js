@@ -8,7 +8,7 @@ const INSTALL_KEY = 'rv-installed-at';
 
 export function isLearningEnabled() {
   const v = localStorage.getItem(LEARN_KEY);
-  if (v === null) return true; // install default: enabled
+  if (v === null) return true;
   return v === '1';
 }
 
@@ -20,7 +20,6 @@ export function markInstall() {
   if (!localStorage.getItem(INSTALL_KEY)) {
     localStorage.setItem(INSTALL_KEY, new Date().toISOString());
   }
-  // First install path: learning on
   if (localStorage.getItem(LEARN_KEY) === null) {
     setLearningEnabled(true);
   }
@@ -40,20 +39,18 @@ export function recordPreference(key, value) {
 export function initServiceLearningUI() {
   markInstall();
 
-  // Welcome notice line
   const card = document.querySelector('.welcome-card');
   if (card && !document.getElementById('service-learn-note')) {
     const p = document.createElement('p');
     p.id = 'service-learn-note';
     p.style.cssText = 'font-size:0.85rem;color:var(--soft);margin-top:0.75rem';
     p.textContent =
-      'Installing enables the Service to learn and grow so it can help you — under the guidelines of the Service. You can change this anytime under You.';
+      'Installing enables the Service to learn and grow so it can help you — under the guidelines of the Service. You can change this anytime under Viewer Profile.';
     const actions = card.querySelector('.actions');
     if (actions) card.insertBefore(p, actions);
     else card.appendChild(p);
   }
 
-  // You screen control
   const you = document.getElementById('you');
   if (you && !document.getElementById('service-learn-card')) {
     const div = document.createElement('div');
@@ -66,38 +63,36 @@ export function initServiceLearningUI() {
         <input type="checkbox" id="service-learn-toggle" style="width:auto;margin:0">
         <span>Allow the Service to learn for my benefit</span>
       </label>
-      <p class="soft" id="service-learn-status" style="margin-top:0.5rem"></p>
+      <p class="soft" id="service-learn-status" style="margin-top:0.5rem;font-size:0.8rem"></p>
     `;
-    you.insertBefore(div, you.firstChild);
+    const firstCard = you.querySelector('.card');
+    if (firstCard && firstCard.nextSibling) {
+      you.insertBefore(div, firstCard.nextSibling);
+    } else {
+      you.appendChild(div);
+    }
 
     const toggle = document.getElementById('service-learn-toggle');
     const status = document.getElementById('service-learn-status');
-    const sync = () => {
-      const on = isLearningEnabled();
-      toggle.checked = on;
-      status.textContent = on
-        ? 'On — the Service may adapt help to you under its guidelines.'
-        : 'Off — help stays generic; no personal learning.';
-    };
-    toggle.addEventListener('change', () => {
-      setLearningEnabled(toggle.checked);
+    if (toggle) {
+      toggle.checked = isLearningEnabled();
+      const sync = () => {
+        status.textContent = toggle.checked
+          ? 'On — the Service may adapt help to you under its guidelines.'
+          : 'Off — generic only; no personal learning.';
+      };
       sync();
-      const t = document.getElementById('toast');
-      if (t) {
-        t.textContent = toggle.checked ? 'Service learning on' : 'Service learning off';
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2200);
-      }
-    });
-    sync();
-  }
-
-  // Soft preference: display name changes
-  const name = document.getElementById('prof-name');
-  if (name) {
-    name.addEventListener('change', () => {
-      if (name.value.trim()) recordPreference('displayName', name.value.trim());
-    });
+      toggle.onchange = () => {
+        setLearningEnabled(toggle.checked);
+        sync();
+        const t = document.getElementById('toast');
+        if (t) {
+          t.textContent = toggle.checked ? 'Service learning on' : 'Service learning off';
+          t.classList.add('show');
+          setTimeout(() => t.classList.remove('show'), 2600);
+        }
+      };
+    }
   }
 }
 
