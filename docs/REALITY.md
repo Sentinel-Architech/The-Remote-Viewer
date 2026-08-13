@@ -1,6 +1,6 @@
 # Concepts → Reality Status
 
-Last updated: **2026-08-13** (mobile UI Hub / Viewer Profile / Shop / Talk / NFT mint / Aurora skins demonstrated on-device + prior Hydra multi-head + local UI + Integrity Verifier + Path B vending)
+Last updated: **2026-08-13** (Path B recognition loop + pool gross + validated-node counts + optional tips + prior mobile UI / Hydra / vending / verifier)
 
 **Rule:** No marketing. **PROVEN** = ran under user control on device. Scripts in git alone are not PROVEN.
 
@@ -31,8 +31,20 @@ Last updated: **2026-08-13** (mobile UI Hub / Viewer Profile / Shop / Talk / NFT
 | Integrity Verifier (contribution + sales) | **PROVEN** | overall_ok=1 attestation on-device 2026-08-07 |
 | Contribution weight from verifier | **PROVEN** | record-weight → events.jsonl |
 | Path B Founding + node option (design) | **LOCKED** | `docs/locked/04` + `17` |
+| Path B FINISHED checklist (public) | **PUBLISHED** | `docs/public/PATH-B-FINISHED.md` |
+| Path B recognition package | **OPERATIONAL** | collect-proof → make-attestation → verify-submission → issue-founding → install-founding |
+| Path B builder guide | **PUBLISHED** | `docs/public/PATH-B-BUILDER.md` |
 | Public buy page (`buy.html` + QR) | **OPEN** | static storefront |
 | Mobile Shop (TRV credits / Solana / NFT mint / Aurora Borealis) | **DEMONSTRATED** | Credits balance, wallet connect, tiered mint, skin redeem/wear, field claim AR on-device 2026-08-13 |
+
+## Transparency surfaces (requested)
+
+| Concept | Status |
+|---------|--------|
+| Local console UI (Path B / Pool / Nodes cards) | **PROVEN** | `apps/ui` — copy-to-Termux; 127.0.0.1 only |
+| Community Pool gross visibility | **OPERATIONAL** | `modules/pool/gross.sh` — public Solana memo volume; no custody; net not protocol-defined |
+| Validated-node count (per identity path) | **OPERATIONAL** | `modules/nodes/count.sh` |
+| Optional public tip publish + collect | **OPERATIONAL** | `modules/nodes/publish-tip.sh` + `collect-tips.sh` — no central registry |
 
 ## RAG & chat
 
@@ -51,10 +63,18 @@ Last updated: **2026-08-13** (mobile UI Hub / Viewer Profile / Shop / Talk / NFT
 |---------|--------|
 | Defense / Hydra multi-head | **PROVEN** | seal + contribution + sales verifier + quarantine gate; PASS on GrapheneOS/Termux 2026-08-07 |
 | Contribution ledger | **PROVEN** | verify OK + verifier weight on reference node |
-| Local operator UI `127.0.0.1` | **PROVEN** | `apps/ui` console — copy-to-Termux commands; Hydra/vending/verifier heads; no shell exec in browser |
+| Local operator UI `127.0.0.1` | **PROVEN** | `apps/ui` console — copy-to-Termux commands; Hydra/vending/verifier/Path B/Pool/Nodes heads; no shell exec in browser |
 | Mobile client UI (Hub / Profile / Shop / Talk) | **DEMONSTRATED** | Full navigation, quick post, private message, linked social, wallet, NFT, Aurora skins, field claim on-device 2026-08-13 |
 | Termux reminders | **SCAFFOLD** |
 | Chain settlement / live DePIN | **NOT STARTED** |
+
+## Current counts (honest)
+
+| Metric | Value |
+|--------|------:|
+| Path B Founding Members (external) | 0 |
+| Validated nodes (distinct identity paths, observed) | originator-scale |
+| Community Pool gross | public Solana memo volume (re-derive via `modules/pool/gross.sh`) |
 
 ## Reference environment
 
