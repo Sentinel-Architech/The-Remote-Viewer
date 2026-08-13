@@ -1,6 +1,6 @@
 # Validated Node Counts
 
-**Status:** Defined — 2026-08-13  
+**Status:** Defined + tip collection ready — 2026-08-13  
 **Principle:** Counts are derived from independently verifiable attestations. No central registry.
 
 ## Definition
@@ -12,17 +12,24 @@ A validated node (first role = Integrity Verifier) is counted once per **identit
 
 Multiple machines under the same identity path do not increase the count (anti-Sybil rule locked in doc 17).
 
-## How to observe
+## How to observe (local)
 
 ```bash
 bash modules/nodes/count.sh
 ```
 
-This reports the local identity path status and a network view based on currently observed public tips (currently originator-scale only).
+## Optional public tip flow
 
-## Public aggregation (future, optional)
+```bash
+# Operator with Founding + IV ok
+bash modules/nodes/publish-tip.sh
+# Transfer tip-*.json (file or optical) to other Viewers
 
-Operators may publish signed attestation tips via optical or file transfer. Any Viewer can collect those tips and recompute the number of distinct identity paths. The protocol never requires a central service for the count to be valid.
+# Any Viewer
+bash modules/nodes/collect-tips.sh /path/to/received-tips
+```
+
+The resulting count is the number of distinct identity paths represented by the tips that Viewer has actually received. Anyone can recompute it from the same set of tips.
 
 ## Explicit non-claims
 
