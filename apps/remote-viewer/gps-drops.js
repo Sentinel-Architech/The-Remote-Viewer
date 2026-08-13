@@ -1,9 +1,10 @@
 /**
  * GPS + camera AR field drops.
- * Fullscreen animated TRV tokens + live distance.
+ * Fullscreen animated TRV tokens + live distance + haptics.
  * On claim → close AR and return to private credits vault (Viewer Profile / Shop).
  */
 import { getCredits } from './shop.js';
+import { haptic, hapticStop } from './haptics.js';
 
 const CLAIMED_KEY = 'rv-gps-claimed';
 const CREDITS_KEY = 'rv-trv-credits';
@@ -125,6 +126,8 @@ let arStream = null;
 let watchId = null;
 let heading = null;
 let arHudTimer = null;
+let wasNear = false;
+let lastNearPulse = 0;
 
 function stopAr() {
   if (watchId != null) {
@@ -144,6 +147,8 @@ function stopAr() {
   const overlay = document.getElementById('ar-fullscreen');
   if (overlay) overlay.remove();
   document.body.style.overflow = '';
+  wasNear = false;
+  hapticStop();
 }
 
 function onOrient(e) {
@@ -154,9 +159,9 @@ function onOrient(e) {
 
 /** After claim: leave AR and open private credits vault on Viewer Profile */
 function returnToPrivateVault(balance, reward, toast) {
+  haptic('claimSuccess');
   stopAr();
 
-  // Switch to Viewer Profile tab
   document.querySelectorAll('.tabs button').forEach((b) => {
     b.classList.toggle('on', b.getAttribute('data-screen') === 'you');
   });
@@ -164,17 +169,20 @@ function returnToPrivateVault(balance, reward, toast) {
     s.classList.toggle('on', s.id === 'you');
   });
 
-  // Refresh visible balance
   const bal = document.getElementById('trv-balance');
   if (bal) bal.textContent = String(balance);
 
-  // Scroll shop / vault into view
   const vault =
     document.getElementById('shop-in-profile') ||
     document.getElementById('trv-balance') ||
     document.getElementById('viewer-profile-card');
   if (vault && vault.scrollIntoView) {
-    setTimeout(() => vault.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+    setTimeout(() => {
+      vault.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      haptic('vault');
+    }, 80);
+  } else {
+    haptic('vault');
   }
 
   const status = document.getElementById('field-status');
@@ -276,7 +284,7 @@ export function renderFieldUI(toast) {
 
   host.innerHTML = `
     <h2>Field claim</h2>
-    <p class="soft">Fullscreen AR · animated TRV tokens · live distance. Claim within ~${CLAIM_RADIUS_FT} ft → private vault.</p>
+    <p class="soft">Fullscreen AR · animated TRV tokens · live distance · haptics. Claim within ~${CLAIM_RADIUS_FT} ft → private vault.</p>
     <p class="soft" id="field-status">Camera & location off</p>
     <div class="actions">
       <button type="button" class="btn primary" id="field-ar">Open AR</button>
@@ -312,9 +320,16 @@ export function renderFieldUI(toast) {
         const drop = drops.find((x) => x.id === btn.getAttribute('data-claim'));
         const r = claimDrop(drop, lat, lon);
         if (!r.ok) {
-          if (r.reason === 'far') toast(`Still ${formatImperial(r.dist)} away`);
-          else if (r.reason === 'claimed') toast('Already claimed');
-          else toast('Could not claim');
+          if (r.reason === 'far') {
+            haptic('claimFail');
+            toast(`Still ${formatImperial(r.dist)} away`);
+          } else if (r.reason === 'claimed') {
+            haptic('alreadyClaimed');
+            toast('Already claimed');
+          } else {
+            haptic('claimFail');
+            toast('Could not claim');
+          }
           return;
         }
         returnToPrivateVault(r.balance, r.reward, toast);
@@ -325,6 +340,7 @@ export function renderFieldUI(toast) {
 
   document.getElementById('field-scan').onclick = () => {
     if (!navigator.geolocation) return toast('GPS not available');
+    haptic('tick');
     status.textContent = 'Locating…';
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -365,6 +381,7 @@ export function renderFieldUI(toast) {
       return;
     }
 
+    haptic('arOpen');
     document.body.style.overflow = 'hidden';
     const overlay = document.createElement('div');
     overlay.id = 'ar-fullscreen';
@@ -395,7 +412,7 @@ export function renderFieldUI(toast) {
       } catch {}
     }
 
-    status.textContent = 'AR fullscreen · animated tokens';
+    status.textContent = 'AR fullscreen · haptics on';
     const hud = document.getElementById('ar-hud');
     const gpsBadge = document.getElementById('ar-gps-badge');
     const countBadge = document.getElementById('ar-count-badge');
@@ -408,6 +425,21 @@ export function renderFieldUI(toast) {
       if (!hud || lastLat == null) return;
       const drops = lastDrops.slice(0, 6);
       if (countBadge) countBadge.textContent = drops.length + ' drops';
+
+      const anyNear = drops.some((d) => d.dist <= CLAIM_RADIUS_M);
+      if (anyNear && !wasNear) {
+        haptic('near');
+        wasNear = true;
+      } else if (!anyNear) {
+        wasNear = false;
+      } else if (anyNear) {
+        const now = Date.now();
+        if (now - lastNearPulse > 2200) {
+          haptic('nearPulse');
+          lastNearPulse = now;
+        }
+      }
+
       hud.innerHTML = '';
       drops.forEach((d) => {
         const pos = placePin(d.bearing, d.dist);
@@ -434,17 +466,22 @@ export function renderFieldUI(toast) {
           const drop = lastDrops.find((x) => x.id === btn.getAttribute('data-ar-claim'));
           const r = claimDrop(drop, lastLat, lastLon);
           if (!r.ok) {
-            if (r.reason === 'far') toast(`Still ${formatImperial(r.dist)}`);
-            else toast('Could not claim');
+            if (r.reason === 'far') {
+              haptic('claimFail');
+              toast(`Still ${formatImperial(r.dist)}`);
+            } else {
+              haptic('claimFail');
+              toast('Could not claim');
+            }
             return;
           }
-          // Capture complete → leave fullscreen AR and open private vault
           returnToPrivateVault(r.balance, r.reward, toast);
         };
       });
     }
 
     document.getElementById('ar-close').onclick = () => {
+      haptic('arClose');
       stopAr();
       status.textContent = 'AR closed';
     };
