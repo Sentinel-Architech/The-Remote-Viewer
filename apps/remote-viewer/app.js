@@ -1,6 +1,7 @@
 /**
  * The Remote Viewer — seamless social client
  * Restored core; avatar upload lives in avatar-boot.js + avatar.js
+ * Welcome voice lives in welcome.js (protective male Sentinel)
  */
 import {
   generateSecretKey,
@@ -590,17 +591,7 @@ $('dm-inbox')?.addEventListener('click', async () => {
   }
 });
 
-$('hear-welcome')?.addEventListener('click', () => {
-  try {
-    speechSynthesis.speak(
-      new SpeechSynthesisUtterance(
-        'Welcome to The Remote Viewer. Find each other. Share what you choose.'
-      )
-    );
-  } catch {
-    toast('Speech not available on this device');
-  }
-});
+// Hear welcome handled by welcome.js (protective male Sentinel voice)
 
 refreshYou();
 loadFeed();
