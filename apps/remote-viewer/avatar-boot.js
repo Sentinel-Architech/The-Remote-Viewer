@@ -1,10 +1,10 @@
 /**
- * Avatar boot — wires upload UI and publishes picture with profile when possible.
+ * Avatar boot + protective welcome voice.
  */
 import { wireAvatarControls, loadAvatar, renderAvatar } from './avatar.js';
+import { wireWelcome } from './welcome.js';
 import {
   finalizeEvent,
-  getPublicKey,
   nip19,
   SimplePool,
 } from 'https://esm.sh/nostr-tools@2.10.4';
@@ -105,6 +105,7 @@ async function publishWithPicture() {
 
 wireAvatarControls(toast);
 renderAvatar();
+wireWelcome(toast);
 
 document.querySelectorAll('.tabs button').forEach((btn) => {
   btn.addEventListener('click', () => {
@@ -118,7 +119,6 @@ if (saveBtn && !saveBtn.dataset.avatarPub) {
   saveBtn.addEventListener(
     'click',
     () => {
-      // After app.js save runs, also push picture-aware profile
       setTimeout(async () => {
         if (!loadAvatar()) return;
         const ok = await publishWithPicture();
