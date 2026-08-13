@@ -1,6 +1,6 @@
 /**
  * Shop near top of Viewer Profile.
- * Real Solana checkout for TRV credits + Aurora + lock.
+ * Real Solana checkout for TRV credits + Aurora + lock + GPS field.
  */
 import {
   becomeValidated,
@@ -9,6 +9,7 @@ import {
   grantCreditsFromPayment,
 } from './shop.js';
 import { renderLockUI } from './lock.js';
+import { renderFieldUI } from './gps-drops.js';
 import {
   Connection,
   PublicKey,
@@ -258,6 +259,7 @@ function ensureShopUI() {
       if (btn.dataset.screen === 'you') {
         renderShopUI(toastFn);
         renderLockUI(toastFn);
+        renderFieldUI(toastFn);
         renderWalletRow();
       }
     };
@@ -289,6 +291,7 @@ function ensureShopUI() {
   restoreSkin();
   renderShopUI(() => {});
   renderLockUI(() => {});
+  renderFieldUI(() => {});
   renderWalletRow();
 }
 
