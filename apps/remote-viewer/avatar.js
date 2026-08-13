@@ -1,6 +1,5 @@
 /**
  * Custom Viewer avatar — device-local, compressed JPEG.
- * Stored in localStorage; optional picture field on profile publish.
  */
 
 const AVATAR_KEY = 'rv-avatar';
@@ -25,24 +24,27 @@ export function renderAvatar() {
   if (url) {
     img.src = url;
     img.hidden = false;
+    img.style.display = 'block';
     ph.hidden = true;
+    ph.style.display = 'none';
     if (rm) rm.hidden = false;
   } else {
     img.removeAttribute('src');
     img.hidden = true;
+    img.style.display = 'none';
     ph.hidden = false;
+    ph.style.display = 'flex';
     if (rm) rm.hidden = true;
   }
 }
 
-/** Resize + JPEG compress for localStorage / profile events */
 export function compressImageFile(file) {
   return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
       try {
-        let { width, height } = img;
+        let { width, height } = image;
         const max = AVATAR_MAX_SIDE;
         if (width > max || height > max) {
           if (width >= height) {
@@ -57,20 +59,20 @@ export function compressImageFile(file) {
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
+        ctx.drawImage(image, 0, 0, width, height);
         const dataUrl = canvas.toDataURL('image/jpeg', AVATAR_QUALITY);
-        URL.revokeObjectURL(url);
+        URL.revokeObjectURL(objectUrl);
         resolve(dataUrl);
       } catch (e) {
-        URL.revokeObjectURL(url);
+        URL.revokeObjectURL(objectUrl);
         reject(e);
       }
     };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
       reject(new Error('image'));
     };
-    img.src = url;
+    image.src = objectUrl;
   });
 }
 
