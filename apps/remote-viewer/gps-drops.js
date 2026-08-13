@@ -1,6 +1,6 @@
 /**
  * GPS + camera AR field drops.
- * Default rear camera with live distance HUD (US customary units).
+ * Animated TRV token markers + live distance HUD (US customary units).
  * Claim → Shop TRV credits.
  */
 import { getCredits } from './shop.js';
@@ -153,15 +153,48 @@ function ensureArStyles() {
     .ar-stage{position:relative;width:100%;aspect-ratio:3/4;max-height:70vh;border-radius:14px;overflow:hidden;background:#000;margin-top:0.65rem}
     .ar-stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
     .ar-hud{position:absolute;inset:0;pointer-events:none;z-index:2}
-    .ar-pin{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;min-width:7.5rem;
-      padding:0.45rem 0.55rem;border-radius:12px;border:1px solid rgba(110,182,255,0.55);
-      background:rgba(6,12,20,0.78);color:#f0f4fa;font-size:0.78rem;text-align:center;backdrop-filter:blur(6px)}
-    .ar-pin.near{border-color:#5dffc0;box-shadow:0 0 12px rgba(93,255,192,0.35)}
-    .ar-pin strong{display:block;font-size:0.88rem}
-    .ar-pin .dist{color:#9aabbf;font-size:0.72rem;margin:0.15rem 0}
-    .ar-pin button{margin-top:0.25rem;pointer-events:auto}
+    .ar-token{
+      position:absolute;transform:translate(-50%,-50%);pointer-events:auto;
+      display:flex;flex-direction:column;align-items:center;gap:0.25rem;
+      text-align:center;color:#f0f4fa;font-size:0.75rem;
+    }
+    .ar-token-coin{
+      width:3.1rem;height:3.1rem;border-radius:50%;
+      background:radial-gradient(circle at 35% 30%, #7dffd4 0%, #2ee6c5 35%, #0a7a6a 75%, #043d36 100%);
+      border:2px solid rgba(126,255,212,0.85);
+      box-shadow:0 0 14px rgba(46,230,197,0.45), inset 0 0 10px rgba(255,255,255,0.18);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:700;font-size:0.72rem;letter-spacing:0.02em;color:#041a16;
+      animation:ar-spin 4.5s linear infinite, ar-float 2.4s ease-in-out infinite;
+    }
+    .ar-token.near .ar-token-coin{
+      border-color:#b8ffe8;
+      box-shadow:0 0 22px rgba(93,255,192,0.7), inset 0 0 12px rgba(255,255,255,0.25);
+      animation:ar-spin 2.8s linear infinite, ar-pulse 1.1s ease-in-out infinite;
+    }
+    .ar-token-label{
+      min-width:6.5rem;padding:0.28rem 0.45rem;border-radius:10px;
+      background:rgba(6,12,20,0.82);border:1px solid rgba(110,182,255,0.4);
+      backdrop-filter:blur(6px);
+    }
+    .ar-token.near .ar-token-label{border-color:rgba(93,255,192,0.55)}
+    .ar-token-label strong{display:block;font-size:0.82rem}
+    .ar-token-label .dist{color:#9aabbf;font-size:0.7rem;margin-top:0.1rem}
+    .ar-token button{margin-top:0.15rem;pointer-events:auto}
     .ar-top{position:absolute;top:0.5rem;left:0.5rem;right:0.5rem;z-index:3;display:flex;justify-content:space-between;gap:0.5rem;pointer-events:none}
     .ar-badge{background:rgba(6,12,20,0.75);border:1px solid #243041;border-radius:999px;padding:0.3rem 0.65rem;font-size:0.72rem;color:#9aabbf}
+    @keyframes ar-spin{
+      0%{transform:rotateY(0deg)}
+      100%{transform:rotateY(360deg)}
+    }
+    @keyframes ar-float{
+      0%,100%{transform:translateY(0)}
+      50%{transform:translateY(-6px)}
+    }
+    @keyframes ar-pulse{
+      0%,100%{transform:scale(1);filter:brightness(1)}
+      50%{transform:scale(1.08);filter:brightness(1.15)}
+    }
   `;
   document.head.appendChild(st);
 }
@@ -182,7 +215,7 @@ export function renderFieldUI(toast) {
 
   host.innerHTML = `
     <h2>Field claim</h2>
-    <p class="soft">Default camera AR · live distance. Claim within ~${CLAIM_RADIUS_FT} ft → Shop credits.</p>
+    <p class="soft">Animated TRV tokens · live distance. Claim within ~${CLAIM_RADIUS_FT} ft → Shop credits.</p>
     <p class="soft" id="field-status">Camera & location off</p>
     <div class="actions">
       <button type="button" class="btn primary" id="field-ar">Open AR</button>
@@ -303,7 +336,7 @@ export function renderFieldUI(toast) {
       } catch {}
     }
 
-    status.textContent = 'AR on · rear camera';
+    status.textContent = 'AR on · animated tokens';
     const hud = document.getElementById('ar-hud');
     const gpsBadge = document.getElementById('ar-gps-badge');
     const countBadge = document.getElementById('ar-count-badge');
@@ -321,17 +354,20 @@ export function renderFieldUI(toast) {
         const pos = placePin(d.bearing, d.dist);
         if (!pos) return;
         const near = d.dist <= CLAIM_RADIUS_M;
-        const pin = document.createElement('div');
-        pin.className = 'ar-pin' + (near ? ' near' : '');
-        pin.style.left = pos.x + '%';
-        pin.style.top = pos.y + '%';
-        pin.innerHTML =
+        const token = document.createElement('div');
+        token.className = 'ar-token' + (near ? ' near' : '');
+        token.style.left = pos.x + '%';
+        token.style.top = pos.y + '%';
+        token.innerHTML =
+          `<div class="ar-token-coin">TRV</div>` +
+          `<div class="ar-token-label">` +
           `<strong>${d.reward} TRV</strong>` +
           `<div class="dist">${formatImperial(d.dist)} away</div>` +
           (near
-            ? `<button type="button" class="btn primary" data-ar-claim="${d.id}" style="font-size:0.75rem;padding:0.35rem 0.65rem">Claim</button>`
-            : `<div class="dist">Get closer</div>`);
-        hud.appendChild(pin);
+            ? `<button type="button" class="btn primary" data-ar-claim="${d.id}" style="font-size:0.72rem;padding:0.3rem 0.55rem;margin-top:0.2rem">Claim</button>`
+            : `<div class="dist">Get closer</div>`) +
+          `</div>`;
+        hud.appendChild(token);
       });
       hud.querySelectorAll('[data-ar-claim]').forEach((btn) => {
         btn.onclick = (ev) => {
