@@ -62,6 +62,7 @@
     .card.network { border-color: #5a4a20; }
     .card.pathb { border-color: rgba(46,230,197,0.35); }
     .card.pool { border-color: rgba(107,207,107,0.35); }
+    .card.nodes { border-color: rgba(232,184,77,0.4); }
     .card h2 { margin: 0 0 0.45rem; font-size: 0.95rem; }
     .card p { margin: 0.3rem 0; color: var(--muted); font-size: 0.88rem; }
     .card ul { margin: 0.4rem 0 0; padding-left: 1.1rem; color: var(--muted); font-size: 0.88rem; }
@@ -156,6 +157,13 @@
             <button type="button" class="primary" data-title="Pool gross" data-cmd="bash modules/pool/gross.sh">Gross</button>
           </div>
         </section>
+        <section class="card nodes">
+          <h2>Validated Nodes</h2>
+          <p>Per identity path · no central registry · anti-Sybil</p>
+          <div class="actions">
+            <button type="button" class="primary" data-title="Node count" data-cmd="bash modules/nodes/count.sh">Count</button>
+          </div>
+        </section>
         <section class="card">
           <h2>Optical Air-Gap</h2>
           <p>age → Soliton LT → peel → decrypt</p>
@@ -243,6 +251,7 @@
           <li>Identity on Home is a temporary local anchor only (Destroy = Restart still applies).</li>
           <li>Path B status via <code>modules/path-b-recognition/status.sh</code>.</li>
           <li>Pool gross via <code>modules/pool/gross.sh</code> (public Solana data only).</li>
+          <li>Validated nodes via <code>modules/nodes/count.sh</code> (per identity path).</li>
           <li><strong>Open The Remote Viewer</strong> launches the public network DApp.</li>
         </ul>
       </section>
