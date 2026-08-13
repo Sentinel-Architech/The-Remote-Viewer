@@ -61,6 +61,7 @@
     }
     .card.network { border-color: #5a4a20; }
     .card.pathb { border-color: rgba(46,230,197,0.35); }
+    .card.pool { border-color: rgba(107,207,107,0.35); }
     .card h2 { margin: 0 0 0.45rem; font-size: 0.95rem; }
     .card p { margin: 0.3rem 0; color: var(--muted); font-size: 0.88rem; }
     .card ul { margin: 0.4rem 0 0; padding-left: 1.1rem; color: var(--muted); font-size: 0.88rem; }
@@ -148,6 +149,13 @@
             <button type="button" data-title="Install Founding Member" data-cmd="bash modules/path-b-recognition/install-founding.sh /path/to/founding-member-*.json">Install founding</button>
           </div>
         </section>
+        <section class="card pool">
+          <h2>Community Pool (Gross)</h2>
+          <p>Public Solana memo volume · no custody · net not protocol-defined</p>
+          <div class="actions">
+            <button type="button" class="primary" data-title="Pool gross" data-cmd="bash modules/pool/gross.sh">Gross</button>
+          </div>
+        </section>
         <section class="card">
           <h2>Optical Air-Gap</h2>
           <p>age → Soliton LT → peel → decrypt</p>
@@ -233,7 +241,8 @@
           <li>This page is <strong>The Sentinel</strong> core on <code>127.0.0.1</code> only.</li>
           <li>Buttons show Termux commands; the page cannot run shell or read keys.</li>
           <li>Identity on Home is a temporary local anchor only (Destroy = Restart still applies).</li>
-          <li>Path B status is checked via <code>modules/path-b-recognition/status.sh</code> (copy command).</li>
+          <li>Path B status via <code>modules/path-b-recognition/status.sh</code>.</li>
+          <li>Pool gross via <code>modules/pool/gross.sh</code> (public Solana data only).</li>
           <li><strong>Open The Remote Viewer</strong> launches the public network DApp.</li>
         </ul>
       </section>
