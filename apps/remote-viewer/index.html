@@ -41,7 +41,7 @@
     }
     .tabs button {
       flex: 1; appearance: none; border: none; background: transparent; color: var(--soft);
-      font: inherit; font-size: 0.82rem; font-weight: 600; padding: 0.65rem 0.3rem;
+      font: inherit; font-size: 0.78rem; font-weight: 600; padding: 0.65rem 0.25rem;
       border-radius: 999px; cursor: pointer;
     }
     .tabs button.on { background: var(--surface2); color: var(--text); }
@@ -119,6 +119,13 @@
       color:var(--text); font-size:0.88rem; font-weight:600;
     }
     .avatar-actions input[type=file] { display:none; }
+    .orb-answer {
+      margin-top: 0.75rem; padding: 0.85rem; border-radius: 12px;
+      background: var(--surface2); border: 1px solid var(--line);
+      white-space: pre-wrap; font-size: 0.9rem; line-height: 1.5;
+      min-height: 4.5rem; color: var(--text);
+    }
+    .orb-answer.soft-empty { color: var(--soft); }
   </style>
 </head>
 <body>
@@ -132,7 +139,8 @@
   <div class="tabs">
     <button type="button" data-screen="talk">Talk</button>
     <button type="button" class="on" data-screen="home">Hub</button>
-    <button type="button" data-screen="you">Viewer Profile</button>
+    <button type="button" data-screen="orb">Sentinel</button>
+    <button type="button" data-screen="you">Profile</button>
   </div>
 
   <main>
@@ -173,6 +181,24 @@
           <button type="button" class="btn" id="dm-inbox">Check messages</button>
         </div>
         <div id="dm-log" class="soft" style="margin-top:0.75rem;white-space:pre-wrap;font-size:0.85rem"></div>
+      </div>
+    </section>
+
+    <section id="orb" class="screen">
+      <div class="card" style="border-color:#3d5a40">
+        <h2>Sentinel Orb</h2>
+        <p class="soft">Ask anything. Orb looks for the answer and replies under protection protocol.</p>
+        <label>Your question
+          <textarea id="orb-question" placeholder="Ask the Sentinel…" style="min-height:96px"></textarea>
+        </label>
+        <div class="actions">
+          <button type="button" class="btn primary" id="orb-ask">Ask Orb</button>
+        </div>
+        <div class="orb-answer soft-empty" id="orb-answer">Answers appear here. According to Orb.</div>
+      </div>
+      <div class="card">
+        <h2>How Orb works</h2>
+        <p class="soft">On-device knowledge first (Viewer ID, login, protection, Gateway, TRV). For open facts it pulls public reference. Every answer states the Sentinel is protecting you. No central vault holds your keys.</p>
       </div>
     </section>
 
@@ -292,6 +318,7 @@
   <div class="toast" id="toast"></div>
   <script type="module" src="./app.js"></script>
   <script type="module" src="./avatar-boot.js"></script>
+  <script type="module" src="./orb-consult.js"></script>
   <script type="module" src="./shop-boot.js"></script>
   <script type="module" src="./service-learning.js"></script>
   <script>

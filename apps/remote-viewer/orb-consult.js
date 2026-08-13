@@ -84,7 +84,6 @@ async function wikiAnswer(q) {
     const sum = await sumRes.json();
     const extract = (sum.extract || '').trim();
     if (!extract) return null;
-    // Keep Orb concise
     const short =
       extract.length > 900 ? extract.slice(0, 880).replace(/\s+\S*$/, '') + '…' : extract;
     return orbFormat(short, sum.content_urls?.desktop?.page || 'Wikipedia');
@@ -130,6 +129,7 @@ export function wireOrbConsult() {
       return;
     }
     askBtn.disabled = true;
+    out.classList.remove('soft-empty');
     out.textContent = 'Orb is looking…';
     try {
       const answer = await consultOrb(q);
@@ -150,3 +150,5 @@ export function wireOrbConsult() {
     }
   });
 }
+
+wireOrbConsult();
