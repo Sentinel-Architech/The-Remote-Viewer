@@ -156,7 +156,7 @@
     </section>
 
     <section id="you" class="screen">
-      <div class="card">
+      <div class="card" id="viewer-profile-card">
         <h2>Viewer Profile</h2>
         <p class="soft" id="you-status">Set up once. You stay in control.</p>
         <div class="id-chip" id="you-id">No identity yet</div>
@@ -167,6 +167,33 @@
           <button type="button" class="btn" id="export-secret">Export secret</button>
           <button type="button" class="btn warn" id="forget-id">Remove from this phone</button>
           <button type="button" class="btn quiet" id="hear-welcome">Hear welcome</button>
+        </div>
+        <div style="margin-top:1rem;border-top:1px solid var(--line);padding-top:0.85rem">
+          <h2 style="margin:0 0 0.35rem">Linked social</h2>
+          <p class="soft">Connect your accounts to this Viewer ID. Published with your profile on the network.</p>
+          <div id="social-links-list"></div>
+          <label>Add network
+            <select id="social-platform">
+              <option value="x">X (Twitter)</option>
+              <option value="instagram">Instagram</option>
+              <option value="youtube">YouTube</option>
+              <option value="tiktok">TikTok</option>
+              <option value="facebook">Facebook</option>
+              <option value="github">GitHub</option>
+              <option value="linkedin">LinkedIn</option>
+              <option value="discord">Discord</option>
+              <option value="telegram">Telegram</option>
+              <option value="reddit">Reddit</option>
+              <option value="website">Website</option>
+            </select>
+          </label>
+          <label>Handle or URL
+            <input id="social-handle" placeholder="@handle or https://…" autocomplete="off">
+          </label>
+          <div class="actions">
+            <button type="button" class="btn primary" id="social-add">Link to TRV</button>
+            <button type="button" class="btn" id="social-publish">Publish links</button>
+          </div>
         </div>
       </div>
 
