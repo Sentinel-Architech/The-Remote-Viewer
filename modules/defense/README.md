@@ -32,6 +32,17 @@ bash modules/defense/verify-incidents.sh
 Same pattern as the contribution ledger. Stays on-device. No mesh export.
 Recorder failure never blocks quarantine (fail-closed priority).
 
+## Log Rotation
+
+```bash
+bash modules/defense/rotate-logs.sh
+```
+
+- `defense.log` — rotates when > 512 KB, keeps last 3 copies
+- `incidents/events.jsonl` — archives to `incidents/archive/TIMESTAMP.jsonl` when > 150 lines or 100 KB, then starts a fresh chain (records a rotation incident)
+
+Called automatically at the start of every `supervise-defense` cycle. Safe to run manually anytime.
+
 ## First-time setup
 
 ```bash
@@ -56,6 +67,7 @@ bash modules/defense/status.sh
 bash modules/defense/check-after-sync.sh
 bash modules/defense/record-incident.sh
 bash modules/defense/verify-incidents.sh
+bash modules/defense/rotate-logs.sh
 
 # optional background (every 300s default)
 nohup bash modules/defense/supervise-defense.sh >>~/.local/share/remote-viewer/defense.log 2>&1 &
