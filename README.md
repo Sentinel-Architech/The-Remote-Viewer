@@ -61,7 +61,7 @@ bash scripts/chat.sh                       # local assistant (after llama.cpp + 
 
 ---
 
-## Status (2026-08-07)
+## Status (2026-08-13)
 
 | Capability | Status | Notes |
 |------------|--------|-------|
@@ -73,6 +73,7 @@ bash scripts/chat.sh                       # local assistant (after llama.cpp + 
 | MoE Stage C (sparse) | **PROVEN** | TinyMixtral-4x248M-MoE load + generate |
 | Contribution ledger | **PROVEN** | offline JSONL hash-chain + verifier weight |
 | Local operator UI | **PROVEN** | `http://127.0.0.1:8765/` — copy-to-Termux console |
+| Mobile client UI | **DEMONSTRATED** | Hub / Viewer Profile / Shop (TRV credits + Solana + NFT + Aurora) / Talk / Field claim on-device 2026-08-13 |
 | Public buy page | **OPEN** | `digital-vending/buy.html` + QR |
 | Local RAG | **SCAFFOLD** | BM25 + TF-IDF + session memory + chat |
 | Chain settlement | **NOT STARTED** | |
@@ -120,6 +121,7 @@ optical-airgap/              PROVEN transport
 modules/defense/             Hydra multi-head (PROVEN)
 modules/integrity-verifier/  First validator role (PROVEN)
 apps/ui/                     Local operator console (PROVEN)
+apps/mobile/                 Mobile client (Hub/Profile/Shop/Talk demonstrated)
 docs/REALITY.md              Status authority
 docs/TEST.md                 How others verify
 ```
