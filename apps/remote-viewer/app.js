@@ -16,12 +16,27 @@ const RELAYS = 'rv-n3-relays';
 const FOLLOWS = 'rv-n4-following';
 const DRAFTS = 'rv-n4-drafts';
 const PROFILE = 'rv-profile';
+const SOCIAL_KEY = 'rv-social-links';
 const DEFAULT_PATHS = [
   'wss://relay.damus.io',
   'wss://nos.lol',
   'wss://relay.nostr.band',
 ];
 const APP_URL = 'https://sentinel-archetecht.github.io/The-Remote-Viewer/';
+
+const SOCIAL_META = {
+  x: { label: 'X', base: 'https://x.com/' },
+  instagram: { label: 'Instagram', base: 'https://instagram.com/' },
+  youtube: { label: 'YouTube', base: 'https://youtube.com/' },
+  tiktok: { label: 'TikTok', base: 'https://tiktok.com/@' },
+  facebook: { label: 'Facebook', base: 'https://facebook.com/' },
+  github: { label: 'GitHub', base: 'https://github.com/' },
+  linkedin: { label: 'LinkedIn', base: 'https://linkedin.com/in/' },
+  discord: { label: 'Discord', base: '' },
+  telegram: { label: 'Telegram', base: 'https://t.me/' },
+  reddit: { label: 'Reddit', base: 'https://reddit.com/user/' },
+  website: { label: 'Website', base: '' },
+};
 
 const $ = (id) => document.getElementById(id);
 
@@ -93,6 +108,112 @@ function saveProfileObj(obj) {
   localStorage.setItem(PROFILE, JSON.stringify(obj));
 }
 
+function loadSocial() {
+  try {
+    return JSON.parse(localStorage.getItem(SOCIAL_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function saveSocial(obj) {
+  localStorage.setItem(SOCIAL_KEY, JSON.stringify(obj));
+}
+
+function normalizeSocialUrl(platform, handle) {
+  const h = (handle || '').trim();
+  if (!h) return '';
+  if (/^https?:\/\//i.test(h)) return h;
+  const meta = SOCIAL_META[platform];
+  if (!meta) return h;
+  if (platform === 'discord') return h;
+  if (platform === 'website') return h.startsWith('http') ? h : 'https://' + h;
+  const clean = h.replace(/^@/, '');
+  return (meta.base || '') + clean;
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&')
+    .replace(/</g, '<')
+    .replace(/>/g, '>')
+    .replace(/"/g, '"');
+}
+
+function renderSocialLinks() {
+  const el = $('social-links-list');
+  if (!el) return;
+  const links = loadSocial();
+  const keys = Object.keys(links);
+  if (!keys.length) {
+    el.innerHTML = '<p class="soft" style="margin:0.5rem 0">No social linked yet.</p>';
+    return;
+  }
+  el.innerHTML = keys
+    .map((k) => {
+      const meta = SOCIAL_META[k] || { label: k };
+      const url = links[k];
+      return `<div class="id-chip" style="display:flex;justify-content:space-between;gap:0.5rem;align-items:center;margin:0.35rem 0">
+        <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);word-break:break-all;text-decoration:none">
+          <strong style="color:var(--text)">${meta.label}</strong> · ${escapeHtml(url)}
+        </a>
+        <button type="button" class="btn quiet" data-unlink="${k}">Remove</button>
+      </div>`;
+    })
+    .join('');
+  el.querySelectorAll('[data-unlink]').forEach((btn) => {
+    btn.onclick = () => {
+      const links = loadSocial();
+      delete links[btn.getAttribute('data-unlink')];
+      saveSocial(links);
+      renderSocialLinks();
+      toast('Unlinked');
+    };
+  });
+}
+
+async function publishProfileAndSocial() {
+  const name = $('prof-name')?.value?.trim() || loadProfile().name || '';
+  const about = $('prof-about')?.value?.trim() || loadProfile().about || '';
+  saveProfileObj({ name, about });
+  const sk = loadKey();
+  if (!sk) {
+    toast('Create a Viewer ID first');
+    return false;
+  }
+  const social = loadSocial();
+  const contentObj = {
+    name,
+    about,
+    display_name: name,
+    website: social.website || APP_URL,
+    trv_social: social,
+  };
+  if (social.x) contentObj.twitter = social.x;
+  if (social.github) contentObj.github = social.github;
+
+  try {
+    const pool = new SimplePool();
+    const relays = loadPaths();
+    const event = finalizeEvent(
+      {
+        kind: 0,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: Object.entries(social).map(([k, v]) => ['r', v, k]),
+        content: JSON.stringify(contentObj),
+      },
+      sk
+    );
+    const pubs = pool.publish(relays, event);
+    await Promise.any(pubs.map((p) => p.catch(() => null)));
+    pool.close(relays);
+    return true;
+  } catch (e) {
+    console.error(e);
+    return false;
+  }
+}
+
 function loadPaths() {
   const raw = localStorage.getItem(RELAYS);
   if (!raw) return [...DEFAULT_PATHS];
@@ -110,6 +231,7 @@ function refreshYou() {
     if ($('you-status'))
       $('you-status').textContent =
         'Create an ID to post and message. Share it with friends so they can follow you.';
+    renderSocialLinks();
     return;
   }
   if ($('you-id')) $('you-id').textContent = npubOf(sk);
@@ -119,6 +241,7 @@ function refreshYou() {
   if ($('prof-about')) $('prof-about').value = prof.about || '';
   renderFollows();
   renderDrafts();
+  renderSocialLinks();
   if ($('paths')) $('paths').value = loadPaths().join('\n');
 }
 
@@ -185,14 +308,6 @@ function renderDrafts() {
       renderDrafts();
     };
   });
-}
-
-function escapeHtml(s) {
-  return String(s)
-    .replace(/&/g, '&')
-    .replace(/</g, '<')
-    .replace(/>/g, '>')
-    .replace(/"/g, '"');
 }
 
 let mediaDataUrl = null;
@@ -311,32 +426,31 @@ $('save-profile')?.addEventListener('click', async () => {
   const name = $('prof-name')?.value?.trim() || '';
   const about = $('prof-about')?.value?.trim() || '';
   saveProfileObj({ name, about });
-  const sk = loadKey();
-  if (!sk) {
-    toast('Saved on phone — create a Viewer ID to publish it');
+  if (!loadKey()) {
+    toast('Saved on phone — create a Viewer ID to publish');
     return;
   }
-  try {
-    const pool = new SimplePool();
-    const relays = loadPaths();
-    const content = JSON.stringify({
-      name,
-      about,
-      display_name: name,
-      website: APP_URL,
-    });
-    const event = finalizeEvent(
-      { kind: 0, created_at: Math.floor(Date.now() / 1000), tags: [], content },
-      sk
-    );
-    const pubs = pool.publish(relays, event);
-    await Promise.any(pubs.map((p) => p.catch(() => null)));
-    pool.close(relays);
-    toast('Profile published — friends can see it');
-  } catch (e) {
-    console.error(e);
-    toast('Saved on phone — network publish failed, try again');
-  }
+  const ok = await publishProfileAndSocial();
+  toast(ok ? 'Profile & social published' : 'Saved on phone — publish failed, try again');
+});
+
+$('social-add')?.addEventListener('click', () => {
+  const platform = $('social-platform')?.value || 'x';
+  const handle = $('social-handle')?.value?.trim();
+  if (!handle) return toast('Enter a handle or URL');
+  const url = normalizeSocialUrl(platform, handle);
+  if (!url) return toast('Could not build link');
+  const links = loadSocial();
+  links[platform] = url;
+  saveSocial(links);
+  if ($('social-handle')) $('social-handle').value = '';
+  renderSocialLinks();
+  toast('Linked — tap Publish links so the network sees it');
+});
+
+$('social-publish')?.addEventListener('click', async () => {
+  const ok = await publishProfileAndSocial();
+  toast(ok ? 'Social links published to the network' : 'Publish failed — try again');
 });
 
 $('follow-add')?.addEventListener('click', () => {
