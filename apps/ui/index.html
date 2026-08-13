@@ -49,6 +49,7 @@
     }
     .pill.ok { border-color: var(--ok); color: var(--ok); }
     .pill.accent { border-color: var(--accent); color: var(--accent); }
+    .pill.warn { border-color: var(--warn); color: var(--warn); }
     .home-actions { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1.5rem; }
     .home-actions button, .home-actions .btn, .home-actions a.btn {
       width: 100%; padding: 0.75rem 1rem; font-size: 0.95rem; text-align: center;
@@ -59,6 +60,7 @@
       border-radius: var(--radius); padding: 1rem 1.1rem;
     }
     .card.network { border-color: #5a4a20; }
+    .card.pathb { border-color: rgba(46,230,197,0.35); }
     .card h2 { margin: 0 0 0.45rem; font-size: 0.95rem; }
     .card p { margin: 0.3rem 0; color: var(--muted); font-size: 0.88rem; }
     .card ul { margin: 0.4rem 0 0; padding-left: 1.1rem; color: var(--muted); font-size: 0.88rem; }
@@ -117,6 +119,7 @@
           <span class="pill ok">Verifier PROVEN</span>
           <span class="pill ok">MoE B/C PROVEN</span>
           <span class="pill accent">127.0.0.1 only</span>
+          <span class="pill warn" id="pathb-pill">Path B · check status</span>
         </div>
       </div>
       <div class="home-actions">
@@ -135,6 +138,16 @@
         <button type="button" id="btn-home">← Home</button>
       </div>
       <div class="grid two">
+        <section class="card pathb">
+          <h2>Path B / Founding Member</h2>
+          <p>Independent Completion → recognition → Integrity Verifier option</p>
+          <div class="actions">
+            <button type="button" class="primary" data-title="Path B status" data-cmd="bash modules/path-b-recognition/status.sh">Status</button>
+            <button type="button" data-title="Collect proof" data-cmd="bash modules/path-b-recognition/collect-proof.sh">Collect proof</button>
+            <button type="button" data-title="Make attestation" data-cmd="bash modules/path-b-recognition/make-attestation.sh">Make attestation</button>
+            <button type="button" data-title="Install Founding Member" data-cmd="bash modules/path-b-recognition/install-founding.sh /path/to/founding-member-*.json">Install founding</button>
+          </div>
+        </section>
         <section class="card">
           <h2>Optical Air-Gap</h2>
           <p>age → Soliton LT → peel → decrypt</p>
@@ -176,9 +189,9 @@
           <p>Dense B + sparse C on-device GGUF</p>
           <div class="actions">
             <button type="button" data-title="List models" data-cmd="bash modules/moe-router/list-models.sh">List</button>
-            <button type="button" class="primary" data-title="General" data-cmd="export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli&#10;bash modules/moe-router/run-model.sh general &quot;Say hello in one sentence.&quot;">General</button>
-            <button type="button" class="primary" data-title="Code" data-cmd="export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli&#10;bash modules/moe-router/run-model.sh code &quot;Write a bash one-liner.&quot;">Code</button>
-            <button type="button" data-title="Sparse MoE" data-cmd="export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli&#10;export LLAMA_ARGS='-n 64 -c 512 -t 4'&#10;bash modules/moe-router/run-model.sh moe &quot;Say hello.&quot;">MoE C</button>
+            <button type="button" class="primary" data-title="General" data-cmd="export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli&#10;bash modules/moe-router/run-model.sh general "Say hello in one sentence."">General</button>
+            <button type="button" class="primary" data-title="Code" data-cmd="export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli&#10;bash modules/moe-router/run-model.sh code "Write a bash one-liner."">Code</button>
+            <button type="button" data-title="Sparse MoE" data-cmd="export LLAMA_CLI=$HOME/llama.cpp/build/bin/llama-cli&#10;export LLAMA_ARGS='-n 64 -c 512 -t 4'&#10;bash modules/moe-router/run-model.sh moe "Say hello."">MoE C</button>
           </div>
         </section>
         <section class="card">
@@ -220,6 +233,7 @@
           <li>This page is <strong>The Sentinel</strong> core on <code>127.0.0.1</code> only.</li>
           <li>Buttons show Termux commands; the page cannot run shell or read keys.</li>
           <li>Identity on Home is a temporary local anchor only (Destroy = Restart still applies).</li>
+          <li>Path B status is checked via <code>modules/path-b-recognition/status.sh</code> (copy command).</li>
           <li><strong>Open The Remote Viewer</strong> launches the public network DApp.</li>
         </ul>
       </section>
@@ -291,7 +305,7 @@
       document.querySelectorAll('button[data-cmd]').forEach(function (btn) {
         btn.addEventListener('click', function () {
           title.textContent = btn.getAttribute('data-title') || 'Command';
-          cmdEl.textContent = btn.getAttribute('data-cmd').replace(/&#10;/g, '\n').replace(/&quot;/g, '"');
+          cmdEl.textContent = btn.getAttribute('data-cmd').replace(/&#10;/g, '\n').replace(/"/g, '"');
           dlg.showModal();
         });
       });
