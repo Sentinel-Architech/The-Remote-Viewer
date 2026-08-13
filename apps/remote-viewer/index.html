@@ -126,6 +126,16 @@
       min-height: 4.5rem; color: var(--text);
     }
     .orb-answer.soft-empty { color: var(--soft); }
+    .orb-memory {
+      margin-top: 0.65rem; padding: 0.75rem; border-radius: 12px;
+      background: #0a1210; border: 1px solid #2a4030;
+      white-space: pre-wrap; font-size: 0.82rem; line-height: 1.45; color: var(--soft);
+    }
+    .check-row {
+      display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem;
+      font-size: 0.85rem; color: var(--soft);
+    }
+    .check-row input { width: auto; margin: 0; }
   </style>
 </head>
 <body>
@@ -187,18 +197,33 @@
     <section id="orb" class="screen">
       <div class="card" style="border-color:#3d5a40">
         <h2>Sentinel Orb</h2>
-        <p class="soft">Ask anything. Orb looks for the answer and replies under protection protocol.</p>
+        <p class="soft">Ask anything. Orb learns you on this device and replies under protection protocol.</p>
         <label>Your question
-          <textarea id="orb-question" placeholder="Ask the Sentinel…" style="min-height:96px"></textarea>
+          <textarea id="orb-question" placeholder="Ask… or remember: [fact]" style="min-height:96px"></textarea>
         </label>
         <div class="actions">
           <button type="button" class="btn primary" id="orb-ask">Ask Orb</button>
+          <button type="button" class="btn" id="orb-teach">Teach Sentinel</button>
         </div>
         <div class="orb-answer soft-empty" id="orb-answer">Answers appear here. According to Orb.</div>
       </div>
+
+      <div class="card" style="border-color:#2a4030">
+        <h2>Viewer memory</h2>
+        <p class="soft">Stays on this phone. Sentinel asks so it can protect and assist you better. Nothing leaves unless you choose.</p>
+        <div class="orb-memory" id="orb-memory-status">Loading memory status…</div>
+        <label class="check-row">
+          <input type="checkbox" id="orb-public-optin">
+          Allow public opt-in (still requires explicit publish — never automatic)
+        </label>
+        <div class="actions">
+          <button type="button" class="btn warn" id="orb-clear-memory">Clear memory on this phone</button>
+        </div>
+      </div>
+
       <div class="card">
         <h2>How Orb works</h2>
-        <p class="soft">On-device knowledge first (Viewer ID, login, protection, Gateway, TRV). For open facts it pulls public reference. Every answer states the Sentinel is protecting you. No central vault holds your keys.</p>
+        <p class="soft">On-device knowledge first. Learns by asking you. For open facts it may pull public reference. Every answer states the Sentinel is protecting you. No central vault holds your memory or keys.</p>
       </div>
     </section>
 
