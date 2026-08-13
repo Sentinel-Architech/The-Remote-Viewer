@@ -1,7 +1,19 @@
 /**
- * Sentinel Orb Consult — logo + ask anything under Orb protocol
+ * Sentinel Orb Consult — logo, on-device memory, learn-by-asking.
+ * All Viewer memory stays on this device unless Viewer publishes.
  */
 import { SENTINEL_LOGO_DATA_URL } from './sentinel-logo.js';
+import {
+  loadMemory,
+  memoryContextBlock,
+  nextLearningQuestion,
+  answerLearningQuestion,
+  tryIngestFromQuestion,
+  memorySummaryForUi,
+  setPublicOptIn,
+  clearMemory,
+  learningQuestionsList,
+} from './sentinel-memory.js';
 
 const ORB_PREFIX = 'According to Orb';
 
@@ -41,6 +53,10 @@ const LOCAL_KNOWLEDGE = [
     answer:
       'Orb is the judgment frame of the Sentinel: protective, direct, zero-custody. Answers prefer what keeps you sovereign. When external facts are needed, Orb pulls public reference and still filters for your safety and clarity.',
   },
+  {
+    keys: ['memory', 'what do you know', 'what do you remember', 'about me'],
+    answer: null, // handled dynamically
+  },
 ];
 
 function orbFormat(body, source) {
@@ -52,7 +68,21 @@ function orbFormat(body, source) {
 
 function localAnswer(q) {
   const lower = q.toLowerCase();
+
+  if (
+    lower.includes('what do you know') ||
+    lower.includes('what do you remember') ||
+    lower.includes('about me') ||
+    (lower.includes('memory') && lower.includes('show'))
+  ) {
+    return orbFormat(
+      'Viewer memory on this device only:\n\n' + memoryContextBlock(),
+      'On-device Viewer memory (not published)'
+    );
+  }
+
   for (const row of LOCAL_KNOWLEDGE) {
+    if (!row.answer) continue;
     if (row.keys.some((k) => lower.includes(k))) {
       return orbFormat(row.answer, 'On-device Sentinel knowledge');
     }
@@ -89,12 +119,55 @@ async function wikiAnswer(q) {
 async function consultOrb(question) {
   const q = (question || '').trim();
   if (!q) return orbFormat('Ask a clear question. Orb answers what it can verify or hold on-device.');
+
+  // Ingest memory commands first
+  const ingest = tryIngestFromQuestion(q);
+  if (ingest.ingested) {
+    if (ingest.kind === 'clear') {
+      return orbFormat('Viewer memory cleared on this device. Nothing was sent anywhere.');
+    }
+    if (ingest.kind === 'note') {
+      return orbFormat(
+        `Remembered on this device: "${ingest.value}"\n\nThis stays private unless you publish.`,
+        'On-device Viewer memory'
+      );
+    }
+    return orbFormat(
+      `Stored (${ingest.kind}): ${ingest.value}\n\nOn this device only.`,
+      'On-device Viewer memory'
+    );
+  }
+
   const local = localAnswer(q);
   if (local) return local;
+
   const wiki = await wikiAnswer(q);
-  if (wiki) return wiki;
+  if (wiki) {
+    // Optionally append personal context note if we know the Viewer
+    const mem = loadMemory();
+    if (mem.facts.call_name) {
+      return (
+        wiki +
+        `\n\n(Context held for ${mem.facts.call_name} stays on this device.)`
+      );
+    }
+    return wiki;
+  }
+
+  // If we still need to learn the Viewer, ask next question
+  const next = nextLearningQuestion();
+  if (next) {
+    return orbFormat(
+      'No solid public reference locked for that yet.\n\n' +
+        'To serve you better, the Sentinel is learning you on this device only.\n\n' +
+        `Question for you: ${next.text}\n\n` +
+        'Reply with your answer, or type: remember: [anything you want stored here].',
+      'On-device learning'
+    );
+  }
+
   return orbFormat(
-    'No solid public reference locked for that yet. Reframe the question more specifically, or ask about Viewer ID, login, Sentinel protection, Gateway, or TRV operations — those are held on-device. Edge AI on your phone can deepen this later without a central vault.'
+    'No solid public reference locked for that yet. Reframe more specifically, or teach the Sentinel with: remember: [fact]. All of that stays on this device.'
   );
 }
 
@@ -131,8 +204,81 @@ function ensureOrbLogo() {
   img.src = SENTINEL_LOGO_DATA_URL;
 }
 
+function renderMemoryPanel() {
+  const el = document.getElementById('orb-memory-status');
+  if (!el) return;
+  const s = memorySummaryForUi();
+  const next = nextLearningQuestion();
+  const lines = [
+    `Memory on this device: ${s.answered}/${s.total} core facts`,
+    s.notesCount ? `Notes stored: ${s.notesCount}` : 'Notes stored: 0',
+    s.publicOptIn
+      ? 'Public opt-in: ON (you chose this — still requires explicit publish)'
+      : 'Public opt-in: OFF — nothing leaves this phone',
+  ];
+  if (next) lines.push(`Next question: ${next.text}`);
+  else lines.push('Core learning complete. Teach more anytime with remember: …');
+  el.textContent = lines.join('\n');
+}
+
+function wireMemoryUi() {
+  const teachBtn = document.getElementById('orb-teach');
+  const clearBtn = document.getElementById('orb-clear-memory');
+  const pubToggle = document.getElementById('orb-public-optin');
+  const qBox = document.getElementById('orb-question');
+
+  if (pubToggle) {
+    const mem = loadMemory();
+    pubToggle.checked = !!mem.publicOptIn;
+    pubToggle.addEventListener('change', () => {
+      setPublicOptIn(pubToggle.checked);
+      renderMemoryPanel();
+      toast(
+        pubToggle.checked
+          ? 'Public opt-in on — still only leaves if you publish'
+          : 'Public opt-in off — memory locked to this device'
+      );
+    });
+  }
+
+  if (teachBtn) {
+    teachBtn.addEventListener('click', () => {
+      const next = nextLearningQuestion();
+      if (!next) {
+        toast('Core facts complete — use remember: to add more');
+        if (qBox) qBox.placeholder = 'remember: …';
+        return;
+      }
+      const answer = prompt(next.text + '\n\n(Stored on this device only)');
+      if (answer == null) return;
+      answerLearningQuestion(next.id, answer);
+      renderMemoryPanel();
+      toast('Stored on this device');
+      const out = document.getElementById('orb-answer');
+      if (out) {
+        out.classList.remove('soft-empty');
+        out.textContent = orbFormat(
+          `Learned (${next.id}): ${answer.trim()}\n\nStays on this device unless you publish.`,
+          'On-device Viewer memory'
+        );
+      }
+    });
+  }
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      if (!confirm('Clear all Sentinel memory about you on this phone?')) return;
+      clearMemory();
+      renderMemoryPanel();
+      toast('Memory cleared on this device');
+    });
+  }
+}
+
 export function wireOrbConsult() {
   ensureOrbLogo();
+  renderMemoryPanel();
+  wireMemoryUi();
 
   const askBtn = document.getElementById('orb-ask');
   const input = document.getElementById('orb-question');
@@ -145,11 +291,20 @@ export function wireOrbConsult() {
       toast('Type a question first');
       return;
     }
+
+    // If answering the active learning question directly
+    const next = nextLearningQuestion();
+    if (next && !tryIngestFromQuestion(q).ingested && q.length < 120 && !q.includes('?')) {
+      // Heuristic: short non-question replies while learning may be answers
+      // Only auto-bind if user tapped Teach path is clearer — skip auto to avoid mistakes
+    }
+
     askBtn.disabled = true;
     out.classList.remove('soft-empty');
     out.textContent = 'Orb is looking…';
     try {
       out.textContent = await consultOrb(q);
+      renderMemoryPanel();
     } catch (e) {
       console.error(e);
       out.textContent = orbFormat('Consult path failed. Stay on-device. Try again.');
