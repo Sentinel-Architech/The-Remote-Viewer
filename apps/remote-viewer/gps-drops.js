@@ -1,6 +1,7 @@
 /**
  * GPS + camera AR field drops.
- * Default rear camera with live distance HUD. Claim → Shop TRV credits.
+ * Default rear camera with live distance HUD (US customary units).
+ * Claim → Shop TRV credits.
  */
 import { getCredits } from './shop.js';
 
@@ -8,6 +9,25 @@ const CLAIMED_KEY = 'rv-gps-claimed';
 const CREDITS_KEY = 'rv-trv-credits';
 const CELL = 0.001;
 const CLAIM_RADIUS_M = 120;
+
+/** Format meters as US customary: in, ft, or mi */
+function formatImperial(meters) {
+  const m = Number(meters);
+  if (!Number.isFinite(m) || m < 0) return '—';
+  const feet = m * 3.280839895;
+  if (feet < 1) {
+    const inches = feet * 12;
+    return (inches < 10 ? inches.toFixed(1) : Math.round(inches)) + ' in';
+  }
+  if (feet < 528) {
+    return (feet < 10 ? feet.toFixed(1) : Math.round(feet)) + ' ft';
+  }
+  const miles = feet / 5280;
+  if (miles < 10) return miles.toFixed(2) + ' mi';
+  return miles.toFixed(1) + ' mi';
+}
+
+const CLAIM_RADIUS_FT = Math.round(CLAIM_RADIUS_M * 3.280839895);
 const DAILY_SEED = () => new Date().toISOString().slice(0, 10);
 
 function loadCredits() {
@@ -162,7 +182,7 @@ export function renderFieldUI(toast) {
 
   host.innerHTML = `
     <h2>Field claim</h2>
-    <p class="soft">Default camera AR · live distance. Claim within ~${CLAIM_RADIUS_M}m → Shop credits.</p>
+    <p class="soft">Default camera AR · live distance. Claim within ~${CLAIM_RADIUS_FT} ft → Shop credits.</p>
     <p class="soft" id="field-status">Camera & location off</p>
     <div class="actions">
       <button type="button" class="btn primary" id="field-ar">Open AR</button>
@@ -188,7 +208,7 @@ export function renderFieldUI(toast) {
       .map((d) => {
         const near = d.dist <= CLAIM_RADIUS_M;
         return `<div class="card" style="padding:0.75rem;margin:0.4rem 0">
-          <div><strong>${d.reward} TRV</strong> · <span class="soft">${Math.round(d.dist)}m</span></div>
+          <div><strong>${d.reward} TRV</strong> · <span class="soft">${formatImperial(d.dist)}</span></div>
           <div class="actions">
             <button type="button" class="btn ${near ? 'primary' : ''}" data-claim="${d.id}" ${near ? '' : 'disabled'}>
               ${near ? 'Claim' : 'Too far'}
@@ -202,12 +222,12 @@ export function renderFieldUI(toast) {
         const drop = drops.find((x) => x.id === btn.getAttribute('data-claim'));
         const r = claimDrop(drop, lat, lon);
         if (!r.ok) {
-          if (r.reason === 'far') toast(`Still ${Math.round(r.dist)}m away`);
+          if (r.reason === 'far') toast(`Still ${formatImperial(r.dist)} away`);
           else if (r.reason === 'claimed') toast('Already claimed');
           else toast('Could not claim');
           return;
         }
-        toast(`+${r.reward} TRV · ${Math.round(r.dist)}m`);
+        toast(`+${r.reward} TRV · ${formatImperial(r.dist)}`);
         const bal = document.getElementById('trv-balance');
         if (bal) bal.textContent = String(r.balance);
         btn.closest('.card')?.remove();
@@ -221,7 +241,7 @@ export function renderFieldUI(toast) {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude: lat, longitude: lon, accuracy } = pos.coords;
-        status.textContent = `You · ±${Math.round(accuracy)}m`;
+        status.textContent = `You · ±${formatImperial(accuracy)}`;
         paintList(lat, lon, scanNearby(lat, lon));
       },
       () => {
@@ -307,7 +327,7 @@ export function renderFieldUI(toast) {
         pin.style.top = pos.y + '%';
         pin.innerHTML =
           `<strong>${d.reward} TRV</strong>` +
-          `<div class="dist">${Math.round(d.dist)}m away</div>` +
+          `<div class="dist">${formatImperial(d.dist)} away</div>` +
           (near
             ? `<button type="button" class="btn primary" data-ar-claim="${d.id}" style="font-size:0.75rem;padding:0.35rem 0.65rem">Claim</button>`
             : `<div class="dist">Get closer</div>`);
@@ -319,11 +339,11 @@ export function renderFieldUI(toast) {
           const drop = lastDrops.find((x) => x.id === btn.getAttribute('data-ar-claim'));
           const r = claimDrop(drop, lastLat, lastLon);
           if (!r.ok) {
-            if (r.reason === 'far') toast(`Still ${Math.round(r.dist)}m`);
+            if (r.reason === 'far') toast(`Still ${formatImperial(r.dist)}`);
             else toast('Could not claim');
             return;
           }
-          toast(`+${r.reward} TRV · ${Math.round(r.dist)}m`);
+          toast(`+${r.reward} TRV · ${formatImperial(r.dist)}`);
           const bal = document.getElementById('trv-balance');
           if (bal) bal.textContent = String(r.balance);
           lastDrops = scanNearby(lastLat, lastLon);
@@ -340,7 +360,7 @@ export function renderFieldUI(toast) {
       (pos) => {
         lastLat = pos.coords.latitude;
         lastLon = pos.coords.longitude;
-        gpsBadge.textContent = `±${Math.round(pos.coords.accuracy || 0)}m`;
+        gpsBadge.textContent = `±${formatImperial(pos.coords.accuracy || 0)}`;
         lastDrops = scanNearby(lastLat, lastLon);
         drawHud();
         paintList(lastLat, lastLon, lastDrops);
