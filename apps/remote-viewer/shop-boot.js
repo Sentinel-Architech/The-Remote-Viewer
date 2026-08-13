@@ -1,6 +1,6 @@
 /**
  * Shop near top of Viewer Profile.
- * Real Solana checkout for TRV credits + Aurora + lock + GPS field.
+ * Solana checkout + Aurora + lock + GPS field + NFT mint.
  */
 import {
   becomeValidated,
@@ -10,6 +10,7 @@ import {
 } from './shop.js';
 import { renderLockUI } from './lock.js';
 import { renderFieldUI } from './gps-drops.js';
+import { renderNftUI } from './shop-nft.js';
 import {
   Connection,
   PublicKey,
@@ -200,7 +201,7 @@ function ensureShopUI() {
     sec.innerHTML = `
       <div class="card">
         <h2>Shop</h2>
-        <p class="soft">TRV credits · Solana wallet · Aurora looks.</p>
+        <p class="soft">TRV credits · Solana wallet · Aurora · NFT mint.</p>
         <p>Your TRV credits: <strong id="trv-balance">0</strong></p>
         <p class="soft" id="validated-status">Not yet a Validated Viewer</p>
         <div class="actions">
@@ -230,6 +231,7 @@ function ensureShopUI() {
         <p class="soft" style="font-size:0.78rem;margin-top:0.5rem">Treasury receives SOL on-chain. Same settlement plane as Path B vending.</p>
       </div>
       <div class="card" id="lock-panel"></div>
+      <div class="card" id="nft-panel"></div>
       <div class="card">
         <h2>Aurora Borealis</h2>
         <p class="soft">Redeem credits to customize your UI.</p>
@@ -260,6 +262,7 @@ function ensureShopUI() {
         renderShopUI(toastFn);
         renderLockUI(toastFn);
         renderFieldUI(toastFn);
+        renderNftUI(toastFn);
         renderWalletRow();
       }
     };
@@ -273,6 +276,7 @@ function ensureShopUI() {
       else if (r.ok) toastFn(`Validated · +${r.granted} TRV credits`);
       renderShopUI(toastFn);
       renderLockUI(toastFn);
+      renderNftUI(toastFn);
     };
   }
 
@@ -292,6 +296,7 @@ function ensureShopUI() {
   renderShopUI(() => {});
   renderLockUI(() => {});
   renderFieldUI(() => {});
+  renderNftUI(() => {});
   renderWalletRow();
 }
 
