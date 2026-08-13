@@ -20,3 +20,16 @@ Keys are generated and stored only on the device. Destroy = Restart.
 ```
 
 Secrets stay under `$HOME/.local/share/remote-viewer/identity/` and are gitignored.
+
+## Founding Member / Path B Integration
+
+After receiving a `founding-member-*.json` from the originator:
+
+```bash
+bash modules/path-b-recognition/install-founding.sh /path/to/founding-member-*.json
+bash modules/path-b-recognition/status.sh
+```
+
+This places the attestation under `$HOME/.local/share/remote-viewer/identity/founding/` and unlocks the Integrity Verifier option for the current identity path.
+
+Destroy = Restart removes both the identity and any Founding Member status.

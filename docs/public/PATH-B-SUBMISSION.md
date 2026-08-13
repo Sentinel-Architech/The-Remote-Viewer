@@ -1,6 +1,6 @@
 # Path B Submission & Recognition Flow
 
-**Status:** Defined — 2026-08-13  
+**Status:** Defined + Wired — 2026-08-13  
 **Depends on:** `docs/public/PATH-B-FINISHED.md` + `modules/path-b-recognition/`
 
 This document defines the minimal, offline-capable path from Independent Completion to Founding Member recognition and Integrity Verifier option.
@@ -67,18 +67,32 @@ The originator returns this file (or optical frame) to the builder by the same o
 
 ---
 
-## 5. Explicit Limits
+## 5. Builder Activation (Local Identity Surface)
+
+```bash
+bash modules/path-b-recognition/install-founding.sh /path/to/received-founding-member-*.json
+bash modules/path-b-recognition/status.sh
+```
+
+This installs the attestation under the local identity path and makes the Integrity Verifier option available:
+
+```bash
+bash modules/integrity-verifier/attest.sh
+```
+
+---
+
+## 6. Explicit Limits
 
 - Recognition does **not** waive pack prices or grant free catalog items.
 - No yield, no custody, no permanent privilege beyond the identity path.
 - Multiple machines under one identity path do not multiply weight.
 - The originator retains sole authority to accept or reject any submission under the published FINISHED standard.
+- Destroy = Restart extinguishes Founding Member status and the Integrity Verifier option.
 
 ---
 
-## 6. After Recognition
+## 7. After Recognition
 
-The builder places the returned Founding Member attestation in their local identity surface.  
-The Integrity Verifier option then becomes available under the permanent constraints of `docs/locked/17-Validator-Node-First-Role.md`.
-
-Wiring of the returned attestation into the local UI is the next sequential step.
+The builder places the returned Founding Member attestation in their local identity surface via `install-founding.sh`.  
+The Integrity Verifier option is then available under the permanent constraints of `docs/locked/17-Validator-Node-First-Role.md`.

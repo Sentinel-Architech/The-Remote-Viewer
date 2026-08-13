@@ -1,29 +1,38 @@
 # Path B Recognition Package
 
-**Status:** Operational — 2026-08-13  
+**Status:** Operational end-to-end — 2026-08-13  
 **Authority:** `docs/public/PATH-B-FINISHED.md` + `docs/public/PATH-B-SUBMISSION.md` + locked docs 04 / 17
 
-This package lets an independent builder produce an optical-transferable or file-based attestation that they have met the Path B “FINISHED” minimum standard, and lets the originator re-verify and issue Founding Member recognition.
+Complete offline loop for Independent Completion → Founding Member recognition → Integrity Verifier option.
 
 ## Builder flow
 
 ```bash
 bash modules/path-b-recognition/collect-proof.sh
 bash modules/path-b-recognition/make-attestation.sh
+# Transfer path-b-attest-*.json (file or optical) to originator
 ```
-
-Output: `$HOME/.local/share/remote-viewer/path-b-recognition/path-b-attest-*.json`
-
-Transfer the attestation (file or optical) to the originator.
 
 ## Originator flow
 
 ```bash
 bash modules/path-b-recognition/verify-submission.sh /path/to/received-path-b-attest-*.json
 bash modules/path-b-recognition/issue-founding.sh /path/to/verified-path-b-attest-*.json
+# Return founding-member-*.json to builder
 ```
 
-Return the issued `founding-member-*.json` to the builder by the same offline channel.
+## Builder activation (local identity surface)
+
+```bash
+bash modules/path-b-recognition/install-founding.sh /path/to/received-founding-member-*.json
+bash modules/path-b-recognition/status.sh
+```
+
+Once installed, the Integrity Verifier option is available for this identity path:
+
+```bash
+bash modules/integrity-verifier/attest.sh
+```
 
 ## Explicit limits
 
