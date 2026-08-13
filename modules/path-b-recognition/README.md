@@ -1,33 +1,36 @@
 # Path B Recognition Package
 
-**Status:** Operational scaffold — 2026-08-13  
-**Authority:** `docs/public/PATH-B-FINISHED.md` + locked docs 04 / 17
+**Status:** Operational — 2026-08-13  
+**Authority:** `docs/public/PATH-B-FINISHED.md` + `docs/public/PATH-B-SUBMISSION.md` + locked docs 04 / 17
 
-This package lets an independent builder produce an optical-transferable or file-based attestation that they have met the Path B “FINISHED” minimum standard.
+This package lets an independent builder produce an optical-transferable or file-based attestation that they have met the Path B “FINISHED” minimum standard, and lets the originator re-verify and issue Founding Member recognition.
 
-## What it does
-
-1. `collect-proof.sh` — runs the five required checks and gathers local evidence.
-2. `make-attestation.sh` — packages the evidence into a signed, transferable attestation file.
-
-The resulting attestation can be moved by file copy or optical air-gap (QR / camera path). No continuous network and no platform custody are required for validity.
-
-## Usage (on the builder device)
+## Builder flow
 
 ```bash
-# From repo root
 bash modules/path-b-recognition/collect-proof.sh
 bash modules/path-b-recognition/make-attestation.sh
 ```
 
-Output lands in:
-`$HOME/.local/share/remote-viewer/path-b-recognition/`
+Output: `$HOME/.local/share/remote-viewer/path-b-recognition/path-b-attest-*.json`
 
-Transfer the final `path-b-attest-*.json` (or its optical frame) to the originator for re-verification.
+Transfer the attestation (file or optical) to the originator.
+
+## Originator flow
+
+```bash
+bash modules/path-b-recognition/verify-submission.sh /path/to/received-path-b-attest-*.json
+bash modules/path-b-recognition/issue-founding.sh /path/to/verified-path-b-attest-*.json
+```
+
+Return the issued `founding-member-*.json` to the builder by the same offline channel.
 
 ## Explicit limits
 
-- This package never requests or stores AGE-SECRET-KEY material.
-- It never claims free packs or yield.
+- Never requests or stores AGE-SECRET-KEY material.
+- Never claims free packs or yield.
 - Recognition is extinguished by Destroy = Restart.
 - Multiple machines under one identity path do not multiply weight.
+- Originator retains sole authority to accept or reject under the published FINISHED standard.
+
+See `docs/public/PATH-B-SUBMISSION.md` for the full defined flow.
