@@ -1,8 +1,7 @@
 /**
- * Sentinel Orb Consult
- * Ask anything. Answers under Orb protocol: protective, direct, local-first.
- * Sources: on-device knowledge + public references (Wikipedia) when useful.
+ * Sentinel Orb Consult — logo + ask anything under Orb protocol
  */
+import { SENTINEL_LOGO_DATA_URL } from './sentinel-logo.js';
 
 const ORB_PREFIX = 'According to Orb';
 
@@ -116,7 +115,18 @@ function toast(msg) {
   setTimeout(() => t.classList.remove('show'), 2600);
 }
 
+function applySentinelLogo() {
+  document.querySelectorAll('[data-sentinel-logo]').forEach((el) => {
+    if (el.tagName === 'IMG') {
+      el.src = SENTINEL_LOGO_DATA_URL;
+      el.alt = 'Sentinel';
+    }
+  });
+}
+
 export function wireOrbConsult() {
+  applySentinelLogo();
+
   const askBtn = document.getElementById('orb-ask');
   const input = document.getElementById('orb-question');
   const out = document.getElementById('orb-answer');
