@@ -5,6 +5,7 @@ import { Buffer } from 'buffer';
 import { destroyDidCommState } from './didcomm';
 import { destroyAllDemoCredentials } from './credentials';
 import { destroyAllConnections } from './connections';
+import { destroyLocalProfile } from './profile';
 
 const ED25519_MULTICODEC = new Uint8Array([0xed, 0x01]);
 
@@ -42,7 +43,6 @@ export async function createDidKey(): Promise<DidKeyIdentity> {
   );
   await SecureStore.setItemAsync(STORAGE_DID, did, SECURE_OPTIONS);
 
-  // Best-effort zeroize of the temporary private key buffer
   privateKey.fill(0);
 
   return {
@@ -73,7 +73,8 @@ export async function destroyDidKey() {
   await SecureStore.deleteItemAsync(STORAGE_DID);
   await destroyDidCommState();
   await destroyAllDemoCredentials();
-  await destroyAllConnections(); // Social state dies with identity
+  await destroyAllConnections();
+  await destroyLocalProfile();
 }
 
 export async function signWithDidKey(message: string): Promise<string | null> {
@@ -84,7 +85,6 @@ export async function signWithDidKey(message: string): Promise<string | null> {
   const messageBytes = new TextEncoder().encode(message);
   const signature = await ed.signAsync(messageBytes, privateKey);
 
-  // Best-effort zeroize
   privateKey.fill(0);
 
   return Buffer.from(signature).toString('hex');

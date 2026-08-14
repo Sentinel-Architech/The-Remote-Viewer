@@ -34,6 +34,13 @@ import {
   getInbox,
   DidCommBasicMessage,
 } from '../src/services/didcomm';
+import {
+  getLocalProfile,
+  setLocalProfile,
+  buildProfileEvent,
+  buildFollowListEvent,
+  LocalProfile,
+} from '../src/services/profile';
 
 export default function PresenceScreen() {
   const [identity, setIdentity] = useState<DidKeyIdentity | null>(null);
@@ -43,6 +50,7 @@ export default function PresenceScreen() {
   const [credentials, setCredentials] = useState<DemoCredential[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [inbox, setInbox] = useState<DidCommBasicMessage[]>([]);
+  const [profile, setProfile] = useState<LocalProfile | null>(null);
 
   const [showDangerZone, setShowDangerZone] = useState(false);
   const [typedDid, setTypedDid] = useState('');
@@ -50,23 +58,34 @@ export default function PresenceScreen() {
   const [newConnectionId, setNewConnectionId] = useState('');
   const [msgTo, setMsgTo] = useState('');
   const [msgBody, setMsgBody] = useState('');
+  const [profileName, setProfileName] = useState('');
+  const [profileAbout, setProfileAbout] = useState('');
 
   const refresh = async () => {
     const current = await getCurrentDidKey();
     setIdentity(current);
     if (current) {
-      const [creds, conns, messages] = await Promise.all([
+      const [creds, conns, messages, prof] = await Promise.all([
         listDemoCredentials(),
         listConnections(),
         getInbox(),
+        getLocalProfile(),
       ]);
       setCredentials(creds);
       setConnections(conns);
       setInbox(messages);
+      setProfile(prof);
+      if (prof) {
+        setProfileName(prof.displayName);
+        setProfileAbout(prof.about);
+      }
     } else {
       setCredentials([]);
       setConnections([]);
       setInbox([]);
+      setProfile(null);
+      setProfileName('');
+      setProfileAbout('');
     }
   };
 
@@ -87,6 +106,9 @@ export default function PresenceScreen() {
       setCredentials([]);
       setConnections([]);
       setInbox([]);
+      setProfile(null);
+      setProfileName('');
+      setProfileAbout('');
     } finally {
       setBusy(false);
     }
@@ -111,7 +133,7 @@ export default function PresenceScreen() {
 
     Alert.alert(
       'Final confirmation',
-      'This identity path will end permanently. Connections, credentials, and local messages held here will be wiped. There is no recovery by The Remote Viewer.',
+      'This identity path will end permanently. Profile, connections, credentials, and local messages will be wiped. There is no recovery by The Remote Viewer.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -126,6 +148,9 @@ export default function PresenceScreen() {
               setCredentials([]);
               setConnections([]);
               setInbox([]);
+              setProfile(null);
+              setProfileName('');
+              setProfileAbout('');
               setSmokeResult(null);
               setShowDangerZone(false);
               setTypedDid('');
@@ -160,8 +185,7 @@ export default function PresenceScreen() {
         Alert.alert('Issue failed', 'No active identity or signing error.');
         return;
       }
-      const list = await listDemoCredentials();
-      setCredentials(list);
+      setCredentials(await listDemoCredentials());
       Alert.alert('Demo VC issued', entry.id);
     } finally {
       setBusy(false);
@@ -197,16 +221,12 @@ export default function PresenceScreen() {
   const handleAddConnection = async () => {
     const id = newConnectionId.trim();
     if (!id) {
-      Alert.alert(
-        'Add connection',
-        'Paste a did:key captured optically (photo, typed, or shared).'
-      );
+      Alert.alert('Add connection', 'Paste a did:key from optical exchange.');
       return;
     }
     setBusy(true);
     try {
-      const list = await addConnection(id);
-      setConnections(list);
+      setConnections(await addConnection(id));
       setNewConnectionId('');
     } finally {
       setBusy(false);
@@ -220,8 +240,7 @@ export default function PresenceScreen() {
         text: 'Remove',
         style: 'destructive',
         onPress: async () => {
-          const list = await removeConnection(id);
-          setConnections(list);
+          setConnections(await removeConnection(id));
         },
       },
     ]);
@@ -241,15 +260,59 @@ export default function PresenceScreen() {
         Alert.alert('Message failed', 'No active identity or signing error.');
         return;
       }
-      // Local-only: store in our inbox as a sent/local record (no transport yet)
       await storeMessage(msg);
-      const messages = await getInbox();
-      setInbox(messages);
+      setInbox(await getInbox());
       setMsgBody('');
-      Alert.alert(
-        'Stored locally',
-        'Message signed and kept on this device. No relay delivery in this slice.'
-      );
+      Alert.alert('Stored locally', 'Signed and kept on this device. No relay in this slice.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    setBusy(true);
+    try {
+      const p = await setLocalProfile(profileName, profileAbout);
+      setProfile(p);
+      Alert.alert('Profile saved', 'On-device only. Wiped on Destroy.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleExportProfileEvent = async () => {
+    setBusy(true);
+    try {
+      const event = await buildProfileEvent();
+      if (!event) {
+        Alert.alert('Export failed', 'No active identity.');
+        return;
+      }
+      await Share.share({
+        message: JSON.stringify(event, null, 2),
+        title: 'TRV profile event (kind 0 shaped)',
+      });
+    } catch {
+      // cancelled
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleExportFollowEvent = async () => {
+    setBusy(true);
+    try {
+      const event = await buildFollowListEvent();
+      if (!event) {
+        Alert.alert('Export failed', 'No active identity.');
+        return;
+      }
+      await Share.share({
+        message: JSON.stringify(event, null, 2),
+        title: 'TRV follow list event (kind 3 shaped)',
+      });
+    } catch {
+      // cancelled
     } finally {
       setBusy(false);
     }
@@ -272,14 +335,21 @@ export default function PresenceScreen() {
 
       await issueDemoCredential();
       await addConnection('did:key:smoke-test-peer');
+      await setLocalProfile('Smoke', 'test');
       const msg = await createBasicMessage('smoke', 'did:key:smoke-test-peer');
       if (msg) await storeMessage(msg);
 
       const midCreds = await listDemoCredentials();
       const midConns = await listConnections();
       const midInbox = await getInbox();
-      if (midCreds.length < 1 || midConns.length < 1 || midInbox.length < 1) {
-        setSmokeResult('FAIL: VC, connection, or message not stored');
+      const midProf = await getLocalProfile();
+      if (
+        midCreds.length < 1 ||
+        midConns.length < 1 ||
+        midInbox.length < 1 ||
+        !midProf
+      ) {
+        setSmokeResult('FAIL: social state not stored');
         return;
       }
 
@@ -289,24 +359,25 @@ export default function PresenceScreen() {
       const afterCreds = await listDemoCredentials();
       const afterConns = await listConnections();
       const afterInbox = await getInbox();
+      const afterProf = await getLocalProfile();
       if (
         afterId === null &&
         afterCreds.length === 0 &&
         afterConns.length === 0 &&
-        afterInbox.length === 0
+        afterInbox.length === 0 &&
+        afterProf === null
       ) {
-        setSmokeResult(
-          'PASS: Create → VC + Conn + Msg → Destroy → Empty'
-        );
+        setSmokeResult('PASS: Create → full social state → Destroy → Empty');
         setIdentity(null);
         setSignature(null);
         setCredentials([]);
         setConnections([]);
         setInbox([]);
+        setProfile(null);
+        setProfileName('');
+        setProfileAbout('');
       } else {
-        setSmokeResult(
-          'FAIL: identity or social state remains after destroy'
-        );
+        setSmokeResult('FAIL: identity or social state remains after destroy');
       }
     } catch (e) {
       setSmokeResult(`FAIL: ${e instanceof Error ? e.message : String(e)}`);
@@ -317,10 +388,10 @@ export default function PresenceScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.kicker}>LOCAL · SCAFFOLD · SOCIAL SLICE 3</Text>
+      <Text style={styles.kicker}>LOCAL · SCAFFOLD · SOCIAL SLICE 4</Text>
       <Text style={styles.title}>Identity</Text>
       <Text style={styles.subtitle}>
-        did:key · VCs · connections · optical · local messages
+        did:key · VCs · connections · messages · profile export
       </Text>
 
       <View style={styles.card}>
@@ -337,12 +408,11 @@ export default function PresenceScreen() {
             <Text selectable style={styles.mono}>
               {identity.publicKeyHex}
             </Text>
-            <Text style={styles.label}>Held demo VCs</Text>
-            <Text style={styles.mono}>{credentials.length}</Text>
-            <Text style={styles.label}>Connections</Text>
-            <Text style={styles.mono}>{connections.length}</Text>
-            <Text style={styles.label}>Local messages</Text>
-            <Text style={styles.mono}>{inbox.length}</Text>
+            <Text style={styles.label}>Profile</Text>
+            <Text style={styles.mono}>
+              {profile?.displayName || '(none)'} · VCs {credentials.length} ·
+              Conns {connections.length} · Msgs {inbox.length}
+            </Text>
             {signature && (
               <>
                 <Text style={styles.label}>Last signature</Text>
@@ -358,8 +428,7 @@ export default function PresenceScreen() {
               <Text style={styles.badgeTextIdle}>NO IDENTITY</Text>
             </View>
             <Text style={styles.hint}>
-              Create a local did:key. Keys, VCs, connections, and local messages
-              are wiped together on Destroy.
+              Create a local did:key. All social state is wiped on Destroy.
             </Text>
           </>
         )}
@@ -379,18 +448,14 @@ export default function PresenceScreen() {
         <View style={styles.opticalCard}>
           <Text style={styles.sectionTitle}>Optical exchange</Text>
           <Text style={styles.hint}>
-            Show this DID to another Viewer. They paste it into their connection
-            list. No network required.
+            Show this DID to another Viewer. They paste it into connections.
           </Text>
           <View style={styles.opticalDidBox}>
             <Text selectable style={styles.opticalDid}>
               {identity.did}
             </Text>
           </View>
-          <Pressable
-            style={[styles.btn, styles.btnSecondary]}
-            onPress={handleShareDidOptical}
-          >
+          <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleShareDidOptical}>
             <Text style={styles.btnText}>Share DID (system sheet)</Text>
           </Pressable>
           <Pressable
@@ -404,10 +469,54 @@ export default function PresenceScreen() {
 
       {identity && (
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Connections (on-device)</Text>
+          <Text style={styles.sectionTitle}>Local profile (optional)</Text>
           <Text style={styles.hint}>
-            Local list only. Optical paste to add. Wiped on Destroy.
+            On-device only. Feeds kind-0 shaped export. Wiped on Destroy. Not a
+            Nostr secp256k1 identity.
           </Text>
+          <Text style={styles.label}>Display name</Text>
+          <TextInput
+            style={styles.didInput}
+            value={profileName}
+            onChangeText={setProfileName}
+            placeholder="Optional name"
+            placeholderTextColor="#555"
+            editable={!busy}
+          />
+          <Text style={styles.label}>About</Text>
+          <TextInput
+            style={[styles.didInput, { minHeight: 56 }]}
+            value={profileAbout}
+            onChangeText={setProfileAbout}
+            multiline
+            placeholder="Optional about"
+            placeholderTextColor="#555"
+            editable={!busy}
+          />
+          <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleSaveProfile} disabled={busy}>
+            <Text style={styles.btnText}>Save profile</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
+            onPress={handleExportProfileEvent}
+            disabled={busy}
+          >
+            <Text style={styles.btnText}>Export kind-0 shaped event</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
+            onPress={handleExportFollowEvent}
+            disabled={busy}
+          >
+            <Text style={styles.btnText}>Export kind-3 follow list event</Text>
+          </Pressable>
+        </View>
+      )}
+
+      {identity && (
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Connections (on-device)</Text>
+          <Text style={styles.hint}>Optical paste to add. Wiped on Destroy.</Text>
           <TextInput
             style={styles.didInput}
             value={newConnectionId}
@@ -418,11 +527,7 @@ export default function PresenceScreen() {
             placeholderTextColor="#555"
             editable={!busy}
           />
-          <Pressable
-            style={[styles.btn, styles.btnSecondary]}
-            onPress={handleAddConnection}
-            disabled={busy}
-          >
+          <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleAddConnection} disabled={busy}>
             <Text style={styles.btnText}>Add connection</Text>
           </Pressable>
           {!showOpticalShare && (
@@ -442,10 +547,7 @@ export default function PresenceScreen() {
                   {c.label ? `${c.label} · ` : ''}
                   {c.id}
                 </Text>
-                <Pressable
-                  style={styles.connRemove}
-                  onPress={() => handleRemoveConnection(c.id)}
-                >
+                <Pressable style={styles.connRemove} onPress={() => handleRemoveConnection(c.id)}>
                   <Text style={styles.connRemoveText}>Remove</Text>
                 </Pressable>
               </View>
@@ -454,13 +556,11 @@ export default function PresenceScreen() {
         </View>
       )}
 
-      {/* Local private messages (slice 3) */}
       {identity && (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Local messages</Text>
           <Text style={styles.hint}>
-            DIDComm-shaped basicmessage, signed by your did:key, stored only on
-            this device. No relay delivery in this slice. Wiped on Destroy.
+            Signed basicmessage, on-device only. No relay in this slice.
           </Text>
           <Text style={styles.label}>To (DID)</Text>
           <TextInput
@@ -469,18 +569,14 @@ export default function PresenceScreen() {
             onChangeText={setMsgTo}
             autoCapitalize="none"
             autoCorrect={false}
-            placeholder="did:key:… (from connections)"
+            placeholder="did:key:…"
             placeholderTextColor="#555"
             editable={!busy}
           />
           {connections.length > 0 && (
             <View style={styles.chipRow}>
               {connections.slice(0, 5).map((c) => (
-                <Pressable
-                  key={c.id}
-                  style={styles.chip}
-                  onPress={() => setMsgTo(c.id)}
-                >
+                <Pressable key={c.id} style={styles.chip} onPress={() => setMsgTo(c.id)}>
                   <Text style={styles.chipText} numberOfLines={1}>
                     {c.id.slice(0, 20)}…
                   </Text>
@@ -498,20 +594,16 @@ export default function PresenceScreen() {
             placeholderTextColor="#555"
             editable={!busy}
           />
-          <Pressable
-            style={[styles.btn, styles.btnSecondary]}
-            onPress={handleSendLocalMessage}
-            disabled={busy}
-          >
+          <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleSendLocalMessage} disabled={busy}>
             <Text style={styles.btnText}>Sign & store locally</Text>
           </Pressable>
           {inbox.length === 0 ? (
             <Text style={[styles.hint, { marginTop: 12 }]}>Inbox empty.</Text>
           ) : (
-            inbox.slice(0, 10).map((m) => (
+            inbox.slice(0, 8).map((m) => (
               <View key={m.id} style={styles.msgRow}>
                 <Text style={styles.msgMeta}>
-                  {m.from?.slice(0, 24)}… → {m.to?.[0]?.slice(0, 16) || '?'}…
+                  {m.from?.slice(0, 20)}… → {m.to?.[0]?.slice(0, 14) || '?'}…
                 </Text>
                 <Text style={styles.msgBody} numberOfLines={3}>
                   {m.body?.content}
@@ -526,10 +618,9 @@ export default function PresenceScreen() {
         <View style={styles.dangerCard}>
           <Text style={styles.dangerTitle}>Danger Zone</Text>
           <Text style={styles.dangerBody}>
-            This action is permanent.\n\n• Your TRV identity path will end.\n• Demo
-            VCs, connections, and local messages for this path will be
-            destroyed.\n• There is no recovery by The Remote Viewer.\n\nType the
-            full DID below to enable destruction. No email or phone is used.
+            Permanent. Profile, VCs, connections, and local messages for this path
+            will be destroyed. No recovery by The Remote Viewer.\n\nType the full DID
+            to enable. No email or phone.
           </Text>
           <Text style={styles.label}>Type full DID exactly</Text>
           <TextInput
@@ -543,18 +634,11 @@ export default function PresenceScreen() {
             editable={!busy}
           />
           <View style={styles.dangerActions}>
-            <Pressable
-              style={[styles.btn, styles.btnSecondary]}
-              onPress={cancelDangerZone}
-              disabled={busy}
-            >
+            <Pressable style={[styles.btn, styles.btnSecondary]} onPress={cancelDangerZone} disabled={busy}>
               <Text style={styles.btnText}>Cancel</Text>
             </Pressable>
             <Pressable
-              style={[
-                styles.btn,
-                didMatches ? styles.btnDanger : styles.btnDisabled,
-              ]}
+              style={[styles.btn, didMatches ? styles.btnDanger : styles.btnDisabled]}
               onPress={confirmDestroy}
               disabled={!didMatches || busy}
             >
@@ -568,11 +652,7 @@ export default function PresenceScreen() {
 
       <View style={styles.actions}>
         {!identity ? (
-          <Pressable
-            style={[styles.btn, styles.btnPrimary]}
-            onPress={handleCreate}
-            disabled={busy}
-          >
+          <Pressable style={[styles.btn, styles.btnPrimary]} onPress={handleCreate} disabled={busy}>
             <Text style={styles.btnText}>Create did:key</Text>
           </Pressable>
         ) : (
@@ -583,39 +663,23 @@ export default function PresenceScreen() {
             <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleShowDidDoc}>
               <Text style={styles.btnText}>Show DID Document</Text>
             </Pressable>
-            <Pressable
-              style={[styles.btn, styles.btnSecondary]}
-              onPress={handleIssueDemoVc}
-              disabled={busy}
-            >
+            <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleIssueDemoVc} disabled={busy}>
               <Text style={styles.btnText}>Issue Demo VC</Text>
             </Pressable>
             <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleShowCredentials}>
-              <Text style={styles.btnText}>
-                Show held VCs ({credentials.length})
-              </Text>
+              <Text style={styles.btnText}>Show held VCs ({credentials.length})</Text>
             </Pressable>
             {!showDangerZone && (
-              <Pressable
-                style={[styles.btn, styles.btnDanger]}
-                onPress={openDangerZone}
-                disabled={busy}
-              >
+              <Pressable style={[styles.btn, styles.btnDanger]} onPress={openDangerZone} disabled={busy}>
                 <Text style={styles.btnText}>Destroy identity…</Text>
               </Pressable>
             )}
           </>
         )}
 
-        <Pressable
-          style={[styles.btn, styles.btnSmoke]}
-          onPress={handleSmokeTest}
-          disabled={busy}
-        >
+        <Pressable style={[styles.btn, styles.btnSmoke]} onPress={handleSmokeTest} disabled={busy}>
           <Text style={styles.btnText}>
-            {busy
-              ? 'Running…'
-              : 'Run Smoke Test (Create → VC + Conn + Msg → Destroy → Empty)'}
+            {busy ? 'Running…' : 'Run Smoke Test (full social → Destroy → Empty)'}
           </Text>
         </Pressable>
       </View>
@@ -624,26 +688,10 @@ export default function PresenceScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#0a0a0a',
-  },
-  kicker: {
-    color: '#666',
-    fontSize: 11,
-    letterSpacing: 1.5,
-    marginBottom: 4,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  subtitle: {
-    color: '#888',
-    marginBottom: 20,
-  },
+  container: { flexGrow: 1, padding: 20, backgroundColor: '#0a0a0a' },
+  kicker: { color: '#666', fontSize: 11, letterSpacing: 1.5, marginBottom: 4 },
+  title: { fontSize: 28, fontWeight: '700', color: '#fff' },
+  subtitle: { color: '#888', marginBottom: 20 },
   card: {
     backgroundColor: '#141414',
     borderRadius: 12,
@@ -675,12 +723,7 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
     textAlign: 'center',
   },
-  sectionTitle: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
+  sectionTitle: { color: '#fff', fontSize: 16, fontWeight: '600', marginBottom: 4 },
   dangerCard: {
     backgroundColor: '#1a0a0a',
     borderRadius: 12,
@@ -689,18 +732,8 @@ const styles = StyleSheet.create({
     borderColor: '#5c1a1a',
     marginBottom: 24,
   },
-  dangerTitle: {
-    color: '#e74c3c',
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  dangerBody: {
-    color: '#ccc',
-    fontSize: 13,
-    lineHeight: 20,
-    marginBottom: 12,
-  },
+  dangerTitle: { color: '#e74c3c', fontSize: 16, fontWeight: '700', marginBottom: 8 },
+  dangerBody: { color: '#ccc', fontSize: 13, lineHeight: 20, marginBottom: 12 },
   didInput: {
     backgroundColor: '#0a0a0a',
     borderWidth: 1,
@@ -714,9 +747,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 12,
   },
-  dangerActions: {
-    gap: 10,
-  },
+  dangerActions: { gap: 10 },
   connRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -725,27 +756,10 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#222',
   },
-  connId: {
-    flex: 1,
-    color: '#aaa',
-    fontSize: 11,
-    fontFamily: 'monospace',
-  },
-  connRemove: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  connRemoveText: {
-    color: '#e74c3c',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginBottom: 8,
-  },
+  connId: { flex: 1, color: '#aaa', fontSize: 11, fontFamily: 'monospace' },
+  connRemove: { paddingHorizontal: 10, paddingVertical: 6 },
+  connRemoveText: { color: '#e74c3c', fontSize: 12, fontWeight: '600' },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
   chip: {
     backgroundColor: '#1a2a3a',
     paddingHorizontal: 8,
@@ -753,28 +767,10 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     maxWidth: '48%',
   },
-  chipText: {
-    color: '#8ab',
-    fontSize: 10,
-    fontFamily: 'monospace',
-  },
-  msgRow: {
-    marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#222',
-  },
-  msgMeta: {
-    color: '#666',
-    fontSize: 10,
-    fontFamily: 'monospace',
-    marginBottom: 4,
-  },
-  msgBody: {
-    color: '#ccc',
-    fontSize: 13,
-    lineHeight: 18,
-  },
+  chipText: { color: '#8ab', fontSize: 10, fontFamily: 'monospace' },
+  msgRow: { marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#222' },
+  msgMeta: { color: '#666', fontSize: 10, fontFamily: 'monospace', marginBottom: 4 },
+  msgBody: { color: '#ccc', fontSize: 13, lineHeight: 18 },
   badgeActive: {
     alignSelf: 'flex-start',
     backgroundColor: '#0d3d24',
@@ -793,54 +789,19 @@ const styles = StyleSheet.create({
   },
   badgeText: { color: '#2ecc71', fontSize: 12, fontWeight: '600' },
   badgeTextIdle: { color: '#e74c3c', fontSize: 12, fontWeight: '600' },
-  label: {
-    color: '#666',
-    fontSize: 12,
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  did: {
-    color: '#fff',
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  mono: {
-    color: '#aaa',
-    fontSize: 11,
-    fontFamily: 'monospace',
-  },
-  hint: {
-    color: '#888',
-    lineHeight: 20,
-    fontSize: 13,
-  },
-  smoke: {
-    marginTop: 14,
-    fontSize: 13,
-    fontWeight: '600',
-  },
+  label: { color: '#666', fontSize: 12, marginTop: 8, marginBottom: 4 },
+  did: { color: '#fff', fontSize: 13, lineHeight: 18 },
+  mono: { color: '#aaa', fontSize: 11, fontFamily: 'monospace' },
+  hint: { color: '#888', lineHeight: 20, fontSize: 13 },
+  smoke: { marginTop: 14, fontSize: 13, fontWeight: '600' },
   smokePass: { color: '#2ecc71' },
   smokeFail: { color: '#e74c3c' },
-  actions: {
-    gap: 10,
-  },
-  btn: {
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
+  actions: { gap: 10 },
+  btn: { borderRadius: 10, paddingVertical: 14, alignItems: 'center' },
   btnPrimary: { backgroundColor: '#1a7f4b' },
-  btnSecondary: {
-    backgroundColor: '#1e1e1e',
-    borderWidth: 1,
-    borderColor: '#333',
-  },
+  btnSecondary: { backgroundColor: '#1e1e1e', borderWidth: 1, borderColor: '#333' },
   btnDanger: { backgroundColor: '#5c1a1a' },
   btnDisabled: { backgroundColor: '#2a2a2a' },
-  btnSmoke: {
-    backgroundColor: '#1a2a3a',
-    borderWidth: 1,
-    borderColor: '#2a4a5a',
-  },
+  btnSmoke: { backgroundColor: '#1a2a3a', borderWidth: 1, borderColor: '#2a4a5a' },
   btnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
 });
