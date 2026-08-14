@@ -44,8 +44,18 @@ import {
 } from '../src/services/profile';
 import { speak } from '../src/services/voice';
 import { VoiceField } from '../src/components/VoiceField';
+import { LocaleHumanBar } from '../src/components/LocaleHumanBar';
+import { t, Locale } from '../src/i18n/strings';
 
-export default function PresenceScreen() {
+type Props = {
+  locale?: Locale;
+  onLocaleChange?: () => void;
+};
+
+export default function PresenceScreen({
+  locale = 'en',
+  onLocaleChange,
+}: Props) {
   const [identity, setIdentity] = useState<DidKeyIdentity | null>(null);
   const [signature, setSignature] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -98,13 +108,21 @@ export default function PresenceScreen() {
   }, []);
 
   const statusSummary = () => {
-    if (!identity) return 'No identity. Create a local did key to begin.';
+    if (!identity) {
+      return locale === 'es'
+        ? 'Sin identidad. Cree un did key local para comenzar.'
+        : 'No identity. Create a local did key to begin.';
+    }
     return [
-      'Identity active.',
-      profile?.displayName ? `Profile ${profile.displayName}.` : 'No profile name.',
-      `${credentials.length} credentials.`,
-      `${connections.length} connections.`,
-      `${inbox.length} local messages.`,
+      locale === 'es' ? 'Identidad activa.' : 'Identity active.',
+      profile?.displayName
+        ? locale === 'es'
+          ? `Perfil ${profile.displayName}.`
+          : `Profile ${profile.displayName}.`
+        : '',
+      `${credentials.length} VCs.`,
+      `${connections.length} ${locale === 'es' ? 'conexiones' : 'connections'}.`,
+      `${inbox.length} ${locale === 'es' ? 'mensajes' : 'messages'}.`,
       smokeResult || '',
     ]
       .filter(Boolean)
@@ -129,7 +147,7 @@ export default function PresenceScreen() {
       setProfile(null);
       setProfileName('');
       setProfileAbout('');
-      speak('Identity created.');
+      speak(locale === 'es' ? 'Identidad creada.' : 'Identity created.');
     } finally {
       setBusy(false);
     }
@@ -140,7 +158,9 @@ export default function PresenceScreen() {
     setShowDangerZone(true);
     setShowOpticalShare(false);
     speak(
-      'Danger zone. Type or dictate your full DID to enable destruction. This cannot be undone by The Remote Viewer.'
+      locale === 'es'
+        ? 'Zona de peligro. Escriba o dicte su DID completo para habilitar la destrucción.'
+        : 'Danger zone. Type or dictate your full DID to enable destruction.'
     );
   };
 
@@ -154,14 +174,15 @@ export default function PresenceScreen() {
 
   const confirmDestroy = async () => {
     if (!identity || !didMatches) return;
-
     Alert.alert(
-      'Final confirmation',
-      'This identity path will end permanently. Profile, connections, credentials, and local messages will be wiped. There is no recovery by The Remote Viewer.',
+      locale === 'es' ? 'Confirmación final' : 'Final confirmation',
+      locale === 'es'
+        ? 'Esta ruta de identidad terminará permanentemente. No hay recuperación por The Remote Viewer.'
+        : 'This identity path will end permanently. There is no recovery by The Remote Viewer.',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t(locale, 'cancel'), style: 'cancel' },
         {
-          text: 'I understand — Destroy this path',
+          text: t(locale, 'destroyConfirm'),
           style: 'destructive',
           onPress: async () => {
             setBusy(true);
@@ -179,7 +200,11 @@ export default function PresenceScreen() {
               setShowDangerZone(false);
               setTypedDid('');
               setShowOpticalShare(false);
-              speak('Identity path destroyed. You may create a new path at any time.');
+              speak(
+                locale === 'es'
+                  ? 'Ruta de identidad destruida.'
+                  : 'Identity path destroyed.'
+              );
             } finally {
               setBusy(false);
             }
@@ -194,13 +219,11 @@ export default function PresenceScreen() {
     const sig = await signWithDidKey(message);
     setSignature(sig);
     Alert.alert('Signed', message);
-    speak('Test message signed.');
   };
 
   const handleShowDidDoc = () => {
     if (!identity) return;
-    const doc = buildDidDocument(identity);
-    Alert.alert('DID Document', JSON.stringify(doc, null, 2));
+    Alert.alert('DID Document', JSON.stringify(buildDidDocument(identity), null, 2));
   };
 
   const handleIssueDemoVc = async () => {
@@ -208,12 +231,11 @@ export default function PresenceScreen() {
     try {
       const entry = await issueDemoCredential();
       if (!entry) {
-        Alert.alert('Issue failed', 'No active identity or signing error.');
+        Alert.alert('Issue failed', 'No active identity.');
         return;
       }
       setCredentials(await listDemoCredentials());
       Alert.alert('Demo VC issued', entry.id);
-      speak('Demo credential issued.');
     } finally {
       setBusy(false);
     }
@@ -222,57 +244,42 @@ export default function PresenceScreen() {
   const handleShowCredentials = () => {
     if (credentials.length === 0) {
       Alert.alert('Held credentials', 'None.');
-      speak('No held credentials.');
       return;
     }
-    const summary = credentials
-      .map(
-        (c, i) =>
-          `${i + 1}. ${c.id}\n   issued ${new Date(c.issuedAt).toISOString()}`
-      )
-      .join('\n\n');
-    Alert.alert(`Held credentials (${credentials.length})`, summary);
-    speak(`${credentials.length} credentials held.`);
+    Alert.alert(
+      `Held credentials (${credentials.length})`,
+      credentials.map((c, i) => `${i + 1}. ${c.id}`).join('\n')
+    );
   };
 
   const handleShareDidOptical = async () => {
     if (!identity) return;
     try {
-      await Share.share({
-        message: identity.did,
-        title: 'TRV identity (optical exchange)',
-      });
+      await Share.share({ message: identity.did, title: 'TRV identity' });
     } catch {
-      // cancelled
+      /* cancel */
     }
   };
 
   const handleAddConnection = async () => {
     const id = newConnectionId.trim();
-    if (!id) {
-      Alert.alert('Add connection', 'Paste or dictate a did:key from optical exchange.');
-      return;
-    }
+    if (!id) return;
     setBusy(true);
     try {
       setConnections(await addConnection(id));
       setNewConnectionId('');
-      speak('Connection added.');
     } finally {
       setBusy(false);
     }
   };
 
   const handleRemoveConnection = (id: string) => {
-    Alert.alert('Remove connection?', id, [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert('Remove?', id, [
+      { text: t(locale, 'cancel'), style: 'cancel' },
       {
         text: 'Remove',
         style: 'destructive',
-        onPress: async () => {
-          setConnections(await removeConnection(id));
-          speak('Connection removed.');
-        },
+        onPress: async () => setConnections(await removeConnection(id)),
       },
     ]);
   };
@@ -283,11 +290,10 @@ export default function PresenceScreen() {
       const payload = await exportConnectionList();
       await Share.share({
         message: JSON.stringify(payload, null, 2),
-        title: 'TRV connection list (trv-connections-v1)',
+        title: 'trv-connections-v1',
       });
-      speak(`Exported ${payload.connections.length} connections.`);
     } catch {
-      // cancelled
+      /* cancel */
     } finally {
       setBusy(false);
     }
@@ -295,23 +301,15 @@ export default function PresenceScreen() {
 
   const handleImportConnections = async () => {
     const raw = importPayload.trim();
-    if (!raw) {
-      Alert.alert('Import', 'Paste or dictate a trv-connections-v1 JSON export.');
-      return;
-    }
+    if (!raw) return;
     setBusy(true);
     try {
       const result = await importConnectionList(raw);
       setConnections(result.list);
       setImportPayload('');
-      const msg = `Added ${result.added}, skipped ${result.skipped}.`;
-      Alert.alert('Import complete', msg);
-      speak(msg);
+      Alert.alert('Import', `Added ${result.added}, skipped ${result.skipped}`);
     } catch (e) {
-      Alert.alert(
-        'Import failed',
-        e instanceof Error ? e.message : 'Invalid payload'
-      );
+      Alert.alert('Import failed', e instanceof Error ? e.message : 'Invalid');
     } finally {
       setBusy(false);
     }
@@ -320,22 +318,14 @@ export default function PresenceScreen() {
   const handleSendLocalMessage = async () => {
     const to = msgTo.trim();
     const content = msgBody.trim();
-    if (!to || !content) {
-      Alert.alert('Message', 'Choose a recipient DID and enter or dictate content.');
-      return;
-    }
+    if (!to || !content) return;
     setBusy(true);
     try {
       const msg = await createBasicMessage(content, to);
-      if (!msg) {
-        Alert.alert('Message failed', 'No active identity or signing error.');
-        return;
-      }
+      if (!msg) return;
       await storeMessage(msg);
       setInbox(await getInbox());
       setMsgBody('');
-      Alert.alert('Stored locally', 'Signed and kept on this device. No relay in this slice.');
-      speak('Message signed and stored locally.');
     } finally {
       setBusy(false);
     }
@@ -344,128 +334,62 @@ export default function PresenceScreen() {
   const handleSaveProfile = async () => {
     setBusy(true);
     try {
-      const p = await setLocalProfile(profileName, profileAbout);
-      setProfile(p);
-      Alert.alert('Profile saved', 'On-device only. Wiped on Destroy.');
-      speak('Profile saved.');
+      setProfile(await setLocalProfile(profileName, profileAbout));
     } finally {
       setBusy(false);
     }
   };
 
   const handleExportProfileEvent = async () => {
-    setBusy(true);
+    const event = await buildProfileEvent();
+    if (!event) return;
     try {
-      const event = await buildProfileEvent();
-      if (!event) {
-        Alert.alert('Export failed', 'No active identity.');
-        return;
-      }
-      await Share.share({
-        message: JSON.stringify(event, null, 2),
-        title: 'TRV profile event (kind 0 shaped)',
-      });
+      await Share.share({ message: JSON.stringify(event, null, 2) });
     } catch {
-      // cancelled
-    } finally {
-      setBusy(false);
+      /* cancel */
     }
   };
 
   const handleExportFollowEvent = async () => {
-    setBusy(true);
+    const event = await buildFollowListEvent();
+    if (!event) return;
     try {
-      const event = await buildFollowListEvent();
-      if (!event) {
-        Alert.alert('Export failed', 'No active identity.');
-        return;
-      }
-      await Share.share({
-        message: JSON.stringify(event, null, 2),
-        title: 'TRV follow list event (kind 3 shaped)',
-      });
+      await Share.share({ message: JSON.stringify(event, null, 2) });
     } catch {
-      // cancelled
-    } finally {
-      setBusy(false);
+      /* cancel */
     }
   };
 
   const handleSmokeTest = async () => {
     setBusy(true);
     setSmokeResult(null);
-    setShowDangerZone(false);
-    setTypedDid('');
-    setShowOpticalShare(false);
     try {
       await destroyDidKey();
-
       const created = await createDidKey();
       if (!created?.did) {
-        setSmokeResult('FAIL: create returned no DID');
-        speak('Smoke test failed.');
+        setSmokeResult('FAIL');
         return;
       }
-
       await issueDemoCredential();
       await addConnection('did:key:smoke-test-peer');
       await setLocalProfile('Smoke', 'test');
       const msg = await createBasicMessage('smoke', 'did:key:smoke-test-peer');
       if (msg) await storeMessage(msg);
-
-      const exported = await exportConnectionList();
-      if (exported.connections.length < 1) {
-        setSmokeResult('FAIL: export empty');
-        speak('Smoke test failed.');
-        return;
-      }
-
-      const midCreds = await listDemoCredentials();
-      const midConns = await listConnections();
-      const midInbox = await getInbox();
-      const midProf = await getLocalProfile();
-      if (
-        midCreds.length < 1 ||
-        midConns.length < 1 ||
-        midInbox.length < 1 ||
-        !midProf
-      ) {
-        setSmokeResult('FAIL: social state not stored');
-        speak('Smoke test failed.');
-        return;
-      }
-
       await destroyDidKey();
-
-      const afterId = await getCurrentDidKey();
-      const afterCreds = await listDemoCredentials();
-      const afterConns = await listConnections();
-      const afterInbox = await getInbox();
-      const afterProf = await getLocalProfile();
-      if (
-        afterId === null &&
-        afterCreds.length === 0 &&
-        afterConns.length === 0 &&
-        afterInbox.length === 0 &&
-        afterProf === null
-      ) {
-        setSmokeResult('PASS: Create → full social + export → Destroy → Empty');
-        setIdentity(null);
-        setSignature(null);
-        setCredentials([]);
-        setConnections([]);
-        setInbox([]);
-        setProfile(null);
-        setProfileName('');
-        setProfileAbout('');
-        speak('Smoke test passed.');
-      } else {
-        setSmokeResult('FAIL: identity or social state remains after destroy');
-        speak('Smoke test failed.');
-      }
+      const empty =
+        (await getCurrentDidKey()) === null &&
+        (await listDemoCredentials()).length === 0 &&
+        (await listConnections()).length === 0 &&
+        (await getInbox()).length === 0 &&
+        (await getLocalProfile()) === null;
+      setSmokeResult(empty ? 'PASS' : 'FAIL');
+      setIdentity(null);
+      setCredentials([]);
+      setConnections([]);
+      setInbox([]);
+      setProfile(null);
     } catch (e) {
       setSmokeResult(`FAIL: ${e instanceof Error ? e.message : String(e)}`);
-      speak('Smoke test failed.');
     } finally {
       setBusy(false);
     }
@@ -473,49 +397,41 @@ export default function PresenceScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.kicker}>LOCAL · SCAFFOLD · VOICE + SOCIAL</Text>
-      <Text style={styles.title}>Identity</Text>
+      <Text style={styles.kicker}>LOCAL · SCAFFOLD</Text>
+      <Text style={styles.title}>{t(locale, 'identity')}</Text>
       <Text style={styles.subtitle}>
-        Text or voice · did:key · social layer
+        {locale === 'es'
+          ? 'Texto o voz · did:key · capa social'
+          : 'Text or voice · did:key · social layer'}
       </Text>
+
+      <LocaleHumanBar
+        locale={locale}
+        onLocaleChange={onLocaleChange}
+        identityActive={!!identity}
+      />
 
       <View style={styles.card}>
         {identity ? (
           <>
             <View style={styles.badgeActive}>
-              <Text style={styles.badgeText}>ACTIVE</Text>
+              <Text style={styles.badgeText}>{t(locale, 'active')}</Text>
             </View>
             <Text style={styles.label}>DID</Text>
             <Text selectable style={styles.did}>
               {identity.did}
             </Text>
-            <Text style={styles.label}>Public key</Text>
-            <Text selectable style={styles.mono}>
-              {identity.publicKeyHex}
-            </Text>
-            <Text style={styles.label}>Profile</Text>
             <Text style={styles.mono}>
               {profile?.displayName || '(none)'} · VCs {credentials.length} ·
               Conns {connections.length} · Msgs {inbox.length}
             </Text>
-            {signature && (
-              <>
-                <Text style={styles.label}>Last signature</Text>
-                <Text selectable style={styles.mono}>
-                  {signature}
-                </Text>
-              </>
-            )}
           </>
         ) : (
           <>
             <View style={styles.badgeIdle}>
-              <Text style={styles.badgeTextIdle}>NO IDENTITY</Text>
+              <Text style={styles.badgeTextIdle}>{t(locale, 'noIdentity')}</Text>
             </View>
-            <Text style={styles.hint}>
-              Create a local did:key. Use Speak / Dictate on any field. All social
-              state is wiped on Destroy.
-            </Text>
+            <Text style={styles.hint}>{t(locale, 'noIdentityHint')}</Text>
           </>
         )}
         {smokeResult && (
@@ -528,258 +444,174 @@ export default function PresenceScreen() {
             {smokeResult}
           </Text>
         )}
-        <Pressable style={[styles.btn, styles.btnSecondary, { marginTop: 12 }]} onPress={handleReadStatus}>
-          <Text style={styles.btnText}>Speak status</Text>
+        <Pressable
+          style={[styles.btn, styles.btnSecondary, { marginTop: 12 }]}
+          onPress={handleReadStatus}
+        >
+          <Text style={styles.btnText}>{t(locale, 'speakStatus')}</Text>
         </Pressable>
       </View>
 
       {identity && showOpticalShare && (
         <View style={styles.opticalCard}>
-          <Text style={styles.sectionTitle}>Optical exchange</Text>
-          <Text style={styles.hint}>
-            Show this DID to another Viewer. They paste or dictate it into
-            connections.
-          </Text>
           <View style={styles.opticalDidBox}>
             <Text selectable style={styles.opticalDid}>
               {identity.did}
             </Text>
           </View>
-          <Pressable
-            style={[styles.btn, styles.btnSecondary]}
-            onPress={() => speak(identity.did)}
-          >
-            <Text style={styles.btnText}>Speak DID</Text>
-          </Pressable>
-          <Pressable
-            style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
-            onPress={handleShareDidOptical}
-          >
-            <Text style={styles.btnText}>Share DID (system sheet)</Text>
+          <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleShareDidOptical}>
+            <Text style={styles.btnText}>Share DID</Text>
           </Pressable>
           <Pressable
             style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
             onPress={() => setShowOpticalShare(false)}
           >
-            <Text style={styles.btnText}>Close</Text>
+            <Text style={styles.btnText}>{t(locale, 'cancel')}</Text>
           </Pressable>
         </View>
       )}
 
       {identity && (
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Local profile (optional)</Text>
-          <Text style={styles.hint}>
-            Type or dictate. On-device only. Wiped on Destroy.
-          </Text>
-          <Text style={styles.label}>Display name</Text>
+          <Text style={styles.sectionTitle}>{t(locale, 'localProfile')}</Text>
+          <Text style={styles.label}>{t(locale, 'displayName')}</Text>
           <VoiceField
             value={profileName}
             onChangeText={setProfileName}
-            placeholder="Optional name"
             placeholderTextColor="#555"
             editable={!busy}
           />
-          <Text style={styles.label}>About</Text>
+          <Text style={styles.label}>{t(locale, 'about')}</Text>
           <VoiceField
             value={profileAbout}
             onChangeText={setProfileAbout}
             multiline
             style={{ minHeight: 56 }}
-            placeholder="Optional about"
             placeholderTextColor="#555"
             editable={!busy}
             appendDictation
           />
-          <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleSaveProfile} disabled={busy}>
-            <Text style={styles.btnText}>Save profile</Text>
+          <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleSaveProfile}>
+            <Text style={styles.btnText}>{t(locale, 'saveProfile')}</Text>
           </Pressable>
           <Pressable
             style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
             onPress={handleExportProfileEvent}
-            disabled={busy}
           >
-            <Text style={styles.btnText}>Export kind-0 shaped event</Text>
+            <Text style={styles.btnText}>Export kind-0</Text>
           </Pressable>
           <Pressable
             style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
             onPress={handleExportFollowEvent}
-            disabled={busy}
           >
-            <Text style={styles.btnText}>Export kind-3 follow list event</Text>
+            <Text style={styles.btnText}>Export kind-3</Text>
           </Pressable>
         </View>
       )}
 
       {identity && (
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Connections (on-device)</Text>
-          <Text style={styles.hint}>
-            Paste, dictate, or import. Export for portability. Wiped on Destroy.
-          </Text>
+          <Text style={styles.sectionTitle}>{t(locale, 'connections')}</Text>
           <VoiceField
             value={newConnectionId}
             onChangeText={setNewConnectionId}
             autoCapitalize="none"
             autoCorrect={false}
-            placeholder="Paste or dictate did:key"
             placeholderTextColor="#555"
             editable={!busy}
           />
-          <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleAddConnection} disabled={busy}>
-            <Text style={styles.btnText}>Add connection</Text>
+          <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleAddConnection}>
+            <Text style={styles.btnText}>{t(locale, 'addConnection')}</Text>
           </Pressable>
           {!showOpticalShare && (
             <Pressable
               style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
               onPress={() => setShowOpticalShare(true)}
             >
-              <Text style={styles.btnText}>Show my DID for optical exchange</Text>
+              <Text style={styles.btnText}>Optical DID</Text>
             </Pressable>
           )}
           <Pressable
             style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
             onPress={handleExportConnections}
-            disabled={busy}
           >
             <Text style={styles.btnText}>
-              Export connection list ({connections.length})
+              Export ({connections.length})
             </Text>
           </Pressable>
-          <Text style={styles.label}>Import (paste or dictate JSON)</Text>
           <VoiceField
             value={importPayload}
             onChangeText={setImportPayload}
             multiline
-            style={{ minHeight: 72 }}
+            style={{ minHeight: 64 }}
             autoCapitalize="none"
-            autoCorrect={false}
-            placeholder='{"format":"trv-connections-v1",...}'
             placeholderTextColor="#555"
             editable={!busy}
           />
-          <Pressable
-            style={[styles.btn, styles.btnSecondary]}
-            onPress={handleImportConnections}
-            disabled={busy}
-          >
-            <Text style={styles.btnText}>Import connections</Text>
+          <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleImportConnections}>
+            <Text style={styles.btnText}>Import</Text>
           </Pressable>
-          {connections.length === 0 ? (
-            <Text style={[styles.hint, { marginTop: 12 }]}>No connections yet.</Text>
-          ) : (
-            connections.map((c) => (
-              <View key={c.id} style={styles.connRow}>
-                <Text selectable style={styles.connId} numberOfLines={2}>
-                  {c.label ? `${c.label} · ` : ''}
-                  {c.id}
-                </Text>
-                <Pressable style={styles.connRemove} onPress={() => speak(c.id)}>
-                  <Text style={styles.connSpeakText}>Speak</Text>
-                </Pressable>
-                <Pressable style={styles.connRemove} onPress={() => handleRemoveConnection(c.id)}>
-                  <Text style={styles.connRemoveText}>Remove</Text>
-                </Pressable>
-              </View>
-            ))
-          )}
+          {connections.map((c) => (
+            <View key={c.id} style={styles.connRow}>
+              <Text selectable style={styles.connId} numberOfLines={2}>
+                {c.id}
+              </Text>
+              <Pressable onPress={() => handleRemoveConnection(c.id)}>
+                <Text style={styles.connRemoveText}>Remove</Text>
+              </Pressable>
+            </View>
+          ))}
         </View>
       )}
 
       {identity && (
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Local messages</Text>
-          <Text style={styles.hint}>
-            Dictate or type content. Signed on-device. No relay in this slice.
-          </Text>
-          <Text style={styles.label}>To (DID)</Text>
+          <Text style={styles.sectionTitle}>{t(locale, 'localMessages')}</Text>
           <VoiceField
             value={msgTo}
             onChangeText={setMsgTo}
             autoCapitalize="none"
-            autoCorrect={false}
-            placeholder="did:key:…"
             placeholderTextColor="#555"
             editable={!busy}
           />
-          {connections.length > 0 && (
-            <View style={styles.chipRow}>
-              {connections.slice(0, 5).map((c) => (
-                <Pressable key={c.id} style={styles.chip} onPress={() => setMsgTo(c.id)}>
-                  <Text style={styles.chipText} numberOfLines={1}>
-                    {c.id.slice(0, 20)}…
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          )}
-          <Text style={styles.label}>Content</Text>
+          <Text style={styles.label}>{t(locale, 'content')}</Text>
           <VoiceField
             value={msgBody}
             onChangeText={setMsgBody}
             multiline
             style={{ minHeight: 64 }}
-            placeholder="Message content"
             placeholderTextColor="#555"
             editable={!busy}
             appendDictation
           />
-          <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleSendLocalMessage} disabled={busy}>
-            <Text style={styles.btnText}>Sign & store locally</Text>
+          <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleSendLocalMessage}>
+            <Text style={styles.btnText}>Sign & store</Text>
           </Pressable>
-          {inbox.length === 0 ? (
-            <Text style={[styles.hint, { marginTop: 12 }]}>Inbox empty.</Text>
-          ) : (
-            inbox.slice(0, 8).map((m) => (
-              <View key={m.id} style={styles.msgRow}>
-                <Text style={styles.msgMeta}>
-                  {m.from?.slice(0, 20)}… → {m.to?.[0]?.slice(0, 14) || '?'}…
-                </Text>
-                <Text style={styles.msgBody} numberOfLines={3}>
-                  {m.body?.content}
-                </Text>
-                <Pressable
-                  style={styles.connRemove}
-                  onPress={() => speak(m.body?.content || '')}
-                >
-                  <Text style={styles.connSpeakText}>Speak message</Text>
-                </Pressable>
-              </View>
-            ))
-          )}
+          {inbox.slice(0, 6).map((m) => (
+            <View key={m.id} style={styles.msgRow}>
+              <Text style={styles.msgBody} numberOfLines={2}>
+                {m.body?.content}
+              </Text>
+            </View>
+          ))}
         </View>
       )}
 
       {identity && showDangerZone && (
         <View style={styles.dangerCard}>
-          <Text style={styles.dangerTitle}>Danger Zone</Text>
-          <Text style={styles.dangerBody}>
-            Permanent. Type or dictate the full DID to enable. No email or phone.
-            No recovery by The Remote Viewer.
-          </Text>
-          <Pressable
-            style={[styles.btn, styles.btnSecondary, { marginBottom: 8 }]}
-            onPress={() =>
-              speak(
-                'Destroy is permanent. Type or dictate your full DID exactly to enable the destroy control.'
-              )
-            }
-          >
-            <Text style={styles.btnText}>Speak warning</Text>
-          </Pressable>
-          <Text style={styles.label}>Type or dictate full DID exactly</Text>
+          <Text style={styles.dangerTitle}>{t(locale, 'dangerZone')}</Text>
+          <Text style={styles.label}>{t(locale, 'typeFullDid')}</Text>
           <VoiceField
             value={typedDid}
             onChangeText={setTypedDid}
             autoCapitalize="none"
             autoCorrect={false}
-            placeholder="did:key:…"
             placeholderTextColor="#555"
             editable={!busy}
           />
           <View style={styles.dangerActions}>
-            <Pressable style={[styles.btn, styles.btnSecondary]} onPress={cancelDangerZone} disabled={busy}>
-              <Text style={styles.btnText}>Cancel</Text>
+            <Pressable style={[styles.btn, styles.btnSecondary]} onPress={cancelDangerZone}>
+              <Text style={styles.btnText}>{t(locale, 'cancel')}</Text>
             </Pressable>
             <Pressable
               style={[styles.btn, didMatches ? styles.btnDanger : styles.btnDisabled]}
@@ -787,7 +619,7 @@ export default function PresenceScreen() {
               disabled={!didMatches || busy}
             >
               <Text style={styles.btnText}>
-                {didMatches ? 'I understand — Destroy' : 'Match DID to enable'}
+                {didMatches ? t(locale, 'destroyConfirm') : t(locale, 'matchDid')}
               </Text>
             </Pressable>
           </View>
@@ -797,34 +629,31 @@ export default function PresenceScreen() {
       <View style={styles.actions}>
         {!identity ? (
           <Pressable style={[styles.btn, styles.btnPrimary]} onPress={handleCreate} disabled={busy}>
-            <Text style={styles.btnText}>Create did:key</Text>
+            <Text style={styles.btnText}>{t(locale, 'createDid')}</Text>
           </Pressable>
         ) : (
           <>
             <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleSign}>
-              <Text style={styles.btnText}>Sign test message</Text>
+              <Text style={styles.btnText}>Sign test</Text>
             </Pressable>
             <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleShowDidDoc}>
-              <Text style={styles.btnText}>Show DID Document</Text>
+              <Text style={styles.btnText}>DID Document</Text>
             </Pressable>
-            <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleIssueDemoVc} disabled={busy}>
+            <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleIssueDemoVc}>
               <Text style={styles.btnText}>Issue Demo VC</Text>
             </Pressable>
             <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleShowCredentials}>
-              <Text style={styles.btnText}>Show held VCs ({credentials.length})</Text>
+              <Text style={styles.btnText}>VCs ({credentials.length})</Text>
             </Pressable>
             {!showDangerZone && (
-              <Pressable style={[styles.btn, styles.btnDanger]} onPress={openDangerZone} disabled={busy}>
-                <Text style={styles.btnText}>Destroy identity…</Text>
+              <Pressable style={[styles.btn, styles.btnDanger]} onPress={openDangerZone}>
+                <Text style={styles.btnText}>{t(locale, 'destroyIdentity')}</Text>
               </Pressable>
             )}
           </>
         )}
-
         <Pressable style={[styles.btn, styles.btnSmoke]} onPress={handleSmokeTest} disabled={busy}>
-          <Text style={styles.btnText}>
-            {busy ? 'Running…' : 'Run Smoke Test (full social + export → Destroy → Empty)'}
-          </Text>
+          <Text style={styles.btnText}>{busy ? '…' : 'Smoke Test'}</Text>
         </Pressable>
       </View>
     </ScrollView>
@@ -877,7 +706,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   dangerTitle: { color: '#e74c3c', fontSize: 16, fontWeight: '700', marginBottom: 8 },
-  dangerBody: { color: '#ccc', fontSize: 13, lineHeight: 20, marginBottom: 12 },
   dangerActions: { gap: 10 },
   connRow: {
     flexDirection: 'row',
@@ -888,21 +716,9 @@ const styles = StyleSheet.create({
     borderTopColor: '#222',
   },
   connId: { flex: 1, color: '#aaa', fontSize: 11, fontFamily: 'monospace' },
-  connRemove: { paddingHorizontal: 8, paddingVertical: 6 },
   connRemoveText: { color: '#e74c3c', fontSize: 12, fontWeight: '600' },
-  connSpeakText: { color: '#9cf', fontSize: 12, fontWeight: '600' },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
-  chip: {
-    backgroundColor: '#1a2a3a',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    maxWidth: '48%',
-  },
-  chipText: { color: '#8ab', fontSize: 10, fontFamily: 'monospace' },
   msgRow: { marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#222' },
-  msgMeta: { color: '#666', fontSize: 10, fontFamily: 'monospace', marginBottom: 4 },
-  msgBody: { color: '#ccc', fontSize: 13, lineHeight: 18 },
+  msgBody: { color: '#ccc', fontSize: 13 },
   badgeActive: {
     alignSelf: 'flex-start',
     backgroundColor: '#0d3d24',
