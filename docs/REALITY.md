@@ -1,6 +1,6 @@
 # Concepts → Reality Status
 
-Last updated: **2026-08-14** (Sovereign Social Layer locked; high-friction local Destroy gate; Phase 1 first cut demo VC; mobile did:key hardening; continuous beacon + Stage 1 validator list; Path B recognition + pool + mobile UI / Hydra / vending / verifier)
+Last updated: **2026-08-14** (on-device connection list — Social Layer slice 1; Sovereign Social Layer locked; high-friction Destroy gate; Phase 1 demo VC; mobile did:key; beacon + Path B surfaces)
 
 **Rule:** No marketing. **PROVEN** = ran under user control on device. Scripts in git alone are not PROVEN.
 
@@ -21,9 +21,10 @@ Last updated: **2026-08-14** (Sovereign Social Layer locked; high-friction local
 | Local age identity | **PROVEN** (device-held; not in git) |
 | Centralized key assignment | **REJECTED** |
 | Mobile Viewer ID (npub) + profile | **DEMONSTRATED** | Create / export / remove / linked social (X) / private message flows on-device 2026-08-13 |
-| Mobile did:key (Ed25519) + SecureStore | **DEMONSTRATED** | Hardened options; Create → Destroy → Empty; high-friction typed-DID gate; Expo Go exploration-only 2026-08-14 |
-| Local demo VC (issue / store / list / destroy-with-identity) | **DEMONSTRATED** | Phase 1 first cut; W3C-shaped self-issued scaffold; wiped on Destroy; no OpenID4VCI/VP yet 2026-08-14 |
-| Sovereign Social Layer (design) | **LOCKED** | On-device connection list + optional Nostr-compatible publication; social state dies with identity path; no central graph (`docs/locked/14`) 2026-08-14 |
+| Mobile did:key (Ed25519) + SecureStore | **DEMONSTRATED** | Hardened options; high-friction typed-DID Destroy gate; Expo Go exploration-only 2026-08-14 |
+| Local demo VC (issue / store / list / destroy-with-identity) | **DEMONSTRATED** | Phase 1 first cut; wiped on Destroy 2026-08-14 |
+| Sovereign Social Layer (design) | **LOCKED** | `docs/locked/14` — on-device list + optional Nostr publication; social state dies with identity |
+| On-device connection list (add / remove / list) | **DEMONSTRATED** | Slice 1; SecureStore; wiped on Destroy; no relays 2026-08-14 |
 
 ## Digital vending & first validator role
 
@@ -38,41 +39,40 @@ Last updated: **2026-08-14** (Sovereign Social Layer locked; high-friction local
 | Path B recognition package | **OPERATIONAL** | collect-proof → make-attestation → verify-submission → issue-founding → install-founding |
 | Path B builder guide | **PUBLISHED** | `docs/public/PATH-B-BUILDER.md` |
 | Public buy page (`buy.html` + QR) | **OPEN** | static storefront |
-| Mobile Shop (TRV credits / Solana / NFT mint / Aurora Borealis) | **DEMONSTRATED** | Credits balance, wallet connect, tiered mint, skin redeem/wear, field claim AR on-device 2026-08-13 |
-| Validator beacon (ed25519 signed liveness) | **PROVEN** | Format + freshness + optical + sign/verify on reference device |
-| Continuous Termux beacon loop | **IMPLEMENTED** | `modules/beacon/termux-start.sh` + wake-lock; PID/log under $HOME/trv-beacon |
-| Stage 1 bootstrap validator list + Path B liveness gate | **OPERATIONAL** | 1-of-1 originator list; `require-active.sh` + issue-founding enforcement (Stage 0 escape available) |
+| Mobile Shop (TRV credits / Solana / NFT mint / Aurora Borealis) | **DEMONSTRATED** | on-device 2026-08-13 |
+| Validator beacon (ed25519 signed liveness) | **PROVEN** | |
+| Continuous Termux beacon loop | **IMPLEMENTED** | |
+| Stage 1 bootstrap validator list + Path B liveness gate | **OPERATIONAL** | 1-of-1 originator |
 
 ## Transparency surfaces (requested)
 
 | Concept | Status |
 |---------|--------|
-| Local console UI (Path B / Pool / Nodes cards) | **PROVEN** | `apps/ui` — copy-to-Termux; 127.0.0.1 only |
-| Community Pool gross visibility | **OPERATIONAL** | `modules/pool/gross.sh` — public Solana memo volume; no custody; net not protocol-defined |
-| Validated-node count (per identity path) | **OPERATIONAL** | `modules/nodes/count.sh` |
-| Optional public tip publish + collect | **OPERATIONAL** | `modules/nodes/publish-tip.sh` + `collect-tips.sh` — no central registry |
+| Local console UI (Path B / Pool / Nodes cards) | **PROVEN** | `apps/ui` |
+| Community Pool gross visibility | **OPERATIONAL** | |
+| Validated-node count (per identity path) | **OPERATIONAL** | |
+| Optional public tip publish + collect | **OPERATIONAL** | |
 
 ## RAG & chat
 
 | Concept | Status |
 |---------|--------|
-| Chunk ingest + seed docs | **SCAFFOLD** (exercised on reference node) |
-| BM25 ranker (`modules/rag/bm25.py`) | **SCAFFOLD** (exercised) |
-| TF-IDF vector index + hybrid retrieve | **SCAFFOLD** (exercised; 12 vectors on ref node) |
-| Session memory (`memory.sh`) | **SCAFFOLD** |
+| Chunk ingest + seed docs | **SCAFFOLD** |
+| BM25 ranker | **SCAFFOLD** |
+| TF-IDF vector index + hybrid retrieve | **SCAFFOLD** |
+| Session memory | **SCAFFOLD** |
 | `scripts/chat.sh` front door | **SCAFFOLD** |
-| Neural llama.cpp embeddings | **OPTIONAL** (falls back to TF-IDF) |
+| Neural llama.cpp embeddings | **OPTIONAL** |
 
 ## Ops & sovereignty
 
 | Concept | Status |
 |---------|--------|
-| Defense / Hydra multi-head | **PROVEN** | seal + contribution + sales verifier + quarantine gate; PASS on GrapheneOS/Termux 2026-08-07 |
-| Contribution ledger | **PROVEN** | verify OK + verifier weight on reference node |
-| Local operator UI `127.0.0.1` | **PROVEN** | `apps/ui` console — copy-to-Termux commands; Hydra/vending/verifier/Path B/Pool/Nodes heads; no shell exec in browser |
-| Mobile client UI (Hub / Profile / Shop / Talk) | **DEMONSTRATED** | Full navigation, quick post, private message, linked social, wallet, NFT, Aurora skins, field claim on-device 2026-08-13 |
-| Mobile did:key identity surface | **DEMONSTRATED** | presence.ts + high-friction destroy gate + smoke test 2026-08-14 |
-| Mobile local demo VC surface | **DEMONSTRATED** | credentials.ts + issue/list/destroy-with-identity 2026-08-14 |
+| Defense / Hydra multi-head | **PROVEN** | |
+| Contribution ledger | **PROVEN** | |
+| Local operator UI `127.0.0.1` | **PROVEN** | |
+| Mobile client UI (Hub / Profile / Shop / Talk) | **DEMONSTRATED** | |
+| Mobile did:key + high-friction Destroy + demo VCs + connections | **DEMONSTRATED** | 2026-08-14 |
 | Termux reminders | **SCAFFOLD** |
 | Chain settlement / live DePIN | **NOT STARTED** |
 

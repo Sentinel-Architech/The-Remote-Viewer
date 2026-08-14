@@ -21,6 +21,12 @@ import {
   listDemoCredentials,
   DemoCredential,
 } from '../src/services/credentials';
+import {
+  addConnection,
+  removeConnection,
+  listConnections,
+  Connection,
+} from '../src/services/connections';
 
 export default function PresenceScreen() {
   const [identity, setIdentity] = useState<DidKeyIdentity | null>(null);
@@ -28,19 +34,28 @@ export default function PresenceScreen() {
   const [busy, setBusy] = useState(false);
   const [smokeResult, setSmokeResult] = useState<string | null>(null);
   const [credentials, setCredentials] = useState<DemoCredential[]>([]);
+  const [connections, setConnections] = useState<Connection[]>([]);
 
   // High-friction destroy gate (local only)
   const [showDangerZone, setShowDangerZone] = useState(false);
   const [typedDid, setTypedDid] = useState('');
 
+  // Connection add input
+  const [newConnectionId, setNewConnectionId] = useState('');
+
   const refresh = async () => {
     const current = await getCurrentDidKey();
     setIdentity(current);
     if (current) {
-      const list = await listDemoCredentials();
-      setCredentials(list);
+      const [creds, conns] = await Promise.all([
+        listDemoCredentials(),
+        listConnections(),
+      ]);
+      setCredentials(creds);
+      setConnections(conns);
     } else {
       setCredentials([]);
+      setConnections([]);
     }
   };
 
@@ -58,6 +73,7 @@ export default function PresenceScreen() {
       setIdentity(newIdentity);
       setSignature(null);
       setCredentials([]);
+      setConnections([]);
     } finally {
       setBusy(false);
     }
@@ -81,7 +97,7 @@ export default function PresenceScreen() {
 
     Alert.alert(
       'Final confirmation',
-      'This identity path will end permanently. There is no recovery by The Remote Viewer.',
+      'This identity path will end permanently. Connections and credentials held here will be wiped. There is no recovery by The Remote Viewer.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -94,6 +110,7 @@ export default function PresenceScreen() {
               setIdentity(null);
               setSignature(null);
               setCredentials([]);
+              setConnections([]);
               setSmokeResult(null);
               setShowDangerZone(false);
               setTypedDid('');
@@ -149,7 +166,37 @@ export default function PresenceScreen() {
     Alert.alert(`Held credentials (${credentials.length})`, summary);
   };
 
-  /** Smoke test: Create → Destroy → Assert Empty. Uses programmatic destroy (UI gate is for humans). */
+  const handleAddConnection = async () => {
+    const id = newConnectionId.trim();
+    if (!id) {
+      Alert.alert('Add connection', 'Paste a did:key or public identifier.');
+      return;
+    }
+    setBusy(true);
+    try {
+      const list = await addConnection(id);
+      setConnections(list);
+      setNewConnectionId('');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleRemoveConnection = (id: string) => {
+    Alert.alert('Remove connection?', id, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Remove',
+        style: 'destructive',
+        onPress: async () => {
+          const list = await removeConnection(id);
+          setConnections(list);
+        },
+      },
+    ]);
+  };
+
+  /** Smoke test includes connections wipe. */
   const handleSmokeTest = async () => {
     setBusy(true);
     setSmokeResult(null);
@@ -165,9 +212,12 @@ export default function PresenceScreen() {
       }
 
       await issueDemoCredential();
-      const mid = await listDemoCredentials();
-      if (mid.length < 1) {
-        setSmokeResult('FAIL: demo VC not stored');
+      await addConnection('did:key:smoke-test-peer');
+
+      const midCreds = await listDemoCredentials();
+      const midConns = await listConnections();
+      if (midCreds.length < 1 || midConns.length < 1) {
+        setSmokeResult('FAIL: VC or connection not stored');
         return;
       }
 
@@ -175,13 +225,21 @@ export default function PresenceScreen() {
 
       const afterId = await getCurrentDidKey();
       const afterCreds = await listDemoCredentials();
-      if (afterId === null && afterCreds.length === 0) {
-        setSmokeResult('PASS: Create → Issue VC → Destroy → Empty');
+      const afterConns = await listConnections();
+      if (
+        afterId === null &&
+        afterCreds.length === 0 &&
+        afterConns.length === 0
+      ) {
+        setSmokeResult('PASS: Create → VC + Connection → Destroy → Empty');
         setIdentity(null);
         setSignature(null);
         setCredentials([]);
+        setConnections([]);
       } else {
-        setSmokeResult('FAIL: identity or credentials remain after destroy');
+        setSmokeResult(
+          'FAIL: identity, credentials, or connections remain after destroy'
+        );
       }
     } catch (e) {
       setSmokeResult(`FAIL: ${e instanceof Error ? e.message : String(e)}`);
@@ -192,9 +250,11 @@ export default function PresenceScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.kicker}>LOCAL · SCAFFOLD · PHASE 1 FIRST CUT</Text>
+      <Text style={styles.kicker}>LOCAL · SCAFFOLD · SOCIAL SLICE 1</Text>
       <Text style={styles.title}>Identity</Text>
-      <Text style={styles.subtitle}>did:key · on-device only · demo VCs</Text>
+      <Text style={styles.subtitle}>
+        did:key · demo VCs · on-device connections
+      </Text>
 
       <View style={styles.card}>
         {identity ? (
@@ -212,6 +272,8 @@ export default function PresenceScreen() {
             </Text>
             <Text style={styles.label}>Held demo VCs</Text>
             <Text style={styles.mono}>{credentials.length}</Text>
+            <Text style={styles.label}>Connections</Text>
+            <Text style={styles.mono}>{connections.length}</Text>
             {signature && (
               <>
                 <Text style={styles.label}>Last signature</Text>
@@ -227,8 +289,8 @@ export default function PresenceScreen() {
               <Text style={styles.badgeTextIdle}>NO IDENTITY</Text>
             </View>
             <Text style={styles.hint}>
-              Create a local did:key. Keys never leave this device. Demo VCs are
-              wiped with the identity.
+              Create a local did:key. Keys, demo VCs, and connections never leave
+              this device and are wiped together on Destroy.
             </Text>
           </>
         )}
@@ -244,14 +306,58 @@ export default function PresenceScreen() {
         )}
       </View>
 
+      {/* Connections (only when identity active) */}
+      {identity && (
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Connections (on-device)</Text>
+          <Text style={styles.hint}>
+            Local list only. No relays. Wiped on Destroy.
+          </Text>
+          <TextInput
+            style={styles.didInput}
+            value={newConnectionId}
+            onChangeText={setNewConnectionId}
+            autoCapitalize="none"
+            autoCorrect={false}
+            placeholder="Paste did:key or public id"
+            placeholderTextColor="#555"
+            editable={!busy}
+          />
+          <Pressable
+            style={[styles.btn, styles.btnSecondary]}
+            onPress={handleAddConnection}
+            disabled={busy}
+          >
+            <Text style={styles.btnText}>Add connection</Text>
+          </Pressable>
+          {connections.length === 0 ? (
+            <Text style={[styles.hint, { marginTop: 12 }]}>No connections yet.</Text>
+          ) : (
+            connections.map((c) => (
+              <View key={c.id} style={styles.connRow}>
+                <Text selectable style={styles.connId} numberOfLines={2}>
+                  {c.label ? `${c.label} · ` : ''}{c.id}
+                </Text>
+                <Pressable
+                  style={styles.connRemove}
+                  onPress={() => handleRemoveConnection(c.id)}
+                >
+                  <Text style={styles.connRemoveText}>Remove</Text>
+                </Pressable>
+              </View>
+            ))
+          )}
+        </View>
+      )}
+
       {/* High-friction Danger Zone */}
       {identity && showDangerZone && (
         <View style={styles.dangerCard}>
           <Text style={styles.dangerTitle}>Danger Zone</Text>
           <Text style={styles.dangerBody}>
-            This action is permanent.\n\n• Your TRV identity path will end.\n• All
-            TRV-issued / demo credentials held here will be destroyed.\n• There is
-            no recovery by The Remote Viewer.\n\nType the full DID below to enable
+            This action is permanent.\n\n• Your TRV identity path will end.\n• Demo
+            VCs and on-device connections for this path will be destroyed.\n• There
+            is no recovery by The Remote Viewer.\n\nType the full DID below to enable
             destruction. No email or phone is used.
           </Text>
           <Text style={styles.label}>Type full DID exactly</Text>
@@ -336,7 +442,9 @@ export default function PresenceScreen() {
           disabled={busy}
         >
           <Text style={styles.btnText}>
-            {busy ? 'Running…' : 'Run Smoke Test (Create → VC → Destroy → Empty)'}
+            {busy
+              ? 'Running…'
+              : 'Run Smoke Test (Create → VC + Conn → Destroy → Empty)'}
           </Text>
         </Pressable>
       </View>
@@ -373,6 +481,12 @@ const styles = StyleSheet.create({
     borderColor: '#222',
     marginBottom: 24,
   },
+  sectionTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
   dangerCard: {
     backgroundColor: '#1a0a0a',
     borderRadius: 12,
@@ -403,10 +517,34 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 12,
     fontFamily: 'monospace',
+    marginTop: 8,
     marginBottom: 12,
   },
   dangerActions: {
     gap: 10,
+  },
+  connRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#222',
+  },
+  connId: {
+    flex: 1,
+    color: '#aaa',
+    fontSize: 11,
+    fontFamily: 'monospace',
+  },
+  connRemove: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  connRemoveText: {
+    color: '#e74c3c',
+    fontSize: 12,
+    fontWeight: '600',
   },
   badgeActive: {
     alignSelf: 'flex-start',
@@ -445,6 +583,7 @@ const styles = StyleSheet.create({
   hint: {
     color: '#888',
     lineHeight: 20,
+    fontSize: 13,
   },
   smoke: {
     marginTop: 14,

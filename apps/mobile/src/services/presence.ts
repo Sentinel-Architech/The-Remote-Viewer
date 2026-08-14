@@ -4,6 +4,7 @@ import { base58btc } from 'multiformats/bases/base58';
 import { Buffer } from 'buffer';
 import { destroyDidCommState } from './didcomm';
 import { destroyAllDemoCredentials } from './credentials';
+import { destroyAllConnections } from './connections';
 
 const ED25519_MULTICODEC = new Uint8Array([0xed, 0x01]);
 
@@ -71,7 +72,8 @@ export async function destroyDidKey() {
   await SecureStore.deleteItemAsync(STORAGE_PRIVATE);
   await SecureStore.deleteItemAsync(STORAGE_DID);
   await destroyDidCommState();
-  await destroyAllDemoCredentials(); // Phase 1: credentials die with identity
+  await destroyAllDemoCredentials();
+  await destroyAllConnections(); // Social state dies with identity
 }
 
 export async function signWithDidKey(message: string): Promise<string | null> {
