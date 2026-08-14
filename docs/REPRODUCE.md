@@ -18,13 +18,17 @@ cd The-Remote-Viewer
 # age (https://github.com/FiloSottile/age)
 # llama.cpp (optional, for MoE stages)
 # jq, sha256sum, basic shell utilities
+# Rust / cargo (Termux: `pkg install rust`)
 
 # 3. Verify Hydra
 bash modules/defense/integrity-pulse.sh
 # Expected: RESULT: PASS (or clear quarantine instructions)
 
-# 4. Optical air-gap self-test (if age + camera path available)
-# Follow optical-airgap/ scripts; expected: full age → LT → peel → decrypt cycle succeeds
+# 4. Optical air-gap self-test
+bash optical-airgap/scripts/vault-setup.sh
+bash optical-airgap/scripts/e2e-age-lt.sh "hello-sentinel-test"
+# Expected: ==> e2e-age-lt OK
+bash optical-airgap/scripts/vault-destroy.sh   # Destroy = Restart after test
 
 # 5. Path B collect-proof
 bash modules/path-b-recognition/collect-proof.sh
@@ -33,15 +37,39 @@ bash modules/path-b-recognition/collect-proof.sh
 
 ## Expected Outcomes
 - Hydra pulse returns PASS on a clean reference node.
-- Optical pipeline produces a decryptable `.trvl` under user control.
+- Optical pipeline produces a decryptable result under user control.
 - Integrity Verifier can produce `overall_ok=1` attestation.
 - No private keys or vault material leave the device.
 
+## Measured Optical Result (Reference Hardware)
+
+**Device:** GrapheneOS + Termux (Pixel-class)  
+**Date:** 2026-08-13  
+**Command:** `bash optical-airgap/scripts/e2e-age-lt.sh "hello-sentinel-test"`
+
+```
+==> keygen
+==> encrypt
+==> frame-stream (Soliton, exact-len)
+frame-stream: k=11 block_size=32 symbols=55 mode=soliton exact-len
+==> frame-peel
+peel ok ingested=35 errors=0 exact_len=320
+==> decrypt
+hello-sentinel-test
+==> e2e-age-lt OK
+```
+
+**Summary of this run**
+- Full age → Robust Soliton LT → peel → decrypt succeeded.
+- 0 decode errors.
+- Local pipeline (no camera) is confirmed working on the reference device.
+
 ## Known Practical Limits (Optical)
-- QR Version 40 ≈ 2.9 KB binary per frame.
+- QR Version 40 ≈ 2.9 KB binary per frame (theoretical).
 - Real-world phone camera throughput under normal conditions is typically low (often single-digit KB/s).
 - Soliton LT improves reliability against lost frames; it does not remove the physical channel bottleneck.
 - Large packs should use hybrid (file + optical) delivery.
+- Camera-based transfer numbers are still to be measured under controlled lighting conditions.
 
 ## Threat Model
 See [`docs/security/threat-model.md`](security/threat-model.md) for residual risks on the proven surfaces (manual delivery channel, originator-gated recognition, optical environmental variance, etc.).
