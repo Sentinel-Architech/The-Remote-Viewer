@@ -2,19 +2,34 @@
 
 **SCAFFOLD.** No production security claims. No audit. No mainnet.
 
-## Track A — Solana
+## Track A — Solana (`solana/`)
 
-**Instruction surface: complete for scaffold phase** (see `solana/PROGRAM.md`).
-
-| Area | State |
+| Item | State |
 |------|--------|
-| Program + accounts | Config, Node, Sub, Entitlement, Proposal, VoteRecord |
-| Tests | Happy path, cancel, entitlement (`solana/tests/`) |
+| Instruction surface | Complete for scaffold — see `solana/PROGRAM.md` |
+| Tests | Written; **run on build host / CI only** |
 | Program id | **PLACEHOLDER** |
-| Deploy | **Not on devnet** |
-| Next hard step | Build host: `anchor build` / `anchor test` / real id / CI green |
+| Deploy | Not on devnet |
+| Pixel | Source readable; **no Anchor build** |
 
-## Parallel EVM — not Track A  
-## Mobile — PARKED  
-## Path B founders: **0**  
-## Locked: `docs/locked/` 15–21
+## Parallel — EVM (`contracts/`)
+
+| Item | State |
+|------|--------|
+| Governor + TRVVotes + Timelock | Hardened threshold 1 ether |
+| Tests | **9/9 PASS on Pixel Anvil** (2026-08-14) |
+| Role | Learning / parallel — not Track A |
+
+## Mobile
+
+**PARKED** (Expo Go no-go on GrapheneOS).
+
+## Operator
+
+See `docs/PIXEL-OPERATOR.md`.
+
+## Path B founders: **0**
+
+## Locked values
+
+`docs/locked/` 15–21.
