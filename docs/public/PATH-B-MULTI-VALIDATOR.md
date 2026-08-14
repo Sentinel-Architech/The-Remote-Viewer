@@ -2,13 +2,13 @@
 
 **Status:** Design sketch (public)  
 **Last aligned:** 2026-08-13  
-**Authority:** This file + locked docs 04 & 17 + `docs/REALITY.md`
+**Authority:** This file + `docs/public/BEACON.md` + locked docs 04 & 17 + `docs/REALITY.md`
 
 This document describes how Path B Independent Completion recognition moves from a single originator gate to a multi-validator model.
 
 **Hard constraints:**
 - Zero centralization — no required platform, server, or single party
-- Every active validator must run a continuous process / beacon
+- Every active validator must run a continuous process / beacon (see `BEACON.md`)
 - Private keys never leave the builder’s device
 - Destroy = Restart remains absolute
 - Packs stay paid
@@ -46,16 +46,20 @@ This stage is honest about centralization. It is the starting point, not the end
 
 ### Validator liveness rule (hard)
 
-1. Every validator that wishes to be counted must run a continuous process or beacon.
-2. The beacon / heartbeat must be independently verifiable by other parties.
-3. The beacon must **not** depend on any platform, originator-controlled server, or single required endpoint.
-4. Multiple transports are allowed (local network, optical, public non-custodial channels, etc.). Implementations may differ as long as the signal is continuous and independently checkable.
-5. Only validators that are currently demonstrating liveness are counted toward the recognition threshold.
+Normative detail is in [`docs/public/BEACON.md`](BEACON.md).
+
+Summary:
+
+1. Every validator that wishes to be counted must emit a continuous beacon.
+2. The beacon is independently verifiable; no platform or originator-controlled endpoint is required.
+3. Multiple transports are allowed (local, optical, public non-custodial log, file/air-gap). At least one must be active.
+4. Default freshness window: **30 minutes**. Default emission interval: **5 minutes**.
+5. Only validators that currently pass liveness checks are counted toward the recognition threshold.
 6. Failure or silence of any single validator (including the originator) must not halt the system once the active set is large enough.
 
 ### Recognition rules
 
-1. A published validator list exists.
+1. A published validator list exists for the current epoch.
 2. A Path B submission is accepted when it reaches a threshold of *currently active* validators (example: 2-of-3 or 3-of-5 of the live set).
 3. Each validator checks the attestation offline using the public checklist and proof format.
 4. The founding artifact carries multiple validator signatures (or equivalent threshold proof) from active validators only.
@@ -88,7 +92,7 @@ This stage is honest about centralization. It is the starting point, not the end
 **Goal:** Clear, public criteria for any Founding member to become a validator.
 
 - Admission rules are published in advance.
-- Liveness requirement continues to apply.
+- Liveness requirement continues to apply (`BEACON.md`).
 - No mandatory proprietary infrastructure.
 - No single party can block admission if the published criteria are met.
 
@@ -119,9 +123,10 @@ This stage is honest about centralization. It is the starting point, not the end
 
 ## Relationship to existing documents
 
-- Locked doc 04 (Founding Sovereign Viewer) and 17 (Validator Node First Role) remain authoritative for rights and constraints.
-- `docs/public/PATH-B-BUILDER.md`, `PATH-B-FINISHED.md`, and `PATH-B-SUBMISSION.md` describe the current (Stage 0) builder experience.
-- This file describes the trajectory for decentralizing recognition under the hard constraints above.
+- [`docs/public/BEACON.md`](BEACON.md) — normative beacon format, transports, and verification
+- Locked doc 04 (Founding Sovereign Viewer) and 17 (Validator Node First Role) remain authoritative for rights and constraints
+- `docs/public/PATH-B-BUILDER.md`, `PATH-B-FINISHED.md`, and `PATH-B-SUBMISSION.md` describe the current (Stage 0) builder experience
+- This file describes the trajectory for decentralizing recognition under the hard constraints above
 
 ---
 
