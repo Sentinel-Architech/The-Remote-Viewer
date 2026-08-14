@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TRV — Show validator beacon</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0d0f12;
+      --card: #161a20;
+      --text: #e8eaed;
+      --muted: #9aa0a6;
+      --accent: #7dd3fc;
+      --danger: #f87171;
+      --ok: #4ade80;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.25rem;
+    }
+    h1 { font-size: 1.25rem; margin: 0 0 0.35rem; font-weight: 600; }
+    .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem; text-align: center; max-width: 28rem; }
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 1.25rem;
+      width: 100%;
+      max-width: 28rem;
+    }
+    label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.4rem; }
+    textarea {
+      width: 100%;
+      min-height: 6rem;
+      border: 1px solid #2a3038;
+      border-radius: 8px;
+      background: #0d0f12;
+      color: var(--text);
+      padding: 0.75rem;
+      font-family: ui-monospace, monospace;
+      font-size: 0.8rem;
+      resize: vertical;
+    }
+    textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
+    .note {
+      margin: 0.85rem 0;
+      padding: 0.65rem 0.75rem;
+      border-radius: 8px;
+      background: rgba(125, 211, 252, 0.1);
+      color: var(--accent);
+      font-size: 0.82rem;
+      line-height: 1.35;
+    }
+    .row { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .primary { background: var(--accent); color: #0d0f12; }
+    .quiet { background: #2a3038; color: var(--text); }
+    #qr-wrap {
+      margin-top: 1.25rem;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    #qr-wrap.on { display: flex; }
+    canvas {
+      background: #fff;
+      border-radius: 8px;
+      max-width: 100%;
+    }
+    .ok { color: var(--ok); font-size: 0.85rem; }
+    .err { color: var(--danger); font-size: 0.85rem; margin-top: 0.5rem; }
+    footer {
+      margin-top: 1.5rem;
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-align: center;
+      max-width: 28rem;
+    }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <h1>Show validator beacon</h1>
+  <p class="sub">
+    Paste a <code>TRV-BEACON/1</code> line.  
+    This is a liveness signal only — no private keys, no buyer data.
+  </p>
+
+  <div class="card">
+    <label for="beacon">Beacon text</label>
+    <textarea id="beacon" placeholder="TRV-BEACON/1&#10;validator=...&#10;seq=...&#10;ts=...&#10;epoch=...&#10;sig=..." spellcheck="false" autocomplete="off"></textarea>
+
+    <div class="note">
+      Optical transport for validator liveness.  
+      Anyone can scan and verify independently. No platform required.
+    </div>
+
+    <div class="row">
+      <button type="button" class="primary" id="render">Show QR</button>
+      <button type="button" class="quiet" id="clear">Clear</button>
+    </div>
+    <div id="msg" class="err" hidden></div>
+
+    <div id="qr-wrap">
+      <canvas id="qr"></canvas>
+      <div class="ok">Beacon QR — scan to verify liveness</div>
+    </div>
+  </div>
+
+  <footer>
+    Offline · no network · no custody ·
+    <a href="../../docs/public/BEACON.md">Beacon spec</a> ·
+    <a href="https://github.com/Sentinel-Archetecht/The-Remote-Viewer">The Remote Viewer</a>
+  </footer>
+
+  <script src="../../optical-airgap/optical/qrcode-lite.js"></script>
+  <script>
+    (function () {
+      const input = document.getElementById("beacon");
+      const renderBtn = document.getElementById("render");
+      const clearBtn = document.getElementById("clear");
+      const wrap = document.getElementById("qr-wrap");
+      const canvas = document.getElementById("qr");
+      const msg = document.getElementById("msg");
+
+      function showError(text) {
+        msg.hidden = !text;
+        msg.textContent = text || "";
+        wrap.classList.remove("on");
+      }
+
+      function normalize(text) {
+        return (text || "").trim().replace(/\r\n/g, "\n");
+      }
+
+      function looksLikeBeacon(s) {
+        const t = normalize(s);
+        if (!t) return false;
+        if (t.indexOf("TRV-BEACON/1") === -1) return false;
+        if (t.indexOf("AGE-SECRET-KEY") !== -1) return false;
+        return true;
+      }
+
+      renderBtn.addEventListener("click", function () {
+        const raw = normalize(input.value);
+        if (!raw) {
+          showError("Paste a TRV-BEACON/1 text first.");
+          return;
+        }
+        if (raw.indexOf("AGE-SECRET-KEY") !== -1) {
+          showError("Private key material detected. Beacons must never contain secrets.");
+          return;
+        }
+        if (!looksLikeBeacon(raw)) {
+          showError("Expected text containing TRV-BEACON/1");
+          return;
+        }
+        try {
+          if (typeof TRVQR === "undefined" || !TRVQR.drawCanvas) {
+            showError("QR library failed to load. Serve from the repo root (see BEACON.md).");
+            return;
+          }
+          // Single string for QR — collapse newlines to keep payload compact
+          const payload = raw.replace(/\n+/g, "|");
+          TRVQR.drawCanvas(canvas, payload, { cellSize: 5 });
+          wrap.classList.add("on");
+          msg.hidden = true;
+        } catch (e) {
+          showError(e.message || "Could not draw QR (payload may be too large for qrcode-lite)");
+        }
+      });
+
+      clearBtn.addEventListener("click", function () {
+        input.value = "";
+        wrap.classList.remove("on");
+        showError("");
+      });
+    })();
+  </script>
+</body>
+</html>

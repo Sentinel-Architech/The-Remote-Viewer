@@ -78,6 +78,15 @@ A validator is active if **at least one** of the following yields a valid, fresh
 
 No transport is privileged. A validator may use only optical, only local, only a public log, or any combination.
 
+### Optical helper (repo)
+
+Paste a `TRV-BEACON/1` text and display it as a QR:
+
+- Page: [`modules/beacon/show-beacon.html`](../../modules/beacon/show-beacon.html)
+- Serve from the repo root, then open:
+  `http://127.0.0.1:<port>/modules/beacon/show-beacon.html`
+- Uses the existing offline `qrcode-lite.js` (no CDN).
+
 ---
 
 ## Verification algorithm (normative)
@@ -109,6 +118,14 @@ trv-beacon emit --key <validator-key> --interval 300
 ```bash
 trv-beacon check --from <path-or-scan> --max-age 1800
 # exit 0 = active, non-zero = stale/invalid
+```
+
+**Show (optical)**
+
+```bash
+# from repo root
+python -m http.server 8766
+# open modules/beacon/show-beacon.html and paste beacon text
 ```
 
 Path B Stage 1 verification only accepts signatures from validators that currently pass the check.
