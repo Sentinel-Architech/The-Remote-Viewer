@@ -1,5 +1,5 @@
 /**
- * Condensed rights + integrity floor — one surface, no value sacrifice.
+ * Condensed values floor — rights, integrity, cannabis OK, no sacrifice.
  */
 
 import React, { useEffect, useState } from 'react';
@@ -57,6 +57,12 @@ export function ValuesFloorPanel({ locale = 'en' }: Props) {
         {isEs
           ? 'Adulto solo detrás de XXX.'
           : 'Adult content only behind XXX.'}
+      </Text>
+
+      <Text style={[styles.line, styles.gap]}>
+        {isEs
+          ? 'Cannabis: 100% aceptable en TRV. No es consejo médico. La ley fuera de TRV es responsabilidad de cada Viewer.'
+          : 'Cannabis: 100% acceptable in TRV. Not medical advice. Law outside TRV is each Viewer’s responsibility.'}
       </Text>
 
       <Text style={[styles.line, styles.gap]}>
