@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  Button,
   StyleSheet,
   Alert,
   ScrollView,
@@ -15,12 +14,13 @@ import {
   signWithDidKey,
   buildDidDocument,
   DidKeyIdentity,
-} from '../services/presence';
+} from '../src/services/presence';
 
 export default function PresenceScreen() {
   const [identity, setIdentity] = useState<DidKeyIdentity | null>(null);
   const [signature, setSignature] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [smokeResult, setSmokeResult] = useState<string | null>(null);
 
   const refresh = async () => {
     const current = await getCurrentDidKey();
@@ -33,6 +33,7 @@ export default function PresenceScreen() {
 
   const handleCreate = async () => {
     setBusy(true);
+    setSmokeResult(null);
     try {
       const newIdentity = await createDidKey();
       setIdentity(newIdentity);
@@ -55,6 +56,7 @@ export default function PresenceScreen() {
             await destroyDidKey();
             setIdentity(null);
             setSignature(null);
+            setSmokeResult(null);
           },
         },
       ]
@@ -72,6 +74,37 @@ export default function PresenceScreen() {
     if (!identity) return;
     const doc = buildDidDocument(identity);
     Alert.alert('DID Document', JSON.stringify(doc, null, 2));
+  };
+
+  /** Smoke test: Create → Destroy → Assert Empty. Documents Destroy = Restart. */
+  const handleSmokeTest = async () => {
+    setBusy(true);
+    setSmokeResult(null);
+    try {
+      // Ensure clean start
+      await destroyDidKey();
+
+      const created = await createDidKey();
+      if (!created?.did) {
+        setSmokeResult('FAIL: create returned no DID');
+        return;
+      }
+
+      await destroyDidKey();
+
+      const after = await getCurrentDidKey();
+      if (after === null) {
+        setSmokeResult('PASS: Create → Destroy → Empty');
+        setIdentity(null);
+        setSignature(null);
+      } else {
+        setSmokeResult('FAIL: identity still present after destroy');
+      }
+    } catch (e) {
+      setSmokeResult(`FAIL: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -113,6 +146,16 @@ export default function PresenceScreen() {
             </Text>
           </>
         )}
+        {smokeResult && (
+          <Text
+            style={[
+              styles.smoke,
+              smokeResult.startsWith('PASS') ? styles.smokePass : styles.smokeFail,
+            ]}
+          >
+            {smokeResult}
+          </Text>
+        )}
       </View>
 
       <View style={styles.actions}>
@@ -137,6 +180,16 @@ export default function PresenceScreen() {
             </Pressable>
           </>
         )}
+
+        <Pressable
+          style={[styles.btn, styles.btnSmoke]}
+          onPress={handleSmokeTest}
+          disabled={busy}
+        >
+          <Text style={styles.btnText}>
+            {busy ? 'Running…' : 'Run Smoke Test (Create → Destroy → Empty)'}
+          </Text>
+        </Pressable>
       </View>
     </ScrollView>
   );
@@ -209,6 +262,13 @@ const styles = StyleSheet.create({
     color: '#888',
     lineHeight: 20,
   },
+  smoke: {
+    marginTop: 14,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  smokePass: { color: '#2ecc71' },
+  smokeFail: { color: '#e74c3c' },
   actions: {
     gap: 10,
   },
@@ -220,5 +280,6 @@ const styles = StyleSheet.create({
   btnPrimary: { backgroundColor: '#1a7f4b' },
   btnSecondary: { backgroundColor: '#1e1e1e', borderWidth: 1, borderColor: '#333' },
   btnDanger: { backgroundColor: '#5c1a1a' },
+  btnSmoke: { backgroundColor: '#1a2a3a', borderWidth: 1, borderColor: '#2a4a5a' },
   btnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
 });

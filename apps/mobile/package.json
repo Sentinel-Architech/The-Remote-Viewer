@@ -11,8 +11,13 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@noble/ed25519": "^2.2.3",
+    "buffer": "^6.0.3",
     "expo": "~57.0.10",
+    "expo-crypto": "~15.0.0",
+    "expo-secure-store": "~15.0.0",
     "expo-status-bar": "~57.0.1",
+    "multiformats": "^13.3.1",
     "react": "19.2.8",
     "react-native": "0.86.2"
   },

@@ -2,7 +2,7 @@
 
 Expo + React Native + TypeScript client for The Remote Viewer.
 
-## Current status (July 2026)
+## Current status (2026-08-14)
 
 | Piece | Status |
 |-------|--------|
