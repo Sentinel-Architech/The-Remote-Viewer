@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # TRV validator beacon checker — local, offline
-# Format + freshness + optional ed25519 verify
 # See docs/public/BEACON.md
 set -euo pipefail
 
@@ -15,10 +14,8 @@ Usage: bash modules/beacon/check.sh --from <file|-> [--max-age <sec>] [--pubkey 
 
   --from       Beacon file, or - for stdin
   --max-age    Freshness window seconds (default 1800)
-  --pubkey     OpenSSL ed25519 public key PEM (or TRV_BEACON_PUBKEY)
+  --pubkey     OpenSSL ed25519 public key PEM
   --allow-dev  Accept sig=DEV-UNSIGNED (dry-run only)
-
-Exit: 0 active | 1 fail | 2 usage
 EOF
 }
 
@@ -90,9 +87,8 @@ if [[ "$SIG" == "DEV-UNSIGNED" ]]; then
   exit 1
 fi
 
-# Real signature path
 if [[ -z "$PUBKEY" ]]; then
-  echo "FAIL: sig present but no --pubkey / TRV_BEACON_PUBKEY to verify"
+  echo "FAIL: sig present but no --pubkey / TRV_BEACON_PUBKEY"
   exit 1
 fi
 if [[ ! -f "$PUBKEY" ]]; then
@@ -103,14 +99,14 @@ if ! command -v openssl >/dev/null 2>&1; then
   echo "FAIL: openssl not found"; exit 1
 fi
 
-TMPDIR=$(mktemp -d)
-trap 'rm -rf "$TMPDIR"' EXIT
-printf '%s' "$SIG" | openssl base64 -d -A > "$TMPDIR/sig.bin" 2>/dev/null || {
+TMP=$(mktemp -d)
+trap 'rm -rf "$TMP"' EXIT
+printf '%s' "$SIG" | openssl base64 -d -A > "$TMP/sig.bin" 2>/dev/null || {
   echo "FAIL: sig not valid base64"; exit 1
 }
-printf '%s' "$body" > "$TMPDIR/body"
+printf '%s' "$body" > "$TMP/body"
 
-if openssl pkeyutl -verify -pubin -inkey "$PUBKEY" -sigfile "$TMPDIR/sig.bin" -in "$TMPDIR/body" >/dev/null 2>&1; then
+if openssl pkeyutl -verify -pubin -inkey "$PUBKEY" -sigfile "$TMP/sig.bin" -in "$TMP/body" >/dev/null 2>&1; then
   echo "OK: validator=$VALIDATOR seq=$SEQ age=${AGE}s epoch=$EPOCH sig=ed25519"
   exit 0
 fi

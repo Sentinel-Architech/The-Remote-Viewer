@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # TRV validator beacon emitter — local, offline
-# Writes $HOME/trv-beacon/latest (and history)
 # See docs/public/BEACON.md
 set -euo pipefail
 
@@ -16,18 +15,15 @@ usage() {
   cat <<EOF
 Usage: bash modules/beacon/emit.sh --validator <id> [--key <ed25519.pem>] [--epoch <n>] [--once|--loop]
 
-  --validator   Public identity string published in the validator list
-  --key         Path to OpenSSL ed25519 private key (PEM). Or TRV_BEACON_KEY.
-                If omitted → sig=DEV-UNSIGNED (dry-run only).
-  --epoch       Recognition epoch (default: 1)
-  --once        Emit once and exit (default)
-  --loop        Emit every TRV_BEACON_INTERVAL seconds (default 300)
+  --validator   Public identity string
+  --key         OpenSSL ed25519 private key PEM (or TRV_BEACON_KEY)
+  --epoch       Recognition epoch (default 1)
+  --once        Emit once (default)
+  --loop        Emit every TRV_BEACON_INTERVAL seconds
 
-Generate a keypair (once):
-  openssl genpkey -algorithm ed25519 -out "\$HOME/trv-beacon/validator.pem"
-  openssl pkey -in "\$HOME/trv-beacon/validator.pem" -pubout -out "\$HOME/trv-beacon/validator.pub"
-
-Writes: $LATEST , history.log , state
+Keypair:
+  openssl genpkey -algorithm ed25519 -out \$HOME/trv-beacon/validator.pem
+  openssl pkey -in \$HOME/trv-beacon/validator.pem -pubout -out \$HOME/trv-beacon/validator.pub
 EOF
 }
 
@@ -60,7 +56,7 @@ sign_body() {
   local body="$1"
   if [[ -z "$KEY_FILE" ]]; then
     echo "DEV-UNSIGNED"
-    return
+    return 0
   fi
   if [[ ! -f "$KEY_FILE" ]]; then
     echo "error: key file not found: $KEY_FILE" >&2
@@ -70,8 +66,23 @@ sign_body() {
     echo "error: openssl not found (pkg install openssl)" >&2
     exit 1
   fi
-  # Sign raw body; output base64 (single line)
-  printf '%s' "$body" | openssl pkeyutl -sign -inkey "$KEY_FILE" 2>/dev/null | openssl base64 -A
+
+  local tmp
+  tmp=$(mktemp)
+  printf '%s' "$body" > "$tmp"
+  # ed25519 requires a seekable input (no pipes) on many OpenSSL builds
+  local sig
+  if ! sig=$(openssl pkeyutl -sign -inkey "$KEY_FILE" -in "$tmp" 2>/dev/null | openssl base64 -A); then
+    rm -f "$tmp"
+    echo "error: openssl pkeyutl -sign failed" >&2
+    exit 1
+  fi
+  rm -f "$tmp"
+  if [[ -z "$sig" ]]; then
+    echo "error: empty signature (openssl sign produced no output)" >&2
+    exit 1
+  fi
+  printf '%s' "$sig"
 }
 
 emit_one() {
