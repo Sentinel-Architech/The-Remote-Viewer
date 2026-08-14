@@ -50,11 +50,13 @@ import { t, Locale } from '../src/i18n/strings';
 type Props = {
   locale?: Locale;
   onLocaleChange?: () => void;
+  onReplayTutorial?: () => void;
 };
 
 export default function PresenceScreen({
   locale = 'en',
   onLocaleChange,
+  onReplayTutorial,
 }: Props) {
   const [identity, setIdentity] = useState<DidKeyIdentity | null>(null);
   const [signature, setSignature] = useState<string | null>(null);
@@ -157,11 +159,6 @@ export default function PresenceScreen({
     setTypedDid('');
     setShowDangerZone(true);
     setShowOpticalShare(false);
-    speak(
-      locale === 'es'
-        ? 'Zona de peligro. Escriba o dicte su DID completo para habilitar la destrucción.'
-        : 'Danger zone. Type or dictate your full DID to enable destruction.'
-    );
   };
 
   const cancelDangerZone = () => {
@@ -177,8 +174,8 @@ export default function PresenceScreen({
     Alert.alert(
       locale === 'es' ? 'Confirmación final' : 'Final confirmation',
       locale === 'es'
-        ? 'Esta ruta de identidad terminará permanentemente. No hay recuperación por The Remote Viewer.'
-        : 'This identity path will end permanently. There is no recovery by The Remote Viewer.',
+        ? 'Esta ruta de identidad terminará permanentemente.'
+        : 'This identity path will end permanently.',
       [
         { text: t(locale, 'cancel'), style: 'cancel' },
         {
@@ -200,11 +197,6 @@ export default function PresenceScreen({
               setShowDangerZone(false);
               setTypedDid('');
               setShowOpticalShare(false);
-              speak(
-                locale === 'es'
-                  ? 'Ruta de identidad destruida.'
-                  : 'Identity path destroyed.'
-              );
             } finally {
               setBusy(false);
             }
@@ -230,10 +222,7 @@ export default function PresenceScreen({
     setBusy(true);
     try {
       const entry = await issueDemoCredential();
-      if (!entry) {
-        Alert.alert('Issue failed', 'No active identity.');
-        return;
-      }
+      if (!entry) return;
       setCredentials(await listDemoCredentials());
       Alert.alert('Demo VC issued', entry.id);
     } finally {
@@ -409,6 +398,7 @@ export default function PresenceScreen({
         locale={locale}
         onLocaleChange={onLocaleChange}
         identityActive={!!identity}
+        onReplayTutorial={onReplayTutorial}
       />
 
       <View style={styles.card}>
