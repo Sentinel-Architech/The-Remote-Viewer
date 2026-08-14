@@ -6,7 +6,6 @@ import {
   Alert,
   ScrollView,
   Pressable,
-  TextInput,
   Share,
 } from 'react-native';
 import {
@@ -43,6 +42,8 @@ import {
   buildFollowListEvent,
   LocalProfile,
 } from '../src/services/profile';
+import { speak } from '../src/services/voice';
+import { VoiceField } from '../src/components/VoiceField';
 
 export default function PresenceScreen() {
   const [identity, setIdentity] = useState<DidKeyIdentity | null>(null);
@@ -96,6 +97,22 @@ export default function PresenceScreen() {
     refresh();
   }, []);
 
+  const statusSummary = () => {
+    if (!identity) return 'No identity. Create a local did key to begin.';
+    return [
+      'Identity active.',
+      profile?.displayName ? `Profile ${profile.displayName}.` : 'No profile name.',
+      `${credentials.length} credentials.`,
+      `${connections.length} connections.`,
+      `${inbox.length} local messages.`,
+      smokeResult || '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+  };
+
+  const handleReadStatus = () => speak(statusSummary());
+
   const handleCreate = async () => {
     setBusy(true);
     setSmokeResult(null);
@@ -112,6 +129,7 @@ export default function PresenceScreen() {
       setProfile(null);
       setProfileName('');
       setProfileAbout('');
+      speak('Identity created.');
     } finally {
       setBusy(false);
     }
@@ -121,6 +139,9 @@ export default function PresenceScreen() {
     setTypedDid('');
     setShowDangerZone(true);
     setShowOpticalShare(false);
+    speak(
+      'Danger zone. Type or dictate your full DID to enable destruction. This cannot be undone by The Remote Viewer.'
+    );
   };
 
   const cancelDangerZone = () => {
@@ -158,6 +179,7 @@ export default function PresenceScreen() {
               setShowDangerZone(false);
               setTypedDid('');
               setShowOpticalShare(false);
+              speak('Identity path destroyed. You may create a new path at any time.');
             } finally {
               setBusy(false);
             }
@@ -172,6 +194,7 @@ export default function PresenceScreen() {
     const sig = await signWithDidKey(message);
     setSignature(sig);
     Alert.alert('Signed', message);
+    speak('Test message signed.');
   };
 
   const handleShowDidDoc = () => {
@@ -190,6 +213,7 @@ export default function PresenceScreen() {
       }
       setCredentials(await listDemoCredentials());
       Alert.alert('Demo VC issued', entry.id);
+      speak('Demo credential issued.');
     } finally {
       setBusy(false);
     }
@@ -198,6 +222,7 @@ export default function PresenceScreen() {
   const handleShowCredentials = () => {
     if (credentials.length === 0) {
       Alert.alert('Held credentials', 'None.');
+      speak('No held credentials.');
       return;
     }
     const summary = credentials
@@ -207,6 +232,7 @@ export default function PresenceScreen() {
       )
       .join('\n\n');
     Alert.alert(`Held credentials (${credentials.length})`, summary);
+    speak(`${credentials.length} credentials held.`);
   };
 
   const handleShareDidOptical = async () => {
@@ -224,13 +250,14 @@ export default function PresenceScreen() {
   const handleAddConnection = async () => {
     const id = newConnectionId.trim();
     if (!id) {
-      Alert.alert('Add connection', 'Paste a did:key from optical exchange.');
+      Alert.alert('Add connection', 'Paste or dictate a did:key from optical exchange.');
       return;
     }
     setBusy(true);
     try {
       setConnections(await addConnection(id));
       setNewConnectionId('');
+      speak('Connection added.');
     } finally {
       setBusy(false);
     }
@@ -244,6 +271,7 @@ export default function PresenceScreen() {
         style: 'destructive',
         onPress: async () => {
           setConnections(await removeConnection(id));
+          speak('Connection removed.');
         },
       },
     ]);
@@ -257,6 +285,7 @@ export default function PresenceScreen() {
         message: JSON.stringify(payload, null, 2),
         title: 'TRV connection list (trv-connections-v1)',
       });
+      speak(`Exported ${payload.connections.length} connections.`);
     } catch {
       // cancelled
     } finally {
@@ -267,7 +296,7 @@ export default function PresenceScreen() {
   const handleImportConnections = async () => {
     const raw = importPayload.trim();
     if (!raw) {
-      Alert.alert('Import', 'Paste a trv-connections-v1 JSON export.');
+      Alert.alert('Import', 'Paste or dictate a trv-connections-v1 JSON export.');
       return;
     }
     setBusy(true);
@@ -275,10 +304,9 @@ export default function PresenceScreen() {
       const result = await importConnectionList(raw);
       setConnections(result.list);
       setImportPayload('');
-      Alert.alert(
-        'Import complete',
-        `Added ${result.added}, skipped ${result.skipped} (duplicates or invalid).`
-      );
+      const msg = `Added ${result.added}, skipped ${result.skipped}.`;
+      Alert.alert('Import complete', msg);
+      speak(msg);
     } catch (e) {
       Alert.alert(
         'Import failed',
@@ -293,7 +321,7 @@ export default function PresenceScreen() {
     const to = msgTo.trim();
     const content = msgBody.trim();
     if (!to || !content) {
-      Alert.alert('Message', 'Choose a recipient DID and enter content.');
+      Alert.alert('Message', 'Choose a recipient DID and enter or dictate content.');
       return;
     }
     setBusy(true);
@@ -307,6 +335,7 @@ export default function PresenceScreen() {
       setInbox(await getInbox());
       setMsgBody('');
       Alert.alert('Stored locally', 'Signed and kept on this device. No relay in this slice.');
+      speak('Message signed and stored locally.');
     } finally {
       setBusy(false);
     }
@@ -318,6 +347,7 @@ export default function PresenceScreen() {
       const p = await setLocalProfile(profileName, profileAbout);
       setProfile(p);
       Alert.alert('Profile saved', 'On-device only. Wiped on Destroy.');
+      speak('Profile saved.');
     } finally {
       setBusy(false);
     }
@@ -373,6 +403,7 @@ export default function PresenceScreen() {
       const created = await createDidKey();
       if (!created?.did) {
         setSmokeResult('FAIL: create returned no DID');
+        speak('Smoke test failed.');
         return;
       }
 
@@ -385,6 +416,7 @@ export default function PresenceScreen() {
       const exported = await exportConnectionList();
       if (exported.connections.length < 1) {
         setSmokeResult('FAIL: export empty');
+        speak('Smoke test failed.');
         return;
       }
 
@@ -399,6 +431,7 @@ export default function PresenceScreen() {
         !midProf
       ) {
         setSmokeResult('FAIL: social state not stored');
+        speak('Smoke test failed.');
         return;
       }
 
@@ -425,11 +458,14 @@ export default function PresenceScreen() {
         setProfile(null);
         setProfileName('');
         setProfileAbout('');
+        speak('Smoke test passed.');
       } else {
         setSmokeResult('FAIL: identity or social state remains after destroy');
+        speak('Smoke test failed.');
       }
     } catch (e) {
       setSmokeResult(`FAIL: ${e instanceof Error ? e.message : String(e)}`);
+      speak('Smoke test failed.');
     } finally {
       setBusy(false);
     }
@@ -437,10 +473,10 @@ export default function PresenceScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.kicker}>LOCAL · SCAFFOLD · SOCIAL SLICES 1–5</Text>
+      <Text style={styles.kicker}>LOCAL · SCAFFOLD · VOICE + SOCIAL</Text>
       <Text style={styles.title}>Identity</Text>
       <Text style={styles.subtitle}>
-        did:key · social layer · portable connections
+        Text or voice · did:key · social layer
       </Text>
 
       <View style={styles.card}>
@@ -477,7 +513,8 @@ export default function PresenceScreen() {
               <Text style={styles.badgeTextIdle}>NO IDENTITY</Text>
             </View>
             <Text style={styles.hint}>
-              Create a local did:key. All social state is wiped on Destroy.
+              Create a local did:key. Use Speak / Dictate on any field. All social
+              state is wiped on Destroy.
             </Text>
           </>
         )}
@@ -491,20 +528,33 @@ export default function PresenceScreen() {
             {smokeResult}
           </Text>
         )}
+        <Pressable style={[styles.btn, styles.btnSecondary, { marginTop: 12 }]} onPress={handleReadStatus}>
+          <Text style={styles.btnText}>Speak status</Text>
+        </Pressable>
       </View>
 
       {identity && showOpticalShare && (
         <View style={styles.opticalCard}>
           <Text style={styles.sectionTitle}>Optical exchange</Text>
           <Text style={styles.hint}>
-            Show this DID to another Viewer. They paste it into connections.
+            Show this DID to another Viewer. They paste or dictate it into
+            connections.
           </Text>
           <View style={styles.opticalDidBox}>
             <Text selectable style={styles.opticalDid}>
               {identity.did}
             </Text>
           </View>
-          <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleShareDidOptical}>
+          <Pressable
+            style={[styles.btn, styles.btnSecondary]}
+            onPress={() => speak(identity.did)}
+          >
+            <Text style={styles.btnText}>Speak DID</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
+            onPress={handleShareDidOptical}
+          >
             <Text style={styles.btnText}>Share DID (system sheet)</Text>
           </Pressable>
           <Pressable
@@ -520,11 +570,10 @@ export default function PresenceScreen() {
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Local profile (optional)</Text>
           <Text style={styles.hint}>
-            On-device only. Feeds kind-0 shaped export. Wiped on Destroy.
+            Type or dictate. On-device only. Wiped on Destroy.
           </Text>
           <Text style={styles.label}>Display name</Text>
-          <TextInput
-            style={styles.didInput}
+          <VoiceField
             value={profileName}
             onChangeText={setProfileName}
             placeholder="Optional name"
@@ -532,14 +581,15 @@ export default function PresenceScreen() {
             editable={!busy}
           />
           <Text style={styles.label}>About</Text>
-          <TextInput
-            style={[styles.didInput, { minHeight: 56 }]}
+          <VoiceField
             value={profileAbout}
             onChangeText={setProfileAbout}
             multiline
+            style={{ minHeight: 56 }}
             placeholder="Optional about"
             placeholderTextColor="#555"
             editable={!busy}
+            appendDictation
           />
           <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleSaveProfile} disabled={busy}>
             <Text style={styles.btnText}>Save profile</Text>
@@ -565,16 +615,14 @@ export default function PresenceScreen() {
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Connections (on-device)</Text>
           <Text style={styles.hint}>
-            Optical paste to add. Export/import for portability (slice 5). Wiped on
-            Destroy.
+            Paste, dictate, or import. Export for portability. Wiped on Destroy.
           </Text>
-          <TextInput
-            style={styles.didInput}
+          <VoiceField
             value={newConnectionId}
             onChangeText={setNewConnectionId}
             autoCapitalize="none"
             autoCorrect={false}
-            placeholder="Paste did:key from optical exchange"
+            placeholder="Paste or dictate did:key"
             placeholderTextColor="#555"
             editable={!busy}
           />
@@ -598,12 +646,12 @@ export default function PresenceScreen() {
               Export connection list ({connections.length})
             </Text>
           </Pressable>
-          <Text style={styles.label}>Import (paste trv-connections-v1 JSON)</Text>
-          <TextInput
-            style={[styles.didInput, { minHeight: 72 }]}
+          <Text style={styles.label}>Import (paste or dictate JSON)</Text>
+          <VoiceField
             value={importPayload}
             onChangeText={setImportPayload}
             multiline
+            style={{ minHeight: 72 }}
             autoCapitalize="none"
             autoCorrect={false}
             placeholder='{"format":"trv-connections-v1",...}'
@@ -626,6 +674,9 @@ export default function PresenceScreen() {
                   {c.label ? `${c.label} · ` : ''}
                   {c.id}
                 </Text>
+                <Pressable style={styles.connRemove} onPress={() => speak(c.id)}>
+                  <Text style={styles.connSpeakText}>Speak</Text>
+                </Pressable>
                 <Pressable style={styles.connRemove} onPress={() => handleRemoveConnection(c.id)}>
                   <Text style={styles.connRemoveText}>Remove</Text>
                 </Pressable>
@@ -639,11 +690,10 @@ export default function PresenceScreen() {
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Local messages</Text>
           <Text style={styles.hint}>
-            Signed basicmessage, on-device only. No relay in this slice.
+            Dictate or type content. Signed on-device. No relay in this slice.
           </Text>
           <Text style={styles.label}>To (DID)</Text>
-          <TextInput
-            style={styles.didInput}
+          <VoiceField
             value={msgTo}
             onChangeText={setMsgTo}
             autoCapitalize="none"
@@ -664,14 +714,15 @@ export default function PresenceScreen() {
             </View>
           )}
           <Text style={styles.label}>Content</Text>
-          <TextInput
-            style={[styles.didInput, { minHeight: 64 }]}
+          <VoiceField
             value={msgBody}
             onChangeText={setMsgBody}
             multiline
+            style={{ minHeight: 64 }}
             placeholder="Message content"
             placeholderTextColor="#555"
             editable={!busy}
+            appendDictation
           />
           <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleSendLocalMessage} disabled={busy}>
             <Text style={styles.btnText}>Sign & store locally</Text>
@@ -687,6 +738,12 @@ export default function PresenceScreen() {
                 <Text style={styles.msgBody} numberOfLines={3}>
                   {m.body?.content}
                 </Text>
+                <Pressable
+                  style={styles.connRemove}
+                  onPress={() => speak(m.body?.content || '')}
+                >
+                  <Text style={styles.connSpeakText}>Speak message</Text>
+                </Pressable>
               </View>
             ))
           )}
@@ -697,13 +754,21 @@ export default function PresenceScreen() {
         <View style={styles.dangerCard}>
           <Text style={styles.dangerTitle}>Danger Zone</Text>
           <Text style={styles.dangerBody}>
-            Permanent. Profile, VCs, connections, and local messages for this path
-            will be destroyed. No recovery by The Remote Viewer.\n\nType the full DID
-            to enable. No email or phone.
+            Permanent. Type or dictate the full DID to enable. No email or phone.
+            No recovery by The Remote Viewer.
           </Text>
-          <Text style={styles.label}>Type full DID exactly</Text>
-          <TextInput
-            style={styles.didInput}
+          <Pressable
+            style={[styles.btn, styles.btnSecondary, { marginBottom: 8 }]}
+            onPress={() =>
+              speak(
+                'Destroy is permanent. Type or dictate your full DID exactly to enable the destroy control.'
+              )
+            }
+          >
+            <Text style={styles.btnText}>Speak warning</Text>
+          </Pressable>
+          <Text style={styles.label}>Type or dictate full DID exactly</Text>
+          <VoiceField
             value={typedDid}
             onChangeText={setTypedDid}
             autoCapitalize="none"
@@ -722,7 +787,7 @@ export default function PresenceScreen() {
               disabled={!didMatches || busy}
             >
               <Text style={styles.btnText}>
-                {didMatches ? 'I understand — Destroy' : 'Type DID to enable'}
+                {didMatches ? 'I understand — Destroy' : 'Match DID to enable'}
               </Text>
             </Pressable>
           </View>
@@ -813,19 +878,6 @@ const styles = StyleSheet.create({
   },
   dangerTitle: { color: '#e74c3c', fontSize: 16, fontWeight: '700', marginBottom: 8 },
   dangerBody: { color: '#ccc', fontSize: 13, lineHeight: 20, marginBottom: 12 },
-  didInput: {
-    backgroundColor: '#0a0a0a',
-    borderWidth: 1,
-    borderColor: '#444',
-    borderRadius: 8,
-    color: '#fff',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 12,
-    fontFamily: 'monospace',
-    marginTop: 8,
-    marginBottom: 12,
-  },
   dangerActions: { gap: 10 },
   connRow: {
     flexDirection: 'row',
@@ -836,8 +888,9 @@ const styles = StyleSheet.create({
     borderTopColor: '#222',
   },
   connId: { flex: 1, color: '#aaa', fontSize: 11, fontFamily: 'monospace' },
-  connRemove: { paddingHorizontal: 10, paddingVertical: 6 },
+  connRemove: { paddingHorizontal: 8, paddingVertical: 6 },
   connRemoveText: { color: '#e74c3c', fontSize: 12, fontWeight: '600' },
+  connSpeakText: { color: '#9cf', fontSize: 12, fontWeight: '600' },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
   chip: {
     backgroundColor: '#1a2a3a',
