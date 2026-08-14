@@ -43,6 +43,9 @@ bash modules/path-b-recognition/collect-proof.sh
 - Soliton LT improves reliability against lost frames; it does not remove the physical channel bottleneck.
 - Large packs should use hybrid (file + optical) delivery.
 
+## Threat Model
+See [`docs/security/threat-model.md`](security/threat-model.md) for residual risks on the proven surfaces (manual delivery channel, originator-gated recognition, optical environmental variance, etc.).
+
 ## Notes
 - Path B recognition is currently originator-verified.
 - External finishers: 0 as of 2026-08-13.

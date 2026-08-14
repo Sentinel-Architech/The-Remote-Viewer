@@ -91,7 +91,8 @@ When in doubt: publish the **constraint**, not the **key**.
 | `docs/public/RELEASE-HYGIENE.md` | APK / signature / Obtainium publish rules |
 | `docs/distribution/obtainium-config.example.json` | Config template |
 | `docs/security/biometrics.md` | Biometrics + PAD posture |
-| `docs/security/threat-model.md` | System threat model (draft) |
+| `docs/security/threat-model.md` | Threat model (proven surfaces) |
+| `docs/security/running-system-threat-model.md` | Draft — future P2P / ESP32 |
 | `docs/security/secrets.md` | Secrets policy |
 | `docs/REPRODUCE.md` | Third-party verification bootstrap |
 | `docs/public/REVIEW-AND-CONTRIBUTION.md` | Review & Path B posture |

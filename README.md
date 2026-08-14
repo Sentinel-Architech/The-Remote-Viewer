@@ -15,7 +15,8 @@ Packs remain paid per item. No free catalog items.
 
 **Builder guide:** [`docs/public/PATH-B-BUILDER.md`](docs/public/PATH-B-BUILDER.md)  
 **Reproduce proven claims:** [`docs/REPRODUCE.md`](docs/REPRODUCE.md)  
-**Review posture:** [`docs/public/REVIEW-AND-CONTRIBUTION.md`](docs/public/REVIEW-AND-CONTRIBUTION.md)
+**Review posture:** [`docs/public/REVIEW-AND-CONTRIBUTION.md`](docs/public/REVIEW-AND-CONTRIBUTION.md)  
+**Threat model (proven surfaces):** [`docs/security/threat-model.md`](docs/security/threat-model.md)
 
 ---
 
@@ -141,19 +142,20 @@ bash modules/nodes/count.sh
 ## Layout
 
 ```text
-docs/public/PATH-B-BUILDER.md   Independent Completion guide
-docs/public/PATH-B-FINISHED.md  FINISHED checklist
-docs/REPRODUCE.md               Third-party verification bootstrap
-docs/public/REVIEW-AND-CONTRIBUTION.md  Review posture
-modules/path-b-recognition/     Recognition package
-modules/pool/                   Community Pool gross visibility
-modules/nodes/                  Validated-node count + tips
-digital-vending/buy.html        Public storefront (Pay + QR)
-optical-airgap/                 PROVEN transport
-modules/defense/                Hydra multi-head (PROVEN)
-modules/integrity-verifier/     First validator role (PROVEN)
-apps/ui/                        Local operator console (PROVEN)
-docs/REALITY.md                 Status authority
+docs/public/PATH-B-BUILDER.md          Independent Completion guide
+docs/public/PATH-B-FINISHED.md         FINISHED checklist
+docs/REPRODUCE.md                      Third-party verification bootstrap
+docs/public/REVIEW-AND-CONTRIBUTION.md Review posture
+docs/security/threat-model.md          Threat model (proven surfaces)
+modules/path-b-recognition/            Recognition package
+modules/pool/                          Community Pool gross visibility
+modules/nodes/                         Validated-node count + tips
+digital-vending/buy.html               Public storefront (Pay + QR)
+optical-airgap/                        PROVEN transport
+modules/defense/                       Hydra multi-head (PROVEN)
+modules/integrity-verifier/            First validator role (PROVEN)
+apps/ui/                               Local operator console (PROVEN)
+docs/REALITY.md                        Status authority
 ```
 
 ---
