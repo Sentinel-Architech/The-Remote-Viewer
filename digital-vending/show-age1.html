@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TRV — Show age1 public key</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0d0f12;
+      --card: #161a20;
+      --text: #e8eaed;
+      --muted: #9aa0a6;
+      --accent: #7dd3fc;
+      --danger: #f87171;
+      --ok: #4ade80;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.25rem;
+    }
+    h1 { font-size: 1.25rem; margin: 0 0 0.35rem; font-weight: 600; }
+    .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem; text-align: center; max-width: 28rem; }
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 1.25rem;
+      width: 100%;
+      max-width: 28rem;
+    }
+    label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.4rem; }
+    textarea {
+      width: 100%;
+      min-height: 4.5rem;
+      border: 1px solid #2a3038;
+      border-radius: 8px;
+      background: #0d0f12;
+      color: var(--text);
+      padding: 0.75rem;
+      font-family: ui-monospace, monospace;
+      font-size: 0.85rem;
+      resize: vertical;
+    }
+    textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
+    .warn {
+      margin: 0.85rem 0;
+      padding: 0.65rem 0.75rem;
+      border-radius: 8px;
+      background: rgba(248, 113, 113, 0.12);
+      color: var(--danger);
+      font-size: 0.82rem;
+      line-height: 1.35;
+    }
+    .row { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .primary { background: var(--accent); color: #0d0f12; }
+    .quiet { background: #2a3038; color: var(--text); }
+    #qr-wrap {
+      margin-top: 1.25rem;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    #qr-wrap.on { display: flex; }
+    canvas {
+      background: #fff;
+      border-radius: 8px;
+      max-width: 100%;
+    }
+    .ok { color: var(--ok); font-size: 0.85rem; }
+    .err { color: var(--danger); font-size: 0.85rem; margin-top: 0.5rem; }
+    footer {
+      margin-top: 1.5rem;
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-align: center;
+      max-width: 28rem;
+    }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <h1>Show age1 public key</h1>
+  <p class="sub">
+    Paste only your <strong>public</strong> key (<code>age1…</code>).  
+    The seller scans this QR. Your private key never leaves your device.
+  </p>
+
+  <div class="card">
+    <label for="age1">Public key only</label>
+    <textarea id="age1" placeholder="age1…" spellcheck="false" autocomplete="off"></textarea>
+
+    <div class="warn">
+      Never paste or show a line that starts with <code>AGE-SECRET-KEY-</code>.  
+      That is your private key. Showing it ends the identity path (Destroy = Restart).
+    </div>
+
+    <div class="row">
+      <button type="button" class="primary" id="render">Show QR</button>
+      <button type="button" class="quiet" id="clear">Clear</button>
+    </div>
+    <div id="msg" class="err" hidden></div>
+
+    <div id="qr-wrap">
+      <canvas id="qr"></canvas>
+      <div class="ok">Seller can scan this. Public key only.</div>
+    </div>
+  </div>
+
+  <footer>
+    Offline · no network · no custody ·
+    <a href="../docs/public/BUY.md">Buyer steps</a> ·
+    <a href="https://github.com/Sentinel-Archetecht/The-Remote-Viewer">The Remote Viewer</a>
+  </footer>
+
+  <!-- Local QR encoder already in repo — no CDN -->
+  <script src="../optical-airgap/optical/qrcode-lite.js"></script>
+  <script>
+    (function () {
+      const input = document.getElementById("age1");
+      const renderBtn = document.getElementById("render");
+      const clearBtn = document.getElementById("clear");
+      const wrap = document.getElementById("qr-wrap");
+      const canvas = document.getElementById("qr");
+      const msg = document.getElementById("msg");
+
+      function showError(text) {
+        msg.hidden = !text;
+        msg.textContent = text || "";
+        wrap.classList.remove("on");
+      }
+
+      function isPublicAge1(s) {
+        const t = (s || "").trim();
+        if (!t.startsWith("age1")) return false;
+        if (t.includes("AGE-SECRET-KEY")) return false;
+        if (t.length < 20 || t.length > 120) return false;
+        return true;
+      }
+
+      renderBtn.addEventListener("click", function () {
+        const raw = input.value.trim();
+        if (!raw) {
+          showError("Paste an age1… public key first.");
+          return;
+        }
+        if (raw.includes("AGE-SECRET-KEY")) {
+          showError("That looks like a PRIVATE key. Do not show it. Use only the age1… line.");
+          return;
+        }
+        if (!isPublicAge1(raw)) {
+          showError("Expected a public key starting with age1…");
+          return;
+        }
+        try {
+          if (typeof TRVQR === "undefined" || !TRVQR.drawCanvas) {
+            showError("QR library failed to load. Open this file from the repo (local path).");
+            return;
+          }
+          // Larger cells for easy scanning
+          TRVQR.drawCanvas(canvas, raw, { cellSize: 6 });
+          wrap.classList.add("on");
+          msg.hidden = true;
+        } catch (e) {
+          showError(e.message || "Could not draw QR");
+        }
+      });
+
+      clearBtn.addEventListener("click", function () {
+        input.value = "";
+        wrap.classList.remove("on");
+        showError("");
+      });
+    })();
+  </script>
+</body>
+</html>

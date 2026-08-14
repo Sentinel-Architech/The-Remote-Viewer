@@ -50,7 +50,7 @@ You must get these two pieces of information to the seller:
 
 | Method | How |
 |--------|-----|
-| **Optical (recommended)** | Display your `age1...` public key as a QR code. Seller scans it. No chat required for the key. |
+| **Optical (recommended)** | Open [`digital-vending/show-age1.html`](../../digital-vending/show-age1.html), paste only your `age1…` public key, show the QR. Seller scans it. No chat required for the key. |
 | **Copy-paste** | Send the `age1...` line + tx signature through any channel you already use with the seller. |
 | **File drop** (advanced) | Place a one-line file containing only the `age1...` at the location the seller expects (see PROTOCOL.md). |
 
