@@ -6,6 +6,7 @@ import {
   Alert,
   ScrollView,
   Pressable,
+  TextInput,
 } from 'react-native';
 import {
   createDidKey,
@@ -28,6 +29,10 @@ export default function PresenceScreen() {
   const [smokeResult, setSmokeResult] = useState<string | null>(null);
   const [credentials, setCredentials] = useState<DemoCredential[]>([]);
 
+  // High-friction destroy gate (local only)
+  const [showDangerZone, setShowDangerZone] = useState(false);
+  const [typedDid, setTypedDid] = useState('');
+
   const refresh = async () => {
     const current = await getCurrentDidKey();
     setIdentity(current);
@@ -46,6 +51,8 @@ export default function PresenceScreen() {
   const handleCreate = async () => {
     setBusy(true);
     setSmokeResult(null);
+    setShowDangerZone(false);
+    setTypedDid('');
     try {
       const newIdentity = await createDidKey();
       setIdentity(newIdentity);
@@ -56,21 +63,43 @@ export default function PresenceScreen() {
     }
   };
 
-  const handleDestroy = async () => {
+  const openDangerZone = () => {
+    setTypedDid('');
+    setShowDangerZone(true);
+  };
+
+  const cancelDangerZone = () => {
+    setShowDangerZone(false);
+    setTypedDid('');
+  };
+
+  const didMatches =
+    identity !== null && typedDid.trim() === identity.did;
+
+  const confirmDestroy = async () => {
+    if (!identity || !didMatches) return;
+
     Alert.alert(
-      'Destroy this identity path?',
-      'This action is permanent.\n\n• Your TRV identity path will end.\n• All TRV-issued / demo credentials held here will be destroyed.\n• There is no recovery by The Remote Viewer.\n\nIf you continue, you start from square one.',
+      'Final confirmation',
+      'This identity path will end permanently. There is no recovery by The Remote Viewer.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'I understand — Destroy',
+          text: 'I understand — Destroy this path',
           style: 'destructive',
           onPress: async () => {
-            await destroyDidKey();
-            setIdentity(null);
-            setSignature(null);
-            setCredentials([]);
-            setSmokeResult(null);
+            setBusy(true);
+            try {
+              await destroyDidKey();
+              setIdentity(null);
+              setSignature(null);
+              setCredentials([]);
+              setSmokeResult(null);
+              setShowDangerZone(false);
+              setTypedDid('');
+            } finally {
+              setBusy(false);
+            }
           },
         },
       ]
@@ -112,15 +141,20 @@ export default function PresenceScreen() {
       return;
     }
     const summary = credentials
-      .map((c, i) => `${i + 1}. ${c.id}\n   issued ${new Date(c.issuedAt).toISOString()}`)
+      .map(
+        (c, i) =>
+          `${i + 1}. ${c.id}\n   issued ${new Date(c.issuedAt).toISOString()}`
+      )
       .join('\n\n');
     Alert.alert(`Held credentials (${credentials.length})`, summary);
   };
 
-  /** Smoke test: Create → Destroy → Assert Empty. Documents Destroy = Restart. */
+  /** Smoke test: Create → Destroy → Assert Empty. Uses programmatic destroy (UI gate is for humans). */
   const handleSmokeTest = async () => {
     setBusy(true);
     setSmokeResult(null);
+    setShowDangerZone(false);
+    setTypedDid('');
     try {
       await destroyDidKey();
 
@@ -130,7 +164,6 @@ export default function PresenceScreen() {
         return;
       }
 
-      // Also exercise credential issue + destroy path
       await issueDemoCredential();
       const mid = await listDemoCredentials();
       if (mid.length < 1) {
@@ -211,6 +244,51 @@ export default function PresenceScreen() {
         )}
       </View>
 
+      {/* High-friction Danger Zone */}
+      {identity && showDangerZone && (
+        <View style={styles.dangerCard}>
+          <Text style={styles.dangerTitle}>Danger Zone</Text>
+          <Text style={styles.dangerBody}>
+            This action is permanent.\n\n• Your TRV identity path will end.\n• All
+            TRV-issued / demo credentials held here will be destroyed.\n• There is
+            no recovery by The Remote Viewer.\n\nType the full DID below to enable
+            destruction. No email or phone is used.
+          </Text>
+          <Text style={styles.label}>Type full DID exactly</Text>
+          <TextInput
+            style={styles.didInput}
+            value={typedDid}
+            onChangeText={setTypedDid}
+            autoCapitalize="none"
+            autoCorrect={false}
+            placeholder="did:key:…"
+            placeholderTextColor="#555"
+            editable={!busy}
+          />
+          <View style={styles.dangerActions}>
+            <Pressable
+              style={[styles.btn, styles.btnSecondary]}
+              onPress={cancelDangerZone}
+              disabled={busy}
+            >
+              <Text style={styles.btnText}>Cancel</Text>
+            </Pressable>
+            <Pressable
+              style={[
+                styles.btn,
+                didMatches ? styles.btnDanger : styles.btnDisabled,
+              ]}
+              onPress={confirmDestroy}
+              disabled={!didMatches || busy}
+            >
+              <Text style={styles.btnText}>
+                {didMatches ? 'I understand — Destroy' : 'Type DID to enable'}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
+
       <View style={styles.actions}>
         {!identity ? (
           <Pressable
@@ -236,11 +314,19 @@ export default function PresenceScreen() {
               <Text style={styles.btnText}>Issue Demo VC</Text>
             </Pressable>
             <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleShowCredentials}>
-              <Text style={styles.btnText}>Show held VCs ({credentials.length})</Text>
+              <Text style={styles.btnText}>
+                Show held VCs ({credentials.length})
+              </Text>
             </Pressable>
-            <Pressable style={[styles.btn, styles.btnDanger]} onPress={handleDestroy}>
-              <Text style={styles.btnText}>Destroy identity</Text>
-            </Pressable>
+            {!showDangerZone && (
+              <Pressable
+                style={[styles.btn, styles.btnDanger]}
+                onPress={openDangerZone}
+                disabled={busy}
+              >
+                <Text style={styles.btnText}>Destroy identity…</Text>
+              </Pressable>
+            )}
           </>
         )}
 
@@ -286,6 +372,41 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#222',
     marginBottom: 24,
+  },
+  dangerCard: {
+    backgroundColor: '#1a0a0a',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#5c1a1a',
+    marginBottom: 24,
+  },
+  dangerTitle: {
+    color: '#e74c3c',
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  dangerBody: {
+    color: '#ccc',
+    fontSize: 13,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  didInput: {
+    backgroundColor: '#0a0a0a',
+    borderWidth: 1,
+    borderColor: '#444',
+    borderRadius: 8,
+    color: '#fff',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 12,
+    fontFamily: 'monospace',
+    marginBottom: 12,
+  },
+  dangerActions: {
+    gap: 10,
   },
   badgeActive: {
     alignSelf: 'flex-start',
@@ -341,8 +462,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btnPrimary: { backgroundColor: '#1a7f4b' },
-  btnSecondary: { backgroundColor: '#1e1e1e', borderWidth: 1, borderColor: '#333' },
+  btnSecondary: {
+    backgroundColor: '#1e1e1e',
+    borderWidth: 1,
+    borderColor: '#333',
+  },
   btnDanger: { backgroundColor: '#5c1a1a' },
-  btnSmoke: { backgroundColor: '#1a2a3a', borderWidth: 1, borderColor: '#2a4a5a' },
+  btnDisabled: { backgroundColor: '#2a2a2a' },
+  btnSmoke: {
+    backgroundColor: '#1a2a3a',
+    borderWidth: 1,
+    borderColor: '#2a4a5a',
+  },
   btnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
 });
