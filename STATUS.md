@@ -2,27 +2,18 @@
 
 **SCAFFOLD.** No production security claims. No audit. No mainnet.
 
-## Track A — Solana (`solana/`)
+## Track A — Solana program surface
 
-| Instruction | Role |
-|-------------|------|
-| initialize / set_vote_mint | Config + SPL vote mint |
-| register_node / deactivate_node | Permanent node operator |
-| **grant_subscription** | Authority sets `expires_at` (payment off-chain) |
-| **refresh_entitlement** | `unlimited_comms` = active node **OR** unexpired sub |
-| propose / vote / vote_with_token | Governance |
-| execute_if_threshold | Pass flag if threshold met |
+**Config:** initialize · transfer_authority · set_proposal_threshold · set_vote_mint  
+**Nodes:** register_node · deactivate_node  
+**Comms access:** grant_subscription · refresh_entitlement (`unlimited_comms` = node ∨ sub)  
+**Governance:** propose · cancel_proposal · vote · vote_with_token · execute_if_threshold  
 
-Accounts: Config, Proposal, VoteRecord, Node, **Subscription**, **Entitlement**.
+Accounts: Config, Proposal (+ cancelled), VoteRecord, Node, Subscription, Entitlement.
 
-Program id **PLACEHOLDER**. Not deployed. CI present.
+Program id **PLACEHOLDER**. Not deployed.
 
-## Parallel — EVM
-
-Not Track A.
-
-## Mobile — PARKED
-
-## Path B founders: **0**
-
-## Locked values — `docs/locked/` 15–21
+## Parallel EVM — not Track A  
+## Mobile — PARKED  
+## Path B founders: **0**  
+## Locked: `docs/locked/` 15–21
