@@ -6,13 +6,13 @@ import { destroyDidCommState } from './didcomm';
 import { destroyAllDemoCredentials } from './credentials';
 import { destroyAllConnections } from './connections';
 import { destroyLocalProfile } from './profile';
+import { destroyHumanAttestation } from './humanVerification';
 
 const ED25519_MULTICODEC = new Uint8Array([0xed, 0x01]);
 
 const STORAGE_PRIVATE = 'did_key_private';
 const STORAGE_DID = 'did_key_id';
 
-/** Hardened options — best-effort under Expo. Not a security boundary in Expo Go. */
 const SECURE_OPTIONS: SecureStore.SecureStoreOptions = {
   keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
   requireAuthentication: true,
@@ -75,6 +75,7 @@ export async function destroyDidKey() {
   await destroyAllDemoCredentials();
   await destroyAllConnections();
   await destroyLocalProfile();
+  await destroyHumanAttestation();
 }
 
 export async function signWithDidKey(message: string): Promise<string | null> {
@@ -104,7 +105,7 @@ export function buildDidDocument(identity: DidKeyIdentity) {
     verificationMethod: [
       {
         id: keyId,
-        type: 'Ed25519VerificationKey2020',
+        type: 'Ed25519VerificationMethod2020',
         controller: did,
         publicKeyMultibase: multibaseKey,
       },
