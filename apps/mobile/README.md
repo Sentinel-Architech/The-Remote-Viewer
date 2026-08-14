@@ -8,39 +8,29 @@ Expo + React Native + TypeScript client for The Remote Viewer.
 |-------|--------|
 | `did:key` generation (Ed25519) | Working |
 | On-device SecureStore | Working (hardened options) |
-| Create / Sign / Destroy UI | Working |
 | High-friction Destroy gate (type full DID) | Working |
 | Local demo VC issue / store / list | Working |
-| On-device connection list (add / remove / list) | Working (Social Layer slice 1) |
+| On-device connection list | Working (Social Layer slice 1) |
+| Optical DID exchange (show + paste) | Working (Social Layer slice 2) |
 | Connections + VCs wiped on Destroy | Working |
-| Hardware-backed keys | Not yet |
-| Optical / QR connection exchange | Not yet |
+| Camera QR scan | Not yet (needs custom dev client) |
 | Nostr publication | Not yet |
 | Full OpenID4VCI / OpenID4VP | Not yet |
 | Production security claims | **None** |
 
-## Destroy = Restart (user-facing)
+## Optical connection exchange (slice 2)
 
-1. Tap **Destroy identity…**
-2. Danger Zone appears.
-3. Type the **full current DID** exactly.
-4. Final confirmation.
-5. Path ends. Demo VCs **and** on-device connections for that path are wiped.
+1. Viewer A: **Show my DID for optical exchange** → large selectable DID + system Share.
+2. Viewer B: capture (photo / type / receive share) → paste into **Paste did:key from optical exchange** → Add connection.
+3. No network required. No relays. Connection lives only on each device and dies with that identity path.
 
-No email. No phone. No SMS. Platform cannot restore.
+Camera-based QR scan is deferred until a custom development client (Expo Go cannot reliably host full scanner native modules for production use).
 
-See `docs/locked/13-Burn-Confirmation-Language.md` and `docs/locked/14-Sovereign-Social-Layer.md`.
+## Destroy = Restart
 
-## Connections (slice 1)
+Danger Zone → type full DID → final confirmation. Wipes keys, demo VCs, and on-device connections. No email, no phone.
 
-- Paste a `did:key` (or other public id) → Add connection.
-- List and remove locally.
-- Stored only on device; destroyed with the identity path.
-- No relays, no central graph.
-
-## Critical warning — Expo Go
-
-**Expo Go is for exploration only.** Not a security boundary.
+See `docs/locked/13` and `docs/locked/14`.
 
 ## Run
 
@@ -52,7 +42,7 @@ npx expo start --host lan
 
 ## Canonical files
 
-- `src/services/presence.ts` — did:key + destroy (wipes credentials + connections)
-- `src/services/credentials.ts` — local demo VCs
+- `src/services/presence.ts` — did:key + destroy
+- `src/services/credentials.ts` — demo VCs
 - `src/services/connections.ts` — on-device connection list
-- `screens/PresenceScreen.tsx` — UI + Danger Zone + connections + smoke test
+- `screens/PresenceScreen.tsx` — UI, optical share, Danger Zone, smoke test

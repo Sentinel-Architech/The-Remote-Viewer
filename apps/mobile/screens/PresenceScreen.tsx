@@ -7,6 +7,7 @@ import {
   ScrollView,
   Pressable,
   TextInput,
+  Share,
 } from 'react-native';
 import {
   createDidKey,
@@ -36,11 +37,9 @@ export default function PresenceScreen() {
   const [credentials, setCredentials] = useState<DemoCredential[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
 
-  // High-friction destroy gate (local only)
   const [showDangerZone, setShowDangerZone] = useState(false);
   const [typedDid, setTypedDid] = useState('');
-
-  // Connection add input
+  const [showOpticalShare, setShowOpticalShare] = useState(false);
   const [newConnectionId, setNewConnectionId] = useState('');
 
   const refresh = async () => {
@@ -68,6 +67,7 @@ export default function PresenceScreen() {
     setSmokeResult(null);
     setShowDangerZone(false);
     setTypedDid('');
+    setShowOpticalShare(false);
     try {
       const newIdentity = await createDidKey();
       setIdentity(newIdentity);
@@ -82,6 +82,7 @@ export default function PresenceScreen() {
   const openDangerZone = () => {
     setTypedDid('');
     setShowDangerZone(true);
+    setShowOpticalShare(false);
   };
 
   const cancelDangerZone = () => {
@@ -114,6 +115,7 @@ export default function PresenceScreen() {
               setSmokeResult(null);
               setShowDangerZone(false);
               setTypedDid('');
+              setShowOpticalShare(false);
             } finally {
               setBusy(false);
             }
@@ -166,10 +168,25 @@ export default function PresenceScreen() {
     Alert.alert(`Held credentials (${credentials.length})`, summary);
   };
 
+  const handleShareDidOptical = async () => {
+    if (!identity) return;
+    try {
+      await Share.share({
+        message: identity.did,
+        title: 'TRV identity (optical exchange)',
+      });
+    } catch {
+      // User cancelled or share unavailable — DID remains visible on screen
+    }
+  };
+
   const handleAddConnection = async () => {
     const id = newConnectionId.trim();
     if (!id) {
-      Alert.alert('Add connection', 'Paste a did:key or public identifier.');
+      Alert.alert(
+        'Add connection',
+        'Paste a did:key captured optically (photo, typed, or shared).'
+      );
       return;
     }
     setBusy(true);
@@ -196,12 +213,12 @@ export default function PresenceScreen() {
     ]);
   };
 
-  /** Smoke test includes connections wipe. */
   const handleSmokeTest = async () => {
     setBusy(true);
     setSmokeResult(null);
     setShowDangerZone(false);
     setTypedDid('');
+    setShowOpticalShare(false);
     try {
       await destroyDidKey();
 
@@ -250,10 +267,10 @@ export default function PresenceScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.kicker}>LOCAL · SCAFFOLD · SOCIAL SLICE 1</Text>
+      <Text style={styles.kicker}>LOCAL · SCAFFOLD · SOCIAL SLICE 2</Text>
       <Text style={styles.title}>Identity</Text>
       <Text style={styles.subtitle}>
-        did:key · demo VCs · on-device connections
+        did:key · demo VCs · connections · optical exchange
       </Text>
 
       <View style={styles.card}>
@@ -306,12 +323,41 @@ export default function PresenceScreen() {
         )}
       </View>
 
-      {/* Connections (only when identity active) */}
+      {/* Optical exchange — show own DID for capture */}
+      {identity && showOpticalShare && (
+        <View style={styles.opticalCard}>
+          <Text style={styles.sectionTitle}>Optical exchange</Text>
+          <Text style={styles.hint}>
+            Show this DID to another Viewer (photo, typed, or system share).
+            They paste it into their connection list. No network required.
+          </Text>
+          <View style={styles.opticalDidBox}>
+            <Text selectable style={styles.opticalDid}>
+              {identity.did}
+            </Text>
+          </View>
+          <Pressable
+            style={[styles.btn, styles.btnSecondary]}
+            onPress={handleShareDidOptical}
+          >
+            <Text style={styles.btnText}>Share DID (system sheet)</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
+            onPress={() => setShowOpticalShare(false)}
+          >
+            <Text style={styles.btnText}>Close</Text>
+          </Pressable>
+        </View>
+      )}
+
+      {/* Connections */}
       {identity && (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Connections (on-device)</Text>
           <Text style={styles.hint}>
-            Local list only. No relays. Wiped on Destroy.
+            Local list only. Establish via optical capture then paste. No relays.
+            Wiped on Destroy.
           </Text>
           <TextInput
             style={styles.didInput}
@@ -319,7 +365,7 @@ export default function PresenceScreen() {
             onChangeText={setNewConnectionId}
             autoCapitalize="none"
             autoCorrect={false}
-            placeholder="Paste did:key or public id"
+            placeholder="Paste did:key from optical exchange"
             placeholderTextColor="#555"
             editable={!busy}
           />
@@ -330,13 +376,22 @@ export default function PresenceScreen() {
           >
             <Text style={styles.btnText}>Add connection</Text>
           </Pressable>
+          {!showOpticalShare && (
+            <Pressable
+              style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
+              onPress={() => setShowOpticalShare(true)}
+            >
+              <Text style={styles.btnText}>Show my DID for optical exchange</Text>
+            </Pressable>
+          )}
           {connections.length === 0 ? (
             <Text style={[styles.hint, { marginTop: 12 }]}>No connections yet.</Text>
           ) : (
             connections.map((c) => (
               <View key={c.id} style={styles.connRow}>
                 <Text selectable style={styles.connId} numberOfLines={2}>
-                  {c.label ? `${c.label} · ` : ''}{c.id}
+                  {c.label ? `${c.label} · ` : ''}
+                  {c.id}
                 </Text>
                 <Pressable
                   style={styles.connRemove}
@@ -350,7 +405,7 @@ export default function PresenceScreen() {
         </View>
       )}
 
-      {/* High-friction Danger Zone */}
+      {/* Danger Zone */}
       {identity && showDangerZone && (
         <View style={styles.dangerCard}>
           <Text style={styles.dangerTitle}>Danger Zone</Text>
@@ -480,6 +535,29 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#222',
     marginBottom: 24,
+  },
+  opticalCard: {
+    backgroundColor: '#0a1410',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#1a4a3a',
+    marginBottom: 24,
+  },
+  opticalDidBox: {
+    backgroundColor: '#000',
+    borderRadius: 8,
+    padding: 16,
+    marginVertical: 12,
+    borderWidth: 1,
+    borderColor: '#2a5a4a',
+  },
+  opticalDid: {
+    color: '#2ecc71',
+    fontSize: 14,
+    lineHeight: 22,
+    fontFamily: 'monospace',
+    textAlign: 'center',
   },
   sectionTitle: {
     color: '#fff',
