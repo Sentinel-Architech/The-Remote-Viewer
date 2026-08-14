@@ -18,8 +18,9 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { VoiceField } from '../src/components/VoiceField';
 import { speak, startDictation, stopDictation } from '../src/services/voice';
 import { instantSearch, webSearchUrl, SearchResult } from '../src/services/search';
+import { t, Locale } from '../src/i18n/strings';
 
-export default function SensesScreen() {
+export default function SensesScreen({ locale = 'en' }: { locale?: Locale }) {
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
   const [cameraOn, setCameraOn] = useState(false);
@@ -39,20 +40,17 @@ export default function SensesScreen() {
     if (!permission?.granted) {
       const r = await requestPermission();
       if (!r.granted) {
-        Alert.alert(
-          'Camera',
-          'Permission denied. Sight stays off. You can still use text and search.'
-        );
+        Alert.alert('Camera', 'Permission denied.');
         return;
       }
     }
     setCameraOn(true);
-    speak('Camera on. Capture is local only.');
+    speak(locale === 'es' ? 'Cámara activada.' : 'Camera on. Capture is local only.');
   };
 
   const disableCamera = () => {
     setCameraOn(false);
-    speak('Camera off.');
+    speak(locale === 'es' ? 'Cámara apagada.' : 'Camera off.');
   };
 
   const capture = async () => {
@@ -63,13 +61,10 @@ export default function SensesScreen() {
       });
       if (photo?.uri) {
         setLastPhotoUri(photo.uri);
-        speak('Frame captured on device.');
+        speak(locale === 'es' ? 'Fotograma capturado.' : 'Frame captured on device.');
       }
     } catch (e) {
-      Alert.alert(
-        'Capture failed',
-        e instanceof Error ? e.message : 'Unknown error'
-      );
+      Alert.alert('Capture failed', e instanceof Error ? e.message : 'Unknown error');
     }
   };
 
@@ -77,7 +72,7 @@ export default function SensesScreen() {
     if (listening) {
       await stopDictation();
       setListening(false);
-      speak('Listening stopped.');
+      speak(locale === 'es' ? 'Escucha detenida.' : 'Listening stopped.');
       return;
     }
     setListening(true);
@@ -94,7 +89,6 @@ export default function SensesScreen() {
       onEnd: () => setListening(false),
     });
     if (!ok) setListening(false);
-    else speak('Listening. Speak when ready.');
   };
 
   const runSearch = async () => {
@@ -114,12 +108,12 @@ export default function SensesScreen() {
         result.abstract ||
         result.definition ||
         result.heading ||
-        'No instant answer. Open full web results for more.';
+        (locale === 'es'
+          ? 'Sin respuesta instantánea. Abra resultados web completos.'
+          : 'No instant answer. Open full web results for more.');
       speak(summary.slice(0, 400));
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Search failed';
-      setSearchError(msg);
-      speak('Search failed.');
+      setSearchError(e instanceof Error ? e.message : 'Search failed');
     } finally {
       setSearchBusy(false);
     }
@@ -129,100 +123,85 @@ export default function SensesScreen() {
     const q = searchQuery.trim();
     if (!q) return;
     const url = webSearchUrl(q);
-    const can = await Linking.canOpenURL(url);
-    if (can) await Linking.openURL(url);
-    else Alert.alert('Open failed', url);
+    if (await Linking.canOpenURL(url)) await Linking.openURL(url);
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.kicker}>LOCAL · OPT-IN · NO TRV CLOUD</Text>
-      <Text style={styles.title}>Senses</Text>
+      <Text style={styles.title}>{t(locale, 'senses')}</Text>
       <Text style={styles.subtitle}>
-        Sight · Hearing · Live search — you start them; you stop them
+        {locale === 'es'
+          ? 'Vista · Oído · Búsqueda — usted los inicia y los detiene'
+          : 'Sight · Hearing · Live search — you start them; you stop them'}
       </Text>
 
-      {/* SIGHT */}
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Sight (camera)</Text>
+        <Text style={styles.sectionTitle}>{t(locale, 'sight')}</Text>
         <Text style={styles.hint}>
-          Preview and capture stay on this device. Not uploaded to The Remote
-          Viewer. No always-on camera.
+          {locale === 'es'
+            ? 'La captura permanece en este dispositivo. No se sube a TRV.'
+            : 'Preview and capture stay on this device. Not uploaded to TRV.'}
         </Text>
         {!cameraOn ? (
           <Pressable style={[styles.btn, styles.btnPrimary]} onPress={enableCamera}>
-            <Text style={styles.btnText}>Enable camera</Text>
+            <Text style={styles.btnText}>{t(locale, 'enableCamera')}</Text>
           </Pressable>
         ) : (
           <>
             <View style={styles.cameraWrap}>
-              <CameraView
-                ref={cameraRef}
-                style={styles.camera}
-                facing={facing}
-              />
+              <CameraView ref={cameraRef} style={styles.camera} facing={facing} />
             </View>
             <View style={styles.row}>
               <Pressable style={[styles.btn, styles.btnSecondary, styles.flex]} onPress={capture}>
-                <Text style={styles.btnText}>Capture frame</Text>
+                <Text style={styles.btnText}>
+                  {locale === 'es' ? 'Capturar' : 'Capture frame'}
+                </Text>
               </Pressable>
               <Pressable
                 style={[styles.btn, styles.btnSecondary, styles.flex]}
-                onPress={() =>
-                  setFacing((f) => (f === 'back' ? 'front' : 'back'))
-                }
+                onPress={() => setFacing((f) => (f === 'back' ? 'front' : 'back'))}
               >
-                <Text style={styles.btnText}>Flip</Text>
+                <Text style={styles.btnText}>{locale === 'es' ? 'Voltear' : 'Flip'}</Text>
               </Pressable>
             </View>
-            <Pressable
-              style={[styles.btn, styles.btnDanger, { marginTop: 8 }]}
-              onPress={disableCamera}
-            >
-              <Text style={styles.btnText}>Turn camera off</Text>
+            <Pressable style={[styles.btn, styles.btnDanger, { marginTop: 8 }]} onPress={disableCamera}>
+              <Text style={styles.btnText}>{t(locale, 'turnCameraOff')}</Text>
             </Pressable>
           </>
         )}
         {lastPhotoUri && (
           <View style={{ marginTop: 12 }}>
-            <Text style={styles.label}>Last capture (local)</Text>
             <Image source={{ uri: lastPhotoUri }} style={styles.thumb} />
           </View>
         )}
-        <Text style={styles.label}>Sight notes (optional)</Text>
         <VoiceField
           value={sightNote}
           onChangeText={setSightNote}
           multiline
           style={{ minHeight: 48 }}
-          placeholder="Describe what you see…"
+          placeholder={locale === 'es' ? 'Notas de vista…' : 'Sight notes…'}
           placeholderTextColor="#555"
           appendDictation
         />
       </View>
 
-      {/* HEARING */}
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Hearing (microphone)</Text>
-        <Text style={styles.hint}>
-          Explicit listen sessions only. Uses OS speech recognition when
-          available. Notes stay on device.
-        </Text>
+        <Text style={styles.sectionTitle}>{t(locale, 'hearing')}</Text>
         <Pressable
           style={[styles.btn, listening ? styles.btnDanger : styles.btnPrimary]}
           onPress={toggleListen}
         >
           <Text style={styles.btnText}>
-            {listening ? 'Stop listening' : 'Start listening'}
+            {listening ? t(locale, 'stopListening') : t(locale, 'startListening')}
           </Text>
         </Pressable>
-        <Text style={styles.label}>Hearing notes</Text>
         <VoiceField
           value={hearingNotes}
           onChangeText={setHearingNotes}
           multiline
           style={{ minHeight: 72 }}
-          placeholder="Transcribed or typed notes…"
+          placeholder={locale === 'es' ? 'Notas de oído…' : 'Hearing notes…'}
           placeholderTextColor="#555"
           appendDictation
         />
@@ -230,99 +209,47 @@ export default function SensesScreen() {
           style={[styles.btn, styles.btnSecondary]}
           onPress={() => hearingNotes && speak(hearingNotes)}
         >
-          <Text style={styles.btnText}>Speak notes</Text>
+          <Text style={styles.btnText}>{t(locale, 'speak')}</Text>
         </Pressable>
       </View>
 
-      {/* LIVE SEARCH */}
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Live internet search</Text>
-        <Text style={styles.hint}>
-          DuckDuckGo Instant Answer (no API key). User-initiated network call.
-          Attribution: results from DuckDuckGo. Full SERP opens in browser.
-        </Text>
+        <Text style={styles.sectionTitle}>{t(locale, 'liveSearch')}</Text>
         <VoiceField
           value={searchQuery}
           onChangeText={setSearchQuery}
-          placeholder="Search query"
+          placeholder={locale === 'es' ? 'Consulta' : 'Search query'}
           placeholderTextColor="#555"
           appendDictation
         />
-        <Pressable
-          style={[styles.btn, styles.btnPrimary]}
-          onPress={runSearch}
-          disabled={searchBusy}
-        >
+        <Pressable style={[styles.btn, styles.btnPrimary]} onPress={runSearch} disabled={searchBusy}>
           <Text style={styles.btnText}>
-            {searchBusy ? 'Searching…' : 'Search (instant answer)'}
+            {searchBusy
+              ? locale === 'es'
+                ? 'Buscando…'
+                : 'Searching…'
+              : t(locale, 'search')}
           </Text>
         </Pressable>
-        <Pressable
-          style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
-          onPress={openFullWeb}
-        >
-          <Text style={styles.btnText}>Open full web results</Text>
+        <Pressable style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]} onPress={openFullWeb}>
+          <Text style={styles.btnText}>{t(locale, 'openFullWeb')}</Text>
         </Pressable>
-        {searchError && (
-          <Text style={styles.error}>{searchError}</Text>
-        )}
+        {searchError && <Text style={styles.error}>{searchError}</Text>}
         {searchResult && (
           <View style={styles.resultBox}>
-            <Text style={styles.label}>Query</Text>
-            <Text style={styles.resultText}>{searchResult.query}</Text>
-            {searchResult.heading ? (
-              <>
-                <Text style={styles.label}>Heading</Text>
-                <Text style={styles.resultText}>{searchResult.heading}</Text>
-              </>
-            ) : null}
-            {searchResult.answer ? (
-              <>
-                <Text style={styles.label}>Answer</Text>
-                <Text style={styles.resultText}>{searchResult.answer}</Text>
-              </>
-            ) : null}
-            {searchResult.abstract ? (
-              <>
-                <Text style={styles.label}>Abstract</Text>
-                <Text style={styles.resultText}>{searchResult.abstract}</Text>
-              </>
-            ) : null}
-            {searchResult.definition ? (
-              <>
-                <Text style={styles.label}>Definition</Text>
-                <Text style={styles.resultText}>{searchResult.definition}</Text>
-              </>
-            ) : null}
-            {searchResult.related.length > 0 && (
-              <>
-                <Text style={styles.label}>Related</Text>
-                {searchResult.related.map((r, i) => (
-                  <Text key={i} style={styles.related}>
-                    • {r.text}
-                  </Text>
-                ))}
-              </>
+            {!!searchResult.heading && (
+              <Text style={styles.resultText}>{searchResult.heading}</Text>
             )}
-            <Text style={styles.attr}>Results from DuckDuckGo</Text>
-            <Pressable
-              style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
-              onPress={() =>
-                speak(
-                  [
-                    searchResult.heading,
-                    searchResult.answer,
-                    searchResult.abstract,
-                    searchResult.definition,
-                  ]
-                    .filter(Boolean)
-                    .join('. ')
-                    .slice(0, 500) || 'No spoken summary.'
-                )
-              }
-            >
-              <Text style={styles.btnText}>Speak result</Text>
-            </Pressable>
+            {!!searchResult.answer && (
+              <Text style={styles.resultText}>{searchResult.answer}</Text>
+            )}
+            {!!searchResult.abstract && (
+              <Text style={styles.resultText}>{searchResult.abstract}</Text>
+            )}
+            {!!searchResult.definition && (
+              <Text style={styles.resultText}>{searchResult.definition}</Text>
+            )}
+            <Text style={styles.attr}>{t(locale, 'resultsFromDdg')}</Text>
           </View>
         )}
       </View>
@@ -345,7 +272,6 @@ const styles = StyleSheet.create({
   },
   sectionTitle: { color: '#fff', fontSize: 16, fontWeight: '600', marginBottom: 4 },
   hint: { color: '#888', lineHeight: 20, fontSize: 13, marginBottom: 12 },
-  label: { color: '#666', fontSize: 12, marginTop: 10, marginBottom: 4 },
   cameraWrap: {
     height: 240,
     borderRadius: 12,
@@ -370,8 +296,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#333',
   },
-  resultText: { color: '#ccc', fontSize: 13, lineHeight: 20 },
-  related: { color: '#9ab', fontSize: 12, lineHeight: 18, marginTop: 4 },
-  attr: { color: '#555', fontSize: 11, marginTop: 12 },
+  resultText: { color: '#ccc', fontSize: 13, lineHeight: 20, marginBottom: 6 },
+  attr: { color: '#555', fontSize: 11, marginTop: 8 },
   error: { color: '#e74c3c', marginTop: 10, fontSize: 13 },
 });
