@@ -9,15 +9,21 @@ import {
   HumanAttestation,
 } from '../services/humanVerification';
 import { speak } from '../services/voice';
+import { resetTutorialFlag } from '../services/tutorial';
 
 type Props = {
   locale: Locale;
   onLocaleChange?: () => void;
-  /** Only show attestation controls when identity exists */
   identityActive: boolean;
+  onReplayTutorial?: () => void;
 };
 
-export function LocaleHumanBar({ locale, onLocaleChange, identityActive }: Props) {
+export function LocaleHumanBar({
+  locale,
+  onLocaleChange,
+  identityActive,
+  onReplayTutorial,
+}: Props) {
   const [attestation, setAttestation] = useState<HumanAttestation | null>(null);
   const [pendingSex, setPendingSex] = useState<SexAttestation | null>(null);
 
@@ -53,6 +59,11 @@ export function LocaleHumanBar({ locale, onLocaleChange, identityActive }: Props
     );
   };
 
+  const replay = async () => {
+    await resetTutorialFlag();
+    onReplayTutorial?.();
+  };
+
   return (
     <View style={styles.wrap}>
       <Text style={styles.label}>{t(locale, 'language')}</Text>
@@ -70,6 +81,14 @@ export function LocaleHumanBar({ locale, onLocaleChange, identityActive }: Props
           <Text style={styles.chipText}>{t(locale, 'spanish')}</Text>
         </Pressable>
       </View>
+
+      {onReplayTutorial && (
+        <Pressable style={styles.tutorialBtn} onPress={replay}>
+          <Text style={styles.tutorialText}>
+            {locale === 'es' ? 'Ver guía de nuevo' : 'Replay welcome guide'}
+          </Text>
+        </Pressable>
+      )}
 
       {identityActive && (
         <>
@@ -141,4 +160,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   saveText: { color: '#fff', fontWeight: '600' },
+  tutorialBtn: {
+    marginTop: 4,
+    marginBottom: 4,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#2a4a5a',
+    backgroundColor: '#1a2a3a',
+  },
+  tutorialText: { color: '#9cf', fontWeight: '600', fontSize: 13 },
 });
