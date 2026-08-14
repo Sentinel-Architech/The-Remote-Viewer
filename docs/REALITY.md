@@ -1,6 +1,6 @@
 # Concepts → Reality Status
 
-Last updated: **2026-08-14** (Phase 1 first cut: local demo VC issue/store/destroy-with-identity; prior mobile did:key hardening + smoke test; continuous beacon + Stage 1 validator list / Path B liveness gate; Path B recognition + pool + mobile UI / Hydra / vending / verifier)
+Last updated: **2026-08-14** (Sovereign Social Layer locked; high-friction local Destroy gate; Phase 1 first cut demo VC; mobile did:key hardening; continuous beacon + Stage 1 validator list; Path B recognition + pool + mobile UI / Hydra / vending / verifier)
 
 **Rule:** No marketing. **PROVEN** = ran under user control on device. Scripts in git alone are not PROVEN.
 
@@ -21,8 +21,9 @@ Last updated: **2026-08-14** (Phase 1 first cut: local demo VC issue/store/destr
 | Local age identity | **PROVEN** (device-held; not in git) |
 | Centralized key assignment | **REJECTED** |
 | Mobile Viewer ID (npub) + profile | **DEMONSTRATED** | Create / export / remove / linked social (X) / private message flows on-device 2026-08-13 |
-| Mobile did:key (Ed25519) + SecureStore | **DEMONSTRATED** | Hardened options (WHEN_UNLOCKED_THIS_DEVICE_ONLY + requireAuthentication); Create → Destroy → Empty smoke test; best-effort zeroize; Expo Go exploration-only 2026-08-14 |
-| Local demo VC (issue / store / list / destroy-with-identity) | **DEMONSTRATED** | Phase 1 first cut; W3C-shaped self-issued scaffold credential; wiped on Destroy; no OpenID4VCI/VP yet 2026-08-14 |
+| Mobile did:key (Ed25519) + SecureStore | **DEMONSTRATED** | Hardened options; Create → Destroy → Empty; high-friction typed-DID gate; Expo Go exploration-only 2026-08-14 |
+| Local demo VC (issue / store / list / destroy-with-identity) | **DEMONSTRATED** | Phase 1 first cut; W3C-shaped self-issued scaffold; wiped on Destroy; no OpenID4VCI/VP yet 2026-08-14 |
+| Sovereign Social Layer (design) | **LOCKED** | On-device connection list + optional Nostr-compatible publication; social state dies with identity path; no central graph (`docs/locked/14`) 2026-08-14 |
 
 ## Digital vending & first validator role
 
@@ -70,7 +71,7 @@ Last updated: **2026-08-14** (Phase 1 first cut: local demo VC issue/store/destr
 | Contribution ledger | **PROVEN** | verify OK + verifier weight on reference node |
 | Local operator UI `127.0.0.1` | **PROVEN** | `apps/ui` console — copy-to-Termux commands; Hydra/vending/verifier/Path B/Pool/Nodes heads; no shell exec in browser |
 | Mobile client UI (Hub / Profile / Shop / Talk) | **DEMONSTRATED** | Full navigation, quick post, private message, linked social, wallet, NFT, Aurora skins, field claim on-device 2026-08-13 |
-| Mobile did:key identity surface | **DEMONSTRATED** | presence.ts + PresenceScreen smoke test 2026-08-14 |
+| Mobile did:key identity surface | **DEMONSTRATED** | presence.ts + high-friction destroy gate + smoke test 2026-08-14 |
 | Mobile local demo VC surface | **DEMONSTRATED** | credentials.ts + issue/list/destroy-with-identity 2026-08-14 |
 | Termux reminders | **SCAFFOLD** |
 | Chain settlement / live DePIN | **NOT STARTED** |
