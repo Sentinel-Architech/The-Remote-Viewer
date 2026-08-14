@@ -76,7 +76,7 @@ export default function App() {
           onReplayTutorial={() => setShowTutorial(true)}
         />
       )}
-      {screen === 'messages' && <MessagingScreen />}
+      {screen === 'messages' && <MessagingScreen locale={locale} />}
       {screen === 'senses' && <SensesScreen locale={locale} />}
     </View>
   );

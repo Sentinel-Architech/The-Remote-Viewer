@@ -1,7 +1,5 @@
 /**
- * Messages — local DIDComm-shaped inbox.
- * Network-carried unlimited path requires Communication Freedom entitlement.
- * Blocked DIDs are filtered from the inbox view.
+ * Messages — local DIDComm-shaped inbox (scaffold upgraded).
  */
 
 import React, { useState, useCallback, useEffect } from 'react';
@@ -25,8 +23,12 @@ import { getCurrentDidKey } from '../src/services/presence';
 import { canUseFreeUnlimitedComms } from '../src/services/entitlement';
 import { getModeration, isBlocked } from '../src/services/communityModeration';
 import { VoiceField } from '../src/components/VoiceField';
+import type { Locale } from '../src/i18n/strings';
 
-export default function MessagingScreen() {
+type Props = { locale?: Locale };
+
+export default function MessagingScreen({ locale = 'en' }: Props) {
+  const isEs = locale === 'es';
   const [content, setContent] = useState('');
   const [toDid, setToDid] = useState('');
   const [inbox, setInbox] = useState<DidCommBasicMessage[]>([]);
@@ -48,13 +50,21 @@ export default function MessagingScreen() {
 
   const handleSend = async () => {
     if (!content.trim()) {
-      Alert.alert('Empty', 'Write a message first.');
+      Alert.alert(
+        isEs ? 'Vacío' : 'Empty',
+        isEs ? 'Escriba un mensaje.' : 'Write a message first.'
+      );
       return;
     }
 
     const identity = await getCurrentDidKey();
     if (!identity) {
-      Alert.alert('No identity', 'Create a did:key on the Identity tab first.');
+      Alert.alert(
+        isEs ? 'Sin identidad' : 'No identity',
+        isEs
+          ? 'Cree un did:key en Identidad primero.'
+          : 'Create a did:key on the Identity tab first.'
+      );
       return;
     }
 
@@ -62,64 +72,60 @@ export default function MessagingScreen() {
     if (target) {
       const mod = await getModeration();
       if (isBlocked(mod, target)) {
-        Alert.alert('Blocked', 'You blocked this DID. Unblock on Identity to message them.');
+        Alert.alert(
+          isEs ? 'Bloqueado' : 'Blocked',
+          isEs
+            ? 'Desbloquee en Identidad para mensajear.'
+            : 'Unblock on Identity to message them.'
+        );
         return;
       }
     }
 
-    // Local store always allowed; network relay (future) requires entitlement
     if (!entitled && target) {
       Alert.alert(
-        'Communication Freedom',
-        'Local draft will still store. Unlimited network-carried TRV communication requires a yearly subscription or node-host opt-in (node ON). See Senses → Communication Freedom.'
+        isEs ? 'Libertad de comunicación' : 'Communication Freedom',
+        isEs
+          ? 'El borrador local se guarda. Comms de red ilimitados requieren suscripción anual o nodo anfitrión ENCENDIDO.'
+          : 'Local draft still stores. Unlimited network TRV comms need a yearly sub or node-host ON.'
       );
     }
 
-    const msg = await createBasicMessage(
-      content.trim(),
-      target || undefined
-    );
-
+    const msg = await createBasicMessage(content.trim(), target || undefined);
     if (!msg) {
-      Alert.alert('Failed', 'Could not create message.');
+      Alert.alert(isEs ? 'Error' : 'Failed', isEs ? 'No se pudo crear.' : 'Could not create message.');
       return;
     }
 
     await storeMessage(msg);
     setContent('');
     refresh();
-    Alert.alert('Stored locally', msg.id.slice(0, 8) + '…');
+    Alert.alert(isEs ? 'Guardado local' : 'Stored locally', msg.id.slice(0, 8) + '…');
   };
 
   const handleVerify = async (msg: DidCommBasicMessage) => {
     const ok = await verifyBasicMessage(msg);
-    Alert.alert(ok ? 'Valid signature' : 'Invalid', ok ? 'Verified.' : 'Check failed.');
-  };
-
-  const handleClear = () => {
-    Alert.alert('Clear inbox?', 'Local messages only.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Clear',
-        style: 'destructive',
-        onPress: async () => {
-          await clearInbox();
-          refresh();
-        },
-      },
-    ]);
+    Alert.alert(
+      ok ? (isEs ? 'Firma válida' : 'Valid signature') : isEs ? 'Inválida' : 'Invalid',
+      ok ? (isEs ? 'Verificado.' : 'Verified.') : isEs ? 'Falló.' : 'Check failed.'
+    );
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.kicker}>LOCAL · DIDCOMM BASIC</Text>
-      <Text style={styles.title}>Messages</Text>
+      <Text style={styles.title}>{isEs ? 'Mensajes' : 'Messages'}</Text>
       <Text style={styles.subtitle}>
-        Signed on device · blocked DIDs hidden ·{' '}
-        {entitled ? 'UNLIMITED TRV (entitled)' : 'local store (no network entitlement)'}
+        {entitled
+          ? isEs
+            ? 'ILIMITADO TRV (con derecho)'
+            : 'UNLIMITED TRV (entitled)'
+          : isEs
+            ? 'Almacén local (sin derecho de red)'
+            : 'Local store (no network entitlement)'}
       </Text>
 
-      <Text style={styles.label}>To DID (optional)</Text>
+      <Text style={styles.label}>{isEs ? 'Para DID (opcional)' : 'To DID (optional)'}</Text>
       <VoiceField
         value={toDid}
         onChangeText={setToDid}
@@ -128,11 +134,11 @@ export default function MessagingScreen() {
         autoCapitalize="none"
       />
 
-      <Text style={styles.label}>Message</Text>
+      <Text style={styles.label}>{isEs ? 'Mensaje' : 'Message'}</Text>
       <VoiceField
         value={content}
         onChangeText={setContent}
-        placeholder="Presence note…"
+        placeholder={isEs ? 'Nota…' : 'Presence note…'}
         placeholderTextColor="#555"
         multiline
         style={{ minHeight: 88 }}
@@ -140,20 +146,44 @@ export default function MessagingScreen() {
       />
 
       <Pressable style={[styles.btn, styles.btnPrimary]} onPress={handleSend}>
-        <Text style={styles.btnText}>Send (local)</Text>
+        <Text style={styles.btnText}>
+          {isEs ? 'Enviar (local)' : 'Send (local)'}
+        </Text>
       </Pressable>
 
       <View style={styles.row}>
-        <Text style={styles.section}>Inbox ({inbox.length})</Text>
+        <Text style={styles.section}>
+          {isEs ? 'Bandeja' : 'Inbox'} ({inbox.length})
+        </Text>
         {inbox.length > 0 && (
-          <Pressable onPress={handleClear}>
-            <Text style={styles.clearLink}>Clear</Text>
+          <Pressable
+            onPress={() =>
+              Alert.alert(
+                isEs ? '¿Vaciar?' : 'Clear inbox?',
+                isEs ? 'Solo local.' : 'Local only.',
+                [
+                  { text: isEs ? 'Cancelar' : 'Cancel', style: 'cancel' },
+                  {
+                    text: isEs ? 'Vaciar' : 'Clear',
+                    style: 'destructive',
+                    onPress: async () => {
+                      await clearInbox();
+                      refresh();
+                    },
+                  },
+                ]
+              )
+            }
+          >
+            <Text style={styles.clearLink}>{isEs ? 'Vaciar' : 'Clear'}</Text>
           </Pressable>
         )}
       </View>
 
       {inbox.length === 0 ? (
-        <Text style={styles.empty}>No messages yet</Text>
+        <Text style={styles.empty}>
+          {isEs ? 'Sin mensajes' : 'No messages yet'}
+        </Text>
       ) : (
         inbox.map((msg) => (
           <View key={msg.id} style={styles.card}>
@@ -165,7 +195,9 @@ export default function MessagingScreen() {
               style={[styles.btn, styles.btnSmall]}
               onPress={() => handleVerify(msg)}
             >
-              <Text style={styles.btnTextSmall}>Verify</Text>
+              <Text style={styles.btnTextSmall}>
+                {isEs ? 'Verificar' : 'Verify'}
+              </Text>
             </Pressable>
           </View>
         ))
