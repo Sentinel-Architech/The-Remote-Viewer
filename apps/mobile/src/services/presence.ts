@@ -105,7 +105,7 @@ export function buildDidDocument(identity: DidKeyIdentity) {
     verificationMethod: [
       {
         id: keyId,
-        type: 'Ed25519VerificationMethod2020',
+        type: 'Ed25519VerificationKey2020',
         controller: did,
         publicKeyMultibase: multibaseKey,
       },
