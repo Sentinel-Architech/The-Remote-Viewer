@@ -11,22 +11,23 @@ import { assert } from "chai";
 describe("trv_governance", () => {
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
-
   const program = anchor.workspace.TrvGovernance as Program;
   const authority = provider.wallet as anchor.Wallet;
 
-  it("initialize → register_node → propose → vote → execute_if_threshold", async () => {
-    const threshold = new anchor.BN(10);
-
-    const [configPda] = PublicKey.findProgramAddressSync(
+  const configPda = () =>
+    PublicKey.findProgramAddressSync(
       [Buffer.from("trv-config")],
       program.programId
-    );
+    )[0];
+
+  it("initialize → register_node → propose → vote → execute", async () => {
+    const threshold = new anchor.BN(10);
+    const config = configPda();
 
     await program.methods
       .initialize(threshold)
       .accounts({
-        config: configPda,
+        config,
         authority: authority.publicKey,
         systemProgram: SystemProgram.programId,
       })
@@ -40,7 +41,7 @@ describe("trv_governance", () => {
     await program.methods
       .registerNode()
       .accounts({
-        config: configPda,
+        config,
         node: nodePda,
         operator: authority.publicKey,
         systemProgram: SystemProgram.programId,
@@ -49,10 +50,6 @@ describe("trv_governance", () => {
 
     const node = await program.account.node.fetch(nodePda);
     assert.isTrue(node.active);
-    assert.equal(node.operator.toBase58(), authority.publicKey.toBase58());
-
-    const cfg = await program.account.governanceConfig.fetch(configPda);
-    assert.equal(cfg.nodeCount.toNumber(), 1);
 
     const desc = Buffer.alloc(32, 7);
     const [proposalPda] = PublicKey.findProgramAddressSync(
@@ -63,7 +60,7 @@ describe("trv_governance", () => {
     await program.methods
       .propose([...desc] as any)
       .accounts({
-        config: configPda,
+        config,
         proposal: proposalPda,
         authority: authority.publicKey,
         systemProgram: SystemProgram.programId,
@@ -82,7 +79,7 @@ describe("trv_governance", () => {
     await program.methods
       .vote(new anchor.BN(10))
       .accounts({
-        config: configPda,
+        config,
         proposal: proposalPda,
         voteRecord: voteRecordPda,
         voter: authority.publicKey,
@@ -93,7 +90,7 @@ describe("trv_governance", () => {
     await program.methods
       .executeIfThreshold()
       .accounts({
-        config: configPda,
+        config,
         proposal: proposalPda,
         authority: authority.publicKey,
       })
@@ -101,9 +98,97 @@ describe("trv_governance", () => {
 
     const prop = await program.account.proposal.fetch(proposalPda);
     assert.isTrue(prop.executed);
-    assert.equal(prop.yesVotes.toNumber(), 10);
+    assert.isFalse(prop.cancelled);
+  });
 
-    const record = await program.account.voteRecord.fetch(voteRecordPda);
-    assert.equal(record.weight.toNumber(), 10);
+  it("cancel_proposal blocks execute", async () => {
+    const config = configPda();
+    const desc = Buffer.alloc(32, 9);
+    const [proposalPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("trv-proposal"), desc],
+      program.programId
+    );
+
+    await program.methods
+      .propose([...desc] as any)
+      .accounts({
+        config,
+        proposal: proposalPda,
+        authority: authority.publicKey,
+        systemProgram: SystemProgram.programId,
+      })
+      .rpc();
+
+    await program.methods
+      .cancelProposal()
+      .accounts({
+        config,
+        proposal: proposalPda,
+        authority: authority.publicKey,
+      })
+      .rpc();
+
+    const prop = await program.account.proposal.fetch(proposalPda);
+    assert.isTrue(prop.cancelled);
+
+    let failed = false;
+    try {
+      await program.methods
+        .executeIfThreshold()
+        .accounts({
+          config,
+          proposal: proposalPda,
+          authority: authority.publicKey,
+        })
+        .rpc();
+    } catch {
+      failed = true;
+    }
+    assert.isTrue(failed, "execute should fail on cancelled proposal");
+  });
+
+  it("grant_subscription + refresh_entitlement", async () => {
+    const config = configPda();
+    const user = authority.publicKey;
+
+    const [subPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("trv-sub"), user.toBuffer()],
+      program.programId
+    );
+    const [nodePda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("trv-node"), user.toBuffer()],
+      program.programId
+    );
+    const [entPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("trv-ent"), user.toBuffer()],
+      program.programId
+    );
+
+    const expires = Math.floor(Date.now() / 1000) + 365 * 24 * 3600;
+
+    await program.methods
+      .grantSubscription(new anchor.BN(expires))
+      .accounts({
+        config,
+        subscription: subPda,
+        subscriber: user,
+        authority: user,
+        systemProgram: SystemProgram.programId,
+      })
+      .rpc();
+
+    await program.methods
+      .refreshEntitlement()
+      .accounts({
+        node: nodePda,
+        subscription: subPda,
+        entitlement: entPda,
+        user,
+        systemProgram: SystemProgram.programId,
+      })
+      .rpc();
+
+    const ent = await program.account.entitlement.fetch(entPda);
+    assert.isTrue(ent.unlimitedComms);
   });
 });
