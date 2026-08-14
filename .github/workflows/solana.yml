@@ -15,6 +15,7 @@ on:
 env:
   SOLANA_VERSION: "2.0.14"
   ANCHOR_VERSION: "0.30.1"
+  RUST_VERSION: "1.79.0"
 
 jobs:
   build-and-test:
@@ -30,6 +31,11 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Install Rust ${{ env.RUST_VERSION }}
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+
       - name: Cache cargo
         uses: actions/cache@v4
         with:
@@ -38,7 +44,7 @@ jobs:
             ~/.cargo/git
             ~/.cargo/bin
             solana/target
-          key: ${{ runner.os }}-solana-${{ env.SOLANA_VERSION }}-anchor-${{ env.ANCHOR_VERSION }}-${{ hashFiles('solana/**/Cargo.toml') }}
+          key: ${{ runner.os }}-rust-${{ env.RUST_VERSION }}-solana-${{ env.SOLANA_VERSION }}-anchor-${{ env.ANCHOR_VERSION }}-${{ hashFiles('solana/**/Cargo.toml') }}
 
       - name: Install Solana
         run: |
@@ -47,6 +53,7 @@ jobs:
 
       - name: Solana version + keygen
         run: |
+          rustc --version
           solana --version
           mkdir -p ~/.config/solana
           solana-keygen new --no-bip39-passphrase -o ~/.config/solana/id.json --force
@@ -56,7 +63,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y pkg-config build-essential libudev-dev libssl-dev
 
-      - name: Install Anchor (avm from coral-xyz/anchor)
+      - name: Install Anchor (avm)
         run: |
           cargo install --git https://github.com/coral-xyz/anchor --tag v${{ env.ANCHOR_VERSION }} avm --locked --force
           export PATH="$HOME/.cargo/bin:$PATH"
