@@ -1,33 +1,23 @@
 # Reality — 2026-08-14
 
-## Direction
+## Track A — Solana
 
-| Track | Role |
-|-------|------|
-| **Solana `solana/`** | **Track A** — intended chain |
-| EVM `contracts/` | Parallel experiment |
-| Mobile Expo | **Parked** (Pixel client later) |
+| Item | Status |
+|------|--------|
+| Program ix | initialize, propose, vote, execute_if_threshold |
+| Anchor tests | **SCAFFOLD** `solana/tests/trv-governance.ts` |
+| CI build | `.github/workflows/solana.yml` |
+| Devnet / mainnet | **Not deployed** |
+| Audit | **None** |
 
-## Solana scaffold
+## EVM parallel
 
-- `initialize` / `propose` / `vote` / `execute_if_threshold`
-- CI: `.github/workflows/solana.yml`
-- Program id placeholder until `anchor keys list`
+Foundry tests + Anvil on Pixel worked; CI workflow present.
 
-## EVM scaffold
+## Pixel
 
-- TRVVotes + GovernanceCoordinator + flow tests (9 passed on device)
-- CI: `.github/workflows/contracts-foundry.yml`
-- Anvil only on Pixel; not mainnet
+SSH key generated; GitHub account login required to register key. Mobile runtime parked.
 
-## Pixel-only operator
+## Path B: **0** founders
 
-- GitHub SSH key generated; must be added after account login/password reset
-- Until pull works: source of truth is GitHub remote
-- Wallet/devnet client possible; program build via CI or other machine
-
-## Path B founding members: **0**
-
-## Not done
-
-Audit · Solana devnet deploy · Realms · Mainnet · Mobile runtime unpark
+See `docs/NEXT.md`.
