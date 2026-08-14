@@ -45,6 +45,7 @@ import { LocaleHumanBar } from '../src/components/LocaleHumanBar';
 import { DeepfakePolicyBanner } from '../src/components/DeepfakePolicyBanner';
 import { ConductCommunityPanel } from '../src/components/ConductCommunityPanel';
 import { TopicalLeansPanel } from '../src/components/TopicalLeansPanel';
+import { WeThePeopleBanner } from '../src/components/WeThePeopleBanner';
 import { t, Locale } from '../src/i18n/strings';
 
 type Props = {
@@ -114,10 +115,11 @@ export default function PresenceScreen({
       <Text style={styles.title}>{t(locale, 'identity')}</Text>
       <Text style={styles.subtitle}>
         {locale === 'es'
-          ? 'Conducta · intereses sin presión · soberanía'
-          : 'Conduct · interests without pressure · sovereignty'}
+          ? 'Nosotros el Pueblo · soberanía'
+          : 'We the People · sovereignty'}
       </Text>
 
+      <WeThePeopleBanner locale={locale} />
       <DeepfakePolicyBanner locale={locale} />
       <TopicalLeansPanel locale={locale} />
       <ConductCommunityPanel locale={locale} />
