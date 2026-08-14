@@ -1,28 +1,21 @@
 # Concepts → Reality Status
 
-Last updated: **2026-08-14** (deepfake rule: human likeness OK only if distinguishable from humanity)
+Last updated: **2026-08-14** (animations + XXX; mute/report/block; IA of IA inquiry scaffold)
 
-**Rule:** No marketing. **PROVEN** = ran under user control on device.
-
-## Locked prohibitions (`docs/locked/16`)
+## Locked conduct (`16` + `17`)
 
 | Rule | Status |
 |------|--------|
-| Deepfakes of real people / synthesis **indistinguishable from humanity** | **STRICTLY PROHIBITED · LOCKED** |
-| Human **likeness** that is **clearly distinguishable** from real humanity (art, avatar, stylized) | **ALLOWED** |
-| Client acknowledgment (v2) | **DEMONSTRATED** |
-| Automated detection at scale | **NOT CLAIMED** |
+| Passable / real-person deepfakes | **STRICTLY PROHIBITED** |
+| Human animation / likeness if **distinguishable** | **ALLOWED** |
+| Adult content only behind **XXX** (default blocked) | **LOCKED** + preference **DEMONSTRATED** |
+| Community **mute / report / block** | **DEMONSTRATED** (local) |
+| IA of IA anonymous formal private inquiry → steer Sentinel | **DESIGN** live; **scaffold DEMONSTRATED** |
 
 ## Communication Freedom (`15`)
 
-| Rule | Status |
-|------|--------|
-| FREE + UNLIMITED TRV comms: yearly sub OR node-host opt-in (node on) | **LOCKED** + scaffold |
-| Prohibited deepfake traffic not protected by Freedom | **LOCKED** |
+Yearly sub OR node-host opt-in (node on) → free unlimited TRV comms. Prohibited deepfake traffic not protected.
 
 ## Other
 
-| Concept | Status |
-|---------|--------|
-| Identity / social / Sentinel / tutorial | **DEMONSTRATED** |
-| Path B external founding members | **0** |
+Identity / social / Sentinel / tutorial: **DEMONSTRATED** · Path B external founding members: **0**

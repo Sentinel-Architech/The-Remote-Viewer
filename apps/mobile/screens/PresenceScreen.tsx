@@ -38,14 +38,13 @@ import {
 import {
   getLocalProfile,
   setLocalProfile,
-  buildProfileEvent,
-  buildFollowListEvent,
   LocalProfile,
 } from '../src/services/profile';
 import { speak } from '../src/services/voice';
 import { VoiceField } from '../src/components/VoiceField';
 import { LocaleHumanBar } from '../src/components/LocaleHumanBar';
 import { DeepfakePolicyBanner } from '../src/components/DeepfakePolicyBanner';
+import { ConductCommunityPanel } from '../src/components/ConductCommunityPanel';
 import { t, Locale } from '../src/i18n/strings';
 
 type Props = {
@@ -66,10 +65,8 @@ export default function PresenceScreen({
   const [connections, setConnections] = useState<Connection[]>([]);
   const [inbox, setInbox] = useState<DidCommBasicMessage[]>([]);
   const [profile, setProfile] = useState<LocalProfile | null>(null);
-
   const [showDangerZone, setShowDangerZone] = useState(false);
   const [typedDid, setTypedDid] = useState('');
-  const [showOpticalShare, setShowOpticalShare] = useState(false);
   const [newConnectionId, setNewConnectionId] = useState('');
   const [importPayload, setImportPayload] = useState('');
   const [msgTo, setMsgTo] = useState('');
@@ -111,38 +108,26 @@ export default function PresenceScreen({
 
   const handleCreate = async () => {
     setBusy(true);
-    setSmokeResult(null);
-    setShowDangerZone(false);
-    setTypedDid('');
     try {
-      const newIdentity = await createDidKey();
-      setIdentity(newIdentity);
+      setIdentity(await createDidKey());
       setCredentials([]);
       setConnections([]);
       setInbox([]);
       setProfile(null);
-      setProfileName('');
-      setProfileAbout('');
     } finally {
       setBusy(false);
     }
   };
 
-  const openDangerZone = () => {
-    setTypedDid('');
-    setShowDangerZone(true);
-  };
-
-  const didMatches =
-    identity !== null && typedDid.trim() === identity.did;
+  const didMatches = identity !== null && typedDid.trim() === identity.did;
 
   const confirmDestroy = async () => {
     if (!identity || !didMatches) return;
     Alert.alert(
       locale === 'es' ? 'Confirmación final' : 'Final confirmation',
       locale === 'es'
-        ? 'Esta ruta de identidad terminará permanentemente.'
-        : 'This identity path will end permanently.',
+        ? 'Esta ruta terminará permanentemente.'
+        : 'This path will end permanently.',
       [
         { text: t(locale, 'cancel'), style: 'cancel' },
         {
@@ -157,7 +142,6 @@ export default function PresenceScreen({
               setConnections([]);
               setInbox([]);
               setProfile(null);
-              setSmokeResult(null);
               setShowDangerZone(false);
               setTypedDid('');
             } finally {
@@ -169,158 +153,18 @@ export default function PresenceScreen({
     );
   };
 
-  const handleSign = async () => {
-    const message = 'TRV presence proof ' + new Date().toISOString();
-    await signWithDidKey(message);
-    Alert.alert('Signed', message);
-  };
-
-  const handleShowDidDoc = () => {
-    if (!identity) return;
-    Alert.alert('DID Document', JSON.stringify(buildDidDocument(identity), null, 2));
-  };
-
-  const handleIssueDemoVc = async () => {
-    setBusy(true);
-    try {
-      const entry = await issueDemoCredential();
-      if (!entry) return;
-      setCredentials(await listDemoCredentials());
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleShareDidOptical = async () => {
-    if (!identity) return;
-    try {
-      await Share.share({ message: identity.did, title: 'TRV identity' });
-    } catch {
-      /* cancel */
-    }
-  };
-
-  const handleAddConnection = async () => {
-    const id = newConnectionId.trim();
-    if (!id) return;
-    setBusy(true);
-    try {
-      setConnections(await addConnection(id));
-      setNewConnectionId('');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleRemoveConnection = (id: string) => {
-    Alert.alert('Remove?', id, [
-      { text: t(locale, 'cancel'), style: 'cancel' },
-      {
-        text: 'Remove',
-        style: 'destructive',
-        onPress: async () => setConnections(await removeConnection(id)),
-      },
-    ]);
-  };
-
-  const handleExportConnections = async () => {
-    setBusy(true);
-    try {
-      const payload = await exportConnectionList();
-      await Share.share({ message: JSON.stringify(payload, null, 2) });
-    } catch {
-      /* cancel */
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleImportConnections = async () => {
-    const raw = importPayload.trim();
-    if (!raw) return;
-    setBusy(true);
-    try {
-      const result = await importConnectionList(raw);
-      setConnections(result.list);
-      setImportPayload('');
-    } catch (e) {
-      Alert.alert('Import failed', e instanceof Error ? e.message : 'Invalid');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleSendLocalMessage = async () => {
-    const to = msgTo.trim();
-    const content = msgBody.trim();
-    if (!to || !content) return;
-    setBusy(true);
-    try {
-      const msg = await createBasicMessage(content, to);
-      if (!msg) return;
-      await storeMessage(msg);
-      setInbox(await getInbox());
-      setMsgBody('');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleSaveProfile = async () => {
-    setBusy(true);
-    try {
-      setProfile(await setLocalProfile(profileName, profileAbout));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleSmokeTest = async () => {
-    setBusy(true);
-    setSmokeResult(null);
-    try {
-      await destroyDidKey();
-      const created = await createDidKey();
-      if (!created?.did) {
-        setSmokeResult('FAIL');
-        return;
-      }
-      await issueDemoCredential();
-      await addConnection('did:key:smoke-test-peer');
-      await setLocalProfile('Smoke', 'test');
-      const msg = await createBasicMessage('smoke', 'did:key:smoke-test-peer');
-      if (msg) await storeMessage(msg);
-      await destroyDidKey();
-      const empty =
-        (await getCurrentDidKey()) === null &&
-        (await listDemoCredentials()).length === 0 &&
-        (await listConnections()).length === 0 &&
-        (await getInbox()).length === 0 &&
-        (await getLocalProfile()) === null;
-      setSmokeResult(empty ? 'PASS' : 'FAIL');
-      setIdentity(null);
-      setCredentials([]);
-      setConnections([]);
-      setInbox([]);
-      setProfile(null);
-    } catch (e) {
-      setSmokeResult(`FAIL: ${e instanceof Error ? e.message : String(e)}`);
-    } finally {
-      setBusy(false);
-    }
-  };
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.kicker}>LOCAL · SCAFFOLD</Text>
       <Text style={styles.title}>{t(locale, 'identity')}</Text>
       <Text style={styles.subtitle}>
         {locale === 'es'
-          ? 'Texto o voz · did:key · sin deepfakes humanos'
-          : 'Text or voice · did:key · no human deepfakes'}
+          ? 'Conducta comunitaria · sin deepfakes indistinguibles'
+          : 'Community conduct · no passable deepfakes'}
       </Text>
 
       <DeepfakePolicyBanner locale={locale} />
+      <ConductCommunityPanel locale={locale} />
 
       <LocaleHumanBar
         locale={locale}
@@ -332,9 +176,6 @@ export default function PresenceScreen({
       <View style={styles.card}>
         {identity ? (
           <>
-            <View style={styles.badgeActive}>
-              <Text style={styles.badgeText}>{t(locale, 'active')}</Text>
-            </View>
             <Text style={styles.label}>DID</Text>
             <Text selectable style={styles.did}>
               {identity.did}
@@ -345,49 +186,12 @@ export default function PresenceScreen({
             </Text>
           </>
         ) : (
-          <>
-            <View style={styles.badgeIdle}>
-              <Text style={styles.badgeTextIdle}>{t(locale, 'noIdentity')}</Text>
-            </View>
-            <Text style={styles.hint}>{t(locale, 'noIdentityHint')}</Text>
-          </>
+          <Text style={styles.hint}>{t(locale, 'noIdentityHint')}</Text>
         )}
         {smokeResult && (
-          <Text
-            style={[
-              styles.smoke,
-              smokeResult.startsWith('PASS') ? styles.smokePass : styles.smokeFail,
-            ]}
-          >
-            {smokeResult}
-          </Text>
+          <Text style={styles.smoke}>{smokeResult}</Text>
         )}
-        <Pressable
-          style={[styles.btn, styles.btnSecondary, { marginTop: 12 }]}
-          onPress={() => speak(identity ? 'Identity active.' : 'No identity.')}
-        >
-          <Text style={styles.btnText}>{t(locale, 'speakStatus')}</Text>
-        </Pressable>
       </View>
-
-      {identity && showOpticalShare && (
-        <View style={styles.opticalCard}>
-          <View style={styles.opticalDidBox}>
-            <Text selectable style={styles.opticalDid}>
-              {identity.did}
-            </Text>
-          </View>
-          <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleShareDidOptical}>
-            <Text style={styles.btnText}>Share DID</Text>
-          </Pressable>
-          <Pressable
-            style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
-            onPress={() => setShowOpticalShare(false)}
-          >
-            <Text style={styles.btnText}>{t(locale, 'cancel')}</Text>
-          </Pressable>
-        </View>
-      )}
 
       {identity && (
         <View style={styles.card}>
@@ -396,18 +200,19 @@ export default function PresenceScreen({
             value={profileName}
             onChangeText={setProfileName}
             placeholderTextColor="#555"
-            editable={!busy}
           />
           <VoiceField
             value={profileAbout}
             onChangeText={setProfileAbout}
             multiline
-            style={{ minHeight: 56 }}
+            style={{ minHeight: 48 }}
             placeholderTextColor="#555"
-            editable={!busy}
             appendDictation
           />
-          <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleSaveProfile}>
+          <Pressable
+            style={[styles.btn, styles.btnSecondary]}
+            onPress={async () => setProfile(await setLocalProfile(profileName, profileAbout))}
+          >
             <Text style={styles.btnText}>{t(locale, 'saveProfile')}</Text>
           </Pressable>
         </View>
@@ -421,22 +226,24 @@ export default function PresenceScreen({
             onChangeText={setNewConnectionId}
             autoCapitalize="none"
             placeholderTextColor="#555"
-            editable={!busy}
           />
-          <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleAddConnection}>
+          <Pressable
+            style={[styles.btn, styles.btnSecondary]}
+            onPress={async () => {
+              const id = newConnectionId.trim();
+              if (!id) return;
+              setConnections(await addConnection(id));
+              setNewConnectionId('');
+            }}
+          >
             <Text style={styles.btnText}>{t(locale, 'addConnection')}</Text>
           </Pressable>
-          {!showOpticalShare && (
-            <Pressable
-              style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
-              onPress={() => setShowOpticalShare(true)}
-            >
-              <Text style={styles.btnText}>Optical DID</Text>
-            </Pressable>
-          )}
           <Pressable
             style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
-            onPress={handleExportConnections}
+            onPress={async () => {
+              const payload = await exportConnectionList();
+              await Share.share({ message: JSON.stringify(payload, null, 2) });
+            }}
           >
             <Text style={styles.btnText}>Export ({connections.length})</Text>
           </Pressable>
@@ -444,20 +251,32 @@ export default function PresenceScreen({
             value={importPayload}
             onChangeText={setImportPayload}
             multiline
-            style={{ minHeight: 64 }}
+            style={{ minHeight: 48 }}
             autoCapitalize="none"
             placeholderTextColor="#555"
-            editable={!busy}
           />
-          <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleImportConnections}>
+          <Pressable
+            style={[styles.btn, styles.btnSecondary]}
+            onPress={async () => {
+              try {
+                const r = await importConnectionList(importPayload.trim());
+                setConnections(r.list);
+                setImportPayload('');
+              } catch (e) {
+                Alert.alert('Import', e instanceof Error ? e.message : 'fail');
+              }
+            }}
+          >
             <Text style={styles.btnText}>Import</Text>
           </Pressable>
           {connections.map((c) => (
             <View key={c.id} style={styles.connRow}>
-              <Text selectable style={styles.connId} numberOfLines={2}>
+              <Text style={styles.connId} numberOfLines={1}>
                 {c.id}
               </Text>
-              <Pressable onPress={() => handleRemoveConnection(c.id)}>
+              <Pressable
+                onPress={async () => setConnections(await removeConnection(c.id))}
+              >
                 <Text style={styles.connRemoveText}>Remove</Text>
               </Pressable>
             </View>
@@ -473,27 +292,27 @@ export default function PresenceScreen({
             onChangeText={setMsgTo}
             autoCapitalize="none"
             placeholderTextColor="#555"
-            editable={!busy}
           />
           <VoiceField
             value={msgBody}
             onChangeText={setMsgBody}
             multiline
-            style={{ minHeight: 64 }}
+            style={{ minHeight: 48 }}
             placeholderTextColor="#555"
-            editable={!busy}
             appendDictation
           />
-          <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleSendLocalMessage}>
+          <Pressable
+            style={[styles.btn, styles.btnSecondary]}
+            onPress={async () => {
+              const msg = await createBasicMessage(msgBody.trim(), msgTo.trim());
+              if (!msg) return;
+              await storeMessage(msg);
+              setInbox(await getInbox());
+              setMsgBody('');
+            }}
+          >
             <Text style={styles.btnText}>Sign & store</Text>
           </Pressable>
-          {inbox.slice(0, 6).map((m) => (
-            <View key={m.id} style={styles.msgRow}>
-              <Text style={styles.msgBody} numberOfLines={2}>
-                {m.body?.content}
-              </Text>
-            </View>
-          ))}
         </View>
       )}
 
@@ -504,9 +323,7 @@ export default function PresenceScreen({
             value={typedDid}
             onChangeText={setTypedDid}
             autoCapitalize="none"
-            autoCorrect={false}
             placeholderTextColor="#555"
-            editable={!busy}
           />
           <Pressable
             style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
@@ -540,24 +357,66 @@ export default function PresenceScreen({
           </Pressable>
         ) : (
           <>
-            <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleSign}>
+            <Pressable
+              style={[styles.btn, styles.btnSecondary]}
+              onPress={async () => {
+                await signWithDidKey('TRV ' + new Date().toISOString());
+                Alert.alert('Signed');
+              }}
+            >
               <Text style={styles.btnText}>Sign test</Text>
             </Pressable>
-            <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleShowDidDoc}>
+            <Pressable
+              style={[styles.btn, styles.btnSecondary]}
+              onPress={() =>
+                identity &&
+                Alert.alert('DID Document', JSON.stringify(buildDidDocument(identity), null, 2))
+              }
+            >
               <Text style={styles.btnText}>DID Document</Text>
             </Pressable>
-            <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleIssueDemoVc}>
+            <Pressable
+              style={[styles.btn, styles.btnSecondary]}
+              onPress={async () => {
+                await issueDemoCredential();
+                setCredentials(await listDemoCredentials());
+              }}
+            >
               <Text style={styles.btnText}>Issue Demo VC</Text>
             </Pressable>
             {!showDangerZone && (
-              <Pressable style={[styles.btn, styles.btnDanger]} onPress={openDangerZone}>
+              <Pressable
+                style={[styles.btn, styles.btnDanger]}
+                onPress={() => setShowDangerZone(true)}
+              >
                 <Text style={styles.btnText}>{t(locale, 'destroyIdentity')}</Text>
               </Pressable>
             )}
           </>
         )}
-        <Pressable style={[styles.btn, styles.btnSmoke]} onPress={handleSmokeTest} disabled={busy}>
-          <Text style={styles.btnText}>{busy ? '…' : 'Smoke Test'}</Text>
+        <Pressable
+          style={[styles.btn, styles.btnSmoke]}
+          onPress={async () => {
+            setBusy(true);
+            try {
+              await destroyDidKey();
+              const c = await createDidKey();
+              if (!c) {
+                setSmokeResult('FAIL');
+                return;
+              }
+              await destroyDidKey();
+              setSmokeResult((await getCurrentDidKey()) === null ? 'PASS' : 'FAIL');
+              setIdentity(null);
+            } catch (e) {
+              setSmokeResult(String(e));
+            } finally {
+              setBusy(false);
+            }
+          }}
+          disabled={busy}
+        >
+          <Text style={styles.btnText}>Smoke Test</Text>
         </Pressable>
       </View>
     </ScrollView>
@@ -577,30 +436,7 @@ const styles = StyleSheet.create({
     borderColor: '#222',
     marginBottom: 24,
   },
-  opticalCard: {
-    backgroundColor: '#0a1410',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#1a4a3a',
-    marginBottom: 24,
-  },
-  opticalDidBox: {
-    backgroundColor: '#000',
-    borderRadius: 8,
-    padding: 16,
-    marginVertical: 12,
-    borderWidth: 1,
-    borderColor: '#2a5a4a',
-  },
-  opticalDid: {
-    color: '#2ecc71',
-    fontSize: 14,
-    lineHeight: 22,
-    fontFamily: 'monospace',
-    textAlign: 'center',
-  },
-  sectionTitle: { color: '#fff', fontSize: 16, fontWeight: '600', marginBottom: 4 },
+  sectionTitle: { color: '#fff', fontSize: 16, fontWeight: '600', marginBottom: 8 },
   dangerCard: {
     backgroundColor: '#1a0a0a',
     borderRadius: 12,
@@ -620,33 +456,11 @@ const styles = StyleSheet.create({
   },
   connId: { flex: 1, color: '#aaa', fontSize: 11, fontFamily: 'monospace' },
   connRemoveText: { color: '#e74c3c', fontSize: 12, fontWeight: '600' },
-  msgRow: { marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#222' },
-  msgBody: { color: '#ccc', fontSize: 13 },
-  badgeActive: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#0d3d24',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
-    marginBottom: 12,
-  },
-  badgeIdle: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#2a1515',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
-    marginBottom: 12,
-  },
-  badgeText: { color: '#2ecc71', fontSize: 12, fontWeight: '600' },
-  badgeTextIdle: { color: '#e74c3c', fontSize: 12, fontWeight: '600' },
-  label: { color: '#666', fontSize: 12, marginTop: 8, marginBottom: 4 },
+  label: { color: '#666', fontSize: 12, marginBottom: 4 },
   did: { color: '#fff', fontSize: 13, lineHeight: 18 },
-  mono: { color: '#aaa', fontSize: 11, fontFamily: 'monospace' },
+  mono: { color: '#aaa', fontSize: 11, fontFamily: 'monospace', marginTop: 8 },
   hint: { color: '#888', lineHeight: 20, fontSize: 13 },
-  smoke: { marginTop: 14, fontSize: 13, fontWeight: '600' },
-  smokePass: { color: '#2ecc71' },
-  smokeFail: { color: '#e74c3c' },
+  smoke: { marginTop: 12, color: '#2ecc71', fontWeight: '600' },
   actions: { gap: 10 },
   btn: { borderRadius: 10, paddingVertical: 14, alignItems: 'center' },
   btnPrimary: { backgroundColor: '#1a7f4b' },
