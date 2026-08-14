@@ -4,49 +4,53 @@ Local, offline liveness signal for Path B Stage 1+.
 
 **Spec:** [`docs/public/BEACON.md`](../../docs/public/BEACON.md)
 
-## Emit
+## One-time keypair
 
 ```bash
-bash modules/beacon/emit.sh --validator 'age1…your-public-id' --once
+mkdir -p $HOME/trv-beacon
+chmod 700 $HOME/trv-beacon
+openssl genpkey -algorithm ed25519 -out $HOME/trv-beacon/validator.pem
+openssl pkey -in $HOME/trv-beacon/validator.pem -pubout -out $HOME/trv-beacon/validator.pub
+chmod 600 $HOME/trv-beacon/validator.pem
 ```
 
-Writes:
+Publish only `validator.pub` (and your public identity string). Never share the `.pem`.
 
-- `$HOME/trv-beacon/latest`
-- `$HOME/trv-beacon/history.log`
-- `$HOME/trv-beacon/state` (seq counter)
-
-Loop every 5 minutes:
+## Emit (signed)
 
 ```bash
-export TRV_VALIDATOR_ID='age1…'
-bash modules/beacon/emit.sh --loop
+bash modules/beacon/emit.sh \
+  --validator 'age1…or-npub…' \
+  --key $HOME/trv-beacon/validator.pem \
+  --once
 ```
 
-## Check
+## Check (verify)
 
 ```bash
+bash modules/beacon/check.sh \
+  --from $HOME/trv-beacon/latest \
+  --pubkey $HOME/trv-beacon/validator.pub
+```
+
+Dry-run without real keys:
+
+```bash
+bash modules/beacon/emit.sh --validator 'age1…' --once
 bash modules/beacon/check.sh --from $HOME/trv-beacon/latest --allow-dev
 ```
 
-Production threshold must **not** use `--allow-dev`. `sig=DEV-UNSIGNED` fails without it.
+## Optical
 
-## Optical display
-
-```bash
-# from repo root
-python -m http.server 8766
-# open modules/beacon/show-beacon.html
-# paste contents of $HOME/trv-beacon/latest → Show QR
-```
+Paste `$HOME/trv-beacon/latest` into `modules/beacon/show-beacon.html` (serve from repo root).
 
 ## Status
 
 | Piece | Status |
 |-------|--------|
-| Format + freshness | Implemented |
-| Optical QR page | Implemented |
-| Real cryptographic signature | Not yet (DEV-UNSIGNED placeholder) |
-| Published validator list check | Not yet |
+| Format + freshness | Done |
+| Optical QR | Done |
+| ed25519 sign / verify | **Done** (OpenSSL) |
+| Published validator-list binding | Still open |
 
-Destroy = Restart applies to any validator keys used for real signatures.
+Destroy = Restart applies to `validator.pem`.

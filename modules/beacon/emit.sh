@@ -10,22 +10,24 @@ LATEST="$BEACON_DIR/latest"
 VALIDATOR="${TRV_VALIDATOR_ID:-}"
 EPOCH="${TRV_BEACON_EPOCH:-1}"
 INTERVAL="${TRV_BEACON_INTERVAL:-300}"
+KEY_FILE="${TRV_BEACON_KEY:-}"
 
 usage() {
   cat <<EOF
-Usage: bash modules/beacon/emit.sh [--validator <id>] [--epoch <n>] [--once]
+Usage: bash modules/beacon/emit.sh --validator <id> [--key <ed25519.pem>] [--epoch <n>] [--once|--loop]
 
-  --validator   Public identity (age1… / npub… / did:key:…). Or set TRV_VALIDATOR_ID.
-  --epoch       Recognition epoch (default: 1 or TRV_BEACON_EPOCH).
-  --once        Emit a single beacon and exit (default).
-  --loop        Emit every TRV_BEACON_INTERVAL seconds (default 300).
+  --validator   Public identity string published in the validator list
+  --key         Path to OpenSSL ed25519 private key (PEM). Or TRV_BEACON_KEY.
+                If omitted → sig=DEV-UNSIGNED (dry-run only).
+  --epoch       Recognition epoch (default: 1)
+  --once        Emit once and exit (default)
+  --loop        Emit every TRV_BEACON_INTERVAL seconds (default 300)
 
-Writes:
-  $LATEST
-  $BEACON_DIR/history.log
+Generate a keypair (once):
+  openssl genpkey -algorithm ed25519 -out "\$HOME/trv-beacon/validator.pem"
+  openssl pkey -in "\$HOME/trv-beacon/validator.pem" -pubout -out "\$HOME/trv-beacon/validator.pub"
 
-Signature: until Stage 1 signing is wired, sig=DEV-UNSIGNED.
-Structure and liveness path are real. See docs/public/BEACON.md.
+Writes: $LATEST , history.log , state
 EOF
 }
 
@@ -33,6 +35,7 @@ ONCE=1
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --validator) VALIDATOR="$2"; shift 2 ;;
+    --key) KEY_FILE="$2"; shift 2 ;;
     --epoch) EPOCH="$2"; shift 2 ;;
     --once) ONCE=1; shift ;;
     --loop) ONCE=0; shift ;;
@@ -53,6 +56,24 @@ if [[ ! -f "$STATE" ]]; then
   echo "seq=0" > "$STATE"
 fi
 
+sign_body() {
+  local body="$1"
+  if [[ -z "$KEY_FILE" ]]; then
+    echo "DEV-UNSIGNED"
+    return
+  fi
+  if [[ ! -f "$KEY_FILE" ]]; then
+    echo "error: key file not found: $KEY_FILE" >&2
+    exit 1
+  fi
+  if ! command -v openssl >/dev/null 2>&1; then
+    echo "error: openssl not found (pkg install openssl)" >&2
+    exit 1
+  fi
+  # Sign raw body; output base64 (single line)
+  printf '%s' "$body" | openssl pkeyutl -sign -inkey "$KEY_FILE" 2>/dev/null | openssl base64 -A
+}
+
 emit_one() {
   # shellcheck disable=SC1090
   source "$STATE"
@@ -60,11 +81,8 @@ emit_one() {
   ts=$(date +%s)
   echo "seq=$seq" > "$STATE"
 
-  # Canonical body (sig covers this form once real signing is wired)
   body="TRV-BEACON/1|validator=${VALIDATOR}|seq=${seq}|ts=${ts}|epoch=${EPOCH}"
-
-  # DEV-UNSIGNED: honest placeholder until validator key tooling lands
-  sig="DEV-UNSIGNED"
+  sig=$(sign_body "$body")
 
   {
     echo "TRV-BEACON/1"
@@ -75,13 +93,17 @@ emit_one() {
     echo "sig=${sig}"
   } > "$LATEST"
 
-  echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) seq=${seq} ts=${ts} epoch=${EPOCH}" >> "$BEACON_DIR/history.log"
+  echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) seq=${seq} ts=${ts} epoch=${EPOCH} sig_len=${#sig}" >> "$BEACON_DIR/history.log"
 
   echo "==> beacon written: $LATEST"
   cat "$LATEST"
   echo
   echo "canonical: $body"
-  echo "(sig=DEV-UNSIGNED — wire real signature in Stage 1)"
+  if [[ "$sig" == "DEV-UNSIGNED" ]]; then
+    echo "(sig=DEV-UNSIGNED — pass --key for real ed25519 signature)"
+  else
+    echo "(sig=ed25519 base64, ${#sig} chars)"
+  fi
 }
 
 if [[ "$ONCE" -eq 1 ]]; then
