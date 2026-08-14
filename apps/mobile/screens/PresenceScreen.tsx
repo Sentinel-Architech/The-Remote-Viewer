@@ -45,6 +45,7 @@ import {
 import { speak } from '../src/services/voice';
 import { VoiceField } from '../src/components/VoiceField';
 import { LocaleHumanBar } from '../src/components/LocaleHumanBar';
+import { DeepfakePolicyBanner } from '../src/components/DeepfakePolicyBanner';
 import { t, Locale } from '../src/i18n/strings';
 
 type Props = {
@@ -59,7 +60,6 @@ export default function PresenceScreen({
   onReplayTutorial,
 }: Props) {
   const [identity, setIdentity] = useState<DidKeyIdentity | null>(null);
-  const [signature, setSignature] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [smokeResult, setSmokeResult] = useState<string | null>(null);
   const [credentials, setCredentials] = useState<DemoCredential[]>([]);
@@ -109,47 +109,20 @@ export default function PresenceScreen({
     refresh();
   }, []);
 
-  const statusSummary = () => {
-    if (!identity) {
-      return locale === 'es'
-        ? 'Sin identidad. Cree un did key local para comenzar.'
-        : 'No identity. Create a local did key to begin.';
-    }
-    return [
-      locale === 'es' ? 'Identidad activa.' : 'Identity active.',
-      profile?.displayName
-        ? locale === 'es'
-          ? `Perfil ${profile.displayName}.`
-          : `Profile ${profile.displayName}.`
-        : '',
-      `${credentials.length} VCs.`,
-      `${connections.length} ${locale === 'es' ? 'conexiones' : 'connections'}.`,
-      `${inbox.length} ${locale === 'es' ? 'mensajes' : 'messages'}.`,
-      smokeResult || '',
-    ]
-      .filter(Boolean)
-      .join(' ');
-  };
-
-  const handleReadStatus = () => speak(statusSummary());
-
   const handleCreate = async () => {
     setBusy(true);
     setSmokeResult(null);
     setShowDangerZone(false);
     setTypedDid('');
-    setShowOpticalShare(false);
     try {
       const newIdentity = await createDidKey();
       setIdentity(newIdentity);
-      setSignature(null);
       setCredentials([]);
       setConnections([]);
       setInbox([]);
       setProfile(null);
       setProfileName('');
       setProfileAbout('');
-      speak(locale === 'es' ? 'Identidad creada.' : 'Identity created.');
     } finally {
       setBusy(false);
     }
@@ -158,12 +131,6 @@ export default function PresenceScreen({
   const openDangerZone = () => {
     setTypedDid('');
     setShowDangerZone(true);
-    setShowOpticalShare(false);
-  };
-
-  const cancelDangerZone = () => {
-    setShowDangerZone(false);
-    setTypedDid('');
   };
 
   const didMatches =
@@ -186,17 +153,13 @@ export default function PresenceScreen({
             try {
               await destroyDidKey();
               setIdentity(null);
-              setSignature(null);
               setCredentials([]);
               setConnections([]);
               setInbox([]);
               setProfile(null);
-              setProfileName('');
-              setProfileAbout('');
               setSmokeResult(null);
               setShowDangerZone(false);
               setTypedDid('');
-              setShowOpticalShare(false);
             } finally {
               setBusy(false);
             }
@@ -208,8 +171,7 @@ export default function PresenceScreen({
 
   const handleSign = async () => {
     const message = 'TRV presence proof ' + new Date().toISOString();
-    const sig = await signWithDidKey(message);
-    setSignature(sig);
+    await signWithDidKey(message);
     Alert.alert('Signed', message);
   };
 
@@ -224,21 +186,9 @@ export default function PresenceScreen({
       const entry = await issueDemoCredential();
       if (!entry) return;
       setCredentials(await listDemoCredentials());
-      Alert.alert('Demo VC issued', entry.id);
     } finally {
       setBusy(false);
     }
-  };
-
-  const handleShowCredentials = () => {
-    if (credentials.length === 0) {
-      Alert.alert('Held credentials', 'None.');
-      return;
-    }
-    Alert.alert(
-      `Held credentials (${credentials.length})`,
-      credentials.map((c, i) => `${i + 1}. ${c.id}`).join('\n')
-    );
   };
 
   const handleShareDidOptical = async () => {
@@ -277,10 +227,7 @@ export default function PresenceScreen({
     setBusy(true);
     try {
       const payload = await exportConnectionList();
-      await Share.share({
-        message: JSON.stringify(payload, null, 2),
-        title: 'trv-connections-v1',
-      });
+      await Share.share({ message: JSON.stringify(payload, null, 2) });
     } catch {
       /* cancel */
     } finally {
@@ -296,7 +243,6 @@ export default function PresenceScreen({
       const result = await importConnectionList(raw);
       setConnections(result.list);
       setImportPayload('');
-      Alert.alert('Import', `Added ${result.added}, skipped ${result.skipped}`);
     } catch (e) {
       Alert.alert('Import failed', e instanceof Error ? e.message : 'Invalid');
     } finally {
@@ -326,26 +272,6 @@ export default function PresenceScreen({
       setProfile(await setLocalProfile(profileName, profileAbout));
     } finally {
       setBusy(false);
-    }
-  };
-
-  const handleExportProfileEvent = async () => {
-    const event = await buildProfileEvent();
-    if (!event) return;
-    try {
-      await Share.share({ message: JSON.stringify(event, null, 2) });
-    } catch {
-      /* cancel */
-    }
-  };
-
-  const handleExportFollowEvent = async () => {
-    const event = await buildFollowListEvent();
-    if (!event) return;
-    try {
-      await Share.share({ message: JSON.stringify(event, null, 2) });
-    } catch {
-      /* cancel */
     }
   };
 
@@ -390,9 +316,11 @@ export default function PresenceScreen({
       <Text style={styles.title}>{t(locale, 'identity')}</Text>
       <Text style={styles.subtitle}>
         {locale === 'es'
-          ? 'Texto o voz · did:key · capa social'
-          : 'Text or voice · did:key · social layer'}
+          ? 'Texto o voz · did:key · sin deepfakes humanos'
+          : 'Text or voice · did:key · no human deepfakes'}
       </Text>
+
+      <DeepfakePolicyBanner locale={locale} />
 
       <LocaleHumanBar
         locale={locale}
@@ -436,7 +364,7 @@ export default function PresenceScreen({
         )}
         <Pressable
           style={[styles.btn, styles.btnSecondary, { marginTop: 12 }]}
-          onPress={handleReadStatus}
+          onPress={() => speak(identity ? 'Identity active.' : 'No identity.')}
         >
           <Text style={styles.btnText}>{t(locale, 'speakStatus')}</Text>
         </Pressable>
@@ -464,14 +392,12 @@ export default function PresenceScreen({
       {identity && (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>{t(locale, 'localProfile')}</Text>
-          <Text style={styles.label}>{t(locale, 'displayName')}</Text>
           <VoiceField
             value={profileName}
             onChangeText={setProfileName}
             placeholderTextColor="#555"
             editable={!busy}
           />
-          <Text style={styles.label}>{t(locale, 'about')}</Text>
           <VoiceField
             value={profileAbout}
             onChangeText={setProfileAbout}
@@ -484,18 +410,6 @@ export default function PresenceScreen({
           <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleSaveProfile}>
             <Text style={styles.btnText}>{t(locale, 'saveProfile')}</Text>
           </Pressable>
-          <Pressable
-            style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
-            onPress={handleExportProfileEvent}
-          >
-            <Text style={styles.btnText}>Export kind-0</Text>
-          </Pressable>
-          <Pressable
-            style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
-            onPress={handleExportFollowEvent}
-          >
-            <Text style={styles.btnText}>Export kind-3</Text>
-          </Pressable>
         </View>
       )}
 
@@ -506,7 +420,6 @@ export default function PresenceScreen({
             value={newConnectionId}
             onChangeText={setNewConnectionId}
             autoCapitalize="none"
-            autoCorrect={false}
             placeholderTextColor="#555"
             editable={!busy}
           />
@@ -525,9 +438,7 @@ export default function PresenceScreen({
             style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
             onPress={handleExportConnections}
           >
-            <Text style={styles.btnText}>
-              Export ({connections.length})
-            </Text>
+            <Text style={styles.btnText}>Export ({connections.length})</Text>
           </Pressable>
           <VoiceField
             value={importPayload}
@@ -564,7 +475,6 @@ export default function PresenceScreen({
             placeholderTextColor="#555"
             editable={!busy}
           />
-          <Text style={styles.label}>{t(locale, 'content')}</Text>
           <VoiceField
             value={msgBody}
             onChangeText={setMsgBody}
@@ -590,7 +500,6 @@ export default function PresenceScreen({
       {identity && showDangerZone && (
         <View style={styles.dangerCard}>
           <Text style={styles.dangerTitle}>{t(locale, 'dangerZone')}</Text>
-          <Text style={styles.label}>{t(locale, 'typeFullDid')}</Text>
           <VoiceField
             value={typedDid}
             onChangeText={setTypedDid}
@@ -599,20 +508,28 @@ export default function PresenceScreen({
             placeholderTextColor="#555"
             editable={!busy}
           />
-          <View style={styles.dangerActions}>
-            <Pressable style={[styles.btn, styles.btnSecondary]} onPress={cancelDangerZone}>
-              <Text style={styles.btnText}>{t(locale, 'cancel')}</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.btn, didMatches ? styles.btnDanger : styles.btnDisabled]}
-              onPress={confirmDestroy}
-              disabled={!didMatches || busy}
-            >
-              <Text style={styles.btnText}>
-                {didMatches ? t(locale, 'destroyConfirm') : t(locale, 'matchDid')}
-              </Text>
-            </Pressable>
-          </View>
+          <Pressable
+            style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
+            onPress={() => {
+              setShowDangerZone(false);
+              setTypedDid('');
+            }}
+          >
+            <Text style={styles.btnText}>{t(locale, 'cancel')}</Text>
+          </Pressable>
+          <Pressable
+            style={[
+              styles.btn,
+              didMatches ? styles.btnDanger : styles.btnDisabled,
+              { marginTop: 8 },
+            ]}
+            onPress={confirmDestroy}
+            disabled={!didMatches || busy}
+          >
+            <Text style={styles.btnText}>
+              {didMatches ? t(locale, 'destroyConfirm') : t(locale, 'matchDid')}
+            </Text>
+          </Pressable>
         </View>
       )}
 
@@ -631,9 +548,6 @@ export default function PresenceScreen({
             </Pressable>
             <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleIssueDemoVc}>
               <Text style={styles.btnText}>Issue Demo VC</Text>
-            </Pressable>
-            <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleShowCredentials}>
-              <Text style={styles.btnText}>VCs ({credentials.length})</Text>
             </Pressable>
             {!showDangerZone && (
               <Pressable style={[styles.btn, styles.btnDanger]} onPress={openDangerZone}>
@@ -696,7 +610,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   dangerTitle: { color: '#e74c3c', fontSize: 16, fontWeight: '700', marginBottom: 8 },
-  dangerActions: { gap: 10 },
   connRow: {
     flexDirection: 'row',
     alignItems: 'center',
