@@ -1,0 +1,49 @@
+name: Solana Anchor
+
+on:
+  push:
+    branches: [TheRemoteViewer, main, master]
+    paths:
+      - "solana/**"
+      - ".github/workflows/solana.yml"
+  pull_request:
+    paths:
+      - "solana/**"
+      - ".github/workflows/solana.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: anchor-build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: solana
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Solana CLI
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+
+      - name: Install Anchor
+        run: |
+          cargo install --git https://github.com/coral-xyz/anchor --tag v0.30.1 anchor-cli --locked --force
+          anchor --version
+
+      - name: Build
+        run: |
+          solana --version
+          # Placeholder program id — build verifies Rust compiles
+          anchor build || cargo build -p trv_governance --release
+
+      - name: Upload .so artifact if present
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trv-governance-so
+          path: |
+            solana/target/deploy/*.so
+            solana/target/release/*.so
+          if-no-files-found: ignore

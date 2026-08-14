@@ -1,21 +1,17 @@
-# Mobile scaffold — v0.1.0 (runtime PARKED)
+# Mobile scaffold — v0.1.0 (PARKED)
 
-**SCAFFOLD ONLY.** No production security claims.
+**SCAFFOLD ONLY.** Runtime parked on GrapheneOS/Termux (Expo Go no-go).
 
-## Runtime status (2026-08-14)
+## Chain note (2026-08-14)
 
-| Host | Status |
-|------|--------|
-| Expo Go on GrapheneOS | **NO GO** — parked |
-| Expo web on Termux | Incomplete deps / local drift — **parked** |
-| Repo source | **Authoritative** on `TheRemoteViewer` |
+On-chain Track A is **Solana** (`solana/`). Mobile will later talk to Solana RPC / wallets — not required for current parked UI scaffold.
 
-Resume later: laptop, or GrapheneOS **dev client APK** (not Expo Go).
+EVM contracts remain parallel experiments.
 
-## Tabs (code present)
+## Tabs (code in repo)
 
-Identity · Messages · Senses — Values Floor, leans (incl. cannabis), Freedom entitlement, Destroy wipe.
+Identity · Messages · Senses · Values Floor · Destroy wipe · leans
 
 ## Locked
 
-15 Freedom · 16 Deepfakes · 17 Conduct · 18 Leans · 19 We the People · 20 Condense · 21 Cannabis
+15–21 under `docs/locked/`

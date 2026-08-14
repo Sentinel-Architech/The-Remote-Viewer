@@ -1,0 +1,32 @@
+name: EVM Foundry
+
+on:
+  push:
+    branches: [TheRemoteViewer, main, master]
+    paths:
+      - "contracts/**"
+      - ".github/workflows/contracts-foundry.yml"
+  pull_request:
+    paths:
+      - "contracts/**"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Forge build & test
+        run: |
+          forge install OpenZeppelin/openzeppelin-contracts foundry-rs/forge-std --no-commit || true
+          forge build
+          forge test -vv

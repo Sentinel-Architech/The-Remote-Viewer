@@ -1,5 +1,5 @@
 //! TRV Governance — Solana Anchor SCAFFOLD.
-//! Not audited. Not mainnet. Placeholder accounts + init only.
+//! Not audited. Not mainnet.
 
 use anchor_lang::prelude::*;
 
@@ -9,20 +9,21 @@ declare_id!("TRVgov11111111111111111111111111111111111");
 pub mod trv_governance {
     use super::*;
 
-    /// Initialize governance config PDA (threshold in raw token units).
+    /// Initialize governance config PDA.
+    /// `proposal_threshold` = minimum yes_votes weight required to mark passable (scaffold).
     pub fn initialize(ctx: Context<Initialize>, proposal_threshold: u64) -> Result<()> {
         let cfg = &mut ctx.accounts.config;
         cfg.authority = ctx.accounts.authority.key();
         cfg.proposal_threshold = proposal_threshold;
         cfg.bump = ctx.bumps.config;
-        msg!("TRV governance config initialized");
+        msg!("TRV governance config initialized threshold={}", proposal_threshold);
         Ok(())
     }
 
-    /// Scaffold: record a proposal hash (no execution engine yet).
+    /// Record a proposal. Proposer must be config authority in this scaffold.
     pub fn propose(ctx: Context<Propose>, description_hash: [u8; 32]) -> Result<()> {
         let cfg = &ctx.accounts.config;
-        require_keys_eq!(ctx.accounts.authority.key(), cfg.authority);
+        require_keys_eq!(ctx.accounts.authority.key(), cfg.authority, TrvError::Unauthorized);
 
         let prop = &mut ctx.accounts.proposal;
         prop.proposer = ctx.accounts.authority.key();
@@ -31,7 +32,43 @@ pub mod trv_governance {
         prop.executed = false;
         prop.bump = ctx.bumps.proposal;
 
-        msg!("TRV proposal recorded (scaffold)");
+        msg!("TRV proposal recorded");
+        Ok(())
+    }
+
+    /// Add voting weight (scaffold: authority casts `weight`).
+    /// Real design later: SPL token balance / stake at snapshot.
+    pub fn vote(ctx: Context<Vote>, weight: u64) -> Result<()> {
+        require!(weight > 0, TrvError::ZeroWeight);
+        let cfg = &ctx.accounts.config;
+        require_keys_eq!(ctx.accounts.authority.key(), cfg.authority, TrvError::Unauthorized);
+
+        let prop = &mut ctx.accounts.proposal;
+        require!(!prop.executed, TrvError::AlreadyExecuted);
+
+        prop.yes_votes = prop
+            .yes_votes
+            .checked_add(weight)
+            .ok_or(TrvError::Overflow)?;
+
+        msg!("TRV vote weight={} total_yes={}", weight, prop.yes_votes);
+        Ok(())
+    }
+
+    /// Mark executed only if yes_votes >= proposal_threshold.
+    pub fn execute_if_threshold(ctx: Context<ExecuteIfThreshold>) -> Result<()> {
+        let cfg = &ctx.accounts.config;
+        require_keys_eq!(ctx.accounts.authority.key(), cfg.authority, TrvError::Unauthorized);
+
+        let prop = &mut ctx.accounts.proposal;
+        require!(!prop.executed, TrvError::AlreadyExecuted);
+        require!(
+            prop.yes_votes >= cfg.proposal_threshold,
+            TrvError::ThresholdNotMet
+        );
+
+        prop.executed = true;
+        msg!("TRV proposal executed (scaffold flag only)");
         Ok(())
     }
 }
@@ -70,10 +107,7 @@ pub struct Initialize<'info> {
 #[derive(Accounts)]
 #[instruction(description_hash: [u8; 32])]
 pub struct Propose<'info> {
-    #[account(
-        seeds = [b"trv-config"],
-        bump = config.bump
-    )]
+    #[account(seeds = [b"trv-config"], bump = config.bump)]
     pub config: Account<'info, GovernanceConfig>,
     #[account(
         init,
@@ -86,4 +120,44 @@ pub struct Propose<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct Vote<'info> {
+    #[account(seeds = [b"trv-config"], bump = config.bump)]
+    pub config: Account<'info, GovernanceConfig>,
+    #[account(
+        mut,
+        seeds = [b"trv-proposal", proposal.description_hash.as_ref()],
+        bump = proposal.bump
+    )]
+    pub proposal: Account<'info, Proposal>,
+    pub authority: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct ExecuteIfThreshold<'info> {
+    #[account(seeds = [b"trv-config"], bump = config.bump)]
+    pub config: Account<'info, GovernanceConfig>,
+    #[account(
+        mut,
+        seeds = [b"trv-proposal", proposal.description_hash.as_ref()],
+        bump = proposal.bump
+    )]
+    pub proposal: Account<'info, Proposal>,
+    pub authority: Signer<'info>,
+}
+
+#[error_code]
+pub enum TrvError {
+    #[msg("Unauthorized")]
+    Unauthorized,
+    #[msg("Zero vote weight")]
+    ZeroWeight,
+    #[msg("Already executed")]
+    AlreadyExecuted,
+    #[msg("Threshold not met")]
+    ThresholdNotMet,
+    #[msg("Arithmetic overflow")]
+    Overflow,
 }

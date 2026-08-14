@@ -1,29 +1,33 @@
 # Reality — 2026-08-14
 
-## Chain direction
+## Direction
 
 | Track | Role |
 |-------|------|
-| **Solana (`solana/`)** | **Track A — intended** on-chain surface for TRV |
-| EVM (`contracts/`) | Parallel experiment (Governor patterns). Not Solana. |
+| **Solana `solana/`** | **Track A** — intended chain |
+| EVM `contracts/` | Parallel experiment |
+| Mobile Expo | **Parked** (Pixel client later) |
 
-## Solana
+## Solana scaffold
 
-| Item | Status |
-|------|--------|
-| Anchor `trv_governance` | **SCAFFOLD** (initialize + propose hash) |
-| SPL mint script | **SCAFFOLD** shell helper |
-| Devnet / mainnet | **Not deployed** |
-| Audit | **None** |
+- `initialize` / `propose` / `vote` / `execute_if_threshold`
+- CI: `.github/workflows/solana.yml`
+- Program id placeholder until `anchor keys list`
 
-Build on a machine with Rust + Solana CLI + Anchor. Phone = RPC client later.
+## EVM scaffold
 
-## EVM (still valid for learning)
+- TRVVotes + GovernanceCoordinator + flow tests (9 passed on device)
+- CI: `.github/workflows/contracts-foundry.yml`
+- Anvil only on Pixel; not mainnet
 
-- Anvil deploy + mint/delegate + 9 forge tests worked on-device.
-- Hardened threshold 1 ether; executor not address(0).
-- Not mainnet.
+## Pixel-only operator
+
+- GitHub SSH key generated; must be added after account login/password reset
+- Until pull works: source of truth is GitHub remote
+- Wallet/devnet client possible; program build via CI or other machine
 
 ## Path B founding members: **0**
 
-Mobile Expo runtime: **parked**.
+## Not done
+
+Audit · Solana devnet deploy · Realms · Mainnet · Mobile runtime unpark
