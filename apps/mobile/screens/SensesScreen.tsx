@@ -1,6 +1,6 @@
 /**
- * Senses: camera (sight), microphone listen (hearing), live web search.
- * All user-initiated. No always-on surveillance. No TRV cloud upload.
+ * Senses: Hey Sentinel wake, camera, listen, live search.
+ * All user-initiated. No always-on surveillance. No TRV cloud upload of audio/frames.
  */
 
 import React, { useRef, useState } from 'react';
@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { VoiceField } from '../src/components/VoiceField';
+import { SentinelAskPanel } from '../src/components/SentinelAskPanel';
 import { speak, startDictation, stopDictation } from '../src/services/voice';
 import { instantSearch, webSearchUrl, SearchResult } from '../src/services/search';
 import { t, Locale } from '../src/i18n/strings';
@@ -128,13 +129,15 @@ export default function SensesScreen({ locale = 'en' }: { locale?: Locale }) {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.kicker}>LOCAL · OPT-IN · NO TRV CLOUD</Text>
+      <Text style={styles.kicker}>LOCAL · OPT-IN · INTERNET WHEN YOU ASK</Text>
       <Text style={styles.title}>{t(locale, 'senses')}</Text>
       <Text style={styles.subtitle}>
         {locale === 'es'
-          ? 'Vista · Oído · Búsqueda — usted los inicia y los detiene'
-          : 'Sight · Hearing · Live search — you start them; you stop them'}
+          ? 'Hey Sentinel · Vista · Oído · Búsqueda'
+          : 'Hey Sentinel · Sight · Hearing · Search'}
       </Text>
+
+      <SentinelAskPanel locale={locale} />
 
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>{t(locale, 'sight')}</Text>
