@@ -1,29 +1,18 @@
 # Concepts → Reality Status
 
-Last updated: **2026-08-14** — **full mobile scaffold pass**
+Last updated: **2026-08-14** — topical leans (Christian/Godly on religion interest; no pressure)
 
-**Rule:** No marketing. **PROVEN** = ran under user control on device. **SCAFFOLD** = wired in client, not production-hardened.
+## Topical leans (`docs/locked/18`)
 
-## Mobile scaffold (complete local surface)
-
-| Surface | Status |
-|---------|--------|
-| did:key + Destroy + social 1–5 | **DEMONSTRATED** |
-| Tutorial (incl. Freedom / deepfake / IA of IA pages) | **DEMONSTRATED** |
-| EN/ES + Male/Female attestation | **DEMONSTRATED** |
-| Voice TTS/STT + Senses + Hey Sentinel + personality + RWB shield | **DEMONSTRATED** |
-| Communication Freedom (sub \| node-host reward) | **LOCKED** + **SCAFFOLD** |
-| No passable human deepfakes; distinguishable likeness OK; XXX | **LOCKED** + **SCAFFOLD** |
-| Mute / report / block + IA of IA inquiry → conduct steer | **LOCKED** + **SCAFFOLD** |
-| Messages entitlement + block filter | **SCAFFOLD** |
-| Inventory | `apps/mobile/SCAFFOLD.md` |
-
-## Not started / not claimed
-
-| Item | Status |
+| Rule | Status |
 |------|--------|
-| Live billing | **NOT STARTED** |
-| Live node registry / heartbeats | **NOT STARTED** |
-| Network IA of IA ballot | **DESIGN** |
-| Full MoE Sentinel | **DESIGN** |
-| Path B external founding members | **0** |
+| Leans only when Viewer **shows interest** | **LOCKED** |
+| Religion interest → **Christian and Godly** educational lean | **LOCKED** + **SCAFFOLD** |
+| Politics & other topics → learning, not recruitment | **LOCKED** + **SCAFFOLD** |
+| No pressure / no gated features by belief | **LOCKED** |
+
+## Full mobile scaffold
+
+Identity / Messages / Senses / Freedom / deepfake / XXX / mute-report-block / IA of IA / tutorial: **SCAFFOLD complete** · see `apps/mobile/SCAFFOLD.md`
+
+Path B external founding members: **0**

@@ -1,5 +1,5 @@
 /**
- * Hey Sentinel — personality, RWB holographic shield, wake + internet answer.
+ * Hey Sentinel — personality, topical leans, RWB shield, wake + internet answer.
  */
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -28,6 +28,7 @@ import {
   SentinelTone,
   PersonalityConfig,
 } from '../services/sentinelPersonality';
+import { getInterests, applyTopicalLean } from '../services/topicalLeans';
 import { VoiceField } from './VoiceField';
 import { SentinelShield } from './SentinelShield';
 import { Locale } from '../i18n/strings';
@@ -51,7 +52,10 @@ export function SentinelAskPanel({ locale = 'en' }: Props) {
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const isEs = locale === 'es';
-  const looking = phase === 'thinking' || phase === 'listening_wake' || phase === 'listening_question';
+  const looking =
+    phase === 'thinking' ||
+    phase === 'listening_wake' ||
+    phase === 'listening_question';
 
   useEffect(() => {
     getPersonality().then(setPersonalityState);
@@ -84,13 +88,11 @@ export function SentinelAskPanel({ locale = 'en' }: Props) {
   };
 
   const saveTone = async (tone: SentinelTone) => {
-    const next = await setPersonality({ ...personality, tone });
-    setPersonalityState(next);
+    setPersonalityState(await setPersonality({ ...personality, tone }));
   };
 
   const saveName = async (name: string) => {
-    const next = await setPersonality({ ...personality, name });
-    setPersonalityState(next);
+    setPersonalityState(await setPersonality({ ...personality, name }));
   };
 
   const runAnswer = async (question: string) => {
@@ -98,13 +100,13 @@ export function SentinelAskPanel({ locale = 'en' }: Props) {
     if (lookStarted.current == null) lookStarted.current = Date.now();
     const cfg = await getPersonality();
     speak(
-      isEs
-        ? `${cfg.name} buscando fuentes.`
-        : `${cfg.name} checking sources.`
+      isEs ? `${cfg.name} buscando fuentes.` : `${cfg.name} checking sources.`
     );
     try {
       const result = await answerFromInternet(question);
-      const spoken = applyTone(result.spoken, cfg, locale);
+      const interests = await getInterests();
+      let spoken = applyTone(result.spoken, cfg, locale);
+      spoken = applyTopicalLean(spoken, interests, locale);
       const shaped = { ...result, spoken };
       setReply(shaped);
       setPhaseBoth('answered');
@@ -145,13 +147,11 @@ export function SentinelAskPanel({ locale = 'en' }: Props) {
         setLiveTranscript(text);
         const { woke, remainder } = extractAfterWake(text);
         if (!woke) return;
-
         if (remainder.length > 3) {
           await stopDictation();
           await runAnswer(remainder);
           return;
         }
-
         await stopDictation();
         setPhaseBoth('listening_question');
         speak(isEs ? '¿Cuál es su pregunta?' : 'What is your question?');
@@ -179,7 +179,6 @@ export function SentinelAskPanel({ locale = 'en' }: Props) {
         if (phaseRef.current === 'listening_wake') setPhaseBoth('idle');
       },
     });
-
     if (!ok) setPhaseBoth('idle');
   };
 
@@ -227,8 +226,8 @@ export function SentinelAskPanel({ locale = 'en' }: Props) {
       </Text>
       <Text style={styles.hint}>
         {isEs
-          ? 'Personalice tono y nombre. El escudo RWB gira en sentido horario mientras busca. El tiempo muestra cuánto tarda.'
-          : 'Customize tone and name. The RWB holographic shield spins clockwise while actively looking. The timer shows how long it is taking.'}
+          ? 'Tono, nombre e intereses temáticos (sin presión). Escudo RWB mientras busca.'
+          : 'Tone, name, and topical interests (no pressure). RWB shield while looking.'}
       </Text>
 
       <SentinelShield
@@ -292,9 +291,7 @@ export function SentinelAskPanel({ locale = 'en' }: Props) {
         </Pressable>
       ) : (
         <Pressable style={[styles.btn, styles.btnDanger]} onPress={stopAll}>
-          <Text style={styles.btnText}>
-            {isEs ? 'Detener' : 'Stop'}
-          </Text>
+          <Text style={styles.btnText}>{isEs ? 'Detener' : 'Stop'}</Text>
         </Pressable>
       )}
 
@@ -322,25 +319,19 @@ export function SentinelAskPanel({ locale = 'en' }: Props) {
 
       {reply && (
         <View style={styles.replyBox}>
-          <Text style={styles.label}>
-            {isEs ? 'Pregunta' : 'Question'}
-          </Text>
+          <Text style={styles.label}>{isEs ? 'Pregunta' : 'Question'}</Text>
           <Text style={styles.replyText}>{reply.question}</Text>
-          <Text style={styles.label}>
-            {isEs ? 'Respuesta' : 'Answer'}
-          </Text>
+          <Text style={styles.label}>{isEs ? 'Respuesta' : 'Answer'}</Text>
           <Text style={styles.replyText}>{reply.spoken}</Text>
           <Text style={styles.took}>
-            {isEs ? 'Tiempo de búsqueda: ' : 'Look duration: '}
+            {isEs ? 'Tiempo: ' : 'Look duration: '}
             {formatDone(elapsedMs)}
           </Text>
           <Pressable
             style={[styles.btn, styles.btnSecondary, { marginTop: 10 }]}
             onPress={() => speak(reply.spoken)}
           >
-            <Text style={styles.btnText}>
-              {isEs ? 'Repetir' : 'Speak again'}
-            </Text>
+            <Text style={styles.btnText}>{isEs ? 'Repetir' : 'Speak again'}</Text>
           </Pressable>
           <Pressable
             style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
@@ -400,17 +391,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#333',
   },
-  toneChipOn: {
-    borderColor: '#E81B23',
-    backgroundColor: '#1a1020',
-  },
+  toneChipOn: { borderColor: '#E81B23', backgroundColor: '#1a1020' },
   toneChipText: { color: '#fff', fontWeight: '600', fontSize: 12 },
   toneHint: { color: '#888', fontSize: 12, marginTop: 6, marginBottom: 4 },
   meta: { color: '#556', fontSize: 11, marginBottom: 8, marginTop: 8 },
-  transcript: { color: '#aaa', fontStyle: 'italic', marginBottom: 10, fontSize: 13 },
+  transcript: {
+    color: '#aaa',
+    fontStyle: 'italic',
+    marginBottom: 10,
+    fontSize: 13,
+  },
   btn: { borderRadius: 10, paddingVertical: 14, alignItems: 'center' },
   btnPrimary: { backgroundColor: '#1a5f7a' },
-  btnSecondary: { backgroundColor: '#1e1e1e', borderWidth: 1, borderColor: '#333' },
+  btnSecondary: {
+    backgroundColor: '#1e1e1e',
+    borderWidth: 1,
+    borderColor: '#333',
+  },
   btnDanger: { backgroundColor: '#5c1a1a' },
   btnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
   replyBox: {

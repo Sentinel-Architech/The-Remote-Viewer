@@ -40,11 +40,11 @@ import {
   setLocalProfile,
   LocalProfile,
 } from '../src/services/profile';
-import { speak } from '../src/services/voice';
 import { VoiceField } from '../src/components/VoiceField';
 import { LocaleHumanBar } from '../src/components/LocaleHumanBar';
 import { DeepfakePolicyBanner } from '../src/components/DeepfakePolicyBanner';
 import { ConductCommunityPanel } from '../src/components/ConductCommunityPanel';
+import { TopicalLeansPanel } from '../src/components/TopicalLeansPanel';
 import { t, Locale } from '../src/i18n/strings';
 
 type Props = {
@@ -106,52 +106,7 @@ export default function PresenceScreen({
     refresh();
   }, []);
 
-  const handleCreate = async () => {
-    setBusy(true);
-    try {
-      setIdentity(await createDidKey());
-      setCredentials([]);
-      setConnections([]);
-      setInbox([]);
-      setProfile(null);
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const didMatches = identity !== null && typedDid.trim() === identity.did;
-
-  const confirmDestroy = async () => {
-    if (!identity || !didMatches) return;
-    Alert.alert(
-      locale === 'es' ? 'Confirmación final' : 'Final confirmation',
-      locale === 'es'
-        ? 'Esta ruta terminará permanentemente.'
-        : 'This path will end permanently.',
-      [
-        { text: t(locale, 'cancel'), style: 'cancel' },
-        {
-          text: t(locale, 'destroyConfirm'),
-          style: 'destructive',
-          onPress: async () => {
-            setBusy(true);
-            try {
-              await destroyDidKey();
-              setIdentity(null);
-              setCredentials([]);
-              setConnections([]);
-              setInbox([]);
-              setProfile(null);
-              setShowDangerZone(false);
-              setTypedDid('');
-            } finally {
-              setBusy(false);
-            }
-          },
-        },
-      ]
-    );
-  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -159,11 +114,12 @@ export default function PresenceScreen({
       <Text style={styles.title}>{t(locale, 'identity')}</Text>
       <Text style={styles.subtitle}>
         {locale === 'es'
-          ? 'Conducta comunitaria · sin deepfakes indistinguibles'
-          : 'Community conduct · no passable deepfakes'}
+          ? 'Conducta · intereses sin presión · soberanía'
+          : 'Conduct · interests without pressure · sovereignty'}
       </Text>
 
       <DeepfakePolicyBanner locale={locale} />
+      <TopicalLeansPanel locale={locale} />
       <ConductCommunityPanel locale={locale} />
 
       <LocaleHumanBar
@@ -188,9 +144,7 @@ export default function PresenceScreen({
         ) : (
           <Text style={styles.hint}>{t(locale, 'noIdentityHint')}</Text>
         )}
-        {smokeResult && (
-          <Text style={styles.smoke}>{smokeResult}</Text>
-        )}
+        {smokeResult && <Text style={styles.smoke}>{smokeResult}</Text>}
       </View>
 
       {identity && (
@@ -211,7 +165,9 @@ export default function PresenceScreen({
           />
           <Pressable
             style={[styles.btn, styles.btnSecondary]}
-            onPress={async () => setProfile(await setLocalProfile(profileName, profileAbout))}
+            onPress={async () =>
+              setProfile(await setLocalProfile(profileName, profileAbout))
+            }
           >
             <Text style={styles.btnText}>{t(locale, 'saveProfile')}</Text>
           </Pressable>
@@ -340,8 +296,38 @@ export default function PresenceScreen({
               didMatches ? styles.btnDanger : styles.btnDisabled,
               { marginTop: 8 },
             ]}
-            onPress={confirmDestroy}
             disabled={!didMatches || busy}
+            onPress={() => {
+              if (!didMatches || !identity) return;
+              Alert.alert(
+                t(locale, 'destroyConfirm'),
+                locale === 'es'
+                  ? 'Esta ruta terminará permanentemente.'
+                  : 'This path will end permanently.',
+                [
+                  { text: t(locale, 'cancel'), style: 'cancel' },
+                  {
+                    text: t(locale, 'destroyConfirm'),
+                    style: 'destructive',
+                    onPress: async () => {
+                      setBusy(true);
+                      try {
+                        await destroyDidKey();
+                        setIdentity(null);
+                        setCredentials([]);
+                        setConnections([]);
+                        setInbox([]);
+                        setProfile(null);
+                        setShowDangerZone(false);
+                        setTypedDid('');
+                      } finally {
+                        setBusy(false);
+                      }
+                    },
+                  },
+                ]
+              );
+            }}
           >
             <Text style={styles.btnText}>
               {didMatches ? t(locale, 'destroyConfirm') : t(locale, 'matchDid')}
@@ -352,7 +338,18 @@ export default function PresenceScreen({
 
       <View style={styles.actions}>
         {!identity ? (
-          <Pressable style={[styles.btn, styles.btnPrimary]} onPress={handleCreate} disabled={busy}>
+          <Pressable
+            style={[styles.btn, styles.btnPrimary]}
+            disabled={busy}
+            onPress={async () => {
+              setBusy(true);
+              try {
+                setIdentity(await createDidKey());
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
             <Text style={styles.btnText}>{t(locale, 'createDid')}</Text>
           </Pressable>
         ) : (
@@ -370,7 +367,10 @@ export default function PresenceScreen({
               style={[styles.btn, styles.btnSecondary]}
               onPress={() =>
                 identity &&
-                Alert.alert('DID Document', JSON.stringify(buildDidDocument(identity), null, 2))
+                Alert.alert(
+                  'DID Document',
+                  JSON.stringify(buildDidDocument(identity), null, 2)
+                )
               }
             >
               <Text style={styles.btnText}>DID Document</Text>
@@ -396,6 +396,7 @@ export default function PresenceScreen({
         )}
         <Pressable
           style={[styles.btn, styles.btnSmoke]}
+          disabled={busy}
           onPress={async () => {
             setBusy(true);
             try {
@@ -406,7 +407,9 @@ export default function PresenceScreen({
                 return;
               }
               await destroyDidKey();
-              setSmokeResult((await getCurrentDidKey()) === null ? 'PASS' : 'FAIL');
+              setSmokeResult(
+                (await getCurrentDidKey()) === null ? 'PASS' : 'FAIL'
+              );
               setIdentity(null);
             } catch (e) {
               setSmokeResult(String(e));
@@ -414,7 +417,6 @@ export default function PresenceScreen({
               setBusy(false);
             }
           }}
-          disabled={busy}
         >
           <Text style={styles.btnText}>Smoke Test</Text>
         </Pressable>
@@ -436,7 +438,12 @@ const styles = StyleSheet.create({
     borderColor: '#222',
     marginBottom: 24,
   },
-  sectionTitle: { color: '#fff', fontSize: 16, fontWeight: '600', marginBottom: 8 },
+  sectionTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
   dangerCard: {
     backgroundColor: '#1a0a0a',
     borderRadius: 12,
@@ -445,7 +452,12 @@ const styles = StyleSheet.create({
     borderColor: '#5c1a1a',
     marginBottom: 24,
   },
-  dangerTitle: { color: '#e74c3c', fontSize: 16, fontWeight: '700', marginBottom: 8 },
+  dangerTitle: {
+    color: '#e74c3c',
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
   connRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -458,15 +470,28 @@ const styles = StyleSheet.create({
   connRemoveText: { color: '#e74c3c', fontSize: 12, fontWeight: '600' },
   label: { color: '#666', fontSize: 12, marginBottom: 4 },
   did: { color: '#fff', fontSize: 13, lineHeight: 18 },
-  mono: { color: '#aaa', fontSize: 11, fontFamily: 'monospace', marginTop: 8 },
+  mono: {
+    color: '#aaa',
+    fontSize: 11,
+    fontFamily: 'monospace',
+    marginTop: 8,
+  },
   hint: { color: '#888', lineHeight: 20, fontSize: 13 },
   smoke: { marginTop: 12, color: '#2ecc71', fontWeight: '600' },
   actions: { gap: 10 },
   btn: { borderRadius: 10, paddingVertical: 14, alignItems: 'center' },
   btnPrimary: { backgroundColor: '#1a7f4b' },
-  btnSecondary: { backgroundColor: '#1e1e1e', borderWidth: 1, borderColor: '#333' },
+  btnSecondary: {
+    backgroundColor: '#1e1e1e',
+    borderWidth: 1,
+    borderColor: '#333',
+  },
   btnDanger: { backgroundColor: '#5c1a1a' },
   btnDisabled: { backgroundColor: '#2a2a2a' },
-  btnSmoke: { backgroundColor: '#1a2a3a', borderWidth: 1, borderColor: '#2a4a5a' },
+  btnSmoke: {
+    backgroundColor: '#1a2a3a',
+    borderWidth: 1,
+    borderColor: '#2a4a5a',
+  },
   btnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
 });
