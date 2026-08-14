@@ -1,27 +1,20 @@
-# Mobile Client
+# Mobile Client — The Remote Viewer (Scaffold)
 
-Expo + React Native scaffold for The Remote Viewer.
+Expo + React Native. **SCAFFOLD ONLY.** See [SCAFFOLD.md](./SCAFFOLD.md) for the full surface map.
 
 ## Tabs
 
-- **Identity** — did:key, social layer, Destroy, voice fields
-- **Messages** — existing messaging surface
-- **Senses** — camera (sight), listen (hearing), live web search
+| Tab | What |
+|-----|------|
+| **Identity** | did:key, social, Destroy, conduct (mute/report/block, XXX, IA of IA), deepfake rule, human attestation, tutorial replay |
+| **Messages** | Local signed messages; entitlement + block awareness |
+| **Senses** | Communication Freedom, Hey Sentinel (personality + RWB shield), camera, listen, search |
 
-## Senses (2026-08-14)
+## Locked rules (client-visible)
 
-| Sense | Behavior |
-|-------|----------|
-| Sight | Opt-in `expo-camera` preview + local capture. No TRV upload. |
-| Hearing | Explicit Start/Stop listen → notes via OS STT when available. |
-| Search | DuckDuckGo Instant Answer (no key) + open full DDG results in browser. |
-
-All user-initiated. Text/voice modality still available via Speak/Dictate.
-
-## Voice
-
-- TTS: `expo-speech` (Expo Go OK)
-- STT: `expo-speech-recognition` (dev/release build preferred)
+- Communication Freedom: yearly sub **or** node-host opt-in (node ON) → free unlimited **TRV** human comms
+- Human deepfakes / indistinguishable synthesis: **STRICTLY PROHIBITED**; distinguishable animation/likeness OK; adult behind **XXX**
+- Community mute / report / block; IA of IA private inquiry steers conduct (scaffold)
 
 ## Run
 
@@ -29,4 +22,8 @@ All user-initiated. Text/voice modality still available via Speak/Dictate.
 cd apps/mobile && npm install && npx expo start --host lan
 ```
 
-Camera + full STT: development or release build recommended.
+## Voice / camera
+
+- TTS: `expo-speech` (Expo Go OK)
+- STT: `expo-speech-recognition` (dev/release build preferred)
+- Camera: `expo-camera` when Viewer enables Sight

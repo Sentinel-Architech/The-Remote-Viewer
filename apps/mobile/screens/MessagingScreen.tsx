@@ -1,8 +1,13 @@
+/**
+ * Messages — local DIDComm-shaped inbox.
+ * Network-carried unlimited path requires Communication Freedom entitlement.
+ * Blocked DIDs are filtered from the inbox view.
+ */
+
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
   StyleSheet,
   Alert,
   ScrollView,
@@ -15,17 +20,26 @@ import {
   verifyBasicMessage,
   clearInbox,
   DidCommBasicMessage,
-} from '../services/didcomm';
-import { getCurrentDidKey } from '../services/presence';
+} from '../src/services/didcomm';
+import { getCurrentDidKey } from '../src/services/presence';
+import { canUseFreeUnlimitedComms } from '../src/services/entitlement';
+import { getModeration, isBlocked } from '../src/services/communityModeration';
+import { VoiceField } from '../src/components/VoiceField';
 
 export default function MessagingScreen() {
   const [content, setContent] = useState('');
   const [toDid, setToDid] = useState('');
   const [inbox, setInbox] = useState<DidCommBasicMessage[]>([]);
+  const [entitled, setEntitled] = useState(false);
 
   const refresh = useCallback(async () => {
-    const items = await Promise.resolve(getInbox());
-    setInbox(items);
+    const [items, mod, free] = await Promise.all([
+      getInbox(),
+      getModeration(),
+      canUseFreeUnlimitedComms(),
+    ]);
+    setEntitled(free);
+    setInbox(items.filter((m) => !m.from || !isBlocked(mod, m.from)));
   }, []);
 
   useEffect(() => {
@@ -44,9 +58,26 @@ export default function MessagingScreen() {
       return;
     }
 
+    const target = toDid.trim();
+    if (target) {
+      const mod = await getModeration();
+      if (isBlocked(mod, target)) {
+        Alert.alert('Blocked', 'You blocked this DID. Unblock on Identity to message them.');
+        return;
+      }
+    }
+
+    // Local store always allowed; network relay (future) requires entitlement
+    if (!entitled && target) {
+      Alert.alert(
+        'Communication Freedom',
+        'Local draft will still store. Unlimited network-carried TRV communication requires a yearly subscription or node-host opt-in (node ON). See Senses → Communication Freedom.'
+      );
+    }
+
     const msg = await createBasicMessage(
       content.trim(),
-      toDid.trim() || undefined
+      target || undefined
     );
 
     if (!msg) {
@@ -54,7 +85,7 @@ export default function MessagingScreen() {
       return;
     }
 
-    await Promise.resolve(storeMessage(msg));
+    await storeMessage(msg);
     setContent('');
     refresh();
     Alert.alert('Stored locally', msg.id.slice(0, 8) + '…');
@@ -72,7 +103,7 @@ export default function MessagingScreen() {
         text: 'Clear',
         style: 'destructive',
         onPress: async () => {
-          await Promise.resolve(clearInbox());
+          await clearInbox();
           refresh();
         },
       },
@@ -83,11 +114,13 @@ export default function MessagingScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.kicker}>LOCAL · DIDCOMM BASIC</Text>
       <Text style={styles.title}>Messages</Text>
-      <Text style={styles.subtitle}>Signed on device · not encrypted yet</Text>
+      <Text style={styles.subtitle}>
+        Signed on device · blocked DIDs hidden ·{' '}
+        {entitled ? 'UNLIMITED TRV (entitled)' : 'local store (no network entitlement)'}
+      </Text>
 
       <Text style={styles.label}>To DID (optional)</Text>
-      <TextInput
-        style={styles.input}
+      <VoiceField
         value={toDid}
         onChangeText={setToDid}
         placeholder="did:key:z6Mk…"
@@ -96,13 +129,14 @@ export default function MessagingScreen() {
       />
 
       <Text style={styles.label}>Message</Text>
-      <TextInput
-        style={[styles.input, styles.textarea]}
+      <VoiceField
         value={content}
         onChangeText={setContent}
         placeholder="Presence note…"
         placeholderTextColor="#555"
         multiline
+        style={{ minHeight: 88 }}
+        appendDictation
       />
 
       <Pressable style={[styles.btn, styles.btnPrimary]} onPress={handleSend}>
@@ -126,7 +160,7 @@ export default function MessagingScreen() {
             <Text style={styles.meta} numberOfLines={1}>
               {msg.from || 'unknown'}
             </Text>
-            <Text style={styles.body}>{msg.body.content}</Text>
+            <Text style={styles.body}>{msg.body?.content}</Text>
             <Pressable
               style={[styles.btn, styles.btnSmall]}
               onPress={() => handleVerify(msg)}
@@ -141,44 +175,11 @@ export default function MessagingScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#0a0a0a',
-  },
-  kicker: {
-    color: '#666',
-    fontSize: 11,
-    letterSpacing: 1.5,
-    marginBottom: 4,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  subtitle: {
-    color: '#888',
-    marginBottom: 20,
-  },
-  label: {
-    color: '#666',
-    fontSize: 12,
-    marginBottom: 6,
-  },
-  input: {
-    backgroundColor: '#141414',
-    color: '#fff',
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: '#222',
-  },
-  textarea: {
-    minHeight: 88,
-    textAlignVertical: 'top',
-  },
+  container: { flexGrow: 1, padding: 20, backgroundColor: '#0a0a0a' },
+  kicker: { color: '#666', fontSize: 11, letterSpacing: 1.5, marginBottom: 4 },
+  title: { fontSize: 28, fontWeight: '700', color: '#fff' },
+  subtitle: { color: '#888', marginBottom: 20, lineHeight: 20 },
+  label: { color: '#666', fontSize: 12, marginBottom: 6 },
   btn: {
     borderRadius: 10,
     paddingVertical: 14,
@@ -203,11 +204,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 12,
   },
-  section: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  section: { color: '#fff', fontSize: 16, fontWeight: '600' },
   clearLink: { color: '#e74c3c', fontSize: 14 },
   empty: { color: '#555' },
   card: {

@@ -11,55 +11,61 @@ const en: TutorialPage[] = [
     id: 'welcome',
     title: 'Welcome to The Remote Viewer',
     body:
-      'This short tour appears once for new Viewers. It explains what each part is and why it exists. Nothing here is marketed as finished security — this is a working scaffold you control on your device.',
+      'This short tour appears once for new Viewers. It explains what each part is and why it exists. This is a working scaffold you control on your device — not finished security marketing.',
   },
   {
     id: 'identity',
     title: 'Identity — your local path',
     body:
-      'What: A did:key created and stored on this device.\n\nWhy: So presence, signing, and social state belong to you — not a central account server. If you Destroy the path, it ends here. There is no email or phone recovery by The Remote Viewer.',
+      'What: A did:key created and stored on this device.\n\nWhy: Presence, signing, and social state belong to you — not a central account server. Destroy ends the path here. No email or phone recovery by TRV.',
   },
   {
     id: 'destroy',
     title: 'Destroy = Restart',
     body:
-      'What: A high-friction gate. You open Danger Zone and type (or dictate) your full DID exactly.\n\nWhy: Accidental wipes should be hard. Deliberate endings should be possible. No recovery theater — when the path is gone, social state on this device is gone with it.',
+      'What: Danger Zone — type or dictate your full DID exactly.\n\nWhy: Accidental wipes should be hard. Deliberate endings should be possible. No recovery theater.',
   },
   {
     id: 'social',
-    title: 'Social layer — connections of your own',
+    title: 'Social layer',
     body:
-      'What: On-device connections, optical DID exchange, local messages, profile export, and a portable connection list.\n\nWhy: The Remote Viewer is meant to be a social connection of its own without a central graph. You hold the list; export it if you need portability.',
+      'What: On-device connections, optical DID exchange, local messages, profile export.\n\nWhy: The Remote Viewer is a social connection of its own without a central graph.',
+  },
+  {
+    id: 'freedom',
+    title: 'Communication Freedom',
+    body:
+      'What: Talk, text, voice, web, and other human channels on TRV rails are FREE and UNLIMITED if you have a yearly subscription OR you opt to host as a node and keep it ON.\n\nWhy: Subscribers fund the network; node hosts are rewarded for keeping the mesh active and safer. External carrier minutes are out of scope.',
   },
   {
     id: 'human',
     title: 'Human verification',
     body:
-      'What: A local attestation — Male or Female only — saved on this device.\n\nWhy: A clear human category for verification on this Viewer path. It is not inferred from the camera and is wiped if you Destroy the identity.',
+      'What: Local attestation — Male or Female only.\n\nWhy: A clear human category on this path. Not inferred from the camera. Wiped on Destroy.',
+  },
+  {
+    id: 'deepfake',
+    title: 'Likeness and deepfakes',
+    body:
+      'What: Human likeness and animation are OK only when clearly distinguishable from real humanity. Adult content sits behind XXX (default blocked).\n\nWhy: Passable deepfakes of real people are STRICTLY PROHIBITED. Trust between humans is the line.',
+  },
+  {
+    id: 'conduct',
+    title: 'Community and IA of IA',
+    body:
+      'What: Mute, report, or block any Viewer who has gone too far. The IA of IA drafts an anonymous formal private inquiry — what was wrong and how — then uses replies to steer Sentinel conduct.\n\nWhy: Viewers act first; recursive governance learns from the community without corporate theater.',
   },
   {
     id: 'senses',
-    title: 'Senses — sight, hearing, search',
+    title: 'Senses and Hey Sentinel',
     body:
-      'What: Optional camera, listen sessions, and live web search.\n\nWhy: So you can use the Viewer the way you prefer. You turn each sense on and off. Frames and audio are not uploaded to TRV servers.',
-  },
-  {
-    id: 'sentinel',
-    title: 'Hey Sentinel',
-    body:
-      'What: Say “Hey Sentinel” (or “Oye Sentinel”) after you start listen, then ask a question — or type the question.\n\nWhy: When you have a question, Sentinel answers using live open-internet sources, not only notes already on the phone. You start listening; it is not always-on by default.',
-  },
-  {
-    id: 'language',
-    title: 'Language & voice',
-    body:
-      'What: English or Spanish UI, plus Speak and Dictate on many fields.\n\nWhy: So Viewers can work in the language and modality they prefer — text, voice, or both.',
+      'What: Optional camera, listen, live search, and Hey Sentinel (internet-backed answers). Customize Sentinel name and tone. RWB holographic shield spins while looking.\n\nWhy: Use the Viewer the way you prefer. You start and stop each sense.',
   },
   {
     id: 'ready',
     title: 'You are ready',
     body:
-      'Create a did:key when you want a path. Explore Identity, Messages, and Senses at your pace.\n\nThis tour will not show again unless you reopen it from Identity. Build carefully. Stay sovereign.',
+      'Create a did:key when you want a path. Explore Identity, Messages, and Senses at your pace.\n\nReplay this guide anytime from Identity. Build carefully. Stay sovereign.',
   },
 ];
 
@@ -68,55 +74,61 @@ const es: TutorialPage[] = [
     id: 'welcome',
     title: 'Bienvenido a The Remote Viewer',
     body:
-      'Este recorrido breve aparece una vez para nuevos Viewers. Explica qué es cada parte y por qué existe. Nada aquí se presenta como seguridad terminada — es un andamiaje que usted controla en su dispositivo.',
+      'Este recorrido breve aparece una vez. Explica qué es cada parte y por qué existe. Es un andamiaje que usted controla — no marketing de seguridad terminada.',
   },
   {
     id: 'identity',
     title: 'Identidad — su ruta local',
     body:
-      'Qué: Un did:key creado y guardado en este dispositivo.\n\nPor qué: Para que la presencia, las firmas y el estado social le pertenezcan a usted — no a un servidor de cuentas. Si Destruye la ruta, termina aquí. No hay recuperación por correo o teléfono mediante The Remote Viewer.',
+      'Qué: Un did:key en este dispositivo.\n\nPor qué: La presencia y el estado social le pertenecen. Destruir termina la ruta aquí.',
   },
   {
     id: 'destroy',
     title: 'Destruir = Reiniciar',
     body:
-      'Qué: Una puerta de alto fricción. Abre la Zona de peligro y escribe (o dicta) su DID completo exactamente.\n\nPor qué: Los borrados accidentales deben ser difíciles. Los finales deliberados deben ser posibles. Sin teatro de recuperación.',
+      'Qué: Zona de peligro — DID completo exacto.\n\nPor qué: Los borrados accidentales deben ser difíciles.',
   },
   {
     id: 'social',
-    title: 'Capa social — conexiones propias',
+    title: 'Capa social',
     body:
-      'Qué: Conexiones en el dispositivo, intercambio óptico de DID, mensajes locales, exportación de perfil y lista portable.\n\nPor qué: The Remote Viewer debe ser una conexión social por sí misma, sin un grafo central. Usted guarda la lista.',
+      'Qué: Conexiones, intercambio óptico, mensajes locales, perfil.\n\nPor qué: Conexión social propia sin grafo central.',
+  },
+  {
+    id: 'freedom',
+    title: 'Libertad de comunicación',
+    body:
+      'Qué: Canales humanos TRV GRATIS e ILIMITADOS con suscripción anual O anfitrión de nodo ENCENDIDO.\n\nPor qué: Recompensa a quien mantiene la red activa.',
   },
   {
     id: 'human',
     title: 'Verificación humana',
     body:
-      'Qué: Una atestación local — solo Hombre o Mujer — guardada en este dispositivo.\n\nPor qué: Una categoría humana clara para verificación en esta ruta. No se infiere de la cámara y se borra si Destruye la identidad.',
+      'Qué: Atestación local — solo Hombre o Mujer.\n\nPor qué: Categoría humana clara. No de la cámara.',
+  },
+  {
+    id: 'deepfake',
+    title: 'Semejanza y deepfakes',
+    body:
+      'Qué: Semejanza y animación OK solo si son distinguibles de la humanidad real. Adulto detrás de XXX.\n\nPor qué: Deepfakes pasables de personas reales están ESTRICTAMENTE PROHIBIDOS.',
+  },
+  {
+    id: 'conduct',
+    title: 'Comunidad e IA de IA',
+    body:
+      'Qué: Silenciar, reportar o bloquear. La IA de IA consulta en privado (anónimo y formal) y orienta la conducta del Sentinel.\n\nPor qué: Primero los Viewers; luego la gobernanza recursiva.',
   },
   {
     id: 'senses',
-    title: 'Sentidos — vista, oído, búsqueda',
+    title: 'Sentidos y Hey Sentinel',
     body:
-      'Qué: Cámara opcional, sesiones de escucha y búsqueda web en vivo.\n\nPor qué: Para usar el Viewer como prefiera. Usted enciende y apaga cada sentido. Los fotogramas y el audio no se suben a servidores de TRV.',
-  },
-  {
-    id: 'sentinel',
-    title: 'Hey Sentinel',
-    body:
-      'Qué: Diga “Oye Sentinel” o “Hey Sentinel” después de iniciar la escucha, luego su pregunta — o escríbala.\n\nPor qué: Cuando tiene una pregunta, Sentinel responde con fuentes abiertas de internet, no solo con notas del teléfono. Usted inicia la escucha.',
-  },
-  {
-    id: 'language',
-    title: 'Idioma y voz',
-    body:
-      'Qué: Interfaz en inglés o español, más Hablar y Dictar en muchos campos.\n\nPor qué: Para trabajar en el idioma y la modalidad que prefiera — texto, voz, o ambos.',
+      'Qué: Cámara, escucha, búsqueda y Hey Sentinel. Tono personalizado. Escudo RWB mientras busca.\n\nPor qué: Usted inicia y detiene cada sentido.',
   },
   {
     id: 'ready',
     title: 'Listo',
     body:
-      'Cree un did:key cuando quiera una ruta. Explore Identidad, Mensajes y Sentidos a su ritmo.\n\nEste recorrido no volverá a mostrarse salvo que lo abra de nuevo desde Identidad. Construya con cuidado. Manténgase soberano.',
+      'Cree un did:key cuando quiera. Puede repetir esta guía desde Identidad. Manténgase soberano.',
   },
 ];
 
