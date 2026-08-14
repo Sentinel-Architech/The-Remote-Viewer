@@ -14,7 +14,8 @@
       "bundleIdentifier": "com.trv.scaffold",
       "infoPlist": {
         "NSSpeechRecognitionUsageDescription": "The Remote Viewer uses on-device speech recognition so you can dictate instead of typing. Speech is not sent to TRV servers.",
-        "NSMicrophoneUsageDescription": "Microphone access is used only for optional voice input. You can use text only."
+        "NSMicrophoneUsageDescription": "Microphone access is used only for optional voice input and listen sessions you start. You can use text only.",
+        "NSCameraUsageDescription": "Camera access is used only when you enable Sight. Frames stay on device and are not uploaded to TRV servers."
       }
     },
     "android": {
@@ -23,7 +24,8 @@
       },
       "package": "com.trv.scaffold",
       "permissions": [
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA"
       ]
     },
     "plugins": [
@@ -32,6 +34,14 @@
         {
           "microphonePermission": "Allow The Remote Viewer to use the microphone for optional voice input.",
           "speechRecognitionPermission": "Allow The Remote Viewer to use speech recognition for optional dictation. Speech is not sent to TRV servers."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow The Remote Viewer to use the camera only when you enable Sight. Frames are not uploaded to TRV servers.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
         }
       ]
     ]

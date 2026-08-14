@@ -1,32 +1,27 @@
 # Mobile Client
 
-Expo + React Native + TypeScript client for The Remote Viewer.
+Expo + React Native scaffold for The Remote Viewer.
 
-## Current status (2026-08-14)
+## Tabs
 
-| Piece | Status |
-|-------|--------|
-| `did:key` + high-friction Destroy | Working |
-| Social Layer slices 1–5 | Working |
-| **Text-to-speech (expo-speech)** | Working (Expo Go OK) |
-| **Speech-to-text (dictate)** | Working in dev/release builds; graceful fallback in Expo Go |
-| Production security claims | **None** |
+- **Identity** — did:key, social layer, Destroy, voice fields
+- **Messages** — existing messaging surface
+- **Senses** — camera (sight), listen (hearing), live web search
 
-## Voice modality
+## Senses (2026-08-14)
 
-Viewers can use **text, voice, or both**:
+| Sense | Behavior |
+|-------|----------|
+| Sight | Opt-in `expo-camera` preview + local capture. No TRV upload. |
+| Hearing | Explicit Start/Stop listen → notes via OS STT when available. |
+| Search | DuckDuckGo Instant Answer (no key) + open full DDG results in browser. |
 
-- **Speak** — system TTS reads the field or status aloud (`expo-speech`).
-- **Dictate** — OS speech recognition fills the field (`expo-speech-recognition`).
-- No TRV cloud transcription. Permissions are optional; text-only always works.
+All user-initiated. Text/voice modality still available via Speak/Dictate.
 
-STT requires a **development or release build** (native module). In Expo Go, Dictate explains the limitation; Speak still works.
+## Voice
 
-On GrapheneOS, behavior depends on installed speech packages — prefer text if the OS has no recognizer.
-
-## Social / identity (prior)
-
-Connections, optical exchange, local messages, profile export, connection list import/export, Destroy = Restart — see locked docs `13` / `14`.
+- TTS: `expo-speech` (Expo Go OK)
+- STT: `expo-speech-recognition` (dev/release build preferred)
 
 ## Run
 
@@ -34,10 +29,4 @@ Connections, optical exchange, local messages, profile export, connection list i
 cd apps/mobile && npm install && npx expo start --host lan
 ```
 
-For full STT:
-
-```bash
-npx expo prebuild
-npx expo run:android
-# or eas build --profile development
-```
+Camera + full STT: development or release build recommended.

@@ -3,9 +3,12 @@ import React, { useState } from 'react';
 import { View, Button, StyleSheet } from 'react-native';
 import PresenceScreen from './screens/PresenceScreen';
 import MessagingScreen from './screens/MessagingScreen';
+import SensesScreen from './screens/SensesScreen';
 
 export default function App() {
-  const [screen, setScreen] = useState<'presence' | 'messages'>('presence');
+  const [screen, setScreen] = useState<'presence' | 'messages' | 'senses'>(
+    'presence'
+  );
 
   return (
     <View style={styles.root}>
@@ -20,8 +23,15 @@ export default function App() {
           onPress={() => setScreen('messages')}
           color={screen === 'messages' ? '#2ecc71' : '#888'}
         />
+        <Button
+          title="Senses"
+          onPress={() => setScreen('senses')}
+          color={screen === 'senses' ? '#2ecc71' : '#888'}
+        />
       </View>
-      {screen === 'presence' ? <PresenceScreen /> : <MessagingScreen />}
+      {screen === 'presence' && <PresenceScreen />}
+      {screen === 'messages' && <MessagingScreen />}
+      {screen === 'senses' && <SensesScreen />}
     </View>
   );
 }

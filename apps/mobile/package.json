@@ -14,6 +14,7 @@
     "@noble/ed25519": "^2.2.3",
     "buffer": "^6.0.3",
     "expo": "~57.0.10",
+    "expo-camera": "~57.0.3",
     "expo-crypto": "~15.0.0",
     "expo-secure-store": "~15.0.0",
     "expo-speech": "~57.0.1",
