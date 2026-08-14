@@ -15,16 +15,28 @@ import {
   buildDidDocument,
   DidKeyIdentity,
 } from '../src/services/presence';
+import {
+  issueDemoCredential,
+  listDemoCredentials,
+  DemoCredential,
+} from '../src/services/credentials';
 
 export default function PresenceScreen() {
   const [identity, setIdentity] = useState<DidKeyIdentity | null>(null);
   const [signature, setSignature] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [smokeResult, setSmokeResult] = useState<string | null>(null);
+  const [credentials, setCredentials] = useState<DemoCredential[]>([]);
 
   const refresh = async () => {
     const current = await getCurrentDidKey();
     setIdentity(current);
+    if (current) {
+      const list = await listDemoCredentials();
+      setCredentials(list);
+    } else {
+      setCredentials([]);
+    }
   };
 
   useEffect(() => {
@@ -38,6 +50,7 @@ export default function PresenceScreen() {
       const newIdentity = await createDidKey();
       setIdentity(newIdentity);
       setSignature(null);
+      setCredentials([]);
     } finally {
       setBusy(false);
     }
@@ -45,17 +58,18 @@ export default function PresenceScreen() {
 
   const handleDestroy = async () => {
     Alert.alert(
-      'Destroy identity?',
-      'Private key and DID will be wiped. Restart from Square One.',
+      'Destroy this identity path?',
+      'This action is permanent.\n\n• Your TRV identity path will end.\n• All TRV-issued / demo credentials held here will be destroyed.\n• There is no recovery by The Remote Viewer.\n\nIf you continue, you start from square one.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Destroy',
+          text: 'I understand — Destroy',
           style: 'destructive',
           onPress: async () => {
             await destroyDidKey();
             setIdentity(null);
             setSignature(null);
+            setCredentials([]);
             setSmokeResult(null);
           },
         },
@@ -76,12 +90,38 @@ export default function PresenceScreen() {
     Alert.alert('DID Document', JSON.stringify(doc, null, 2));
   };
 
+  const handleIssueDemoVc = async () => {
+    setBusy(true);
+    try {
+      const entry = await issueDemoCredential();
+      if (!entry) {
+        Alert.alert('Issue failed', 'No active identity or signing error.');
+        return;
+      }
+      const list = await listDemoCredentials();
+      setCredentials(list);
+      Alert.alert('Demo VC issued', entry.id);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleShowCredentials = () => {
+    if (credentials.length === 0) {
+      Alert.alert('Held credentials', 'None.');
+      return;
+    }
+    const summary = credentials
+      .map((c, i) => `${i + 1}. ${c.id}\n   issued ${new Date(c.issuedAt).toISOString()}`)
+      .join('\n\n');
+    Alert.alert(`Held credentials (${credentials.length})`, summary);
+  };
+
   /** Smoke test: Create → Destroy → Assert Empty. Documents Destroy = Restart. */
   const handleSmokeTest = async () => {
     setBusy(true);
     setSmokeResult(null);
     try {
-      // Ensure clean start
       await destroyDidKey();
 
       const created = await createDidKey();
@@ -90,15 +130,25 @@ export default function PresenceScreen() {
         return;
       }
 
+      // Also exercise credential issue + destroy path
+      await issueDemoCredential();
+      const mid = await listDemoCredentials();
+      if (mid.length < 1) {
+        setSmokeResult('FAIL: demo VC not stored');
+        return;
+      }
+
       await destroyDidKey();
 
-      const after = await getCurrentDidKey();
-      if (after === null) {
-        setSmokeResult('PASS: Create → Destroy → Empty');
+      const afterId = await getCurrentDidKey();
+      const afterCreds = await listDemoCredentials();
+      if (afterId === null && afterCreds.length === 0) {
+        setSmokeResult('PASS: Create → Issue VC → Destroy → Empty');
         setIdentity(null);
         setSignature(null);
+        setCredentials([]);
       } else {
-        setSmokeResult('FAIL: identity still present after destroy');
+        setSmokeResult('FAIL: identity or credentials remain after destroy');
       }
     } catch (e) {
       setSmokeResult(`FAIL: ${e instanceof Error ? e.message : String(e)}`);
@@ -109,9 +159,9 @@ export default function PresenceScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.kicker}>LOCAL · SCAFFOLD</Text>
+      <Text style={styles.kicker}>LOCAL · SCAFFOLD · PHASE 1 FIRST CUT</Text>
       <Text style={styles.title}>Identity</Text>
-      <Text style={styles.subtitle}>did:key · on-device only</Text>
+      <Text style={styles.subtitle}>did:key · on-device only · demo VCs</Text>
 
       <View style={styles.card}>
         {identity ? (
@@ -127,6 +177,8 @@ export default function PresenceScreen() {
             <Text selectable style={styles.mono}>
               {identity.publicKeyHex}
             </Text>
+            <Text style={styles.label}>Held demo VCs</Text>
+            <Text style={styles.mono}>{credentials.length}</Text>
             {signature && (
               <>
                 <Text style={styles.label}>Last signature</Text>
@@ -142,7 +194,8 @@ export default function PresenceScreen() {
               <Text style={styles.badgeTextIdle}>NO IDENTITY</Text>
             </View>
             <Text style={styles.hint}>
-              Create a local did:key. Keys never leave this device.
+              Create a local did:key. Keys never leave this device. Demo VCs are
+              wiped with the identity.
             </Text>
           </>
         )}
@@ -175,6 +228,16 @@ export default function PresenceScreen() {
             <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleShowDidDoc}>
               <Text style={styles.btnText}>Show DID Document</Text>
             </Pressable>
+            <Pressable
+              style={[styles.btn, styles.btnSecondary]}
+              onPress={handleIssueDemoVc}
+              disabled={busy}
+            >
+              <Text style={styles.btnText}>Issue Demo VC</Text>
+            </Pressable>
+            <Pressable style={[styles.btn, styles.btnSecondary]} onPress={handleShowCredentials}>
+              <Text style={styles.btnText}>Show held VCs ({credentials.length})</Text>
+            </Pressable>
             <Pressable style={[styles.btn, styles.btnDanger]} onPress={handleDestroy}>
               <Text style={styles.btnText}>Destroy identity</Text>
             </Pressable>
@@ -187,7 +250,7 @@ export default function PresenceScreen() {
           disabled={busy}
         >
           <Text style={styles.btnText}>
-            {busy ? 'Running…' : 'Run Smoke Test (Create → Destroy → Empty)'}
+            {busy ? 'Running…' : 'Run Smoke Test (Create → VC → Destroy → Empty)'}
           </Text>
         </Pressable>
       </View>

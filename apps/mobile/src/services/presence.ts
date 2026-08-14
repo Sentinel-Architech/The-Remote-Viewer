@@ -3,6 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import { base58btc } from 'multiformats/bases/base58';
 import { Buffer } from 'buffer';
 import { destroyDidCommState } from './didcomm';
+import { destroyAllDemoCredentials } from './credentials';
 
 const ED25519_MULTICODEC = new Uint8Array([0xed, 0x01]);
 
@@ -70,6 +71,7 @@ export async function destroyDidKey() {
   await SecureStore.deleteItemAsync(STORAGE_PRIVATE);
   await SecureStore.deleteItemAsync(STORAGE_DID);
   await destroyDidCommState();
+  await destroyAllDemoCredentials(); // Phase 1: credentials die with identity
 }
 
 export async function signWithDidKey(message: string): Promise<string | null> {
