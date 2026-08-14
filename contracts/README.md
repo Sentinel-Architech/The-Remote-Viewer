@@ -4,26 +4,30 @@
 
 ## Layout
 
-```
-contracts/
-  foundry.toml
-  src/GovernanceCoordinator.sol
-  script/  (later)
-  test/    (later)
-```
+| Path | Role |
+|------|------|
+| `src/TRVVotes.sol` | ERC20 + Votes token (scaffold mint) |
+| `src/GovernanceCoordinator.sol` | OZ Governor stack |
+| `script/DeployGovernance.s.sol` | Local/testnet deploy |
+| `test/*.t.sol` | Smoke tests |
 
-## Compile (when Foundry is available)
+## Commands
 
 ```bash
 cd contracts
-forge install OpenZeppelin/openzeppelin-contracts --no-commit
+forge install OpenZeppelin/openzeppelin-contracts foundry-rs/forge-std
 forge build
+forge test -vv
 ```
 
-## Known fix included
+Deploy (local anvil example):
 
-`proposalThreshold` (and related settings) **must** be explicitly overridden when inheriting both `Governor` and `GovernorSettings`. This scaffold does that.
+```bash
+anvil &
+export PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+forge script script/DeployGovernance.s.sol:DeployGovernance --rpc-url http://127.0.0.1:8545 --broadcast
+```
 
 ## Values
 
-Contract design must not undercut locked floors (`docs/locked/19` We the People, `16` no passable deepfakes, `21` cannabis acceptable as social policy — on-chain code does not implement content policy).
+Does not undercut locked floors (`docs/locked/19` etc.). Content policy is not on-chain here.
