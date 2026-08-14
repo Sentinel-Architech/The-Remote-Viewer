@@ -6,43 +6,41 @@ Expo + React Native + TypeScript client for The Remote Viewer.
 
 | Piece | Status |
 |-------|--------|
-| `did:key` generation (Ed25519) | Working |
-| On-device SecureStore | Working (hardened options) |
-| High-friction Destroy gate (type full DID) | Working |
-| Local demo VC issue / store / list | Working |
-| On-device connection list | Working (Social Layer slice 1) |
-| Optical DID exchange (show + paste) | Working (Social Layer slice 2) |
-| Connections + VCs wiped on Destroy | Working |
-| Camera QR scan | Not yet (needs custom dev client) |
-| Nostr publication | Not yet |
-| Full OpenID4VCI / OpenID4VP | Not yet |
+| `did:key` + hardened SecureStore | Working |
+| High-friction Destroy (type full DID) | Working |
+| Local demo VC | Working |
+| On-device connection list | Working (slice 1) |
+| Optical DID exchange (show + paste) | Working (slice 2) |
+| Local private messages (DIDComm-shaped, on-device inbox) | Working (slice 3) |
+| All of the above wiped on Destroy | Working |
+| Camera QR scan / relay delivery / Nostr publish | Not yet |
 | Production security claims | **None** |
+
+## Local messages (slice 3)
+
+- Compose a DIDComm basicmessage signed by your did:key to a connection DID.
+- Stored only in the on-device inbox (hardened SecureStore).
+- No relay transport in this slice — optical/out-of-band delivery of the message payload can be added later.
+- Inbox is cleared on Destroy with the identity path.
 
 ## Optical connection exchange (slice 2)
 
-1. Viewer A: **Show my DID for optical exchange** → large selectable DID + system Share.
-2. Viewer B: capture (photo / type / receive share) → paste into **Paste did:key from optical exchange** → Add connection.
-3. No network required. No relays. Connection lives only on each device and dies with that identity path.
-
-Camera-based QR scan is deferred until a custom development client (Expo Go cannot reliably host full scanner native modules for production use).
+Show my DID → capture/paste on the other device → Add connection.
 
 ## Destroy = Restart
 
-Danger Zone → type full DID → final confirmation. Wipes keys, demo VCs, and on-device connections. No email, no phone.
-
-See `docs/locked/13` and `docs/locked/14`.
+Danger Zone → type full DID → final confirmation. Wipes keys, VCs, connections, and local messages. No email, no phone.
 
 ## Run
 
 ```bash
-cd apps/mobile
-npm install
-npx expo start --host lan
+cd apps/mobile && npm install && npx expo start --host lan
 ```
 
 ## Canonical files
 
 - `src/services/presence.ts` — did:key + destroy
 - `src/services/credentials.ts` — demo VCs
-- `src/services/connections.ts` — on-device connection list
-- `screens/PresenceScreen.tsx` — UI, optical share, Danger Zone, smoke test
+- `src/services/connections.ts` — connection list
+- `src/services/didcomm.ts` — local basicmessage inbox
+- `screens/PresenceScreen.tsx` — full UI

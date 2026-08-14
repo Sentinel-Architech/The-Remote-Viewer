@@ -28,6 +28,12 @@ import {
   listConnections,
   Connection,
 } from '../src/services/connections';
+import {
+  createBasicMessage,
+  storeMessage,
+  getInbox,
+  DidCommBasicMessage,
+} from '../src/services/didcomm';
 
 export default function PresenceScreen() {
   const [identity, setIdentity] = useState<DidKeyIdentity | null>(null);
@@ -36,25 +42,31 @@ export default function PresenceScreen() {
   const [smokeResult, setSmokeResult] = useState<string | null>(null);
   const [credentials, setCredentials] = useState<DemoCredential[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
+  const [inbox, setInbox] = useState<DidCommBasicMessage[]>([]);
 
   const [showDangerZone, setShowDangerZone] = useState(false);
   const [typedDid, setTypedDid] = useState('');
   const [showOpticalShare, setShowOpticalShare] = useState(false);
   const [newConnectionId, setNewConnectionId] = useState('');
+  const [msgTo, setMsgTo] = useState('');
+  const [msgBody, setMsgBody] = useState('');
 
   const refresh = async () => {
     const current = await getCurrentDidKey();
     setIdentity(current);
     if (current) {
-      const [creds, conns] = await Promise.all([
+      const [creds, conns, messages] = await Promise.all([
         listDemoCredentials(),
         listConnections(),
+        getInbox(),
       ]);
       setCredentials(creds);
       setConnections(conns);
+      setInbox(messages);
     } else {
       setCredentials([]);
       setConnections([]);
+      setInbox([]);
     }
   };
 
@@ -74,6 +86,7 @@ export default function PresenceScreen() {
       setSignature(null);
       setCredentials([]);
       setConnections([]);
+      setInbox([]);
     } finally {
       setBusy(false);
     }
@@ -98,7 +111,7 @@ export default function PresenceScreen() {
 
     Alert.alert(
       'Final confirmation',
-      'This identity path will end permanently. Connections and credentials held here will be wiped. There is no recovery by The Remote Viewer.',
+      'This identity path will end permanently. Connections, credentials, and local messages held here will be wiped. There is no recovery by The Remote Viewer.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -112,6 +125,7 @@ export default function PresenceScreen() {
               setSignature(null);
               setCredentials([]);
               setConnections([]);
+              setInbox([]);
               setSmokeResult(null);
               setShowDangerZone(false);
               setTypedDid('');
@@ -176,7 +190,7 @@ export default function PresenceScreen() {
         title: 'TRV identity (optical exchange)',
       });
     } catch {
-      // User cancelled or share unavailable — DID remains visible on screen
+      // cancelled
     }
   };
 
@@ -213,6 +227,34 @@ export default function PresenceScreen() {
     ]);
   };
 
+  const handleSendLocalMessage = async () => {
+    const to = msgTo.trim();
+    const content = msgBody.trim();
+    if (!to || !content) {
+      Alert.alert('Message', 'Choose a recipient DID and enter content.');
+      return;
+    }
+    setBusy(true);
+    try {
+      const msg = await createBasicMessage(content, to);
+      if (!msg) {
+        Alert.alert('Message failed', 'No active identity or signing error.');
+        return;
+      }
+      // Local-only: store in our inbox as a sent/local record (no transport yet)
+      await storeMessage(msg);
+      const messages = await getInbox();
+      setInbox(messages);
+      setMsgBody('');
+      Alert.alert(
+        'Stored locally',
+        'Message signed and kept on this device. No relay delivery in this slice.'
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const handleSmokeTest = async () => {
     setBusy(true);
     setSmokeResult(null);
@@ -230,11 +272,14 @@ export default function PresenceScreen() {
 
       await issueDemoCredential();
       await addConnection('did:key:smoke-test-peer');
+      const msg = await createBasicMessage('smoke', 'did:key:smoke-test-peer');
+      if (msg) await storeMessage(msg);
 
       const midCreds = await listDemoCredentials();
       const midConns = await listConnections();
-      if (midCreds.length < 1 || midConns.length < 1) {
-        setSmokeResult('FAIL: VC or connection not stored');
+      const midInbox = await getInbox();
+      if (midCreds.length < 1 || midConns.length < 1 || midInbox.length < 1) {
+        setSmokeResult('FAIL: VC, connection, or message not stored');
         return;
       }
 
@@ -243,19 +288,24 @@ export default function PresenceScreen() {
       const afterId = await getCurrentDidKey();
       const afterCreds = await listDemoCredentials();
       const afterConns = await listConnections();
+      const afterInbox = await getInbox();
       if (
         afterId === null &&
         afterCreds.length === 0 &&
-        afterConns.length === 0
+        afterConns.length === 0 &&
+        afterInbox.length === 0
       ) {
-        setSmokeResult('PASS: Create → VC + Connection → Destroy → Empty');
+        setSmokeResult(
+          'PASS: Create → VC + Conn + Msg → Destroy → Empty'
+        );
         setIdentity(null);
         setSignature(null);
         setCredentials([]);
         setConnections([]);
+        setInbox([]);
       } else {
         setSmokeResult(
-          'FAIL: identity, credentials, or connections remain after destroy'
+          'FAIL: identity or social state remains after destroy'
         );
       }
     } catch (e) {
@@ -267,10 +317,10 @@ export default function PresenceScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.kicker}>LOCAL · SCAFFOLD · SOCIAL SLICE 2</Text>
+      <Text style={styles.kicker}>LOCAL · SCAFFOLD · SOCIAL SLICE 3</Text>
       <Text style={styles.title}>Identity</Text>
       <Text style={styles.subtitle}>
-        did:key · demo VCs · connections · optical exchange
+        did:key · VCs · connections · optical · local messages
       </Text>
 
       <View style={styles.card}>
@@ -291,6 +341,8 @@ export default function PresenceScreen() {
             <Text style={styles.mono}>{credentials.length}</Text>
             <Text style={styles.label}>Connections</Text>
             <Text style={styles.mono}>{connections.length}</Text>
+            <Text style={styles.label}>Local messages</Text>
+            <Text style={styles.mono}>{inbox.length}</Text>
             {signature && (
               <>
                 <Text style={styles.label}>Last signature</Text>
@@ -306,8 +358,8 @@ export default function PresenceScreen() {
               <Text style={styles.badgeTextIdle}>NO IDENTITY</Text>
             </View>
             <Text style={styles.hint}>
-              Create a local did:key. Keys, demo VCs, and connections never leave
-              this device and are wiped together on Destroy.
+              Create a local did:key. Keys, VCs, connections, and local messages
+              are wiped together on Destroy.
             </Text>
           </>
         )}
@@ -323,13 +375,12 @@ export default function PresenceScreen() {
         )}
       </View>
 
-      {/* Optical exchange — show own DID for capture */}
       {identity && showOpticalShare && (
         <View style={styles.opticalCard}>
           <Text style={styles.sectionTitle}>Optical exchange</Text>
           <Text style={styles.hint}>
-            Show this DID to another Viewer (photo, typed, or system share).
-            They paste it into their connection list. No network required.
+            Show this DID to another Viewer. They paste it into their connection
+            list. No network required.
           </Text>
           <View style={styles.opticalDidBox}>
             <Text selectable style={styles.opticalDid}>
@@ -351,13 +402,11 @@ export default function PresenceScreen() {
         </View>
       )}
 
-      {/* Connections */}
       {identity && (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Connections (on-device)</Text>
           <Text style={styles.hint}>
-            Local list only. Establish via optical capture then paste. No relays.
-            Wiped on Destroy.
+            Local list only. Optical paste to add. Wiped on Destroy.
           </Text>
           <TextInput
             style={styles.didInput}
@@ -405,15 +454,82 @@ export default function PresenceScreen() {
         </View>
       )}
 
-      {/* Danger Zone */}
+      {/* Local private messages (slice 3) */}
+      {identity && (
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Local messages</Text>
+          <Text style={styles.hint}>
+            DIDComm-shaped basicmessage, signed by your did:key, stored only on
+            this device. No relay delivery in this slice. Wiped on Destroy.
+          </Text>
+          <Text style={styles.label}>To (DID)</Text>
+          <TextInput
+            style={styles.didInput}
+            value={msgTo}
+            onChangeText={setMsgTo}
+            autoCapitalize="none"
+            autoCorrect={false}
+            placeholder="did:key:… (from connections)"
+            placeholderTextColor="#555"
+            editable={!busy}
+          />
+          {connections.length > 0 && (
+            <View style={styles.chipRow}>
+              {connections.slice(0, 5).map((c) => (
+                <Pressable
+                  key={c.id}
+                  style={styles.chip}
+                  onPress={() => setMsgTo(c.id)}
+                >
+                  <Text style={styles.chipText} numberOfLines={1}>
+                    {c.id.slice(0, 20)}…
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+          <Text style={styles.label}>Content</Text>
+          <TextInput
+            style={[styles.didInput, { minHeight: 64 }]}
+            value={msgBody}
+            onChangeText={setMsgBody}
+            multiline
+            placeholder="Message content"
+            placeholderTextColor="#555"
+            editable={!busy}
+          />
+          <Pressable
+            style={[styles.btn, styles.btnSecondary]}
+            onPress={handleSendLocalMessage}
+            disabled={busy}
+          >
+            <Text style={styles.btnText}>Sign & store locally</Text>
+          </Pressable>
+          {inbox.length === 0 ? (
+            <Text style={[styles.hint, { marginTop: 12 }]}>Inbox empty.</Text>
+          ) : (
+            inbox.slice(0, 10).map((m) => (
+              <View key={m.id} style={styles.msgRow}>
+                <Text style={styles.msgMeta}>
+                  {m.from?.slice(0, 24)}… → {m.to?.[0]?.slice(0, 16) || '?'}…
+                </Text>
+                <Text style={styles.msgBody} numberOfLines={3}>
+                  {m.body?.content}
+                </Text>
+              </View>
+            ))
+          )}
+        </View>
+      )}
+
       {identity && showDangerZone && (
         <View style={styles.dangerCard}>
           <Text style={styles.dangerTitle}>Danger Zone</Text>
           <Text style={styles.dangerBody}>
             This action is permanent.\n\n• Your TRV identity path will end.\n• Demo
-            VCs and on-device connections for this path will be destroyed.\n• There
-            is no recovery by The Remote Viewer.\n\nType the full DID below to enable
-            destruction. No email or phone is used.
+            VCs, connections, and local messages for this path will be
+            destroyed.\n• There is no recovery by The Remote Viewer.\n\nType the
+            full DID below to enable destruction. No email or phone is used.
           </Text>
           <Text style={styles.label}>Type full DID exactly</Text>
           <TextInput
@@ -499,7 +615,7 @@ export default function PresenceScreen() {
           <Text style={styles.btnText}>
             {busy
               ? 'Running…'
-              : 'Run Smoke Test (Create → VC + Conn → Destroy → Empty)'}
+              : 'Run Smoke Test (Create → VC + Conn + Msg → Destroy → Empty)'}
           </Text>
         </Pressable>
       </View>
@@ -624,6 +740,41 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 8,
+  },
+  chip: {
+    backgroundColor: '#1a2a3a',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    maxWidth: '48%',
+  },
+  chipText: {
+    color: '#8ab',
+    fontSize: 10,
+    fontFamily: 'monospace',
+  },
+  msgRow: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#222',
+  },
+  msgMeta: {
+    color: '#666',
+    fontSize: 10,
+    fontFamily: 'monospace',
+    marginBottom: 4,
+  },
+  msgBody: {
+    color: '#ccc',
+    fontSize: 13,
+    lineHeight: 18,
+  },
   badgeActive: {
     alignSelf: 'flex-start',
     backgroundColor: '#0d3d24',
@@ -645,7 +796,7 @@ const styles = StyleSheet.create({
   label: {
     color: '#666',
     fontSize: 12,
-    marginTop: 12,
+    marginTop: 8,
     marginBottom: 4,
   },
   did: {

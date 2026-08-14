@@ -1,10 +1,14 @@
+/**
+ * Local DIDComm-shaped basic messages — Social Layer slice 3.
+ * On-device inbox only. Wiped on Destroy = Restart.
+ * SCAFFOLD / DEMONSTRATED. No relays. No production security claims.
+ */
+
 import * as ed from '@noble/ed25519';
 import * as SecureStore from 'expo-secure-store';
 import { base58btc } from 'multiformats/bases/base58';
-import {
-  getCurrentDidKey,
-  signWithDidKey,
-} from './presence';
+import { Buffer } from 'buffer';
+import { getCurrentDidKey, signWithDidKey } from './presence';
 
 export type DidCommBasicMessage = {
   type: 'https://didcomm.org/basicmessage/2.0/message';
@@ -19,6 +23,11 @@ export type DidCommBasicMessage = {
 };
 
 const INBOX_KEY = 'didcomm_inbox';
+
+const SECURE_OPTIONS: SecureStore.SecureStoreOptions = {
+  keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+  requireAuthentication: true,
+};
 
 function uuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -90,12 +99,18 @@ async function loadInbox(): Promise<DidCommBasicMessage[]> {
 }
 
 async function saveInbox(messages: DidCommBasicMessage[]): Promise<void> {
-  await SecureStore.setItemAsync(INBOX_KEY, JSON.stringify(messages));
+  await SecureStore.setItemAsync(
+    INBOX_KEY,
+    JSON.stringify(messages),
+    SECURE_OPTIONS
+  );
 }
 
 export async function storeMessage(msg: DidCommBasicMessage): Promise<void> {
   const inbox = await loadInbox();
   inbox.unshift(msg);
+  // Cap local inbox size for scaffold
+  if (inbox.length > 100) inbox.length = 100;
   await saveInbox(inbox);
 }
 
@@ -107,6 +122,7 @@ export async function clearInbox(): Promise<void> {
   await SecureStore.deleteItemAsync(INBOX_KEY);
 }
 
+/** Called from destroyDidKey — private-message state dies with identity. */
 export async function destroyDidCommState(): Promise<void> {
   await clearInbox();
 }
