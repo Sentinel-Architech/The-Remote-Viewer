@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.20;
 
 /**
- * TRV GovernanceCoordinator — SCAFFOLD ONLY.
- * OpenZeppelin Governor + Settings + Votes + Quorum fraction + Timelock control.
- * Explicit overrides for multi-inheritance (proposalThreshold, etc.).
+ * TRV GovernanceCoordinator — hardened SCAFFOLD.
+ * Still not audited. Not mainnet-ready without external review.
  *
- * Not audited. Not production. Path B external founding members: still 0 until wired.
+ * Defaults: 1 day delay, 7 day period, 1 ether proposal threshold.
  */
 
 import {Governor} from "@openzeppelin/contracts/governance/Governor.sol";
@@ -26,22 +25,14 @@ contract GovernanceCoordinator is
     GovernorVotesQuorumFraction,
     GovernorTimelockControl
 {
-    constructor(
-        IVotes token_,
-        TimelockController timelock_,
-        uint48 initialVotingDelay,
-        uint32 initialVotingPeriod,
-        uint256 initialProposalThreshold,
-        uint256 quorumNumerator_
-    )
-        Governor("TRV GovernanceCoordinator")
-        GovernorSettings(initialVotingDelay, initialVotingPeriod, initialProposalThreshold)
+    constructor(IVotes token_, TimelockController timelock_)
+        Governor("GovernanceCoordinator")
+        // delay, period, proposalThreshold (1 ether of TRVV votes)
+        GovernorSettings(1 days, 7 days, 1 ether)
         GovernorVotes(token_)
-        GovernorVotesQuorumFraction(quorumNumerator_)
+        GovernorVotesQuorumFraction(4) // 4%
         GovernorTimelockControl(timelock_)
     {}
-
-    // ─── Required multi-inheritance overrides ───────────────────────────
 
     function votingDelay()
         public

@@ -6,26 +6,12 @@ import {GovernanceCoordinator} from "../src/GovernanceCoordinator.sol";
 import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 
-/// @dev Minimal ERC20Votes-like stub so constructor links.
 contract MockVotes is IVotes {
-    function getVotes(address) external pure returns (uint256) {
-        return 0;
-    }
-
-    function getPastVotes(address, uint256) external pure returns (uint256) {
-        return 0;
-    }
-
-    function getPastTotalSupply(uint256) external pure returns (uint256) {
-        return 0;
-    }
-
-    function delegates(address) external pure returns (address) {
-        return address(0);
-    }
-
+    function getVotes(address) external pure returns (uint256) { return 0; }
+    function getPastVotes(address, uint256) external pure returns (uint256) { return 0; }
+    function getPastTotalSupply(uint256) external pure returns (uint256) { return 0; }
+    function delegates(address) external pure returns (address) { return address(0); }
     function delegate(address) external {}
-
     function delegateBySig(address, uint256, uint256, uint8, bytes32, bytes32) external {}
 }
 
@@ -39,7 +25,7 @@ contract GovernanceCoordinatorTest is Test {
         address[] memory proposers = new address[](1);
         address[] memory executors = new address[](1);
         proposers[0] = address(this);
-        executors[0] = address(this);
+        executors[0] = address(this); // not address(0)
         timelock = new TimelockController(1 days, proposers, executors, address(this));
         gov = new GovernanceCoordinator(IVotes(address(token)), timelock);
     }
@@ -48,8 +34,8 @@ contract GovernanceCoordinatorTest is Test {
         assertEq(gov.name(), "GovernanceCoordinator");
     }
 
-    function test_proposalThreshold_is_zero() public view {
-        assertEq(gov.proposalThreshold(), 0);
+    function test_proposalThreshold_is_one_ether() public view {
+        assertEq(gov.proposalThreshold(), 1 ether);
     }
 
     function test_votingDelay_one_day() public view {

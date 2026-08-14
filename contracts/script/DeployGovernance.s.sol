@@ -7,11 +7,20 @@ import {GovernanceCoordinator} from "../src/GovernanceCoordinator.sol";
 import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 
-/// @dev Local / testnet scaffold deploy. Not a production release path.
+/**
+ * Deploy hardened scaffold.
+ * EXECUTOR env optional — defaults to deployer. Never address(0) on purpose.
+ * Still not audited. Prefer Sepolia before any mainnet consideration.
+ */
 contract DeployGovernance is Script {
     function run() external {
         uint256 pk = vm.envUint("PRIVATE_KEY");
         address deployer = vm.addr(pk);
+
+        address executor = deployer;
+        try vm.envAddress("EXECUTOR") returns (address e) {
+            if (e != address(0)) executor = e;
+        } catch {}
 
         vm.startBroadcast(pk);
 
@@ -20,7 +29,7 @@ contract DeployGovernance is Script {
         address[] memory proposers = new address[](1);
         address[] memory executors = new address[](1);
         proposers[0] = deployer;
-        executors[0] = address(0); // open executor for scaffold only
+        executors[0] = executor;
 
         TimelockController timelock =
             new TimelockController(1 days, proposers, executors, deployer);
@@ -28,14 +37,15 @@ contract DeployGovernance is Script {
         GovernanceCoordinator gov =
             new GovernanceCoordinator(IVotes(address(token)), timelock);
 
-        // hand proposer role to governor (typical pattern)
-        bytes32 proposerRole = timelock.PROPOSER_ROLE();
-        timelock.grantRole(proposerRole, address(gov));
+        timelock.grantRole(timelock.PROPOSER_ROLE(), address(gov));
+        // Optional: revoke deployer proposer after governor is sole proposer
+        // timelock.renounceRole(timelock.PROPOSER_ROLE(), deployer);
 
         vm.stopBroadcast();
 
         console2.log("TRVVotes", address(token));
         console2.log("Timelock", address(timelock));
         console2.log("Governor", address(gov));
+        console2.log("Executor", executor);
     }
 }
