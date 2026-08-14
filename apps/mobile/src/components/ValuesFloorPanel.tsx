@@ -1,6 +1,5 @@
 /**
  * Condensed rights + integrity floor — one surface, no value sacrifice.
- * See locked 16, 17, 18, 19, 20.
  */
 
 import React, { useEffect, useState } from 'react';
@@ -14,7 +13,8 @@ import {
 import {
   hasAcknowledgedDeepfakePolicy,
   acknowledgeDeepfakePolicy,
-  DEEPFAKE_POLICY_SUMMARY,
+  DEEPFAKE_POLICY_SUMMARY_EN,
+  DEEPFAKE_POLICY_SUMMARY_ES,
 } from '../services/deepfakePolicy';
 import { isXxxAllowed, setXxxAllowed } from '../services/xxxPreference';
 import type { Locale } from '../i18n/strings';
@@ -53,15 +53,16 @@ export function ValuesFloorPanel({ locale = 'en' }: Props) {
       </Text>
 
       <Text style={[styles.line, styles.gap]}>
+        {isEs ? DEEPFAKE_POLICY_SUMMARY_ES : DEEPFAKE_POLICY_SUMMARY_EN}{' '}
         {isEs
-          ? 'Semejanza/animación humana OK solo si es distinguible. Deepfakes pasables de personas reales: ESTRICTAMENTE PROHIBIDOS. Adulto solo detrás de XXX.'
-          : `${DEEPFAKE_POLICY_SUMMARY} Adult content only behind XXX.`}
+          ? 'Adulto solo detrás de XXX.'
+          : 'Adult content only behind XXX.'}
       </Text>
 
       <Text style={[styles.line, styles.gap]}>
         {isEs
-          ? 'Intereses temáticos opcionales: religión → inclinación cristiana y piadosa para aprender; política y demás → aprender, no presionar.'
-          : 'Optional topical interests: religion → Christian and Godly learning lean; politics and others → learn, never pressure.'}
+          ? 'Intereses opcionales: religión → inclinación cristiana y piadosa para aprender; política y demás → aprender, no presionar.'
+          : 'Optional interests: religion → Christian and Godly learning lean; politics and others → learn, never pressure.'}
       </Text>
 
       <Pressable
@@ -85,7 +86,9 @@ export function ValuesFloorPanel({ locale = 'en' }: Props) {
 
       {rights && deepfake ? (
         <Text style={styles.ack}>
-          {isEs ? 'Piso reconocido en este dispositivo' : 'Floor acknowledged on this device'}
+          {isEs
+            ? 'Piso reconocido en este dispositivo'
+            : 'Floor acknowledged on this device'}
         </Text>
       ) : (
         <Pressable style={styles.btn} onPress={ackAll}>

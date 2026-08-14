@@ -42,10 +42,9 @@ import {
 } from '../src/services/profile';
 import { VoiceField } from '../src/components/VoiceField';
 import { LocaleHumanBar } from '../src/components/LocaleHumanBar';
-import { DeepfakePolicyBanner } from '../src/components/DeepfakePolicyBanner';
+import { ValuesFloorPanel } from '../src/components/ValuesFloorPanel';
 import { ConductCommunityPanel } from '../src/components/ConductCommunityPanel';
 import { TopicalLeansPanel } from '../src/components/TopicalLeansPanel';
-import { WeThePeopleBanner } from '../src/components/WeThePeopleBanner';
 import { t, Locale } from '../src/i18n/strings';
 
 type Props = {
@@ -114,13 +113,10 @@ export default function PresenceScreen({
       <Text style={styles.kicker}>LOCAL · SCAFFOLD</Text>
       <Text style={styles.title}>{t(locale, 'identity')}</Text>
       <Text style={styles.subtitle}>
-        {locale === 'es'
-          ? 'Nosotros el Pueblo · soberanía'
-          : 'We the People · sovereignty'}
+        {locale === 'es' ? 'Valores · soberanía' : 'Values · sovereignty'}
       </Text>
 
-      <WeThePeopleBanner locale={locale} />
-      <DeepfakePolicyBanner locale={locale} />
+      <ValuesFloorPanel locale={locale} />
       <TopicalLeansPanel locale={locale} />
       <ConductCommunityPanel locale={locale} />
 
