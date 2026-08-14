@@ -7,6 +7,7 @@ import { destroyAllDemoCredentials } from './credentials';
 import { destroyAllConnections } from './connections';
 import { destroyLocalProfile } from './profile';
 import { destroyHumanAttestation } from './humanVerification';
+import { wipeIdentityBoundExtras } from './identityBoundWipe';
 
 const ED25519_MULTICODEC = new Uint8Array([0xed, 0x01]);
 
@@ -30,7 +31,9 @@ export async function createDidKey(): Promise<DidKeyIdentity> {
 
   const publicKey = await ed.getPublicKeyAsync(privateKey);
 
-  const multicodecKey = new Uint8Array(ED25519_MULTICODEC.length + publicKey.length);
+  const multicodecKey = new Uint8Array(
+    ED25519_MULTICODEC.length + publicKey.length
+  );
   multicodecKey.set(ED25519_MULTICODEC, 0);
   multicodecKey.set(publicKey, ED25519_MULTICODEC.length);
 
@@ -68,7 +71,8 @@ export async function getCurrentDidKey(): Promise<DidKeyIdentity | null> {
   };
 }
 
-export async function destroyDidKey() {
+/** Destroy = Restart: key material + identity-bound social/conduct state. */
+export async function destroyDidKey(): Promise<void> {
   await SecureStore.deleteItemAsync(STORAGE_PRIVATE);
   await SecureStore.deleteItemAsync(STORAGE_DID);
   await destroyDidCommState();
@@ -76,6 +80,7 @@ export async function destroyDidKey() {
   await destroyAllConnections();
   await destroyLocalProfile();
   await destroyHumanAttestation();
+  await wipeIdentityBoundExtras();
 }
 
 export async function signWithDidKey(message: string): Promise<string | null> {
