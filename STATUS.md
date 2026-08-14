@@ -4,29 +4,25 @@
 
 ## Track A — Solana (`solana/`)
 
-| Item | State |
-|------|--------|
-| Program | initialize, **set_vote_mint**, register_node, **deactivate_node**, propose, vote, **vote_with_token**, execute_if_threshold |
-| Accounts | GovernanceConfig (+ vote_mint), Proposal, VoteRecord, Node |
-| Program id | **PLACEHOLDER** |
-| Tests | Manual `vote()` path covered; SPL path needs mint fixture on build host |
-| CI | `.github/workflows/solana.yml` |
-| Devnet/mainnet | **Not deployed** |
+| Instruction | Role |
+|-------------|------|
+| initialize / set_vote_mint | Config + SPL vote mint |
+| register_node / deactivate_node | Permanent node operator |
+| **grant_subscription** | Authority sets `expires_at` (payment off-chain) |
+| **refresh_entitlement** | `unlimited_comms` = active node **OR** unexpired sub |
+| propose / vote / vote_with_token | Governance |
+| execute_if_threshold | Pass flag if threshold met |
 
-**Vote weight:** `vote_with_token` uses SPL token account amount (mint must match config). Manual `vote(weight)` remains for scaffold tests.
+Accounts: Config, Proposal, VoteRecord, Node, **Subscription**, **Entitlement**.
 
-**Nodes:** register / deactivate. Unlimited-comms reward still product/off-chain.
+Program id **PLACEHOLDER**. Not deployed. CI present.
 
-## Parallel — EVM (`contracts/`)
+## Parallel — EVM
 
-Hardened Governor scaffold; not Track A.
+Not Track A.
 
-## Mobile
-
-**PARKED.**
+## Mobile — PARKED
 
 ## Path B founders: **0**
 
-## Locked values
-
-`docs/locked/` 15–21.
+## Locked values — `docs/locked/` 15–21
