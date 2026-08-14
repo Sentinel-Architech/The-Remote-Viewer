@@ -21,6 +21,23 @@ pub mod trv_governance {
         Ok(())
     }
 
+    pub fn transfer_authority(ctx: Context<TransferAuthority>, new_authority: Pubkey) -> Result<()> {
+        let cfg = &mut ctx.accounts.config;
+        require_keys_eq!(ctx.accounts.authority.key(), cfg.authority, TrvError::Unauthorized);
+        require!(new_authority != Pubkey::default(), TrvError::InvalidAuthority);
+        cfg.authority = new_authority;
+        msg!("TRV authority transferred to {}", new_authority);
+        Ok(())
+    }
+
+    pub fn set_proposal_threshold(ctx: Context<SetProposalThreshold>, threshold: u64) -> Result<()> {
+        let cfg = &mut ctx.accounts.config;
+        require_keys_eq!(ctx.accounts.authority.key(), cfg.authority, TrvError::Unauthorized);
+        cfg.proposal_threshold = threshold;
+        msg!("TRV proposal_threshold={}", threshold);
+        Ok(())
+    }
+
     pub fn set_vote_mint(ctx: Context<SetVoteMint>, mint: Pubkey) -> Result<()> {
         let cfg = &mut ctx.accounts.config;
         require_keys_eq!(ctx.accounts.authority.key(), cfg.authority, TrvError::Unauthorized);
@@ -55,8 +72,6 @@ pub mod trv_governance {
         Ok(())
     }
 
-    /// Authority grants/renews yearly-style subscription until `expires_at` (unix).
-    /// Payment collection is off-chain / separate; this only records entitlement time.
     pub fn grant_subscription(ctx: Context<GrantSubscription>, expires_at: i64) -> Result<()> {
         let cfg = &ctx.accounts.config;
         require_keys_eq!(ctx.accounts.authority.key(), cfg.authority, TrvError::Unauthorized);
@@ -71,10 +86,6 @@ pub mod trv_governance {
         Ok(())
     }
 
-    /// Recompute unlimited_comms: active node OR unexpired subscription.
-    /// Node and subscription accounts are optional (pass system program as placeholder not used —
-    /// scaffold requires both accounts; inactive/missing handled by remaining_accounts later).
-    /// This version: both node + subscription PDAs must be provided; flags derived from state.
     pub fn refresh_entitlement(ctx: Context<RefreshEntitlement>) -> Result<()> {
         let now = Clock::get()?.unix_timestamp;
         let node_ok = ctx.accounts.node.active
@@ -107,9 +118,24 @@ pub mod trv_governance {
         prop.description_hash = description_hash;
         prop.yes_votes = 0;
         prop.executed = false;
+        prop.cancelled = false;
         prop.bump = ctx.bumps.proposal;
 
         msg!("TRV proposal recorded");
+        Ok(())
+    }
+
+    /// Authority cancels an open proposal (not yet executed).
+    pub fn cancel_proposal(ctx: Context<CancelProposal>) -> Result<()> {
+        let cfg = &ctx.accounts.config;
+        require_keys_eq!(ctx.accounts.authority.key(), cfg.authority, TrvError::Unauthorized);
+
+        let prop = &mut ctx.accounts.proposal;
+        require!(!prop.executed, TrvError::AlreadyExecuted);
+        require!(!prop.cancelled, TrvError::AlreadyCancelled);
+
+        prop.cancelled = true;
+        msg!("TRV proposal cancelled");
         Ok(())
     }
 
@@ -144,6 +170,7 @@ pub mod trv_governance {
 
         let prop = &mut ctx.accounts.proposal;
         require!(!prop.executed, TrvError::AlreadyExecuted);
+        require!(!prop.cancelled, TrvError::AlreadyCancelled);
         require!(
             prop.yes_votes >= cfg.proposal_threshold,
             TrvError::ThresholdNotMet
@@ -163,6 +190,7 @@ fn cast_vote<'info>(
 ) -> Result<()> {
     require!(weight > 0, TrvError::ZeroWeight);
     require!(!prop.executed, TrvError::AlreadyExecuted);
+    require!(!prop.cancelled, TrvError::AlreadyCancelled);
 
     record.proposal = prop.key();
     record.voter = voter;
@@ -192,6 +220,7 @@ pub struct Proposal {
     pub description_hash: [u8; 32],
     pub yes_votes: u64,
     pub executed: bool,
+    pub cancelled: bool,
     pub bump: u8,
 }
 
@@ -242,6 +271,20 @@ pub struct Initialize<'info> {
 }
 
 #[derive(Accounts)]
+pub struct TransferAuthority<'info> {
+    #[account(mut, seeds = [b"trv-config"], bump = config.bump)]
+    pub config: Account<'info, GovernanceConfig>,
+    pub authority: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct SetProposalThreshold<'info> {
+    #[account(mut, seeds = [b"trv-config"], bump = config.bump)]
+    pub config: Account<'info, GovernanceConfig>,
+    pub authority: Signer<'info>,
+}
+
+#[derive(Accounts)]
 pub struct SetVoteMint<'info> {
     #[account(mut, seeds = [b"trv-config"], bump = config.bump)]
     pub config: Account<'info, GovernanceConfig>,
@@ -289,7 +332,7 @@ pub struct GrantSubscription<'info> {
         bump
     )]
     pub subscription: Account<'info, Subscription>,
-    /// CHECK: subscriber is the owner recorded; need not sign grant.
+    /// CHECK: recorded owner; need not sign.
     pub subscriber: UncheckedAccount<'info>,
     #[account(mut)]
     pub authority: Signer<'info>,
@@ -298,15 +341,9 @@ pub struct GrantSubscription<'info> {
 
 #[derive(Accounts)]
 pub struct RefreshEntitlement<'info> {
-    #[account(
-        seeds = [b"trv-node", user.key().as_ref()],
-        bump = node.bump
-    )]
+    #[account(seeds = [b"trv-node", user.key().as_ref()], bump = node.bump)]
     pub node: Account<'info, Node>,
-    #[account(
-        seeds = [b"trv-sub", user.key().as_ref()],
-        bump = subscription.bump
-    )]
+    #[account(seeds = [b"trv-sub", user.key().as_ref()], bump = subscription.bump)]
     pub subscription: Account<'info, Subscription>,
     #[account(
         init_if_needed,
@@ -329,7 +366,7 @@ pub struct Propose<'info> {
     #[account(
         init,
         payer = authority,
-        space = 8 + 32 + 32 + 8 + 1 + 1,
+        space = 8 + 32 + 32 + 8 + 1 + 1 + 1,
         seeds = [b"trv-proposal", description_hash.as_ref()],
         bump
     )]
@@ -337,6 +374,19 @@ pub struct Propose<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct CancelProposal<'info> {
+    #[account(seeds = [b"trv-config"], bump = config.bump)]
+    pub config: Account<'info, GovernanceConfig>,
+    #[account(
+        mut,
+        seeds = [b"trv-proposal", proposal.description_hash.as_ref()],
+        bump = proposal.bump
+    )]
+    pub proposal: Account<'info, Proposal>,
+    pub authority: Signer<'info>,
 }
 
 #[derive(Accounts)]
@@ -407,6 +457,8 @@ pub enum TrvError {
     ZeroWeight,
     #[msg("Already executed")]
     AlreadyExecuted,
+    #[msg("Already cancelled")]
+    AlreadyCancelled,
     #[msg("Threshold not met")]
     ThresholdNotMet,
     #[msg("Arithmetic overflow")]
@@ -415,6 +467,8 @@ pub enum TrvError {
     MintNotSet,
     #[msg("Invalid mint")]
     InvalidMint,
+    #[msg("Invalid authority")]
+    InvalidAuthority,
     #[msg("Token mint mismatch")]
     MintMismatch,
     #[msg("Token account owner mismatch")]
