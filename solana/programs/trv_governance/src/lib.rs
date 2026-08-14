@@ -10,7 +10,6 @@ declare_id!("TRVgov11111111111111111111111111111111111");
 pub mod trv_governance {
     use super::*;
 
-    /// Initialize governance config PDA.
     pub fn initialize(ctx: Context<Initialize>, proposal_threshold: u64) -> Result<()> {
         let cfg = &mut ctx.accounts.config;
         cfg.authority = ctx.accounts.authority.key();
@@ -22,7 +21,6 @@ pub mod trv_governance {
         Ok(())
     }
 
-    /// Authority sets SPL mint used for vote weight (scaffold).
     pub fn set_vote_mint(ctx: Context<SetVoteMint>, mint: Pubkey) -> Result<()> {
         let cfg = &mut ctx.accounts.config;
         require_keys_eq!(ctx.accounts.authority.key(), cfg.authority, TrvError::Unauthorized);
@@ -32,8 +30,6 @@ pub mod trv_governance {
         Ok(())
     }
 
-    /// Register a permanent node operator (scaffold).
-    /// Product later: active permanent node → unlimited free comms reward.
     pub fn register_node(ctx: Context<RegisterNode>) -> Result<()> {
         let node = &mut ctx.accounts.node;
         node.operator = ctx.accounts.operator.key();
@@ -47,11 +43,10 @@ pub mod trv_governance {
             .checked_add(1)
             .ok_or(TrvError::Overflow)?;
 
-        msg!("TRV node registered operator={}", node.operator);
+        msg!("TRV node registered {}", node.operator);
         Ok(())
     }
 
-    /// Deactivate own node registration (scaffold).
     pub fn deactivate_node(ctx: Context<DeactivateNode>) -> Result<()> {
         let node = &mut ctx.accounts.node;
         require!(node.active, TrvError::NodeInactive);
@@ -60,7 +55,49 @@ pub mod trv_governance {
         Ok(())
     }
 
-    /// Record a proposal. Scaffold: only config authority may propose.
+    /// Authority grants/renews yearly-style subscription until `expires_at` (unix).
+    /// Payment collection is off-chain / separate; this only records entitlement time.
+    pub fn grant_subscription(ctx: Context<GrantSubscription>, expires_at: i64) -> Result<()> {
+        let cfg = &ctx.accounts.config;
+        require_keys_eq!(ctx.accounts.authority.key(), cfg.authority, TrvError::Unauthorized);
+        require!(expires_at > Clock::get()?.unix_timestamp, TrvError::SubscriptionExpired);
+
+        let sub = &mut ctx.accounts.subscription;
+        sub.owner = ctx.accounts.subscriber.key();
+        sub.expires_at = expires_at;
+        sub.bump = ctx.bumps.subscription;
+
+        msg!("TRV subscription owner={} expires_at={}", sub.owner, expires_at);
+        Ok(())
+    }
+
+    /// Recompute unlimited_comms: active node OR unexpired subscription.
+    /// Node and subscription accounts are optional (pass system program as placeholder not used —
+    /// scaffold requires both accounts; inactive/missing handled by remaining_accounts later).
+    /// This version: both node + subscription PDAs must be provided; flags derived from state.
+    pub fn refresh_entitlement(ctx: Context<RefreshEntitlement>) -> Result<()> {
+        let now = Clock::get()?.unix_timestamp;
+        let node_ok = ctx.accounts.node.active
+            && ctx.accounts.node.operator == ctx.accounts.user.key();
+        let sub_ok = ctx.accounts.subscription.owner == ctx.accounts.user.key()
+            && ctx.accounts.subscription.expires_at > now;
+
+        let ent = &mut ctx.accounts.entitlement;
+        ent.user = ctx.accounts.user.key();
+        ent.unlimited_comms = node_ok || sub_ok;
+        ent.updated_at = now;
+        ent.bump = ctx.bumps.entitlement;
+
+        msg!(
+            "TRV entitlement user={} unlimited={} node={} sub={}",
+            ent.user,
+            ent.unlimited_comms,
+            node_ok,
+            sub_ok
+        );
+        Ok(())
+    }
+
     pub fn propose(ctx: Context<Propose>, description_hash: [u8; 32]) -> Result<()> {
         let cfg = &ctx.accounts.config;
         require_keys_eq!(ctx.accounts.authority.key(), cfg.authority, TrvError::Unauthorized);
@@ -76,7 +113,6 @@ pub mod trv_governance {
         Ok(())
     }
 
-    /// Manual weight vote (scaffold / tests). Prefer vote_with_token when mint is set.
     pub fn vote(ctx: Context<Vote>, weight: u64) -> Result<()> {
         cast_vote(
             &mut ctx.accounts.proposal,
@@ -86,7 +122,6 @@ pub mod trv_governance {
         )
     }
 
-    /// Vote weight = SPL token account amount (must match config.vote_mint, owner = voter).
     pub fn vote_with_token(ctx: Context<VoteWithToken>) -> Result<()> {
         let cfg = &ctx.accounts.config;
         require!(cfg.vote_mint != Pubkey::default(), TrvError::MintNotSet);
@@ -95,16 +130,14 @@ pub mod trv_governance {
         require_keys_eq!(ta.mint, cfg.vote_mint, TrvError::MintMismatch);
         require_keys_eq!(ta.owner, ctx.accounts.voter.key(), TrvError::TokenOwnerMismatch);
 
-        let weight = ta.amount;
         cast_vote(
             &mut ctx.accounts.proposal,
             &mut ctx.accounts.vote_record,
             ctx.accounts.voter.key(),
-            weight,
+            ta.amount,
         )
     }
 
-    /// Mark executed only if yes_votes >= proposal_threshold. Scaffold: authority only.
     pub fn execute_if_threshold(ctx: Context<ExecuteIfThreshold>) -> Result<()> {
         let cfg = &ctx.accounts.config;
         require_keys_eq!(ctx.accounts.authority.key(), cfg.authority, TrvError::Unauthorized);
@@ -146,11 +179,11 @@ fn cast_vote<'info>(
 
 #[account]
 pub struct GovernanceConfig {
-    pub authority: Pubkey,       // 32
-    pub proposal_threshold: u64, // 8
-    pub node_count: u64,         // 8
-    pub vote_mint: Pubkey,       // 32
-    pub bump: u8,                // 1
+    pub authority: Pubkey,
+    pub proposal_threshold: u64,
+    pub node_count: u64,
+    pub vote_mint: Pubkey,
+    pub bump: u8,
 }
 
 #[account]
@@ -175,6 +208,21 @@ pub struct Node {
     pub operator: Pubkey,
     pub active: bool,
     pub registered_at: i64,
+    pub bump: u8,
+}
+
+#[account]
+pub struct Subscription {
+    pub owner: Pubkey,
+    pub expires_at: i64,
+    pub bump: u8,
+}
+
+#[account]
+pub struct Entitlement {
+    pub user: Pubkey,
+    pub unlimited_comms: bool,
+    pub updated_at: i64,
     pub bump: u8,
 }
 
@@ -227,6 +275,50 @@ pub struct DeactivateNode<'info> {
     )]
     pub node: Account<'info, Node>,
     pub operator: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct GrantSubscription<'info> {
+    #[account(seeds = [b"trv-config"], bump = config.bump)]
+    pub config: Account<'info, GovernanceConfig>,
+    #[account(
+        init_if_needed,
+        payer = authority,
+        space = 8 + 32 + 8 + 1,
+        seeds = [b"trv-sub", subscriber.key().as_ref()],
+        bump
+    )]
+    pub subscription: Account<'info, Subscription>,
+    /// CHECK: subscriber is the owner recorded; need not sign grant.
+    pub subscriber: UncheckedAccount<'info>,
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct RefreshEntitlement<'info> {
+    #[account(
+        seeds = [b"trv-node", user.key().as_ref()],
+        bump = node.bump
+    )]
+    pub node: Account<'info, Node>,
+    #[account(
+        seeds = [b"trv-sub", user.key().as_ref()],
+        bump = subscription.bump
+    )]
+    pub subscription: Account<'info, Subscription>,
+    #[account(
+        init_if_needed,
+        payer = user,
+        space = 8 + 32 + 1 + 8 + 1,
+        seeds = [b"trv-ent", user.key().as_ref()],
+        bump
+    )]
+    pub entitlement: Account<'info, Entitlement>,
+    #[account(mut)]
+    pub user: Signer<'info>,
+    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
@@ -288,7 +380,6 @@ pub struct VoteWithToken<'info> {
         bump
     )]
     pub vote_record: Account<'info, VoteRecord>,
-    /// Voter's ATA (or any token account they own) for config.vote_mint.
     pub token_account: Account<'info, TokenAccount>,
     #[account(mut)]
     pub voter: Signer<'info>,
@@ -330,4 +421,6 @@ pub enum TrvError {
     TokenOwnerMismatch,
     #[msg("Node already inactive")]
     NodeInactive,
+    #[msg("Subscription expired or invalid expiry")]
+    SubscriptionExpired,
 }
