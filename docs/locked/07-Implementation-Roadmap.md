@@ -1,8 +1,8 @@
 # Implementation Roadmap (Locked)
 
-**Status:** Locked — July 25, 2026  
+**Status:** Locked — July 25, 2026 (Phase 0 closed 2026-08-14)  
 **Classification:** Execution plan for the Identity Layer and related sovereignty principles  
-**Depends on:** All documents in `docs/locked/` (especially `01` through `06`)
+**Depends on:** All documents in `docs/locked/` (especially `01` through `06`, plus `09`–`13`)
 
 ---
 
@@ -29,13 +29,13 @@ It is designed to protect the non-negotiable rules at every stage so that no int
 **Goal:** Establish the architectural and policy boundaries before writing production identity code.
 
 - [x] Lock all core principles (`docs/locked/01`–`06`)
-- [ ] Finalize wallet architecture decision (embedded / external / hybrid)
-- [ ] Define exact data-minimization boundary for any future legal hold
-- [ ] Choose initial open-source libraries for DID, VC, OpenID4VCI/VP, and status lists
-- [ ] Create threat model focused on key loss, phishing, and residual data after burn
-- [ ] Document the user-facing language for burn confirmation flows
+- [x] Finalize wallet architecture decision (embedded / external / hybrid) → **Hybrid** (`09-Wallet-Architecture.md`)
+- [x] Define exact data-minimization boundary for any future legal hold → `12-Residual-Data-and-Phishing.md`
+- [x] Choose initial open-source libraries for DID, VC, OpenID4VCI/VP, and status lists → `11-Library-Choices.md`
+- [x] Create threat model focused on key loss, phishing, and residual data after burn → `10` + `12`
+- [x] Document the user-facing language for burn confirmation flows → `13-Burn-Confirmation-Language.md`
 
-**Exit criteria:** Written decisions on wallet approach, library choices, and legal-hold boundary.
+**Exit criteria:** Written decisions on wallet approach, library choices, and legal-hold boundary. **Met 2026-08-14.**
 
 ---
 
@@ -173,6 +173,11 @@ This roadmap is the execution plan for:
 - `04-Founding-Sovereign-Viewer.md`
 - `05-Membership-Benefits.md`
 - `06-Identity-Technical-Stack.md`
+- `09-Wallet-Architecture.md`
+- `10-Threat-Model-Key-Loss.md`
+- `11-Library-Choices.md`
+- `12-Residual-Data-and-Phishing.md`
+- `13-Burn-Confirmation-Language.md`
 
 Any change to the roadmap that would weaken a locked principle is prohibited.
 
