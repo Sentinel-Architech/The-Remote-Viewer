@@ -1,24 +1,29 @@
 # Reality — 2026-08-14
 
-## Contracts
+## Chain direction
+
+| Track | Role |
+|-------|------|
+| **Solana (`solana/`)** | **Track A — intended** on-chain surface for TRV |
+| EVM (`contracts/`) | Parallel experiment (Governor patterns). Not Solana. |
+
+## Solana
 
 | Item | Status |
 |------|--------|
-| Local Anvil deploy | **Done** (ephemeral) |
-| forge tests | **PASS** (harden threshold = 1 ether) |
-| Open executor `address(0)` | **Removed** from deploy script |
-| Proposal threshold | **1 ether** votes |
+| Anchor `trv_governance` | **SCAFFOLD** (initialize + propose hash) |
+| SPL mint script | **SCAFFOLD** shell helper |
+| Devnet / mainnet | **Not deployed** |
 | Audit | **None** |
-| Mainnet | **Not authorized** by this scaffold |
-| Path B founding members | **0** |
 
-## “Make it legit” checklist (remaining)
+Build on a machine with Rust + Solana CLI + Anchor. Phone = RPC client later.
 
-1. Independent audit
-2. Multisig as `EXECUTOR` + timelock admin
-3. Sepolia full lifecycle with real keys you control
-4. Token distribution + delegation plan
-5. Renounce/transfer mint ownership deliberately
-6. Only then consider mainnet — still your call, not a recommendation from scaffold docs
+## EVM (still valid for learning)
 
-Mobile Expo runtime remains **parked**.
+- Anvil deploy + mint/delegate + 9 forge tests worked on-device.
+- Hardened threshold 1 ether; executor not address(0).
+- Not mainnet.
+
+## Path B founding members: **0**
+
+Mobile Expo runtime: **parked**.
