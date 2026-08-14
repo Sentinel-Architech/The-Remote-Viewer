@@ -1,12 +1,21 @@
 # The Remote Viewer (TRV) / The Sentinel
 
+**Status authority:** [`docs/REALITY.md`](docs/REALITY.md) (2026-08-13).  
+All other status claims are subordinate to that file.
+
+**Historical note:** Unrelated to Technical Remote Viewing / PSI TECH / Ed Dames methodology.  
+This project is a local-first software system for digital sovereignty.
+
 **Solo-built · local-first · zero-custody · optical air-gap systems**
 
-Path B Independent Completion is **open**.  
-Recognition is earned by work on a machine you control — not by invitation and not by payment.  
-Packs remain paid per item.
+Path B Independent Completion is open to any builder who completes the published checklist on a machine they control and submits offline attestation.  
+Recognition is currently originator-verified.  
+External finishers: **0** as of 2026-08-13.  
+Packs remain paid per item. No free catalog items.
 
-**Builder guide:** [`docs/public/PATH-B-BUILDER.md`](docs/public/PATH-B-BUILDER.md)
+**Builder guide:** [`docs/public/PATH-B-BUILDER.md`](docs/public/PATH-B-BUILDER.md)  
+**Reproduce proven claims:** [`docs/REPRODUCE.md`](docs/REPRODUCE.md)  
+**Review posture:** [`docs/public/REVIEW-AND-CONTRIBUTION.md`](docs/public/REVIEW-AND-CONTRIBUTION.md)
 
 ---
 
@@ -58,7 +67,7 @@ Not a cloud AI product. Not a live DePIN network. Not an always-on oracle.
 
 **Working branch:** [`TheRemoteViewer`](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/tree/TheRemoteViewer)  
 **Truth file:** [`docs/REALITY.md`](docs/REALITY.md) — PROVEN means ran on a real device under user control.  
-**Reproduce:** [`docs/TEST.md`](docs/TEST.md)
+**Reproduce:** [`docs/REPRODUCE.md`](docs/REPRODUCE.md) · [`docs/TEST.md`](docs/TEST.md)
 
 ```bash
 git clone -b TheRemoteViewer https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
@@ -134,6 +143,8 @@ bash modules/nodes/count.sh
 ```text
 docs/public/PATH-B-BUILDER.md   Independent Completion guide
 docs/public/PATH-B-FINISHED.md  FINISHED checklist
+docs/REPRODUCE.md               Third-party verification bootstrap
+docs/public/REVIEW-AND-CONTRIBUTION.md  Review posture
 modules/path-b-recognition/     Recognition package
 modules/pool/                   Community Pool gross visibility
 modules/nodes/                  Validated-node count + tips

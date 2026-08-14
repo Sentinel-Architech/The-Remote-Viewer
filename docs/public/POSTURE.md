@@ -3,7 +3,10 @@
 **Project:** The Remote Viewer / Sentinel direction  
 **Repo:** https://github.com/Sentinel-Archetecht/The-Remote-Viewer  
 **Audience:** Decentralized, crypto, encrypted, and zero-trust builders  
-**Updated:** July 27, 2026
+**Updated:** 2026-08-13
+
+**Historical note:** Unrelated to Technical Remote Viewing / PSI TECH / Ed Dames methodology.  
+This project is a local-first software system for digital sovereignty.
 
 ---
 
@@ -90,6 +93,8 @@ When in doubt: publish the **constraint**, not the **key**.
 | `docs/security/biometrics.md` | Biometrics + PAD posture |
 | `docs/security/threat-model.md` | System threat model (draft) |
 | `docs/security/secrets.md` | Secrets policy |
+| `docs/REPRODUCE.md` | Third-party verification bootstrap |
+| `docs/public/REVIEW-AND-CONTRIBUTION.md` | Review & Path B posture |
 | `SECURITY.md` | Reporting |
 
 ---
