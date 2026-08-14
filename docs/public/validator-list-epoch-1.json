@@ -1,0 +1,15 @@
+{
+  "epoch": 1,
+  "published_at": "2026-08-14T02:45:20Z",
+  "threshold": { "type": "m-of-n", "m": 1, "n": 1 },
+  "notes": "Bootstrap list. Single validator = Stage 0 equivalent in practice. Raise n and m when additional validators publish. See docs/public/VALIDATOR-LIST.md",
+  "validators": [
+    {
+      "id": "age1ywu6paslwltju256eyypa7rz68quzq8v5n0q3vg5h8ez8h2jppusjgkke0",
+      "pubkey_pem_sha256": "8728f22d1e9edb7449af2fbf392efe2efc2fe82dfa74abf64877b7b9a7c102bb",
+      "pubkey_pem_b64": "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0tTUNvd0JRWURLMlZ3QXlFQXQwYXNyb2tjQ3ZOMmpvRWF5dlhKL3ZHUk3eXIvZDVNUzdxT0xtZUppOTA9Ci0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQ==",
+      "transports": ["optical", "file"],
+      "weight": 1
+    }
+  ]
+}
