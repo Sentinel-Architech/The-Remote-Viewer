@@ -1,25 +1,20 @@
-# Mobile scaffold — v0.1.0
+# Mobile scaffold — v0.1.0 (runtime PARKED)
 
-**SCAFFOLD ONLY.** No production security claims.  
-**Branch:** `TheRemoteViewer`
+**SCAFFOLD ONLY.** No production security claims.
 
-```bash
-cd apps/mobile && npm install && npx expo start --host lan
-# optional: npm run typecheck
-```
+## Runtime status (2026-08-14)
 
-## Tabs
+| Host | Status |
+|------|--------|
+| Expo Go on GrapheneOS | **NO GO** — parked |
+| Expo web on Termux | Incomplete deps / local drift — **parked** |
+| Repo source | **Authoritative** on `TheRemoteViewer` |
 
-| Tab | Upgraded surfaces |
-|-----|-------------------|
-| Identity | Values Floor (Constitution, deepfakes, cannabis OK, XXX) · topical leans (incl. cannabis) · mute/report/block · IA of IA scaffold · did:key · Destroy wipe |
-| Messages | Locale · entitlement · block filter · VoiceField |
-| Senses | Freedom panel · Hey Sentinel · camera · listen · search |
+Resume later: laptop, or GrapheneOS **dev client APK** (not Expo Go).
 
-## Destroy wipe (identity-bound)
+## Tabs (code present)
 
-Key material · inbox · VCs · connections · profile · human attestation · moderation · IA conduct log · values-floor acks  
-**Survives:** locale, XXX preference, tutorial-done, entitlement scaffold flags, topical interests, Sentinel personality
+Identity · Messages · Senses — Values Floor, leans (incl. cannabis), Freedom entitlement, Destroy wipe.
 
 ## Locked
 

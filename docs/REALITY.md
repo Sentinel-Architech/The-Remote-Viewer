@@ -1,10 +1,20 @@
 # Reality — 2026-08-14
 
-Mobile scaffold **v0.1.0** upgraded: destroy wipe, cannabis lean topic, messaging locale, condensed tutorial/values.
+## Parked
 
-| Locked | Status |
-|--------|--------|
-| 15–21 values stack | **LOCKED** + client **SCAFFOLD** |
-| Cannabis 100% OK in TRV | **LOCKED** |
-| Condense without sacrifice | **LOCKED** |
+**Mobile Expo runtime on GrapheneOS/Termux** — parked. Expo Go no-go; web path incomplete on-device. Source of truth remains `apps/mobile` on branch `TheRemoteViewer`. Resume with laptop or sideloaded **dev client**, not Play Store.
+
+## Active scaffold
+
+| Area | Status |
+|------|--------|
+| Locked values 15–21 | **LOCKED** |
+| Mobile client code | **SCAFFOLD** in repo |
+| **contracts/GovernanceCoordinator.sol** | **SCAFFOLD** — OZ overrides included |
 | Path B external founding members | **0** |
+
+## Compile contracts (when ready)
+
+```bash
+cd contracts && forge install OpenZeppelin/openzeppelin-contracts --no-commit && forge build
+```
