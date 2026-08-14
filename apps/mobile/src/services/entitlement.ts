@@ -2,16 +2,16 @@
  * Communication Freedom entitlement.
  * FREE + UNLIMITED in-network human communication when:
  *   - yearly subscription active, OR
- *   - permanent validator node is on
+ *   - Viewer opted to be hosted as a node AND node is on (reward path)
  *
- * SCAFFOLD: local flags until live billing + validator registry.
+ * SCAFFOLD: local flags until live billing + node registry.
  * See docs/locked/15-Communication-Freedom.md
  */
 
 import * as SecureStore from 'expo-secure-store';
 
 const KEY_SUB = 'trv_entitlement_subscription_v1';
-const KEY_NODE = 'trv_entitlement_permanent_node_v1';
+const KEY_NODE = 'trv_entitlement_node_host_v1';
 
 const OPTIONS: SecureStore.SecureStoreOptions = {
   keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
@@ -19,28 +19,29 @@ const OPTIONS: SecureStore.SecureStoreOptions = {
 
 export type SubscriptionRecord = {
   active: boolean;
-  /** ISO date string; ignored if active is false */
   expiresAt: string | null;
   plan: 'yearly';
 };
 
-export type PermanentNodeRecord = {
-  /** Viewer operates a built validator */
-  builtValidator: boolean;
-  /** Node marked permanent (not demo) */
-  permanent: boolean;
+/** Viewer who opted to be hosted as a node — rewarded with unlimited comms while on. */
+export type NodeHostRecord = {
+  /** Explicit opt-in to be hosted as a node */
+  nodeHostingOptIn: boolean;
   /** Node currently on / reachable */
   nodeOn: boolean;
+  /** Optional: Path B / permanent validator class */
+  builtValidator: boolean;
+  permanent: boolean;
   label?: string;
 };
 
 export type EntitlementSnapshot = {
   entitled: boolean;
   viaSubscription: boolean;
-  viaPermanentNode: boolean;
+  /** Reward path: opted to host as node + node on */
+  viaNodeHost: boolean;
   subscription: SubscriptionRecord;
-  node: PermanentNodeRecord;
-  /** Free unlimited human comms on TRV rails */
+  node: NodeHostRecord;
   freeUnlimitedComms: boolean;
 };
 
@@ -50,22 +51,22 @@ const DEFAULT_SUB: SubscriptionRecord = {
   plan: 'yearly',
 };
 
-const DEFAULT_NODE: PermanentNodeRecord = {
+const DEFAULT_NODE: NodeHostRecord = {
+  nodeHostingOptIn: false,
+  nodeOn: false,
   builtValidator: false,
   permanent: false,
-  nodeOn: false,
 };
 
 function subValid(sub: SubscriptionRecord): boolean {
-  if (!sub.active) return false;
-  if (!sub.expiresAt) return false;
+  if (!sub.active || !sub.expiresAt) return false;
   const exp = Date.parse(sub.expiresAt);
-  if (Number.isNaN(exp)) return false;
-  return exp > Date.now();
+  return !Number.isNaN(exp) && exp > Date.now();
 }
 
-function nodeValid(node: PermanentNodeRecord): boolean {
-  return node.builtValidator && node.permanent && node.nodeOn;
+/** Reward: every opted-in node host with node on gets unlimited comms. */
+function nodeHostRewardValid(node: NodeHostRecord): boolean {
+  return node.nodeHostingOptIn && node.nodeOn;
 }
 
 export async function getSubscription(): Promise<SubscriptionRecord> {
@@ -78,14 +79,24 @@ export async function getSubscription(): Promise<SubscriptionRecord> {
   }
 }
 
-export async function getPermanentNode(): Promise<PermanentNodeRecord> {
+export async function getNodeHost(): Promise<NodeHostRecord> {
   const raw = await SecureStore.getItemAsync(KEY_NODE);
   if (!raw) return { ...DEFAULT_NODE };
   try {
-    return { ...DEFAULT_NODE, ...JSON.parse(raw) };
+    const parsed = { ...DEFAULT_NODE, ...JSON.parse(raw) } as NodeHostRecord;
+    // Migrate older permanent-validator-only records into opt-in host shape
+    if (parsed.builtValidator && parsed.permanent && !parsed.nodeHostingOptIn) {
+      parsed.nodeHostingOptIn = true;
+    }
+    return parsed;
   } catch {
     return { ...DEFAULT_NODE };
   }
+}
+
+/** @deprecated use getNodeHost */
+export async function getPermanentNode(): Promise<NodeHostRecord> {
+  return getNodeHost();
 }
 
 export async function setSubscription(
@@ -101,41 +112,43 @@ export async function setSubscription(
   return next;
 }
 
-export async function setPermanentNode(
-  partial: Partial<PermanentNodeRecord>
-): Promise<PermanentNodeRecord> {
-  const current = await getPermanentNode();
-  const next: PermanentNodeRecord = { ...current, ...partial };
+export async function setNodeHost(
+  partial: Partial<NodeHostRecord>
+): Promise<NodeHostRecord> {
+  const current = await getNodeHost();
+  const next: NodeHostRecord = { ...current, ...partial };
   await SecureStore.setItemAsync(KEY_NODE, JSON.stringify(next), OPTIONS);
   return next;
 }
 
+/** @deprecated use setNodeHost */
+export async function setPermanentNode(
+  partial: Partial<NodeHostRecord>
+): Promise<NodeHostRecord> {
+  return setNodeHost(partial);
+}
+
 export async function getEntitlement(): Promise<EntitlementSnapshot> {
   const subscription = await getSubscription();
-  const node = await getPermanentNode();
+  const node = await getNodeHost();
   const viaSubscription = subValid(subscription);
-  const viaPermanentNode = nodeValid(node);
-  const entitled = viaSubscription || viaPermanentNode;
+  const viaNodeHost = nodeHostRewardValid(node);
+  const entitled = viaSubscription || viaNodeHost;
   return {
     entitled,
     viaSubscription,
-    viaPermanentNode,
+    viaNodeHost,
     subscription,
     node,
     freeUnlimitedComms: entitled,
   };
 }
 
-/**
- * Gate for network-carried human communication.
- * Local-only drafts remain available regardless.
- */
 export async function canUseFreeUnlimitedComms(): Promise<boolean> {
   const snap = await getEntitlement();
   return snap.freeUnlimitedComms;
 }
 
-/** Scaffold helper: activate a 365-day yearly subscription locally. */
 export async function activateYearlySubscriptionScaffold(): Promise<SubscriptionRecord> {
   const expires = new Date();
   expires.setFullYear(expires.getFullYear() + 1);
@@ -146,18 +159,31 @@ export async function activateYearlySubscriptionScaffold(): Promise<Subscription
   });
 }
 
-/** Scaffold helper: mark permanent validator node on. */
-export async function activatePermanentNodeScaffold(
-  label = 'Path B permanent node'
-): Promise<PermanentNodeRecord> {
-  return setPermanentNode({
-    builtValidator: true,
-    permanent: true,
+/** Opt in to be hosted as a node and turn node on — reward = unlimited comms. */
+export async function optInNodeHostScaffold(
+  label = 'Viewer node host'
+): Promise<NodeHostRecord> {
+  return setNodeHost({
+    nodeHostingOptIn: true,
     nodeOn: true,
     label,
   });
 }
 
-export async function setNodeOn(on: boolean): Promise<PermanentNodeRecord> {
-  return setPermanentNode({ nodeOn: on });
+/** @deprecated use optInNodeHostScaffold */
+export async function activatePermanentNodeScaffold(
+  label = 'Viewer node host'
+): Promise<NodeHostRecord> {
+  return optInNodeHostScaffold(label);
+}
+
+export async function setNodeOn(on: boolean): Promise<NodeHostRecord> {
+  return setNodeHost({ nodeOn: on });
+}
+
+export async function optOutNodeHost(): Promise<NodeHostRecord> {
+  return setNodeHost({
+    nodeHostingOptIn: false,
+    nodeOn: false,
+  });
 }

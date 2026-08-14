@@ -1,6 +1,6 @@
 # Concepts → Reality Status
 
-Last updated: **2026-08-14** (Communication Freedom locked; permanent node OR yearly sub; personality/shield; tutorial; Path B)
+Last updated: **2026-08-14** (node-host opt-in → unlimited comms reward; Communication Freedom; Path B)
 
 **Rule:** No marketing. **PROVEN** = ran under user control on device.
 
@@ -8,24 +8,16 @@ Last updated: **2026-08-14** (Communication Freedom locked; permanent node OR ye
 
 | Rule | Status |
 |------|--------|
-| Talk / text / voice / web / other **TRV-network** human comms FREE + UNLIMITED | **LOCKED** |
-| Entitlement = **yearly subscription** OR **permanent validator node ON** | **DEMONSTRATED** (local scaffold flags) |
-| Many permanent nodes → network stays active and safer | **DESIGN** (policy); live mesh **NOT STARTED** |
-| External carrier SMS/PSTN zero-rate | **OUT OF SCOPE** (documented) |
+| TRV human comms FREE + UNLIMITED when entitled | **LOCKED** |
+| Path A: yearly subscription | **DEMONSTRATED** (scaffold) |
+| Path B: **opt in to be hosted as a node** (node on) = **reward unlimited comms** | **DEMONSTRATED** (scaffold) |
+| Many node hosts → mesh stays active and safer | **DESIGN** |
+| Carrier SMS/PSTN zero-rate | **OUT OF SCOPE** |
 
-## Identity / social / Sentinel
+## Other surfaces
 
 | Concept | Status |
 |---------|--------|
-| did:key + Destroy | **DEMONSTRATED** |
-| Social Layer 1–5 | **DEMONSTRATED** |
-| Hey Sentinel + internet answers | **DEMONSTRATED** |
-| Personality + RWB shield + look timer | **DEMONSTRATED** |
-| One-time tutorial | **DEMONSTRATED** |
-
-## Path B
-
-| Metric | Value |
-|--------|------:|
-| External founding members | 0 |
-| Live permanent validator registry | **NOT STARTED** |
+| did:key + Social 1–5 + Hey Sentinel + personality/shield + tutorial | **DEMONSTRATED** |
+| Live node registry / billing | **NOT STARTED** |
+| Path B external founding members | **0** |
