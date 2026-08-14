@@ -14,9 +14,7 @@ openssl pkey -in $HOME/trv-beacon/validator.pem -pubout -out $HOME/trv-beacon/va
 chmod 600 $HOME/trv-beacon/validator.pem
 ```
 
-Publish only `validator.pub` and your public `id` string (see VALIDATOR-LIST.md). Never share the `.pem`.
-
-## Emit (signed)
+## Emit once (signed)
 
 ```bash
 bash modules/beacon/emit.sh \
@@ -25,7 +23,7 @@ bash modules/beacon/emit.sh \
   --once
 ```
 
-## Check (verify)
+## Check
 
 ```bash
 bash modules/beacon/check.sh \
@@ -33,13 +31,41 @@ bash modules/beacon/check.sh \
   --pubkey $HOME/trv-beacon/validator.pub
 ```
 
+## Continuous (must remain on)
+
+Termux-friendly background loop (default every 300s). Uses `termux-wake-lock` when available.
+
+```bash
+export TRV_VALIDATOR_ID='age1…'
+export TRV_BEACON_INTERVAL=300   # optional
+bash modules/beacon/termux-start.sh
+
+# status
+cat $HOME/trv-beacon/latest
+tail $HOME/trv-beacon/loop.log
+
+# stop
+bash modules/beacon/termux-stop.sh
+```
+
+Foreground (debug):
+
+```bash
+export TRV_VALIDATOR_ID='age1…'
+bash modules/beacon/run-loop.sh
+```
+
+## Require active (Path B Stage 1 gate)
+
+```bash
+bash modules/beacon/require-active.sh
+```
+
 ## Destroy = Restart
 
 ```bash
 bash modules/beacon/destroy.sh --yes
 ```
-
-Wipes local validator key material and beacon state. Generate a new keypair before emitting again. If you were on a published list, publish an updated entry with the new pubkey.
 
 ## Optical
 
@@ -51,6 +77,7 @@ Paste `$HOME/trv-beacon/latest` into `modules/beacon/show-beacon.html` (serve fr
 |-------|--------|
 | Format + freshness | Proven |
 | Optical QR | Proven |
-| ed25519 sign / verify | Proven (OpenSSL, file-based) |
+| ed25519 sign / verify | Proven |
+| require-active + list | Proven |
+| Continuous Termux loop | Implemented |
 | Destroy path | Implemented |
-| Published list binding | Spec done; not yet populated |
