@@ -1,18 +1,17 @@
 # Concepts → Reality Status
 
-Last updated: **2026-08-14** — topical leans (Christian/Godly on religion interest; no pressure)
+Last updated: **2026-08-14** — We the People rights floor
 
-## Topical leans (`docs/locked/18`)
+## We the People (`docs/locked/19`)
 
 | Rule | Status |
 |------|--------|
-| Leans only when Viewer **shows interest** | **LOCKED** |
-| Religion interest → **Christian and Godly** educational lean | **LOCKED** + **SCAFFOLD** |
-| Politics & other topics → learning, not recruitment | **LOCKED** + **SCAFFOLD** |
-| No pressure / no gated features by belief | **LOCKED** |
+| Nothing against American values, Constitution, Bill of Rights, or rights of We the People | **LOCKED** |
+| Client banner + local ack | **SCAFFOLD** |
+| Wins over conflicting IA of IA / lean steering | **LOCKED** |
 
-## Full mobile scaffold
+## Other locked client surfaces
 
-Identity / Messages / Senses / Freedom / deepfake / XXX / mute-report-block / IA of IA / tutorial: **SCAFFOLD complete** · see `apps/mobile/SCAFFOLD.md`
+Topical leans (Christian/Godly on religion interest) · Communication Freedom · No passable deepfakes · XXX · mute/report/block · full mobile scaffold — see `apps/mobile/SCAFFOLD.md`
 
 Path B external founding members: **0**
