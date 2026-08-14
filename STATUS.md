@@ -6,34 +6,27 @@
 
 | Item | State |
 |------|--------|
-| Program | initialize, **register_node**, propose, **open vote** (VoteRecord), execute_if_threshold |
-| Accounts | GovernanceConfig, Proposal, **VoteRecord**, **Node** |
-| Program id | **PLACEHOLDER** — replace via `anchor keys list` |
-| Tests | `tests/trv-governance.ts` (needs build host / CI) |
+| Program | initialize, **set_vote_mint**, register_node, **deactivate_node**, propose, vote, **vote_with_token**, execute_if_threshold |
+| Accounts | GovernanceConfig (+ vote_mint), Proposal, VoteRecord, Node |
+| Program id | **PLACEHOLDER** |
+| Tests | Manual `vote()` path covered; SPL path needs mint fixture on build host |
 | CI | `.github/workflows/solana.yml` |
 | Devnet/mainnet | **Not deployed** |
-| Notes | Vote weight still caller-supplied. SPL / stake snapshot later. Node → unlimited-comms is product/off-chain later. |
+
+**Vote weight:** `vote_with_token` uses SPL token account amount (mint must match config). Manual `vote(weight)` remains for scaffold tests.
+
+**Nodes:** register / deactivate. Unlimited-comms reward still product/off-chain.
 
 ## Parallel — EVM (`contracts/`)
 
-| Item | State |
-|------|--------|
-| TRVVotes + Governor + Timelock | Hardened threshold 1 ether |
-| Tests | 9 passed on Pixel Anvil |
-| CI | `.github/workflows/contracts-foundry.yml` |
-| Role | Learning / parallel only — **not** Track A |
+Hardened Governor scaffold; not Track A.
 
-## Mobile (`apps/mobile/`)
+## Mobile
 
-Runtime **PARKED** (Expo Go no-go on GrapheneOS). Code remains in repo.
-
-## Operator (Pixel 7)
-
-- Local clone has solana scaffold; remote is source of truth for pushes from this side
-- Phone push auth parked (no further tokens/keys)
+**PARKED.**
 
 ## Path B founders: **0**
 
 ## Locked values
 
-`docs/locked/` 15–21 (Freedom, deepfakes, conduct, leans, We the People, condense, cannabis).
+`docs/locked/` 15–21.
