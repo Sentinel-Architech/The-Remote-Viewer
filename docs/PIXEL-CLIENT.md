@@ -1,24 +1,20 @@
-# Pixel 7 / GrapheneOS — client path
+# Pixel 7 / GrapheneOS
 
-## Can
+## Required awareness
 
-- Termux: git (after SSH), forge EVM tests, Anvil experiments
-- Wallet apps for Solana **devnet**
-- Policy and product decisions
+- Source of truth is **GitHub** until `git pull` works.
+- SSH pubkey: `~/.ssh/id_ed25519.pub` (already generated as `pixel7-trv`).
+- Private key must never leave the device or be pasted into chat.
+- Solana: wallet/devnet client only on phone.
+- EVM: forge/anvil experiments OK in Termux.
+- Expo Go: **no-go**; mobile UI scaffold parked.
 
-## Cannot (practical)
+## After GitHub access restored
 
-- `anchor build`
-- Full Expo native without dev client / laptop
-- GitHub access without password recovery + SSH key on account
+```bash
+ssh -T git@github.com
+cd ~/The-Remote-Viewer && git pull origin TheRemoteViewer
+ls solana contracts STATUS.md
+```
 
-## After GitHub login restored
-
-1. Add `~/.ssh/id_ed25519.pub` to GitHub SSH keys
-2. `git pull origin TheRemoteViewer`
-3. Read `solana/README.md`
-4. Watch Actions tab for Solana + Foundry CI
-
-## Values
-
-Client must not undermine `docs/locked/` (We the People, deepfake rules, cannabis acceptable as social policy, etc.).
+Watch **Actions** on the repo for CI.

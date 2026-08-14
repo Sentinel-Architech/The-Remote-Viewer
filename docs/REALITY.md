@@ -1,23 +1,22 @@
-# Reality — 2026-08-14
+# Reality — 2026-08-14 (currency pass)
 
-## Track A — Solana
+See also root `STATUS.md`.
 
-| Item | Status |
-|------|--------|
-| Program ix | initialize, propose, vote, execute_if_threshold |
-| Anchor tests | **SCAFFOLD** `solana/tests/trv-governance.ts` |
-| CI build | `.github/workflows/solana.yml` |
-| Devnet / mainnet | **Not deployed** |
-| Audit | **None** |
+## Required that operators often miss
+
+1. **GitHub SSH key must be registered on the account** (Pixel key exists; login/password reset may be required first).
+2. **Solana program id is a placeholder** until `anchor keys list` on a build host — required before real deploy.
+3. **Anchor build needs x86_64 Linux/macOS or CI** — not Termux.
+4. **Mint authority key is root of power** for SPL/TRVV — lose it or leak it and issuance is compromised.
+5. **Path B founders = 0** — no external legitimacy from “community multisig” yet.
+6. **Audit before mainnet** — green tests ≠ safe money.
+7. **Anvil state is ephemeral** without `--state` — addresses die on restart.
+8. **Mobile runtime parked** — repo code ≠ running DApp on GrapheneOS.
+
+## Track A Solana
+
+Program scaffold + CI + tests checked in. Not on devnet.
 
 ## EVM parallel
 
-Foundry tests + Anvil on Pixel worked; CI workflow present.
-
-## Pixel
-
-SSH key generated; GitHub account login required to register key. Mobile runtime parked.
-
-## Path B: **0** founders
-
-See `docs/NEXT.md`.
+Hardened and tested on Pixel; CI workflow present; not Track A.

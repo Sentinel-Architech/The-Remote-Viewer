@@ -1,4 +1,7 @@
-# TRV contracts — SCAFFOLD
+# TRV EVM contracts — PARALLEL SCAFFOLD ONLY
+
+> **Not Track A.** On-chain direction for The Remote Viewer is **Solana** (`../solana/`).
+> This tree is an Ethereum/Foundry experiment (Governor patterns, local Anvil).
 
 **No production security claims. No audit. No mainnet advice.**
 
@@ -6,28 +9,19 @@
 
 | Path | Role |
 |------|------|
-| `src/TRVVotes.sol` | ERC20 + Votes token (scaffold mint) |
-| `src/GovernanceCoordinator.sol` | OZ Governor stack |
-| `script/DeployGovernance.s.sol` | Local/testnet deploy |
-| `test/*.t.sol` | Smoke tests |
+| `src/TRVVotes.sol` | ERC20 + Votes (owner mint) |
+| `src/GovernanceCoordinator.sol` | OZ Governor; threshold **1 ether** |
+| `script/DeployGovernance.s.sol` | Deploy; executor = deployer (not address(0)) |
+| `test/*.t.sol` | Unit + propose/vote/queue/execute |
 
 ## Commands
 
 ```bash
 cd contracts
 forge install OpenZeppelin/openzeppelin-contracts foundry-rs/forge-std
-forge build
-forge test -vv
-```
-
-Deploy (local anvil example):
-
-```bash
-anvil &
-export PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-forge script script/DeployGovernance.s.sol:DeployGovernance --rpc-url http://127.0.0.1:8545 --broadcast
+forge build && forge test -vv
 ```
 
 ## Values
 
-Does not undercut locked floors (`docs/locked/19` etc.). Content policy is not on-chain here.
+Does not undercut `docs/locked/`.

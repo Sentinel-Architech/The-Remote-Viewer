@@ -1,42 +1,24 @@
-# TRV on Solana — SCAFFOLD (Track A)
+# TRV on Solana — Track A SCAFFOLD
 
-**Intended** on-chain surface for The Remote Viewer.
+## Required before deploy
 
-EVM under `contracts/` is a **parallel experiment** only.
+1. Install Rust, Solana CLI, Anchor **0.30.x** on Linux/macOS (or use CI).
+2. `anchor keys list` (or `solana-keygen`) → replace placeholder in:
+   - `programs/trv_governance/src/lib.rs` (`declare_id!`)
+   - `Anchor.toml` `[programs.*]`
+3. `yarn && anchor build && anchor test`
+4. Devnet only until audit.
 
-## Program instructions
+## Instructions
 
-| Ix | Behavior |
-|----|----------|
-| `initialize(threshold)` | Config PDA; sets `proposal_threshold` |
-| `propose(hash)` | Create proposal PDA (authority only in scaffold) |
-| `vote(weight)` | Add yes weight (authority scaffold) |
-| `execute_if_threshold` | Sets `executed` if `yes_votes >= threshold` |
+`initialize` · `propose` · `vote` · `execute_if_threshold`
 
-No CPI execution of arbitrary targets yet — flag only.
+Authority-only voting is intentional scaffold; replace with SPL weight later.
 
 ## CI
 
-GitHub Action `.github/workflows/solana.yml` builds on push to `solana/**`.
+`.github/workflows/solana.yml`
 
-## Local (laptop / CI runner)
+## Pixel
 
-```bash
-cd solana
-anchor build
-anchor test   # when tests added
-```
-
-## Pixel 7
-
-Client/wallet only. No Anchor build on Termux. Pull repo after GitHub SSH works.
-
-## SPL mint helper
-
-```bash
-./scripts/create-spl-mint.sh
-```
-
-## Values
-
-Respects `docs/locked/*`. Not audited. Not mainnet.
+No Anchor build. See `docs/PIXEL-CLIENT.md`.
