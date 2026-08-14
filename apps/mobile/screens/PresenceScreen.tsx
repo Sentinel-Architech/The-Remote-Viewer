@@ -26,6 +26,8 @@ import {
   addConnection,
   removeConnection,
   listConnections,
+  exportConnectionList,
+  importConnectionList,
   Connection,
 } from '../src/services/connections';
 import {
@@ -56,6 +58,7 @@ export default function PresenceScreen() {
   const [typedDid, setTypedDid] = useState('');
   const [showOpticalShare, setShowOpticalShare] = useState(false);
   const [newConnectionId, setNewConnectionId] = useState('');
+  const [importPayload, setImportPayload] = useState('');
   const [msgTo, setMsgTo] = useState('');
   const [msgBody, setMsgBody] = useState('');
   const [profileName, setProfileName] = useState('');
@@ -246,6 +249,46 @@ export default function PresenceScreen() {
     ]);
   };
 
+  const handleExportConnections = async () => {
+    setBusy(true);
+    try {
+      const payload = await exportConnectionList();
+      await Share.share({
+        message: JSON.stringify(payload, null, 2),
+        title: 'TRV connection list (trv-connections-v1)',
+      });
+    } catch {
+      // cancelled
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleImportConnections = async () => {
+    const raw = importPayload.trim();
+    if (!raw) {
+      Alert.alert('Import', 'Paste a trv-connections-v1 JSON export.');
+      return;
+    }
+    setBusy(true);
+    try {
+      const result = await importConnectionList(raw);
+      setConnections(result.list);
+      setImportPayload('');
+      Alert.alert(
+        'Import complete',
+        `Added ${result.added}, skipped ${result.skipped} (duplicates or invalid).`
+      );
+    } catch (e) {
+      Alert.alert(
+        'Import failed',
+        e instanceof Error ? e.message : 'Invalid payload'
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const handleSendLocalMessage = async () => {
     const to = msgTo.trim();
     const content = msgBody.trim();
@@ -339,6 +382,12 @@ export default function PresenceScreen() {
       const msg = await createBasicMessage('smoke', 'did:key:smoke-test-peer');
       if (msg) await storeMessage(msg);
 
+      const exported = await exportConnectionList();
+      if (exported.connections.length < 1) {
+        setSmokeResult('FAIL: export empty');
+        return;
+      }
+
       const midCreds = await listDemoCredentials();
       const midConns = await listConnections();
       const midInbox = await getInbox();
@@ -367,7 +416,7 @@ export default function PresenceScreen() {
         afterInbox.length === 0 &&
         afterProf === null
       ) {
-        setSmokeResult('PASS: Create → full social state → Destroy → Empty');
+        setSmokeResult('PASS: Create → full social + export → Destroy → Empty');
         setIdentity(null);
         setSignature(null);
         setCredentials([]);
@@ -388,10 +437,10 @@ export default function PresenceScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.kicker}>LOCAL · SCAFFOLD · SOCIAL SLICE 4</Text>
+      <Text style={styles.kicker}>LOCAL · SCAFFOLD · SOCIAL SLICES 1–5</Text>
       <Text style={styles.title}>Identity</Text>
       <Text style={styles.subtitle}>
-        did:key · VCs · connections · messages · profile export
+        did:key · social layer · portable connections
       </Text>
 
       <View style={styles.card}>
@@ -471,8 +520,7 @@ export default function PresenceScreen() {
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Local profile (optional)</Text>
           <Text style={styles.hint}>
-            On-device only. Feeds kind-0 shaped export. Wiped on Destroy. Not a
-            Nostr secp256k1 identity.
+            On-device only. Feeds kind-0 shaped export. Wiped on Destroy.
           </Text>
           <Text style={styles.label}>Display name</Text>
           <TextInput
@@ -516,7 +564,10 @@ export default function PresenceScreen() {
       {identity && (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Connections (on-device)</Text>
-          <Text style={styles.hint}>Optical paste to add. Wiped on Destroy.</Text>
+          <Text style={styles.hint}>
+            Optical paste to add. Export/import for portability (slice 5). Wiped on
+            Destroy.
+          </Text>
           <TextInput
             style={styles.didInput}
             value={newConnectionId}
@@ -538,6 +589,34 @@ export default function PresenceScreen() {
               <Text style={styles.btnText}>Show my DID for optical exchange</Text>
             </Pressable>
           )}
+          <Pressable
+            style={[styles.btn, styles.btnSecondary, { marginTop: 8 }]}
+            onPress={handleExportConnections}
+            disabled={busy}
+          >
+            <Text style={styles.btnText}>
+              Export connection list ({connections.length})
+            </Text>
+          </Pressable>
+          <Text style={styles.label}>Import (paste trv-connections-v1 JSON)</Text>
+          <TextInput
+            style={[styles.didInput, { minHeight: 72 }]}
+            value={importPayload}
+            onChangeText={setImportPayload}
+            multiline
+            autoCapitalize="none"
+            autoCorrect={false}
+            placeholder='{"format":"trv-connections-v1",...}'
+            placeholderTextColor="#555"
+            editable={!busy}
+          />
+          <Pressable
+            style={[styles.btn, styles.btnSecondary]}
+            onPress={handleImportConnections}
+            disabled={busy}
+          >
+            <Text style={styles.btnText}>Import connections</Text>
+          </Pressable>
           {connections.length === 0 ? (
             <Text style={[styles.hint, { marginTop: 12 }]}>No connections yet.</Text>
           ) : (
@@ -679,7 +758,7 @@ export default function PresenceScreen() {
 
         <Pressable style={[styles.btn, styles.btnSmoke]} onPress={handleSmokeTest} disabled={busy}>
           <Text style={styles.btnText}>
-            {busy ? 'Running…' : 'Run Smoke Test (full social → Destroy → Empty)'}
+            {busy ? 'Running…' : 'Run Smoke Test (full social + export → Destroy → Empty)'}
           </Text>
         </Pressable>
       </View>

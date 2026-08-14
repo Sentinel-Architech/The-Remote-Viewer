@@ -1,6 +1,6 @@
 # Concepts → Reality Status
 
-Last updated: **2026-08-14** (profile + Nostr-shaped export — Social Layer slice 4; local messages; optical DID exchange; connections; high-friction Destroy; Phase 1 demo VC; mobile did:key; beacon + Path B)
+Last updated: **2026-08-14** (connection list export/import — Social Layer slice 5; slices 1–5 closed as DEMONSTRATED; high-friction Destroy; Phase 1 demo VC; mobile did:key; beacon + Path B)
 
 **Rule:** No marketing. **PROVEN** = ran under user control on device. Scripts in git alone are not PROVEN.
 
@@ -26,7 +26,8 @@ Last updated: **2026-08-14** (profile + Nostr-shaped export — Social Layer sli
 | On-device connection list | **DEMONSTRATED** | Slice 1 |
 | Optical DID exchange | **DEMONSTRATED** | Slice 2 |
 | Local private messages | **DEMONSTRATED** | Slice 3 |
-| Local profile + kind-0 / kind-3 shaped export | **DEMONSTRATED** | Slice 4; Ed25519 TRV sig; not secp256k1 relay publish 2026-08-14 |
+| Local profile + kind-0 / kind-3 shaped export | **DEMONSTRATED** | Slice 4 |
+| Connection list export / import (`trv-connections-v1`) | **DEMONSTRATED** | Slice 5; portable JSON; merge import 2026-08-14 |
 
 ## Digital vending & first validator role
 
@@ -40,7 +41,7 @@ Last updated: **2026-08-14** (profile + Nostr-shaped export — Social Layer sli
 | Concept | Status |
 |---------|--------|
 | Defense / Hydra | **PROVEN** |
-| Mobile full social surface (identity + VCs + connections + optical + messages + profile export) + Destroy | **DEMONSTRATED** | 2026-08-14 |
+| Mobile social surface slices 1–5 + Destroy | **DEMONSTRATED** | 2026-08-14 |
 | Chain settlement / live DePIN | **NOT STARTED** |
 
 ## Current counts (honest)
