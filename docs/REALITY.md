@@ -1,6 +1,6 @@
 # Concepts → Reality Status
 
-Last updated: **2026-08-14** (connection list export/import — Social Layer slice 5; slices 1–5 closed as DEMONSTRATED; high-friction Destroy; Phase 1 demo VC; mobile did:key; beacon + Path B)
+Last updated: **2026-08-14** (voice modality TTS+STT; Social Layer slices 1–5; high-friction Destroy; Phase 1 demo VC; mobile did:key; beacon + Path B)
 
 **Rule:** No marketing. **PROVEN** = ran under user control on device. Scripts in git alone are not PROVEN.
 
@@ -27,7 +27,9 @@ Last updated: **2026-08-14** (connection list export/import — Social Layer sli
 | Optical DID exchange | **DEMONSTRATED** | Slice 2 |
 | Local private messages | **DEMONSTRATED** | Slice 3 |
 | Local profile + kind-0 / kind-3 shaped export | **DEMONSTRATED** | Slice 4 |
-| Connection list export / import (`trv-connections-v1`) | **DEMONSTRATED** | Slice 5; portable JSON; merge import 2026-08-14 |
+| Connection list export / import | **DEMONSTRATED** | Slice 5 |
+| Text-to-speech (system TTS) | **DEMONSTRATED** | expo-speech; all major fields + status readback 2026-08-14 |
+| Speech-to-text (dictate) | **DEMONSTRATED** | expo-speech-recognition when native module present; text fallback always 2026-08-14 |
 
 ## Digital vending & first validator role
 
@@ -41,7 +43,7 @@ Last updated: **2026-08-14** (connection list export/import — Social Layer sli
 | Concept | Status |
 |---------|--------|
 | Defense / Hydra | **PROVEN** |
-| Mobile social surface slices 1–5 + Destroy | **DEMONSTRATED** | 2026-08-14 |
+| Mobile social + voice modality + Destroy | **DEMONSTRATED** | 2026-08-14 |
 | Chain settlement / live DePIN | **NOT STARTED** |
 
 ## Current counts (honest)
