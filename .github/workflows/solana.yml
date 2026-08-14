@@ -17,8 +17,8 @@ env:
   ANCHOR_VERSION: "0.30.1"
 
 jobs:
-  build:
-    name: cargo-build-sbf
+  build-and-test:
+    name: anchor-build-test
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -26,37 +26,55 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: yarn
+          cache-dependency-path: solana/yarn.lock
+
       - name: Cache cargo
         uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
+            ~/.cargo/bin
             solana/target
-          key: ${{ runner.os }}-cargo-solana-${{ hashFiles('solana/**/Cargo.toml') }}
+          key: ${{ runner.os }}-solana-${{ env.SOLANA_VERSION }}-anchor-${{ env.ANCHOR_VERSION }}-${{ hashFiles('solana/**/Cargo.toml') }}
 
       - name: Install Solana
         run: |
           sh -c "$(curl -sSfL https://release.anza.xyz/v${{ env.SOLANA_VERSION }}/install)"
           echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
 
-      - name: Solana version
-        run: solana --version
-
-      - name: Install Anchor CLI
+      - name: Solana version + keygen
         run: |
-          cargo install --git https://github.com/coral-xyz/anchor --tag v${{ env.ANCHOR_VERSION }} anchor-cli --locked --force || \
-          cargo install --git https://github.com/coral-xyz/anchor anchor-cli --locked --force
-          anchor --version || true
-
-      - name: Build program (cargo-build-sbf / anchor)
-        run: |
-          set -e
-          if command -v anchor >/dev/null 2>&1; then
-            anchor build || cargo build -p trv_governance --release
-          else
-            cargo build -p trv_governance --release
+          solana --version
+          mkdir -p ~/.config/solana
+          if [ ! -f ~/.config/solana/id.json ]; then
+            solana-keygen new --no-bip39-passphrase -o ~/.config/solana/id.json --force
           fi
+
+      - name: Install Anchor (avm)
+        run: |
+          cargo install --git https://github.com/coral-xyz/avm avm --locked --force
+          avm install ${{ env.ANCHOR_VERSION }}
+          avm use ${{ env.ANCHOR_VERSION }}
+          echo "$HOME/.avm/bin" >> $GITHUB_PATH
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          anchor --version
+
+      - name: Yarn install
+        run: |
+          corepack enable || true
+          yarn install --frozen-lockfile || yarn install
+
+      - name: Anchor build
+        run: anchor build
+
+      - name: Anchor test
+        run: anchor test
+        # Local validator started by Anchor; may take several minutes.
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -65,6 +83,6 @@ jobs:
           name: trv-governance-build
           path: |
             solana/target/deploy/
-            solana/target/release/
             solana/target/idl/
+            solana/target/types/
           if-no-files-found: ignore
