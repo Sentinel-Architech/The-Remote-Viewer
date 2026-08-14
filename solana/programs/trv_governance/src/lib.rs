@@ -4,7 +4,8 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::TokenAccount;
 
-declare_id!("TRVgov11111111111111111111111111111111111");
+// Scaffold program id (valid base58 Pubkey). Replace via `anchor keys list` before deploy.
+declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 
 #[program]
 pub mod trv_governance {
@@ -125,7 +126,6 @@ pub mod trv_governance {
         Ok(())
     }
 
-    /// Authority cancels an open proposal (not yet executed).
     pub fn cancel_proposal(ctx: Context<CancelProposal>) -> Result<()> {
         let cfg = &ctx.accounts.config;
         require_keys_eq!(ctx.accounts.authority.key(), cfg.authority, TrvError::Unauthorized);
