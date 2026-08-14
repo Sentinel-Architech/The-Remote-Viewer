@@ -1,6 +1,6 @@
 # Concepts → Reality Status
 
-Last updated: **2026-08-13** (Path B recognition loop + pool gross + validated-node counts + optional tips + prior mobile UI / Hydra / vending / verifier)
+Last updated: **2026-08-14** (mobile did:key hardening + smoke test; continuous beacon + Stage 1 validator list / Path B liveness gate; prior Path B recognition + pool + mobile UI / Hydra / vending / verifier)
 
 **Rule:** No marketing. **PROVEN** = ran under user control on device. Scripts in git alone are not PROVEN.
 
@@ -21,6 +21,7 @@ Last updated: **2026-08-13** (Path B recognition loop + pool gross + validated-n
 | Local age identity | **PROVEN** (device-held; not in git) |
 | Centralized key assignment | **REJECTED** |
 | Mobile Viewer ID (npub) + profile | **DEMONSTRATED** | Create / export / remove / linked social (X) / private message flows on-device 2026-08-13 |
+| Mobile did:key (Ed25519) + SecureStore | **DEMONSTRATED** | Hardened options (WHEN_UNLOCKED_THIS_DEVICE_ONLY + requireAuthentication); Create → Destroy → Empty smoke test; best-effort zeroize; Expo Go exploration-only 2026-08-14 |
 
 ## Digital vending & first validator role
 
@@ -36,6 +37,9 @@ Last updated: **2026-08-13** (Path B recognition loop + pool gross + validated-n
 | Path B builder guide | **PUBLISHED** | `docs/public/PATH-B-BUILDER.md` |
 | Public buy page (`buy.html` + QR) | **OPEN** | static storefront |
 | Mobile Shop (TRV credits / Solana / NFT mint / Aurora Borealis) | **DEMONSTRATED** | Credits balance, wallet connect, tiered mint, skin redeem/wear, field claim AR on-device 2026-08-13 |
+| Validator beacon (ed25519 signed liveness) | **PROVEN** | Format + freshness + optical + sign/verify on reference device |
+| Continuous Termux beacon loop | **IMPLEMENTED** | `modules/beacon/termux-start.sh` + wake-lock; PID/log under $HOME/trv-beacon |
+| Stage 1 bootstrap validator list + Path B liveness gate | **OPERATIONAL** | 1-of-1 originator list; `require-active.sh` + issue-founding enforcement (Stage 0 escape available) |
 
 ## Transparency surfaces (requested)
 
@@ -65,6 +69,7 @@ Last updated: **2026-08-13** (Path B recognition loop + pool gross + validated-n
 | Contribution ledger | **PROVEN** | verify OK + verifier weight on reference node |
 | Local operator UI `127.0.0.1` | **PROVEN** | `apps/ui` console — copy-to-Termux commands; Hydra/vending/verifier/Path B/Pool/Nodes heads; no shell exec in browser |
 | Mobile client UI (Hub / Profile / Shop / Talk) | **DEMONSTRATED** | Full navigation, quick post, private message, linked social, wallet, NFT, Aurora skins, field claim on-device 2026-08-13 |
+| Mobile did:key identity surface | **DEMONSTRATED** | presence.ts + PresenceScreen smoke test 2026-08-14 |
 | Termux reminders | **SCAFFOLD** |
 | Chain settlement / live DePIN | **NOT STARTED** |
 
@@ -78,4 +83,4 @@ Last updated: **2026-08-13** (Path B recognition loop + pool gross + validated-n
 
 ## Reference environment
 
-GrapheneOS + Termux + mobile client, branch `TheRemoteViewer`, status as of 2026-08-13.
+GrapheneOS + Termux + mobile client, branch `TheRemoteViewer`, status as of 2026-08-14.
