@@ -35,6 +35,7 @@
     .qr-wrap canvas { display: block; }
     .qr-label { margin-top: 0.4rem; font-size: 0.8rem; color: var(--muted); }
     .qr-fallback { color: var(--muted); font-size: 0.85rem; margin-top: 0.5rem; }
+    a { color: var(--accent); }
   </style>
 </head>
 <body>
@@ -47,22 +48,26 @@
     <div class="addr" id="sales-addr">HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv</div>
   </div>
 
-  <!-- All packs rendered from one catalog -->
   <div id="packs"></div>
 
   <h2>Buyer steps</h2>
   <ol>
-    <li>Scan a QR or tap <strong>Pay with Phantom</strong> (exact memo is pre-filled).</li>
-    <li>On your device create an age identity. Keep the <code>AGE-SECRET-KEY</code> private.</li>
-    <li>Send the seller only your <code>age1…</code> public recipient + the transaction signature.</li>
+    <li>Scan a QR or tap <strong>Pay with Phantom</strong> (exact memo is pre-filled). Save the transaction signature.</li>
+    <li>On your device only:
+      <pre>age-keygen -o identity.txt</pre>
+      Keep <code>AGE-SECRET-KEY</code> private. Copy only the <code>age1…</code> public key.
+    </li>
+    <li><strong>Preferred:</strong> open <a href="show-age1.html">show-age1.html</a>, paste your <code>age1…</code>, show the QR. Seller scans it. (No chat required for the key.)<br>
+        Fallback: send <code>age1…</code> + tx signature by any channel you already use with the seller.</li>
     <li>Receive a <code>.trvl</code> file (or optical frames).</li>
     <li>Decrypt locally:
-      <pre>cat sale.trvl | ./buyer-receive.sh /path/to/your-identity.txt</pre>
+      <pre>cat sale.trvl | bash buyer-receive.sh identity.txt</pre>
     </li>
   </ol>
 
-  <p class="muted">If you pay before sending <code>age1</code>, delivery stays PENDING until the seller has your recipient.<br>
-  Destroy = Restart for test keys. Not financial advice.</p>
+  <p class="muted">If you pay before the seller has your <code>age1</code>, delivery stays PENDING.<br>
+  Destroy = Restart for any key that was exposed. Not financial advice.<br>
+  Full steps: <a href="../docs/public/BUY.md">docs/public/BUY.md</a></p>
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
   <script>
@@ -70,7 +75,6 @@
       var SALES = 'HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv';
       var USDC = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
 
-      // ONE catalog — keep in sync with catalog.json
       var catalog = [
         {
           id: 'trv-posture-lite',
