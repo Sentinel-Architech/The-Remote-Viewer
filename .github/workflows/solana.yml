@@ -1,0 +1,70 @@
+name: Solana Anchor
+
+on:
+  push:
+    branches: [TheRemoteViewer, main, master]
+    paths:
+      - "solana/**"
+      - ".github/workflows/solana.yml"
+  pull_request:
+    paths:
+      - "solana/**"
+      - ".github/workflows/solana.yml"
+  workflow_dispatch:
+
+env:
+  SOLANA_VERSION: "2.0.14"
+  ANCHOR_VERSION: "0.30.1"
+
+jobs:
+  build:
+    name: cargo-build-sbf
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: solana
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            solana/target
+          key: ${{ runner.os }}-cargo-solana-${{ hashFiles('solana/**/Cargo.toml') }}
+
+      - name: Install Solana
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/v${{ env.SOLANA_VERSION }}/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+
+      - name: Solana version
+        run: solana --version
+
+      - name: Install Anchor CLI
+        run: |
+          cargo install --git https://github.com/coral-xyz/anchor --tag v${{ env.ANCHOR_VERSION }} anchor-cli --locked --force || \
+          cargo install --git https://github.com/coral-xyz/anchor anchor-cli --locked --force
+          anchor --version || true
+
+      - name: Build program (cargo-build-sbf / anchor)
+        run: |
+          set -e
+          if command -v anchor >/dev/null 2>&1; then
+            anchor build || cargo build -p trv_governance --release
+          else
+            cargo build -p trv_governance --release
+          fi
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trv-governance-build
+          path: |
+            solana/target/deploy/
+            solana/target/release/
+            solana/target/idl/
+          if-no-files-found: ignore

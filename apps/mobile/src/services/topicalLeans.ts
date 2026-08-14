@@ -1,7 +1,7 @@
 /**
  * Opt-in topical interests → Sentinel leans without pressure.
- * Religion interest → Christian / Godly educational lean.
- * See docs/locked/18-Topical-Leans-No-Pressure.md
+ * Religion → Christian/Godly educational lean.
+ * Cannabis → fully acceptable in TRV (locked 21).
  */
 
 import * as SecureStore from 'expo-secure-store';
@@ -19,7 +19,8 @@ export type TopicId =
   | 'history'
   | 'philosophy'
   | 'family'
-  | 'health_edu';
+  | 'health_edu'
+  | 'cannabis';
 
 export type TopicMeta = {
   id: TopicId;
@@ -38,10 +39,19 @@ export const TOPICS: TopicMeta[] = [
     leanEs: 'Inclinación educativa cristiana y piadosa al hablar de fe.',
   },
   {
+    id: 'cannabis',
+    labelEn: 'Cannabis',
+    labelEs: 'Cannabis',
+    leanEn:
+      'Cannabis is 100% acceptable in TRV. Educational, not medical advice.',
+    leanEs:
+      'Cannabis es 100% aceptable en TRV. Educativo, no consejo médico.',
+  },
+  {
     id: 'politics',
     labelEn: 'Politics',
     labelEs: 'Política',
-    leanEn: 'Civic learning lean — explain institutions and tradeoffs; no recruitment.',
+    leanEn: 'Civic learning lean — institutions and tradeoffs; no recruitment.',
     leanEs: 'Aprendizaje cívico — instituciones y equilibrios; sin reclutamiento.',
   },
   {
@@ -81,9 +91,7 @@ export const TOPICS: TopicMeta[] = [
   },
 ];
 
-export type InterestsState = {
-  topics: TopicId[];
-};
+export type InterestsState = { topics: TopicId[] };
 
 async function load(): Promise<InterestsState> {
   const raw = await SecureStore.getItemAsync(KEY);
@@ -126,10 +134,6 @@ export function hasInterest(s: InterestsState, id: TopicId): boolean {
   return s.topics.includes(id);
 }
 
-/**
- * Prefix spoken/internet answers with gentle lean framing when interests match.
- * Never pressures; educational tone only.
- */
 export function applyTopicalLean(
   spoken: string,
   interests: InterestsState,
@@ -147,11 +151,18 @@ export function applyTopicalLean(
         : 'Given your interest in religion, I answer with a Christian and Godly learning lean — no pressure.'
     );
   }
+  if (hasInterest(interests, 'cannabis')) {
+    notes.push(
+      locale === 'es'
+        ? 'Cannabis es aceptable en TRV. Hablo en clave educativa, no médica.'
+        : 'Cannabis is acceptable in TRV. Educational framing only — not medical advice.'
+    );
+  }
   if (hasInterest(interests, 'politics')) {
     notes.push(
       locale === 'es'
-        ? 'En política: enfoque de aprendizaje cívico, no de reclutamiento.'
-        : 'On politics: civic learning focus, not recruitment.'
+        ? 'En política: aprendizaje cívico, no reclutamiento.'
+        : 'On politics: civic learning, not recruitment.'
     );
   }
   if (hasInterest(interests, 'health_edu')) {
