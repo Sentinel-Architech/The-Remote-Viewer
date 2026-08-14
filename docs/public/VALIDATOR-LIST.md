@@ -1,6 +1,6 @@
 # Published Validator List
 
-**Status:** Design (public)  
+**Status:** Design + bootstrap tooling (public)  
 **Last aligned:** 2026-08-13  
 **Authority:** This file + `docs/public/BEACON.md` + `docs/public/PATH-B-MULTI-VALIDATOR.md`
 
@@ -14,55 +14,73 @@ Stage 1+ recognition only counts validators that appear in the **current publish
 - No platform or originator-controlled registry is required to *read* the list
 - Changes to the list or epoch are published before they take effect
 - A validator’s beacon `validator=` field must match an entry’s `id`
-- A validator’s beacon signature must verify under that entry’s `pubkey`
+- A validator’s beacon signature must verify under that entry’s public key
+
+---
+
+## Bootstrap (current reality)
+
+External Path B finishers: **0** (as of 2026-08-13).
+
+The first published list is therefore a **1-of-1 bootstrap** containing only the originator. That is Stage 0 in practice. It exists so the list format, beacon binding, and tooling are real before additional validators exist.
+
+**Escalation rule:** when `n >= 3` independent validators are published, republish with a real threshold (example: 2-of-3). Do not claim multi-validator recognition while `n == 1`.
+
+### Generate local bootstrap list
+
+```bash
+export TRV_VALIDATOR_ID='age1…your-id'
+bash modules/beacon/make-list.sh
+# → $HOME/trv-beacon/validator-list.json
+```
+
+Optional: copy into the repo for public distribution:
+
+```bash
+cp $HOME/trv-beacon/validator-list.json docs/public/validator-list-epoch-1.json
+```
 
 ---
 
 ## File format (normative)
 
-JSON Lines or a single JSON document. Minimal schema:
-
 ```json
 {
   "epoch": 1,
   "published_at": "2026-08-13T00:00:00Z",
-  "threshold": { "type": "m-of-n", "m": 2, "n": 3 },
+  "threshold": { "type": "m-of-n", "m": 1, "n": 1 },
+  "notes": "optional",
   "validators": [
     {
-      "id": "age1ywu6paslwltju256eyypa7rz68quzq8v5n0q3vg5h8ez8h2jppusjgkke0",
-      "pubkey_pem_sha256": "<sha256 of the PEM public key file>",
-      "pubkey_pem": "-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----\n",
+      "id": "age1…",
+      "pubkey_pem_sha256": "<sha256 of PEM file>",
+      "pubkey_pem_b64": "<base64 of PEM file>",
       "transports": ["optical", "file"],
-      "weight": 1,
-      "notes": "optional"
+      "weight": 1
     }
   ]
 }
 ```
 
-### Field rules
-
 | Field | Meaning |
 |-------|--------|
 | `epoch` | Must match beacon `epoch` |
 | `id` | Exact string used in beacon `validator=` |
-| `pubkey_pem` | OpenSSL ed25519 public key (PEM) used to verify beacon `sig` |
-| `pubkey_pem_sha256` | Integrity aid for copies of the list |
-| `transports` | Claimed transports (informational; liveness is proven by beacon check) |
-| `weight` | Used in Stage 2; Stage 1 may treat all as 1 |
+| `pubkey_pem_b64` | Base64 of the OpenSSL ed25519 public key PEM |
+| `pubkey_pem_sha256` | Integrity aid for copies |
+| `transports` | Claimed transports (informational) |
+| `weight` | Stage 2; Stage 1 may treat all as 1 |
 | `threshold` | Recognition rule for this epoch |
 
 ---
 
 ## Identity binding
 
-1. The operator chooses a public **id** (recommended: the same `age1…` or `npub…` they already use elsewhere, or a dedicated beacon id).
-2. They generate an ed25519 keypair (`modules/beacon/README.md`).
-3. The **id** string is what appears in every beacon’s `validator=` field.
-4. The **pubkey** is what verifiers use with `check.sh --pubkey`.
-5. The pair `(id, pubkey)` is what gets published in this list.
-
-There is no requirement that `id` be an age key or a Nostr key — only that it is stable, public, and bound to the signing pubkey in the list.
+1. Choose a stable public **id** (age1…, npub…, or dedicated beacon id).
+2. Generate ed25519 keypair (`modules/beacon/README.md`).
+3. Beacon `validator=` **must** equal list `id`.
+4. Beacon `sig` **must** verify with list public key.
+5. Publish the `(id, pubkey)` pair in this list.
 
 ---
 
@@ -70,7 +88,7 @@ There is no requirement that `id` be an age key or a Nostr key — only that it 
 
 1. Load list for claimed `epoch`.
 2. Find entry where `entry.id == beacon.validator`.
-3. Verify beacon signature with `entry.pubkey_pem`.
+3. Decode pubkey; verify beacon signature.
 4. Apply freshness rules from `BEACON.md`.
 5. If all pass → validator is **active** for that epoch.
 
@@ -80,11 +98,9 @@ Only active validators count toward `threshold`.
 
 ## Distribution
 
-Any offline or non-custodial means:
-
 - File in the repo / release artifact
-- Optical QR of the list hash + separate file transfer
-- Public append-only log the operator controls
+- Optical / air-gap copy
+- Any public append-only surface the operator controls
 
 No single required URL.
 
@@ -93,6 +109,6 @@ No single required URL.
 ## Non-goals
 
 - On-chain registry as a requirement
-- Originator-only write access after Stage 1 is live
+- Claiming multi-validator security while n=1
 - Silent list edits
 - Binding that requires a platform account
