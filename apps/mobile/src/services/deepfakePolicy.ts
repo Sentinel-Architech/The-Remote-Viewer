@@ -1,21 +1,22 @@
 /**
- * Strict prohibition: any attempts and deepfakes of humans are forbidden.
+ * Human deepfakes / passable synthetic humans: STRICTLY PROHIBITED.
+ * Human likeness OK only when distinguishable from humanity.
  * See docs/locked/16-No-Human-Deepfakes.md
  */
 
 import * as SecureStore from 'expo-secure-store';
 
-const KEY = 'trv_deepfake_policy_ack_v1';
+const KEY = 'trv_deepfake_policy_ack_v2';
 
 const OPTIONS: SecureStore.SecureStoreOptions = {
   keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
 };
 
 export const DEEPFAKE_POLICY_SUMMARY_EN =
-  'Any attempts and deepfakes of humans are STRICTLY PROHIBITED on The Remote Viewer. Do not create, request, host, or spread synthetic video, audio, or images of real people.';
+  'Deepfakes of real people and any synthetic human that is not clearly distinguishable from humanity are STRICTLY PROHIBITED. Human likeness is OK only when it is obviously not a real person.';
 
 export const DEEPFAKE_POLICY_SUMMARY_ES =
-  'Cualquier intento y deepfake de seres humanos está ESTRICTAMENTE PROHIBIDO en The Remote Viewer. No cree, solicite, aloje ni difunda video, audio o imágenes sintéticas de personas reales.';
+  'Los deepfakes de personas reales y cualquier humano sintético que no sea claramente distinguible de la humanidad están ESTRICTAMENTE PROHIBIDOS. La semejanza humana está bien solo cuando es obviamente no una persona real.';
 
 export async function hasAcknowledgedDeepfakePolicy(): Promise<boolean> {
   const v = await SecureStore.getItemAsync(KEY);

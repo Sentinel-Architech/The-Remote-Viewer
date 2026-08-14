@@ -32,18 +32,23 @@ export function DeepfakePolicyBanner({ locale = 'en' }: Props) {
       </Text>
       <Text style={styles.title}>
         {isEs
-          ? 'Prohibición estricta de deepfakes humanos'
-          : 'Strict prohibition on human deepfakes'}
+          ? 'Deepfakes humanos · semejanza con límites'
+          : 'Human deepfakes · likeness with limits'}
       </Text>
       <Text style={styles.body}>
         {isEs ? DEEPFAKE_POLICY_SUMMARY_ES : DEEPFAKE_POLICY_SUMMARY_EN}
+      </Text>
+      <Text style={styles.detail}>
+        {isEs
+          ? 'Permitido: arte, avatares o figuras humanoides claramente no reales. Prohibido: hacerse pasar por una persona real o cualquier síntesis indistinguible de la humanidad.'
+          : 'Allowed: art, avatars, or humanoid figures that are clearly not real people. Prohibited: passing as a real person or any synthesis indistinguishable from humanity.'}
       </Text>
       {!acked ? (
         <Pressable style={styles.btn} onPress={onAck}>
           <Text style={styles.btnText}>
             {isEs
-              ? 'Entiendo — no deepfakes de humanos'
-              : 'I understand — no human deepfakes'}
+              ? 'Entiendo — solo semejanza distinguible'
+              : 'I understand — only distinguishable likeness'}
           </Text>
         </Pressable>
       ) : (
@@ -78,7 +83,8 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   title: { color: '#fff', fontSize: 15, fontWeight: '700', marginBottom: 8 },
-  body: { color: '#ccc', fontSize: 13, lineHeight: 20, marginBottom: 12 },
+  body: { color: '#ccc', fontSize: 13, lineHeight: 20, marginBottom: 8 },
+  detail: { color: '#999', fontSize: 12, lineHeight: 18, marginBottom: 12 },
   btn: {
     backgroundColor: '#5c1a1a',
     borderRadius: 10,
