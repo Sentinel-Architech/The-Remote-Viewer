@@ -1,37 +1,33 @@
 # Path to live
 
-**Ends map:** [SYSTEM-ENDS.md](SYSTEM-ENDS.md) · **Truth:** [REALITY.md](REALITY.md)
+**Proof queues:** [PROVEN-NEEDED.md](PROVEN-NEEDED.md) · **Truth:** [REALITY.md](REALITY.md)
 
-## Phase 0 — Compile
+## Phase 0 — A1–A2 compile
 
-- [ ] Green `anchor build` (host / tools per [CI-BLOCKER](CI-BLOCKER.md))
-- [ ] `Cargo.lock` + `.so` + IDL artifacts
+- [ ] Build host `anchor build` + tests  
 
-## Phase 1 — Devnet entitlement
+## Phase 1 — A3–A5 devnet
 
-- [ ] Deploy `trv_governance` · grant · refresh · `unlimited_comms`
+- [ ] Deploy · grant · refresh · client sees `unlimited_comms`  
 
-## Phase 2 — Money rails
+## Phase 2 — Money
 
-- [ ] **$96/year** collection · **95/5** settlement · platform **0%**
+- [ ] $96 collection · 95/5 settlement proof (**G2**)  
 
-## Phase 3 — All client ends
+## Phase 3 — Client proofs
 
-- [ ] Host **PWA**  
-- [ ] Android + `mapTier` / `mapWearable`  
-- [ ] Wear glance bridge  
-- [ ] Wire `learning.ts` prefs + Destroy wipe  
-- [ ] Safety-ui Integrity entry  
-- [ ] Brand assets in `branding/`  
+- [ ] **B** PWA on phone https  
+- [ ] **H** learning wipe + no-exfil spot check  
+- [ ] **C** android probes  
+- [ ] **D** wear STALE  
+- [ ] **F** Integrity handoff non-simulated  
 
-## Phase 4 — Network ends
+## Phase 4 — Network
 
-- [ ] Pool governance · free-tier flags · node path  
-- [ ] L2 conduct opt-in → IA of IA  
-- [ ] Keep Path B **PROVEN** vending authoritative  
+- [ ] Pool · nodes · free-tier flags · keep Path B PROVEN  
 
-## Phase 5 — Mainnet gate
+## Phase 5 — Mainnet
 
-- [ ] Audit · mainnet · PROVEN entitlement line in REALITY  
+- [ ] Audit · mainnet · REALITY entitlement PROVEN line  
 
-**No skip to Phase 5.**
+**Promote only via PROVEN-NEEDED checklists.**
