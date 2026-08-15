@@ -1,15 +1,15 @@
-# Clients — all ends
+# Clients — scaffolds (upgraded)
 
-**Truth:** [docs/REALITY.md](../docs/REALITY.md) · **Map:** [docs/SYSTEM-ENDS.md](../docs/SYSTEM-ENDS.md)
+**Truth:** [docs/REALITY.md](../docs/REALITY.md) · **Ends:** [docs/SYSTEM-ENDS.md](../docs/SYSTEM-ENDS.md)
 
-| Module | End | State |
-|--------|-----|--------|
-| `pwa/` | Browser T0 entry | Scaffold |
-| `android-cap/` | Phone + wear potential | Scaffold |
-| `wear-os/` | Glance / bridge | Scaffold |
-| `entitlement/` | Access from chain | Scaffold |
-| `safety-ui/` | Integrity + Area | Scaffold |
-| `creator/` | BPS splits | Scaffold |
-| `shared/` | Flags + **learning** | Scaffold |
+| Module | Upgrade focus | State |
+|--------|---------------|--------|
+| `pwa/` | Learning card + localStorage prefs | Scaffold |
+| `android-cap/` | Tier + wearable potential | Scaffold |
+| `wear-os/` | Glance · no learning on watch | Scaffold |
+| `entitlement/` | Summary lines · no fake chain | Scaffold |
+| `safety-ui/` | Categories + note validate | Scaffold |
+| `creator/` | Secondary 5% + platform 0 assert | Scaffold |
+| `shared/` | Flags + learning schema | Scaffold |
 
-PROVEN ends: `optical-airgap/` · `digital-vending/` · `modules/*` — not this folder.
+PROVEN: `optical-airgap/` · `digital-vending/` · `modules/*`
