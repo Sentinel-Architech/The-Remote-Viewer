@@ -9,7 +9,8 @@
 | Instruction surface | Complete for scaffold — see `solana/PROGRAM.md` |
 | Tests | Written; **run on build host / CI only** |
 | Program id | Scaffold pubkey (replace via `anchor keys list` before deploy) |
-| CI | Iterating toolchain pins (Rust 1.79, zeroize 1.3); **build not green yet** |
+| Toolchain target | **Anchor 0.30.1 + Solana 1.18.26 + Rust 1.79** (official matrix) |
+| CI | Aligned off Solana 2.0 mismatch; verify latest Actions run |
 | Deploy | Not on devnet |
 | Pixel | Source readable; **no Anchor build** |
 
