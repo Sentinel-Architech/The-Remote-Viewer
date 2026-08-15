@@ -1,12 +1,18 @@
 # Path to live (get there)
 
-Policy: [COMPETITIVE.md](COMPETITIVE.md). Execution order below.
+Policy: competitive / pricing locked. Execution order below.
 
-## Phase 0 — Compile (now)
+## Phase 0 — Compile
 
-- [ ] Solana Anchor CI: **`anchor build` green**
+**Status: BLOCKED** — see [`CI-BLOCKER.md`](CI-BLOCKER.md).
+
+SBF platform-tools Cargo (~1.84) cannot parse crates.io packages that require `edition2024`. Host Rust 1.85 does not replace nested SBF Cargo. Pin loops stopped 2026-08-14.
+
+- [ ] Solana Anchor CI: **`anchor build` green** (needs build host or newer platform-tools)
 - [ ] Commit `solana/Cargo.lock` from green run
 - [ ] Artifacts: `.so` + IDL from CI
+
+Scaffold: Anchor **0.32.1**, program present, not deployed.
 
 ## Phase 1 — Devnet entitlement
 
@@ -22,7 +28,7 @@ Smoke script: [`solana/scripts/smoke-entitlement.ts`](../solana/scripts/smoke-en
 ## Phase 2 — Money rails
 
 - [ ] Collect **$96/year**
-- [ ] Ops → `grant_subscription` ([PAYMENTS.md](PAYMENTS.md))
+- [ ] Ops → `grant_subscription`
 - [ ] Creator **95/5** settlement ≤7 days
 
 ## Phase 3 — Surface
