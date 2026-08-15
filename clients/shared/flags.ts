@@ -1,4 +1,4 @@
-/** Runtime flags — defaults safe/conservative */
+/** Runtime flags — conservative defaults */
 export type Flags = {
   freeSignal: "weak" | "standard";
   freeSearchRpm: number;
@@ -6,6 +6,8 @@ export type Flags = {
   areaBulletinsDefault: boolean;
   wakePhrase: string;
   tutorialVersion: string;
+  continuousLearningDefault: boolean;
+  conductOptInDefault: boolean;
 };
 
 export const DEFAULT_FLAGS: Flags = {
@@ -15,4 +17,6 @@ export const DEFAULT_FLAGS: Flags = {
   areaBulletinsDefault: false,
   wakePhrase: "Hey Sentinel",
   tutorialVersion: "v1",
+  continuousLearningDefault: true, // on-device only
+  conductOptInDefault: false,
 };
