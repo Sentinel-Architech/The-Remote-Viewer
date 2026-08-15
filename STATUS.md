@@ -1,40 +1,34 @@
 # TRV status — 2026-08-14
 
 **Locks:** [`docs/LOCKED-INDEX.md`](docs/LOCKED-INDEX.md)  
-**PROVEN:** [`docs/REALITY.md`](docs/REALITY.md)  
-**Compile blocker only:** [`docs/CI-BLOCKER.md`](docs/CI-BLOCKER.md)  
-**March:** [`docs/PATH-TO-LIVE.md`](docs/PATH-TO-LIVE.md)
+**Blocker (compile only):** [`docs/CI-BLOCKER.md`](docs/CI-BLOCKER.md)  
+**Path:** [`docs/PATH-TO-LIVE.md`](docs/PATH-TO-LIVE.md)
 
-## Non-negotiables
+## Locked economics
 
-| Rule | Value |
-|------|--------|
-| Network sub | **$96 / year** |
-| Creator digital | **95%** / pool 5% / platform **0%** |
-| Creator NFT | **90%** / pool 10% / platform **0%** |
-| Client | **Any capable phone** |
-| Deepfake bar | Non-distinguishable likeness **prohibited** |
-| Chain | **Solana** |
+**$96/year** · digital **95/5** · NFT **90/10** · platform **0%**
 
-## Track A — Solana
+## Solana
 
-| Item | State |
-|------|--------|
-| Program scaffold | Anchor **0.32.1** |
-| `anchor build` CI | **BLOCKED** (SBF Cargo edition2024) |
-| Deploy | None |
+Scaffold **0.32.1** · CI build **blocked** on SBF Cargo edition2024 · no deploy yet
 
-## Clients (enhanced)
+## Clients (parallel)
 
-| Surface | State |
-|---------|--------|
-| `clients/pwa/` | Baseline shell + once tutorial + signal banner |
-| `clients/android-cap/` | `mapTier()` + native probe checklist |
-| `clients/entitlement/` | View model + read placeholder (no fake chain) |
+| Module | Role |
+|--------|------|
+| `clients/pwa` | Any-phone shell + tutorial |
+| `clients/android-cap` | Device potential |
+| `clients/entitlement` | Access from chain |
+| `clients/safety-ui` | Integrity + Area (discrete) |
+| `clients/creator` | BPS split helpers |
+| `branding/` | Sentinel + hero placement |
+
+## Modalities
+
+[`docs/locked/MODALITIES.md`](docs/locked/MODALITIES.md) — text, voice, sight, search, **Hey Sentinel** wake, EN/ES opt-in
 
 ## Next
 
-1. Build host → green `.so`  
-2. Wire entitlement read to IDL  
-3. Host PWA  
-4. Android shell on `mapTier()`  
+1. Build host → `.so`  
+2. Wire entitlement + host PWA  
+3. Android shell  
