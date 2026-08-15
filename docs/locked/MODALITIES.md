@@ -1,25 +1,21 @@
-# Modalities (locked intent)
+# Modalities
 
-Viewers choose how they interact. Client enables only what the device allows ([ANDROID-CAPABILITIES](ANDROID-CAPABILITIES.md)).
+Device-gated ([ANDROID-CAPABILITIES](ANDROID-CAPABILITIES.md)). Learning: [CONTINUOUS-LEARNING](CONTINUOUS-LEARNING.md).
 
 | Modality | Behavior |
 |----------|----------|
-| **Text** | Always baseline |
-| **Voice → text** | When mic ready |
-| **Text → voice** | When TTS available |
-| **Sight (camera)** | When camera ready — understand context, not silent upload farms |
-| **Hearing (mic)** | Live listen when permitted |
-| **Live web search** | Opt-in; Sentinel answers with learned + available sources |
-| **Wake** | Phrase **“Hey Sentinel”** when mic + OS background rules allow |
-| **Translation** | English + Spanish when Viewer opts in |
-| **Human verify** | Sex/gender presentation only as explicit verify step when required — not continuous profiling |
+| Text | Baseline |
+| Voice ↔ text | When mic/TTS ready |
+| Sight / hearing | When camera/mic ready |
+| Live web search | Opt-in retrieval — not training upload |
+| Wake **Hey Sentinel** | When mic + OS allow |
+| Translation | EN + ES when opted |
+| Human verify | Explicit step only when required |
 
 ## Personality
 
-Viewer may set tone of **their** on-device Sentinel. Active search shows holographic shield motif (red / white / blue, clockwise glow) + elapsed time — brand assets under `branding/` when present.
+Viewer sets tone of **their** on-device Sentinel (L0). Active search: R/W/B holographic shield + elapsed time.
 
 ## Hard limits
 
-- No non-distinguishable human deepfakes  
-- No simulated child-safety systems  
-- Wake does not bypass entitlement for unlimited network comms  
+Deepfake non-distinguishable likeness banned · no simulated child-safety · wake ≠ entitlement bypass · learning never phones home private corpora by default
