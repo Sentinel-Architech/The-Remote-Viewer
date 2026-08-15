@@ -1,37 +1,26 @@
-# Competitive posture — win the fronts that matter
+# Competitive posture
 
-## Fees (hard win)
-
-| | Typical creator platforms | TRV |
-|--|---------------------------|-----|
-| Platform cut on digital | Often **10%+** | **0%** (creator **95%**, pool **5%**) |
-| NFT primary via platform | Varies, often extracted | Creator **90%**, pool **10%**, platform **0%** |
-| Network access | Subscriptions + store tax | **$96/year** or active **node** |
-
-## Reach (hard win)
-
-| | Typical apps | TRV |
-|--|--------------|-----|
-| Single ROM / store gate | Common | **Any capable phone** |
-| Hardened OS required | Sometimes implied | **Never required** — Graphene is **stronger**, not exclusive |
-| Web entry | Afterthought | **First-class** baseline |
-| Honest weak devices | Hidden limits | **Weaker signal stated** — no fake parity |
-
-## Custody & speech
+## Fees
 
 | | Typical | TRV |
 |--|---------|-----|
-| Key custody | Vendor cloud default | Best available on **this** device (Keystore tiers) |
-| Unlimited human comms | Pay forever | Yearly **or** permanent node |
-| Deepfake human likeness | Weak / ignored | **Non-distinguishable likeness prohibited** |
-| Child-safety theater | Checkbox | Real-data Integrity paths — **not simulated** |
+| Platform cut digital | Often 10%+ | **0%** (95/5) |
+| NFT primary | Extractive | **90/10**, platform **0%** |
+| Access | Sub + store tax | **$96/yr** or **node** |
 
-## What we do not claim
+## Reach
 
-- Live mainnet while Phase 0 compile is blocked  
-- Graphene-only magic on stock phones  
-- Platform fee “for your safety”
+| | Typical | TRV |
+|--|---------|-----|
+| Phone gate | One OS/store | **Any capable phone** |
+| Wearables | App-lock or none | **Optional** watch/earbuds — not required |
+| Hardened ROM | Sometimes forced | Graphene **optional** stronger tier |
+| Web | Secondary | **First-class** PWA |
 
-## Scoreboard intent
+## Custody & speech
 
-**Cheaper for creators, open to more phones, clearer on safety, on-chain entitlement when build host exists.**
+Keys: best on device · Deepfake non-distinguishable likeness **banned** · Safety real-data only
+
+## Scoreboard
+
+**Creator economics · multi-phone · optional wear · honest weak signal · on-chain entitlement.**
