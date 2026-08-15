@@ -2,6 +2,8 @@
 
 **Principle:** Worth it or walk away. No per-message fees. No hostage data.
 
+**Creator principle:** Viewers can **make a living** creating on TRV — see [`docs/CREATOR-LIVING.md`](CREATOR-LIVING.md). High creator share is mandatory for that to be possible.
+
 ## Communication unlock
 
 | Path | Unlimited human comms (talk / text / phone-style / web-style) |
@@ -41,12 +43,12 @@ See `docs/PAYMENTS.md` for sub → `grant_subscription` flow.
 | Platform | **0%** |
 | Seller | remainder |
 
-Change only via published policy + governance if live.
-
 ## Shared rules
 
 - All tiers may list; signal strength still follows tier.
 - Pool is visible public goods — not a silent tax.
+- **No second platform cut** on creator sales.
+- Payouts timed and visible when store is live (see CREATOR-LIVING).
 - Payments may start off-chain; on-chain split is the target accounting.
 
 ## Free forever (examples)
@@ -61,5 +63,6 @@ Change only via published policy + governance if live.
 - Per-message metering once unlocked
 - Charging nodes for the same unlimited comms sub pays for
 - Soft paywalls inside basic privacy or safety features
+- Guaranteed income without buyers
 
 *SCAFFOLD. Not a live store.*
