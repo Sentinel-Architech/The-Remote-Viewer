@@ -1,23 +1,26 @@
 # TRV status
 
-**PROVEN / not:** [docs/REALITY.md](docs/REALITY.md)  
-**Rails:** [docs/PROTOCOL.md](docs/PROTOCOL.md)  
-**Clients index:** [clients/README.md](clients/README.md)  
-**Map:** [docs/STREAMLINE.md](docs/STREAMLINE.md)
+**PROVEN:** [docs/REALITY.md](docs/REALITY.md) · **Protocol:** [docs/PROTOCOL.md](docs/PROTOCOL.md) · **Learning:** [docs/locked/CONTINUOUS-LEARNING.md](docs/locked/CONTINUOUS-LEARNING.md)
 
 ## PROVEN
 
-Optical TRVL · Path B USDC→`.trvl` · Integrity Verifier · recognition loop · operator local UI/models
+Optical TRVL · Path B USDC→`.trvl` · Integrity Verifier · local operator models/UI
 
-## All scaffolds (updated)
+## Continuous learning
 
-`clients/pwa` · `android-cap` · `wear-os` · `entitlement` · `safety-ui` · `creator` · `shared` · `solana/` · `branding/`
+| Layer | State |
+|-------|--------|
+| L0/L1 on-device prefs | Policy + `clients/shared/learning.ts` |
+| L2 conduct → IA of IA | Opt-in design |
+| Silent cloud train on private data | **Rejected** |
 
-Each README states **scaffold vs PROVEN** — no silent upgrade of claims.
+## Scaffolds
 
-## Policy economics
+`clients/*` · `solana/` · `branding/` — labeled scaffold in each README
 
-**$96/yr** · **95/5** · **90/10** · platform **0%**
+## Economics policy
+
+**$96** · **95/5** · **90/10** · platform **0%**
 
 ## Blocker
 
