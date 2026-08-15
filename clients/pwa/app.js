@@ -30,6 +30,11 @@ function saveLearning(p) {
   localStorage.setItem(STORAGE_LEARNING, JSON.stringify({ ...p, version: 1 }));
 }
 
+function clearAllLocal() {
+  localStorage.removeItem(STORAGE_LEARNING);
+  localStorage.removeItem(STORAGE_TUTORIAL);
+}
+
 function browserPotential() {
   const secure = window.isSecureContext;
   const media = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
@@ -90,7 +95,14 @@ if (ent) {
     "Entitlement from chain when trv_governance is deployed (Phase 1). Until then: policy paths only.";
 }
 
-// Export for console / future modules
+const resetBtn = document.getElementById("reset-local");
+if (resetBtn) {
+  resetBtn.onclick = () => {
+    clearAllLocal();
+    location.reload();
+  };
+}
+
 window.TRV = {
   loadLearning,
   saveLearning,
@@ -98,4 +110,5 @@ window.TRV = {
     localStorage.removeItem(STORAGE_LEARNING);
     showLearning();
   },
+  clearAllLocal,
 };
