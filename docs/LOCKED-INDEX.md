@@ -5,6 +5,7 @@
 | Lock | File |
 |------|------|
 | Client reach | [locked/CLIENT-SURFACE.md](locked/CLIENT-SURFACE.md) |
+| Wearables | [locked/WEARABLES.md](locked/WEARABLES.md) |
 | Android probes | [locked/ANDROID-CAPABILITIES.md](locked/ANDROID-CAPABILITIES.md) |
 | Modalities | [locked/MODALITIES.md](locked/MODALITIES.md) |
 | Threat model | [locked/THREAT-MODEL.md](locked/THREAT-MODEL.md) |
@@ -19,6 +20,6 @@
 
 ## Code
 
-`clients/pwa` · `android-cap` · `entitlement` · `safety-ui` · `creator` · `shared/flags.ts` · `branding/` · `solana/`
+`clients/pwa` · `android-cap` (+ `wearable.ts`) · `entitlement` · `safety-ui` · `creator` · `shared/flags.ts` · `branding/` · `solana/`
 
 Economics: **$96** · **95/5** · **90/10** · platform **0%**
