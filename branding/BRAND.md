@@ -1,26 +1,37 @@
-# The Sentinel — brand mark
+# TRV brand system
 
-**The Sentinel** is the protector of the core: shield, sword, all-seeing eye, circuit glow.
+## 1. The Sentinel — core logo
 
-## Official logo
+**Protector of the core.**
 
 | Item | Value |
 |------|--------|
-| Name | **The Sentinel** |
-| Role | Protector of the core / on-device guardian mark |
-| File | `branding/sentinel-logo.png` (place master asset here) |
-| Motif | Shield + vertical sword + central eye + neon circuit edge |
-| Palette | Dark metal, **neon green** circuits, blue iris |
+| File | `branding/sentinel-logo.png` |
+| Motif | Shield + sword + central eye + neon circuit edge |
+| Palette | Dark metal, neon green circuits, blue iris |
+| Use | App icon, favicon, docs mark, static identity |
 
-## Usage
+## 2. The Remote Viewer — hero depiction
 
-- App icon / splash (when mobile unparks)
-- GitHub social preview / docs header
-- Animated “actively looking” state may use **clockwise glow** (product: red/white/blue holographic variant was specified for live scan; this green mark is the **static core logo**)
-- Do not stretch; keep clear space around the shield
+**Sentinel keeping watch over the field of view.**
+
+| Item | Value |
+|------|--------|
+| File | `branding/remote-viewer-hero.png` |
+| Motif | Human eye as aperture; mountain/sky expanse; stacks of records; **Gateway Process** papers; glowing Sentinel shield-sword floating on watch |
+| Meaning | Remote viewing / open aperture; archive & truth-seeking; Sentinel as guardian of the core while the Viewer looks outward |
+| Use | Splash, marketing, README hero, onboarding — **not** the small app icon |
+
+## Hierarchy
+
+| Surface | Asset |
+|---------|--------|
+| Icon / tight UI | Sentinel logo |
+| Wide story / splash | Remote Viewer hero |
+| Live “scanning” UI | Same shield geometry; optional RWB clockwise holographic motion (product spec) |
 
 ## Rights
 
-Trademark/branding under project LICENSE terms. Not a third-party stock mark for resale as the product identity.
+Under project LICENSE. Master files held by the Architect; repo paths above are the canonical names once uploaded.
 
-*Master PNG should live at `branding/sentinel-logo.png`. If missing on clone, export from the locked master the Architect holds.*
+*Upload: `sentinel-logo.png` + `remote-viewer-hero.png` into `branding/`.*
