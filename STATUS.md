@@ -2,6 +2,7 @@
 
 **PROVEN:** [`docs/REALITY.md`](docs/REALITY.md)  
 **Blocker detail:** [`docs/CI-BLOCKER.md`](docs/CI-BLOCKER.md)  
+**Client policy:** [`docs/locked/CLIENT-SURFACE.md`](docs/locked/CLIENT-SURFACE.md)  
 **March:** [`docs/PATH-TO-LIVE.md`](docs/PATH-TO-LIVE.md)
 
 ## Track A — Solana
@@ -9,13 +10,20 @@
 | Item | State |
 |------|--------|
 | Program scaffold | Present (Anchor **0.32.1**) |
-| Policy / BPS / entitlement design | Locked in docs |
-| **`anchor build` CI** | **BLOCKED** — SBF Cargo ~1.84 cannot parse crates.io `edition2024` |
+| Policy / BPS / entitlement | Locked |
+| **`anchor build` CI** | **BLOCKED** — SBF Cargo ~1.84 vs crates.io `edition2024` |
 | Deploy | None |
 
-**Not** a bad program or bad Pixel. Nested platform-tools Cargo vs 2026 crates.io.
+## Client surface (upgraded)
 
-## Product policy (ready when chain is)
+| Item | State |
+|------|--------|
+| **Any capable phone** | **Policy locked** — not Graphene-only |
+| GrapheneOS | Hardened **tier** (T2), not a gate |
+| Baseline | Web/PWA + stock Android capability detection |
+| Signal | Weaker on lower tiers (already product rule) |
+
+## Product policy
 
 | Item | Value |
 |------|--------|
@@ -23,14 +31,15 @@
 | Creator digital | **95/5**, platform **0%** |
 | Creator NFT | **90/10**, platform **0%** |
 
-## Mobile
+## Mobile engineering
 
-PARKED.
+PARKED for compile host; **product direction is multi-phone**, Graphene-enhanced.
 
 ## Path B founders: **0**
 
-## Next engineering (when ready)
+## Next engineering
 
-1. Build host or newer platform-tools (see CI-BLOCKER)  
-2. Green `.so` + IDL artifact  
-3. Phase 1 devnet runbook  
+1. Unblock Solana build (CI-BLOCKER)  
+2. Web/PWA baseline client (any phone entry)  
+3. Android capability matrix T0→T1  
+4. Graphene T2 paths as enhancement  
