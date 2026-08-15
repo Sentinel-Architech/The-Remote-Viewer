@@ -44,7 +44,7 @@ jobs:
             ~/.cargo/git
             ~/.cargo/bin
             solana/target
-          key: ${{ runner.os }}-rust-${{ env.RUST_VERSION }}-solana-${{ env.SOLANA_VERSION }}-anchor-${{ env.ANCHOR_VERSION }}-${{ hashFiles('solana/**/Cargo.toml') }}-v2
+          key: ${{ runner.os }}-rust-${{ env.RUST_VERSION }}-solana-${{ env.SOLANA_VERSION }}-anchor-${{ env.ANCHOR_VERSION }}-z1.3-v3
 
       - name: Install Solana
         run: |
@@ -76,10 +76,9 @@ jobs:
       - name: npm install
         run: npm install
 
-      - name: Pin zeroize (no edition2024)
+      - name: Pin zeroize 1.3.0
         run: |
-          cargo update -p zeroize --precise 1.7.0 || true
-          cargo update -p zeroize_derive --precise 1.4.2 || true
+          cargo update -p zeroize --precise 1.3.0 || true
 
       - name: Anchor build
         run: anchor build
