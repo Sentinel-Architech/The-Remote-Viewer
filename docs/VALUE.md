@@ -2,68 +2,66 @@
 
 **Principle:** Worth it or walk away. No per-message fees. No hostage data.
 
-**Creator principle:** Viewers can **make a living** creating on TRV — see [`docs/CREATOR-LIVING.md`](CREATOR-LIVING.md). High creator share is mandatory for that to be possible.
+**Creator principle:** Viewers can **make a living** on TRV — [`CREATOR-LIVING.md`](CREATOR-LIVING.md).
+
+**Competitive principle:** Win the fee sheet and custody sheet — [`COMPETITIVE.md`](COMPETITIVE.md).
 
 ## Communication unlock
 
-| Path | Unlimited human comms (talk / text / phone-style / web-style) |
-|------|--------------------------------------------------------------|
-| Free Viewer | No — live with **weaker signal** |
-| Yearly subscription | Yes — 12 months |
-| Active permanent node | Yes — while node stays active |
+| Path | Unlimited human comms |
+|------|------------------------|
+| Free Viewer | No — **weaker signal** only (still can go live / sell) |
+| Yearly subscription | Yes — **$96 USD / year** |
+| Active permanent node | Yes — while node stays active (**no** $96 required) |
 
-All tiers **can go live** and participate. Lower tier = weaker signal (discovery / relay priority), not a ban.
+Billed yearly preferred. Node is a first-class unlock, not a side quest.
 
-**Public yearly price:** **$96 USD / year** ($8/mo equivalent, billed once yearly).  
-Node path remains free for unlimited comms while active.
+See `docs/PAYMENTS.md` for sub → `grant_subscription`.
 
-See `docs/PAYMENTS.md` for sub → `grant_subscription` flow.
-
-## Creator store — digital content (non-NFT)
+## Creator store — digital (non-NFT)
 
 | Recipient | Share |
 |-----------|--------|
 | **Creator** | **95%** |
 | **Community pool** | **5%** |
-| Platform | **0%** |
+| **Platform** | **0%** |
 
-## Creator store — NFTs minted through TRV (primary)
+## Creator store — NFT primary (TRV-minted)
 
 | Recipient | Share |
 |-----------|--------|
-| **Creator / Viewer** | **90%** |
+| **Creator** | **90%** |
 | **Community pool** | **10%** |
-| Platform | **0%** |
+| **Platform** | **0%** |
 
-## NFT secondary sales (default policy)
+## NFT secondary
 
 | Recipient | Share |
 |-----------|--------|
-| **Original creator** | **5%** royalty |
-| **Community pool** | **0%** |
-| Platform | **0%** |
+| **Original creator** | **5%** |
+| Pool / platform | **0%** |
 | Seller | remainder |
 
-## Shared rules
+## Parity rules (do not dilute)
 
-- All tiers may list; signal strength still follows tier.
-- Pool is visible public goods — not a silent tax.
-- **No second platform cut** on creator sales.
-- Payouts timed and visible when store is live (see CREATOR-LIVING).
-- Payments may start off-chain; on-chain split is the target accounting.
+1. **Platform fee on creator sales stays 0%** — not raised to “fund growth.”  
+2. **No forced Apple IAP** for core sub or creator checkout — web / Obtainium / Graphene paths.  
+3. **Processing/chain fees** are disclosed as network costs, not a hidden second platform cut.  
+4. **Free tier is not a ban** — signal is weaker, listings still allowed.  
+5. **Audience leave with keys** — no hostage followers.  
 
-## Free forever (examples)
+## Free forever
 
-- On-device Sentinel core
-- Optical air-gap / local tools
-- Reading governance & locked policies
-- Ability to leave with keys
+- On-device Sentinel core  
+- Optical air-gap / local tools  
+- Reading governance & locked policies  
+- Ability to leave with keys  
 
 ## Non-goals
 
-- Per-message metering once unlocked
-- Charging nodes for the same unlimited comms sub pays for
-- Soft paywalls inside basic privacy or safety features
-- Guaranteed income without buyers
+- Per-message metering once entitled  
+- Charging nodes for the same unlimited comms sub pays for  
+- Guaranteed income without buyers  
+- Claiming scale peers have before REALITY.md says PROVEN  
 
-*SCAFFOLD. Not a live store. Price is policy until payment rails collect it.*
+*SCAFFOLD. Price and splits are policy until rails collect.*
