@@ -1,19 +1,9 @@
-# safety-ui — discrete, real-data only
+# safety-ui
 
-## Integrity report
+**Scaffold** UI states + neutral copy. Live Integrity network = Not PROVEN ([REALITY](../../docs/REALITY.md)).
 
-- Viewer can report concerns **anonymously** where product allows  
-- Copy stays neutral — no public pile-on UI  
-- Backend / ops path is real reporting — **not a simulation**  
+- Integrity report — formal path, optional anonymity  
+- Area bulletin — coarse region only, neutral code names, no map pins  
 
-## Area bulletin
-
-- Coarse public-registry style notices only  
-- **Never exact address** of a subject  
-- Neutral naming (irrelevant labels) so kids aren’t bait and targets aren’t painted  
-- Opt-in for Viewer to see bulletins  
-
-## Files
-
-- `copy.md` — user-visible strings  
-- `states.ts` — UI states without location precision  
+`copy.md` · `states.ts`  
+Policy: real-data only — **not simulated**
