@@ -1,27 +1,13 @@
 # TRV status
 
-**PROVEN:** [docs/REALITY.md](docs/REALITY.md) · **Protocol:** [docs/PROTOCOL.md](docs/PROTOCOL.md) · **Learning:** [docs/locked/CONTINUOUS-LEARNING.md](docs/locked/CONTINUOUS-LEARNING.md)
+**Ends:** [docs/SYSTEM-ENDS.md](docs/SYSTEM-ENDS.md) · **PROVEN:** [docs/REALITY.md](docs/REALITY.md) · **Protocol:** [docs/PROTOCOL.md](docs/PROTOCOL.md)
 
-## PROVEN
+| End group | State |
+|-----------|--------|
+| Optical · vending · verifier · local UI | **PROVEN** |
+| Solana `trv_governance` | Scaffold · CI **blocked** |
+| PWA · android-cap · wear · entitlement · safety · creator · learning | Scaffold |
+| Economics policy | **$96 · 95/5 · 90/10 · 0%** |
+| Continuous learning | On-device L0/L1 · opt-in L2 · no silent exfil |
 
-Optical TRVL · Path B USDC→`.trvl` · Integrity Verifier · local operator models/UI
-
-## Continuous learning
-
-| Layer | State |
-|-------|--------|
-| L0/L1 on-device prefs | Policy + `clients/shared/learning.ts` |
-| L2 conduct → IA of IA | Opt-in design |
-| Silent cloud train on private data | **Rejected** |
-
-## Scaffolds
-
-`clients/*` · `solana/` · `branding/` — labeled scaffold in each README
-
-## Economics policy
-
-**$96** · **95/5** · **90/10** · platform **0%**
-
-## Blocker
-
-[docs/CI-BLOCKER.md](docs/CI-BLOCKER.md)
+**Next:** build host → `.so` → Phase 1 · keep PROVEN ends authoritative.
