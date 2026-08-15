@@ -14,8 +14,8 @@
 
 All tiers **can go live** and participate. Lower tier = weaker signal (discovery / relay priority), not a ban.
 
-**Public yearly price (default):** **$60 USD / year** (~$5/mo billed once).  
-Change only by published policy update. Node path remains free for unlimited comms while active.
+**Public yearly price:** **$96 USD / year** ($8/mo equivalent, billed once yearly).  
+Node path remains free for unlimited comms while active.
 
 See `docs/PAYMENTS.md` for sub → `grant_subscription` flow.
 
