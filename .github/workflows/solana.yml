@@ -15,7 +15,7 @@ on:
 env:
   ANCHOR_VERSION: "0.30.1"
   SOLANA_VERSION: "1.18.18"
-  RUST_LOCK: "1.79.0"
+  RUST_VERSION: "1.85.0"
   SOLANA_BIN: "/home/runner/.local/share/solana/install/active_release/bin"
 
 jobs:
@@ -38,10 +38,10 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Install Rust 1.79 (lockfile + SBF-era compatible)
+      - name: Install Rust 1.85
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: ${{ env.RUST_LOCK }}
+          toolchain: ${{ env.RUST_VERSION }}
 
       - name: Cache cargo
         uses: actions/cache@v4
@@ -51,7 +51,7 @@ jobs:
             ~/.cargo/git
             ~/.cargo/bin
             solana/target
-          key: solana-anchor-${{ env.ANCHOR_VERSION }}-${{ env.SOLANA_VERSION }}-lock${{ env.RUST_LOCK }}-v13
+          key: solana-anchor-${{ env.ANCHOR_VERSION }}-${{ env.SOLANA_VERSION }}-r${{ env.RUST_VERSION }}-v14
 
       - name: Install Solana CLI
         run: |
@@ -82,36 +82,33 @@ jobs:
       - name: npm install (workspace)
         run: npm install
 
-      - name: Lockfile on 1.79 + hard pins
+      - name: Lockfile + pins
         run: |
           set -euo pipefail
           export PATH="${{ env.SOLANA_BIN }}:$HOME/.cargo/bin:$PATH"
-          rustup default ${{ env.RUST_LOCK }}
+          rustup default ${{ env.RUST_VERSION }}
           rm -f Cargo.lock
           cargo generate-lockfile
           cargo update -p zeroize --precise 1.3.0 || true
           cargo update -p indexmap --precise 2.6.0 || true
           cargo update -p digest --precise 0.10.7 || true
+          cargo update -p constant_time_eq --precise 0.3.1 || true
           cargo update -p hashbrown --precise 0.14.5 || true
-          cargo update -p base64ct --precise 1.6.0 || true
-          echo "=== cargo --version ==="
           cargo --version
 
       - name: Anchor build
         run: |
           set -euo pipefail
           export PATH="${{ env.SOLANA_BIN }}:$HOME/.cargo/bin:$(npm config get prefix)/bin:$PATH"
-          rustup default ${{ env.RUST_LOCK }}
-          cargo --version
+          rustup default ${{ env.RUST_VERSION }}
+          echo "host cargo: $(cargo --version)"
+          echo "host rustc: $(rustc --version)"
           anchor --version
-          # Do not force RUSTUP_TOOLCHAIN=1.85 — SBF platform-tools ships Cargo ~1.75
-          unset RUSTUP_TOOLCHAIN || true
           anchor build
 
       - name: Anchor test
         run: |
           export PATH="${{ env.SOLANA_BIN }}:$HOME/.cargo/bin:$(npm config get prefix)/bin:$PATH"
-          unset RUSTUP_TOOLCHAIN || true
           anchor test
         continue-on-error: true
 
