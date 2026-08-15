@@ -1,24 +1,21 @@
-# TRV on Solana — Track A SCAFFOLD
+# Solana — trv_governance
 
-## Required before deploy
+**Scaffold / Track A.** Not PROVEN on-chain. [docs/REALITY.md](../docs/REALITY.md)
 
-1. Install Rust, Solana CLI, Anchor **0.30.x** on Linux/macOS (or use CI).
-2. `anchor keys list` (or `solana-keygen`) → replace placeholder in:
-   - `programs/trv_governance/src/lib.rs` (`declare_id!`)
-   - `Anchor.toml` `[programs.*]`
-3. `yarn && anchor build && anchor test`
-4. Devnet only until audit.
+| Item | State |
+|------|--------|
+| Anchor | **0.32.1** (not 0.30.x) |
+| Program | `programs/trv_governance` |
+| CI build | **Blocked** — [docs/CI-BLOCKER.md](../docs/CI-BLOCKER.md) |
+| Devnet | [DEVNET.md](DEVNET.md) only after green `.so` |
+| Protocol | [docs/PROTOCOL.md](../docs/PROTOCOL.md) §4 |
 
-## Instructions
+**PROVEN Solana today:** Path B **USDC + memo** as payment *signal* (`digital-vending/`) — not this program.
 
-`initialize` · `propose` · `vote` · `execute_if_threshold`
+## Before deploy
 
-Authority-only voting is intentional scaffold; replace with SPL weight later.
+1. Build host with platform-tools Cargo ≥ 1.85 (or newer Foundation image)  
+2. `anchor keys list` → replace `declare_id!` + `Anchor.toml`  
+3. `anchor build` · `anchor test` · devnet only  
 
-## CI
-
-`.github/workflows/solana.yml`
-
-## Pixel
-
-No Anchor build. See `docs/PIXEL-CLIENT.md`.
+Never commit keypairs. Pixel/Termux ≠ Solana build host.
