@@ -1,30 +1,44 @@
-# TRV status — 2026-08-14
+# TRV status — 2026-08-14 (night)
 
-**PROVEN** claims: [`docs/REALITY.md`](docs/REALITY.md) only.  
-**Gap register:** [`docs/BLIND-SPOTS.md`](docs/BLIND-SPOTS.md).
+**PROVEN:** only [`docs/REALITY.md`](docs/REALITY.md).  
+**Gaps:** [`docs/BLIND-SPOTS.md`](docs/BLIND-SPOTS.md).  
+**Backlog:** [`docs/NEXT.md`](docs/NEXT.md).
 
 ## Track A — Solana
 
 | Item | State |
 |------|--------|
-| Program | Scaffold + VALUE bps |
-| CI | **Build gate** — latest Solana Anchor workflow |
+| `trv_governance` | Scaffold ix + VALUE bps (95/5, 90/10) |
+| Toolchain | Anchor 0.30.1 · Solana 1.18.26 · Rust 1.79 |
+| CI | Solana Anchor workflow — **build still the gate** |
 | Deploy | None |
 
 ## Brand
 
-Upload `branding/sentinel-logo.png` + `remote-viewer-hero.png` if missing.
+| Spec | [`branding/BRAND.md`](branding/BRAND.md) |
+| PNG/JPG masters | Upload when convenient (`sentinel-logo`, `remote-viewer-hero`) |
 
-## Parallel docs (required)
+## Policy index (this wave)
 
-VALUE · PAYMENTS · AUTHORITY · IDENTITY · POOL-GOVERNANCE · SAFETY · AGE-POLICY · CUSTODY-OPS · BLIND-SPOTS
+| Doc | Topic |
+|-----|--------|
+| VALUE + CREATOR-LIVING | Comms unlock, creator living wage, splits |
+| PAYMENTS | Sub → grant_subscription |
+| AUTHORITY | Keys / multisig |
+| IDENTITY | Recovery, no SMS root |
+| VIEWER-MAIL | TRV-domain alias |
+| POOL-GOVERNANCE | Integer pool via governance |
+| locked/SAFETY | CSAM, Integrity report, Area bulletin |
+| AGE-POLICY | 18+ default |
+| CUSTODY-OPS | Sales / pool keys |
+| BLIND-SPOTS | Gap register |
 
-## EVM
+## Parallel EVM
 
-9/9 Pixel — learning only.
+9/9 on Pixel Anvil — learning only.
 
 ## Mobile
 
-PARKED.
+PARKED (Graphene / Expo).
 
 ## Path B founders: **0**
