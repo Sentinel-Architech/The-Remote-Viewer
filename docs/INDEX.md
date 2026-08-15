@@ -8,6 +8,7 @@
 | [STATUS.md](../STATUS.md) | Snapshot |
 | [BLIND-SPOTS.md](BLIND-SPOTS.md) | Open gaps |
 | [NEXT.md](NEXT.md) | Ordered backlog |
+| [COMPETITIVE.md](COMPETITIVE.md) | Win-on-all-fronts targets |
 
 ## Track A (Solana)
 
@@ -22,7 +23,7 @@
 
 | File | Role |
 |------|------|
-| [VALUE.md](VALUE.md) | Splits, tiers, free core |
+| [VALUE.md](VALUE.md) | $96, splits, parity rules |
 | [CREATOR-LIVING.md](CREATOR-LIVING.md) | Living-wage intent |
 | [VIEWER-MAIL.md](VIEWER-MAIL.md) | Mail under TRV domain |
 
@@ -42,4 +43,4 @@
 
 ## Operator
 
-[PIXEL-OPERATOR.md](PIXEL-OPERATOR.md) — phone is not the Solana build host.
+[PIXEL-OPERATOR.md](PIXEL-OPERATOR.md)
