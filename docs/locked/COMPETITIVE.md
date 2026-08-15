@@ -1,26 +1,14 @@
 # Competitive posture
 
-## Fees
-
-| | Typical | TRV |
-|--|---------|-----|
-| Platform cut digital | Often 10%+ | **0%** (95/5) |
-| NFT primary | Extractive | **90/10**, platform **0%** |
+| Front | Typical | TRV |
+|-------|---------|-----|
+| Creator fee | 10%+ platform | **0%** platform · **95/5** · **90/10** |
 | Access | Sub + store tax | **$96/yr** or **node** |
+| Phone | One OS/store | **Any capable phone** |
+| Wear | Locked or absent | **Optional** endpoints |
+| Learning | Cloud train by default | **On-device** · no silent private upload |
+| Transport | Server relay | **PROVEN** optical TRVL + local delivery |
+| Safety | Theater or neglect | Real Integrity · discrete Area · deepfake bar |
+| Claims | Hype | [REALITY](../REALITY.md) PROVEN table only |
 
-## Reach
-
-| | Typical | TRV |
-|--|---------|-----|
-| Phone gate | One OS/store | **Any capable phone** |
-| Wearables | App-lock or none | **Optional** watch/earbuds — not required |
-| Hardened ROM | Sometimes forced | Graphene **optional** stronger tier |
-| Web | Secondary | **First-class** PWA |
-
-## Custody & speech
-
-Keys: best on device · Deepfake non-distinguishable likeness **banned** · Safety real-data only
-
-## Scoreboard
-
-**Creator economics · multi-phone · optional wear · honest weak signal · on-chain entitlement.**
+**Win:** economics · reach · custody · honest proof.
