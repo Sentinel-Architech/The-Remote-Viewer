@@ -1,58 +1,25 @@
 # Scaffold → PROVEN
 
-**Rule:** PROVEN = ran under your control on real hardware. Git never promotes alone.
-
 Authority: [REALITY.md](REALITY.md).
-
----
 
 ## Already PROVEN
 
-Optical TRVL · Path B USDC→`.trvl` · Integrity Verifier · recognition · local models/UI/defense
+Optical TRVL · Path B · Integrity Verifier · recognition · local models/UI/defense
 
----
+## DEMONSTRATED (2026-08-14)
 
-## DEMONSTRATED
+| ID | End | Note |
+|----|-----|------|
+| **B2** | PWA UI | `127.0.0.1:8080` Signal · Access · learning · tutorial |
+| **H1** | Learning persist | Reload kept dismissed tutorial + learning line |
+| **H2** | Learning wipe | **Reset local data** → Welcome returned |
+| **H3** | No learning upload | localStorage only; no prefs POST in scaffold |
 
-| ID | End | Date | Note |
-|----|-----|------|------|
-| **B2** | PWA UI on phone | 2026-08-14 | Termux serve `clients/pwa` → `127.0.0.1:8080` — Signal, Access, learning, tutorial |
+## A — Solana (next priority)
 
-Remaining **B3** optional: `TRV.clearLearning()` in console.
+A1 build host `.so` · A2 tests · A3 devnet · A4 client read · A5 REALITY  
+Blocker: [CI-BLOCKER.md](CI-BLOCKER.md)
 
----
+## Still open
 
-## A — Solana entitlement (priority)
-
-| Step | Proof |
-|------|--------|
-| A1 | Build host `anchor build` → `.so` + IDL |
-| A2 | Tests green |
-| A3 | Devnet deploy + grant + refresh |
-| A4 | Client reads `unlimited_comms` |
-| A5 | REALITY line |
-
-Blocker: [CI-BLOCKER.md](CI-BLOCKER.md).
-
----
-
-## B — PWA
-
-| Step | Status |
-|------|--------|
-| B1 serve | Done |
-| B2 UI cards | **DEMONSTRATED** |
-| B3 clearLearning | Optional |
-| B4 operator note | Done via REALITY |
-
----
-
-## C — android-cap · D — wear · E — entitlement · F — safety · G — splits · H — learning no-exfil
-
-See prior checklists in git history / expand when executing. **E** requires **A**.
-
-## Priority
-
-1. **A** build host  
-2. **H** no-exfil spot check  
-3. **C → D → F → G**  
+**C** android-cap · **D** wear · **E** entitlement (needs A) · **F** safety · **G** settlement
