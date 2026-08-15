@@ -1,23 +1,24 @@
 # TRV status
 
-**Truth:** [docs/REALITY.md](docs/REALITY.md) · **Protocol:** [docs/PROTOCOL.md](docs/PROTOCOL.md) · **Map:** [docs/STREAMLINE.md](docs/STREAMLINE.md)
+**PROVEN / not:** [docs/REALITY.md](docs/REALITY.md)  
+**Rails:** [docs/PROTOCOL.md](docs/PROTOCOL.md)  
+**Clients index:** [clients/README.md](clients/README.md)  
+**Map:** [docs/STREAMLINE.md](docs/STREAMLINE.md)
 
 ## PROVEN
 
-Optical TRVL · Path B USDC+memo → `.trvl` · Integrity Verifier · Path B recognition · local models/UI as operator-run
+Optical TRVL · Path B USDC→`.trvl` · Integrity Verifier · recognition loop · operator local UI/models
 
-## Scaffold / not live
+## All scaffolds (updated)
 
-Solana `trv_governance` · $96 rails · multi-phone PWA · wear-os · safety-ui
+`clients/pwa` · `android-cap` · `wear-os` · `entitlement` · `safety-ui` · `creator` · `shared` · `solana/` · `branding/`
 
-## Economics (policy)
+Each README states **scaffold vs PROVEN** — no silent upgrade of claims.
 
-**$96/year** · **95/5** · **90/10** · platform **0%**
+## Policy economics
+
+**$96/yr** · **95/5** · **90/10** · platform **0%**
 
 ## Blocker
 
-[docs/CI-BLOCKER.md](docs/CI-BLOCKER.md) — SBF Cargo vs edition2024
-
-## Next
-
-Build host → green `.so` → devnet entitlement → keep PROVEN rails authoritative
+[docs/CI-BLOCKER.md](docs/CI-BLOCKER.md)
