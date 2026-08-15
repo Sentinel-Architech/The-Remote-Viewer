@@ -1,6 +1,6 @@
 # TRV Protocol map
 
-What talks to what. **PROVEN** vs scaffold is in [REALITY.md](REALITY.md).
+**PROVEN** vs scaffold: [REALITY.md](REALITY.md).
 
 ---
 
@@ -10,85 +10,62 @@ What talks to what. **PROVEN** vs scaffold is in [REALITY.md](REALITY.md).
 age encrypt → Robust Soliton LT (TRVL) → optical or file frames → peel → age decrypt
 ```
 
-- Spec/implementation: `optical-airgap/`  
-- Sentinel Standard: **Soliton LT**, not RaptorQ  
-- Identity: local **age**; Destroy = Restart  
-- Optional path: same frames via QR/camera  
+`optical-airgap/` · Soliton LT (not RaptorQ) · local age · Destroy = Restart
 
 ---
 
 ## 2. Digital vending (PROVEN Path B)
 
-Authority: [`digital-vending/PROTOCOL.md`](../digital-vending/PROTOCOL.md)
+[`digital-vending/PROTOCOL.md`](../digital-vending/PROTOCOL.md)
 
-| Rail | Direction | Format |
-|------|-----------|--------|
-| Payment signal | Buyer → seller | Solana **USDC** + **memo** |
-| Recipient | Buyer → seller | `age1…` drop file |
-| Delivery | Seller → buyer | `.trvl` (age + Soliton LT) |
-| Integrity | Anyone | Verifier over contribution + sales.log |
-
-**Rules:** Payment ≠ delivery · seller never holds buyer private key · catalog.json is SKU truth · no empty packs · local sales.log only  
-
-**Deferred:** SPL TRV mint as required rail · platform custody · cloud identity  
+Payment signal (USDC+memo) ≠ delivery (`.trvl`) · catalog.json truth · local sales.log
 
 ---
 
 ## 3. Integrity / first node role (PROVEN)
 
-- `modules/integrity-verifier/` — attestation  
-- Contribution weight from verifier output  
-- Path B recognition: collect → attest → verify → issue → install  
+`modules/integrity-verifier/` · Path B recognition loop
 
 ---
 
 ## 4. Entitlement (scaffold — Track A)
 
-```text
-Viewer ↔ Solana program trv_governance
-  Config · Node · Subscription · Entitlement PDAs
-  unlimited_comms ← active sub OR active permanent node
-```
-
-- Program: `solana/programs/trv_governance`  
-- Client view: `clients/entitlement/`  
-- **Not live** until deploy after green build  
-
-Creator BPS (policy → chain when live): digital **9500/500**, NFT **9000/1000**, platform **0**  
+`trv_governance` · unlimited_comms ← sub OR node · Not on chain until deploy
 
 ---
 
 ## 5. Client surfaces (scaffold)
 
-| Layer | Protocol role |
-|-------|----------------|
-| PWA | Entry + tutorial + signal banner |
-| android-cap | Device potential → tier |
-| wear-os | Glance + bridge; no keys |
-| safety-ui | Integrity report + coarse Area |
-| Modalities | Text/voice/sight/search/wake — device-gated |
-
-Entitlement display must not claim chain success without RPC proof.
+PWA · android-cap · wear-os · safety-ui · entitlement view (no fake RPC success)
 
 ---
 
-## 6. Explicit non-protocols
+## 6. Continuous learning (policy + scaffold)
 
-- Centralized key assignment — **REJECTED**  
-- Cloud custody of TRVL payloads — **REJECTED**  
-- Simulated CSAM “detection” theater — **REJECTED**  
-- Email as sole destroy factor — **REJECTED** (phone confirm in deep settings; keys still root)  
+[CONTINUOUS-LEARNING](locked/CONTINUOUS-LEARNING.md)
+
+| Layer | Scope |
+|-------|--------|
+| L0/L1 | On-device prefs + session · wipe with identity |
+| L2 | Opt-in anonymous conduct → IA of IA |
+| L3 | Operator PROVEN rail improvements |
+| L4 | On-chain governance when live |
+
+**No silent cloud fine-tune on private Viewer data.**
 
 ---
 
-## 7. One diagram
+## 7. Explicit non-protocols
+
+Centralized key assignment · cloud custody of TRVL · simulated CSAM theater · email-only destroy
+
+---
+
+## 8. Diagram
 
 ```text
-[Buyer device] --USDC+memo--> [Solana] --signal--> [Seller operator]
-     ^                                              |
-     |              .trvl (age+LT)                  v
-     +---------------- offline/optical ------------+
-
-[Viewer device] --(future)--> [trv_governance] --> unlimited_comms
-[Viewer device] --TRVL/optical--> peer or self (PROVEN transport)
+[Buyer] --USDC+memo--> [Solana] --signal--> [Seller] --.trvl--> [Buyer]
+[Viewer] --local L0/L1 learning--> [on-device Sentinel]
+[Viewer] --opt-in L2--> [IA of IA conduct]
+[Viewer] --(future)--> [trv_governance] --> unlimited_comms
 ```
