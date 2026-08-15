@@ -14,9 +14,9 @@ All tiers **can go live** and participate. Lower tier = weaker signal (discovery
 
 Suggested yearly band: **~$48–96** (pick one public number later). Billed yearly preferred over monthly drip.
 
-## Creator store — digital content (non-NFT)
+See `docs/PAYMENTS.md` for sub → `grant_subscription` flow.
 
-Viewers may create and sell **their own digital content** on TRV.
+## Creator store — digital content (non-NFT)
 
 | Recipient | Share |
 |-----------|--------|
@@ -24,9 +24,7 @@ Viewers may create and sell **their own digital content** on TRV.
 | **Community pool** | **5%** |
 | Platform | **0%** |
 
-## Creator store — NFTs minted through TRV
-
-NFTs **minted via The Remote Viewer** (primary or TRV marketplace sale):
+## Creator store — NFTs minted through TRV (primary)
 
 | Recipient | Share |
 |-----------|--------|
@@ -34,14 +32,21 @@ NFTs **minted via The Remote Viewer** (primary or TRV marketplace sale):
 | **Community pool** | **10%** |
 | Platform | **0%** |
 
-- Applies to TRV-minted inventory sold on-platform.
-- Creator retains authorship; TRV is mint/distribution path.
-- Secondary royalty policy TBD (keep separate from primary 90/10).
+## NFT secondary sales (default policy)
+
+| Recipient | Share |
+|-----------|--------|
+| **Original creator** | **5%** royalty |
+| **Community pool** | **0%** |
+| Platform | **0%** |
+| Seller | remainder |
+
+Change only via published policy + governance if live.
 
 ## Shared rules
 
 - All tiers may list; signal strength still follows tier.
-- Pool is visible public goods / network health — not a silent tax.
+- Pool is visible public goods — not a silent tax.
 - Payments may start off-chain; on-chain split is the target accounting.
 
 ## Free forever (examples)
@@ -53,8 +58,8 @@ NFTs **minted via The Remote Viewer** (primary or TRV marketplace sale):
 
 ## Non-goals
 
-- Per-message or surprise metering of human communication once unlocked
+- Per-message metering once unlocked
 - Charging nodes for the same unlimited comms sub pays for
 - Soft paywalls inside basic privacy or safety features
 
-*SCAFFOLD. Not a live store. Numbers are product policy until implemented.*
+*SCAFFOLD. Not a live store.*
