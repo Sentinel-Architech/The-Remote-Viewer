@@ -1,37 +1,34 @@
 # TRV status — 2026-08-14
 
-**SCAFFOLD.** No production security claims. No audit. No mainnet.
+**SCAFFOLD where noted.** **PROVEN** claims only in [`docs/REALITY.md`](docs/REALITY.md).
 
-## Track A — Solana (`solana/`)
+## Track A — Solana
 
 | Item | State |
 |------|--------|
-| Instruction surface | Scaffold complete — `solana/PROGRAM.md` |
-| BPS constants | Digital 95/5, NFT primary 90/10 on-chain |
+| `trv_governance` | Scaffold ix surface + VALUE bps constants |
 | Toolchain | Anchor 0.30.1 · Solana 1.18.26 · Rust 1.79 |
-| CI | Verify latest **Solana Anchor** Actions run |
-| Deploy | Not on devnet |
-| Pixel | No Anchor build |
+| CI | **Gate:** latest Solana Anchor Actions must show green **build** |
+| Deploy | Not devnet/mainnet |
 
-## Parallel — EVM
+## Brand
 
-| Tests | **9/9 PASS on Pixel Anvil** |
-| Role | Learning only |
+| Asset | Path |
+|-------|------|
+| Sentinel logo | `branding/sentinel-logo.png` |
+| Remote Viewer hero | `branding/remote-viewer-hero.png` |
+| Spec | [`branding/BRAND.md`](branding/BRAND.md) |
 
-## Required ops docs (parallel)
+## Policy / ops docs
 
-| Doc | Purpose |
-|-----|--------|
-| `docs/VALUE.md` | Comms unlock, creator splits, secondary 5% creator |
-| `docs/PAYMENTS.md` | Off-chain pay → `grant_subscription` |
-| `docs/AUTHORITY.md` | Keys, multisig before mainnet, no keys on phone |
-| `docs/IDENTITY.md` | Recovery without SMS/email as root |
-| `docs/POOL-GOVERNANCE.md` | Pool via governance, integer math |
-| `docs/locked/SAFETY.md` | CSAM path, Integrity report, Area bulletin |
-| `LICENSE` | Custom source-available (already in repo) |
+VALUE · PAYMENTS · AUTHORITY · IDENTITY · POOL-GOVERNANCE · locked/SAFETY
+
+## Parallel EVM
+
+9/9 tests on Pixel Anvil — learning only.
 
 ## Mobile
 
-**PARKED** (Expo / Graphene).
+PARKED (Expo / Graphene).
 
-## Path B founders: **0**
+## Path B founders: **0** (originator Path A = 1)
