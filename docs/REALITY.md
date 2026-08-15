@@ -1,22 +1,37 @@
-# Reality — 2026-08-14 (currency pass)
+# Reality — 2026-08-14 (late)
 
-See also root `STATUS.md`.
+**Authority for PROVEN claims.** Chat and STATUS are subordinate.
 
-## Required that operators often miss
+## Operators often miss
 
-1. **GitHub SSH key must be registered on the account** (Pixel key exists; login/password reset may be required first).
-2. **Solana program id is a placeholder** until `anchor keys list` on a build host — required before real deploy.
-3. **Anchor build needs x86_64 Linux/macOS or CI** — not Termux.
-4. **Mint authority key is root of power** for SPL/TRVV — lose it or leak it and issuance is compromised.
-5. **Path B founders = 0** — no external legitimacy from “community multisig” yet.
-6. **Audit before mainnet** — green tests ≠ safe money.
-7. **Anvil state is ephemeral** without `--state` — addresses die on restart.
-8. **Mobile runtime parked** — repo code ≠ running DApp on GrapheneOS.
+1. **Solana build is CI/build-host only** — not Termux.  
+2. **`declare_id!` is scaffold** until `anchor keys list` on a real host.  
+3. **PATH issues in CI** — `solana` must be on PATH every step (workflow fixed 2026-08-14).  
+4. **Mint/authority keys** are root of power — never commit; multisig before mainnet.  
+5. **Path B founders = 0** external.  
+6. **Green tests ≠ safe money** — audit before mainnet.  
+7. **Mobile DApp parked** — repo ≠ running Graphene client.  
+8. **Policy ≠ product** — $96, 95/5, mail, competitive wins are **design** until rails ship.
 
-## Track A Solana
+## PROVEN (device-backed)
 
-Program scaffold + CI + tests checked in. Not on devnet.
+Prefer modules + optical-airgap + digital-vending logs over any chat claim. Historical PROVEN surfaces include optical air-gap pipeline, Path B USDC→TRVL vending, integrity-verifier tooling, local operator UI — as recorded in project history and operator runs.
 
-## EVM parallel
+## Not PROVEN
 
-Hardened and tested on Pixel; CI workflow present; not Track A.
+| Item | State |
+|------|--------|
+| `trv_governance` on chain | Scaffold / CI only |
+| $96 sub collection | Policy only |
+| Creator store settlement | Policy only |
+| Viewer mail under TRV domain | Spec only |
+| Live social Integrity report | Policy only |
+| Scale / DAU vs Discord etc. | Not claimed |
+
+## Track A
+
+Solana program + CI + Phase 1 runbook staged. **Not on devnet.**
+
+## EVM
+
+Pixel Anvil tests useful for learning; not Track A.
