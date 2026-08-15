@@ -1,28 +1,37 @@
-# Competitive posture (locked)
+# Competitive posture — win the fronts that matter
 
-## Fees
+## Fees (hard win)
 
-| | Patreon / Substack-class | TRV |
-|--|-------------------------|-----|
-| Platform cut on digital | Often 10%+ | **0%** (creator **95%**, pool **5%**) |
-| NFT via TRV | Varies | Creator **90%**, pool **10%** |
-| Yearly network sub | N/A / higher friction | **$96** |
-| Node path | Rare | Free unlimited comms when permanent node is on |
+| | Typical creator platforms | TRV |
+|--|---------------------------|-----|
+| Platform cut on digital | Often **10%+** | **0%** (creator **95%**, pool **5%**) |
+| NFT primary via platform | Varies, often extracted | Creator **90%**, pool **10%**, platform **0%** |
+| Network access | Subscriptions + store tax | **$96/year** or active **node** |
 
-## Distribution
+## Reach (hard win)
 
 | | Typical apps | TRV |
 |--|--------------|-----|
-| Single OS / ROM gate | Common (store or OEM) | **Any capable phone** — Graphene is stronger tier, not exclusive |
-| Web entry | Sometimes secondary | **First-class PWA/baseline** |
-| Hardened path | Rare | Graphene/Termux **T2** without blocking stock Android |
+| Single ROM / store gate | Common | **Any capable phone** |
+| Hardened OS required | Sometimes implied | **Never required** — Graphene is **stronger**, not exclusive |
+| Web entry | Afterthought | **First-class** baseline |
+| Honest weak devices | Hidden limits | **Weaker signal stated** — no fake parity |
 
-## Safety / authenticity
+## Custody & speech
 
-- Deepfake / non-distinguishable human likeness: prohibited; distinguishable likeness OK.  
-- Integrity reports + coarse Area bulletins: real data only.  
-- No “simulation” of child-safety paths.
+| | Typical | TRV |
+|--|---------|-----|
+| Key custody | Vendor cloud default | Best available on **this** device (Keystore tiers) |
+| Unlimited human comms | Pay forever | Yearly **or** permanent node |
+| Deepfake human likeness | Weak / ignored | **Non-distinguishable likeness prohibited** |
+| Child-safety theater | Checkbox | Real-data Integrity paths — **not simulated** |
 
-## Win condition
+## What we do not claim
 
-Creators keep almost everything; Viewers are not locked to one phone brand; network stays reachable on weak hardware with honest weaker signal.
+- Live mainnet while Phase 0 compile is blocked  
+- Graphene-only magic on stock phones  
+- Platform fee “for your safety”
+
+## Scoreboard intent
+
+**Cheaper for creators, open to more phones, clearer on safety, on-chain entitlement when build host exists.**
