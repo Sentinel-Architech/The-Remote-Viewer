@@ -1,6 +1,8 @@
 # Creator helpers
 
-- `splits.ts` — **95/5** digital, **90/10** NFT, platform **0%**, integer BPS  
-- Settlement SLA target: ≤7 days once money rails live  
+**Scaffold** math — settlement rails Not PROVEN.
 
-Platform never takes a creator cut in these helpers.
+`splits.ts`: digital **95/5** · NFT primary **90/10** · platform **0%** · integer BPS  
+
+Must match on-chain constants when `trv_governance` ships.  
+Path B **vending** delivery remains PROVEN under `digital-vending/` ([PROTOCOL](../../docs/PROTOCOL.md)).
