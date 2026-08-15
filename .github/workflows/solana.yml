@@ -15,9 +15,7 @@ on:
 env:
   ANCHOR_VERSION: "0.30.1"
   SOLANA_VERSION: "1.18.18"
-  # Host toolchain for cargo resolve (edition2024 crates need newer Cargo).
-  # SBF still uses Solana platform-tools via cargo-build-sbf.
-  RUST_VERSION: "1.81.0"
+  RUST_VERSION: "1.85.0"
   SOLANA_BIN: "/home/runner/.local/share/solana/install/active_release/bin"
 
 jobs:
@@ -40,7 +38,7 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Install Rust
+      - name: Install Rust host
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ env.RUST_VERSION }}
@@ -53,7 +51,7 @@ jobs:
             ~/.cargo/git
             ~/.cargo/bin
             solana/target
-          key: solana-anchor-${{ env.ANCHOR_VERSION }}-${{ env.SOLANA_VERSION }}-${{ env.RUST_VERSION }}-v10
+          key: solana-anchor-${{ env.ANCHOR_VERSION }}-${{ env.SOLANA_VERSION }}-r${{ env.RUST_VERSION }}-v11
 
       - name: Install Solana CLI
         run: |
@@ -75,6 +73,8 @@ jobs:
           echo "${{ env.SOLANA_BIN }}" >> "$GITHUB_PATH"
           anchor --version
           solana --version
+          rustc --version
+          cargo --version
 
       - name: Keygen
         run: |
@@ -85,18 +85,18 @@ jobs:
       - name: npm install
         run: npm install
 
-      - name: Pin problematic crates
+      - name: Resolve lock with pins
         run: |
           export PATH="${{ env.SOLANA_BIN }}:$HOME/.cargo/bin:$PATH"
-          cargo generate-lockfile 2>/dev/null || true
+          cargo generate-lockfile
           cargo update -p zeroize --precise 1.3.0 || true
           cargo update -p indexmap --precise 2.6.0 || true
+          cargo tree -p indexmap -i indexmap 2>/dev/null | head -20 || true
 
       - name: Anchor build
         run: |
           export PATH="${{ env.SOLANA_BIN }}:$HOME/.cargo/bin:$HOME/.avm/bin:$PATH"
-          which solana
-          which anchor
+          cargo --version
           anchor build
         env:
           RUSTUP_TOOLCHAIN: ${{ env.RUST_VERSION }}
