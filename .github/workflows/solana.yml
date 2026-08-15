@@ -12,6 +12,7 @@ on:
       - ".github/workflows/solana.yml"
   workflow_dispatch:
 
+# PATH-fixed: no metadaoproject/setup-anchor — install Solana CLI explicitly
 env:
   ANCHOR_VERSION: "0.30.1"
   SOLANA_VERSION: "1.18.18"
@@ -51,7 +52,7 @@ jobs:
             ~/.cargo/git
             ~/.cargo/bin
             solana/target
-          key: solana-anchor-${{ env.ANCHOR_VERSION }}-${{ env.SOLANA_VERSION }}-${{ env.RUST_VERSION }}-v8
+          key: solana-anchor-${{ env.ANCHOR_VERSION }}-${{ env.SOLANA_VERSION }}-${{ env.RUST_VERSION }}-v9
 
       - name: Install Solana CLI
         run: |
