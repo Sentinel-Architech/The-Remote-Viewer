@@ -2,10 +2,10 @@
 
 | Asset | Role |
 |-------|------|
-| **The Sentinel** | Core protector logo — shield / watch motif |
-| **The Remote Viewer** | Hero depiction — Sentinel keeping watch |
+| The Sentinel | Core protector logo |
+| The Remote Viewer | Hero — Sentinel on watch |
 
-Place final exports here (`sentinel-logo.png`, `remote-viewer-hero.png`).  
-Active search UI: holographic shield glow **red / white / blue**, clockwise, with elapsed time.
+Drop exports: `sentinel-logo.png`, `remote-viewer-hero.png`.  
+Active search: R/W/B holographic shield + elapsed time ([MODALITIES](../docs/locked/MODALITIES.md)).
 
-Do not substitute random stock for the locked marks once files are added.
+Scaffold placement only until assets committed.
