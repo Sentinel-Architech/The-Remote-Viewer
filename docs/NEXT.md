@@ -1,30 +1,17 @@
 # NEXT
 
-## Critical path
+Full march: **[PATH-TO-LIVE.md](PATH-TO-LIVE.md)**.
 
-1. **Solana Anchor CI — `anchor build` green**  
-2. Commit `solana/Cargo.lock` after first green resolve  
-3. Build host: `anchor keys list` → real program id (not Pixel)  
-4. Devnet deploy when tests are real-green  
+## Right now
 
-## Parallel (any time)
+1. **Solana CI green** (`metadaoproject/setup-anchor` workflow)  
+2. Download CI artifacts if build passes  
+3. Commit Cargo.lock from green resolve  
 
-- Brand masters into `branding/` when a device has the files  
-- Pick public yearly sub price ($48–96 band)  
-- Mail domain name (no purchase required to decide the string)  
-- Sales key on cold/hardware practice (CUSTODY-OPS)  
+## Parallel anytime
 
-## After CI green
-
-- Pool PDA + spend ix  
-- Creator settlement path  
-- Multisig authority  
-- Integrity report when client exists  
-
-## Not now
-
-- Mainnet  
-- Anchor 1.x rewrite  
-- Guaranteed living wage without buyers  
+- Brand PNGs when a device has them  
+- Cold sales key practice  
+- Mail domain string decision  
 
 Path B founders: **0**.
