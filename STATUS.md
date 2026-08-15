@@ -1,34 +1,30 @@
 # TRV status — 2026-08-14
 
-**SCAFFOLD where noted.** **PROVEN** claims only in [`docs/REALITY.md`](docs/REALITY.md).
+**PROVEN** claims: [`docs/REALITY.md`](docs/REALITY.md) only.  
+**Gap register:** [`docs/BLIND-SPOTS.md`](docs/BLIND-SPOTS.md).
 
 ## Track A — Solana
 
 | Item | State |
 |------|--------|
-| `trv_governance` | Scaffold ix surface + VALUE bps constants |
-| Toolchain | Anchor 0.30.1 · Solana 1.18.26 · Rust 1.79 |
-| CI | **Gate:** latest Solana Anchor Actions must show green **build** |
-| Deploy | Not devnet/mainnet |
+| Program | Scaffold + VALUE bps |
+| CI | **Build gate** — latest Solana Anchor workflow |
+| Deploy | None |
 
 ## Brand
 
-| Asset | Path |
-|-------|------|
-| Sentinel logo | `branding/sentinel-logo.png` |
-| Remote Viewer hero | `branding/remote-viewer-hero.png` |
-| Spec | [`branding/BRAND.md`](branding/BRAND.md) |
+Upload `branding/sentinel-logo.png` + `remote-viewer-hero.png` if missing.
 
-## Policy / ops docs
+## Parallel docs (required)
 
-VALUE · PAYMENTS · AUTHORITY · IDENTITY · POOL-GOVERNANCE · locked/SAFETY
+VALUE · PAYMENTS · AUTHORITY · IDENTITY · POOL-GOVERNANCE · SAFETY · AGE-POLICY · CUSTODY-OPS · BLIND-SPOTS
 
-## Parallel EVM
+## EVM
 
-9/9 tests on Pixel Anvil — learning only.
+9/9 Pixel — learning only.
 
 ## Mobile
 
-PARKED (Expo / Graphene).
+PARKED.
 
-## Path B founders: **0** (originator Path A = 1)
+## Path B founders: **0**
