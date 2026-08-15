@@ -7,6 +7,12 @@ use anchor_spl::token::TokenAccount;
 // Scaffold program id (valid base58 Pubkey). Replace via `anchor keys list` before deploy.
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 
+/// VALUE.md splits (basis points / 10_000). Platform fee = 0.
+pub const DIGITAL_CREATOR_BPS: u16 = 9500;
+pub const DIGITAL_POOL_BPS: u16 = 500;
+pub const NFT_CREATOR_BPS: u16 = 9000;
+pub const NFT_POOL_BPS: u16 = 1000;
+
 #[program]
 pub mod trv_governance {
     use super::*;
