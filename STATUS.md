@@ -1,29 +1,36 @@
-# TRV status — 2026-08-14 (late)
+# TRV status — 2026-08-14 (night)
 
-**PROVEN:** [`docs/REALITY.md`](docs/REALITY.md) only.  
-**March:** [`docs/PATH-TO-LIVE.md`](docs/PATH-TO-LIVE.md).  
-**Compete:** [`docs/COMPETITIVE.md`](docs/COMPETITIVE.md).
+**PROVEN:** [`docs/REALITY.md`](docs/REALITY.md)  
+**Blocker detail:** [`docs/CI-BLOCKER.md`](docs/CI-BLOCKER.md)  
+**March:** [`docs/PATH-TO-LIVE.md`](docs/PATH-TO-LIVE.md)
 
 ## Track A — Solana
 
 | Item | State |
 |------|--------|
-| Program scaffold | Complete + VALUE bps |
-| CI | PATH fix for `solana` CLI — watch latest Solana Anchor |
-| Phase 1 | `solana/DEVNET.md` + `scripts/smoke-entitlement.ts` staged |
+| Program scaffold | Present (Anchor **0.32.1**) |
+| Policy / BPS / entitlement design | Locked in docs |
+| **`anchor build` CI** | **BLOCKED** — SBF Cargo ~1.84 cannot parse crates.io `edition2024` |
 | Deploy | None |
 
-## Product policy
+**Not** a bad program or bad Pixel. Nested platform-tools Cargo vs 2026 crates.io.
+
+## Product policy (ready when chain is)
 
 | Item | Value |
 |------|--------|
 | Yearly sub | **$96** |
 | Creator digital | **95/5**, platform **0%** |
 | Creator NFT | **90/10**, platform **0%** |
-| Mail | TRV-domain alias (Phase A) |
 
 ## Mobile
 
 PARKED.
 
 ## Path B founders: **0**
+
+## Next engineering (when ready)
+
+1. Build host or newer platform-tools (see CI-BLOCKER)  
+2. Green `.so` + IDL artifact  
+3. Phase 1 devnet runbook  
