@@ -1,11 +1,9 @@
 # Reality — authority for PROVEN claims
 
-**Updated 2026-08-14 (night).**  
+**Updated 2026-08-14 (22:45 ET).**  
 **Rule:** PROVEN = ran under operator control on a real device. Scripts in git alone are not PROVEN.
 
-**Promotion checklists:** [PROVEN-NEEDED.md](PROVEN-NEEDED.md)  
-**Protocol:** [PROTOCOL.md](PROTOCOL.md)  
-**Vending:** [../digital-vending/PROTOCOL.md](../digital-vending/PROTOCOL.md)
+**Promotion:** [PROVEN-NEEDED.md](PROVEN-NEEDED.md) · **Protocol:** [PROTOCOL.md](PROTOCOL.md)
 
 ---
 
@@ -26,20 +24,26 @@
 
 ---
 
-## Not PROVEN (upgraded scaffolds — need proof)
+## DEMONSTRATED (operator device, not full product PROVEN)
+
+| Surface | Status | Notes |
+|---------|--------|--------|
+| **PWA baseline** (`clients/pwa`) | **DEMONSTRATED** | 2026-08-14: Termux `http.server` from `clients/pwa`, browser `127.0.0.1:8080` — Signal, Access ($96/node/free), on-device learning card, Welcome tutorial. Checklist **B2** pass. Not chain entitlement; not store client. |
+
+---
+
+## Not PROVEN
 
 | Item | State | Checklist |
 |------|--------|-----------|
-| `trv_governance` on chain | Scaffold · CI build blocked | PROVEN-NEEDED **A** |
-| $96 sub collection | Policy only | After A + payments |
-| Creator settlement rails | Helpers only | **G** |
-| PWA as shipped client | Scaffold (code upgraded) | **B** |
+| `trv_governance` on chain | Scaffold · CI blocked | **A** |
+| $96 sub collection | Policy | After A |
+| Creator settlement rails | Helpers | **G** |
 | android-cap live probes | Scaffold | **C** |
 | Wear companion | Scaffold | **D** |
 | Entitlement RPC client | Scaffold | **E** (needs A) |
 | Live Integrity network UI | Scaffold | **F** |
-| Continuous learning no-exfil | Policy + scaffold | **H** |
-| Viewer mail TRV domain | Spec | — |
+| Continuous learning no-exfil attest | Partial (UI only) | **H** |
 | Path B external founders | **0** | — |
 | Scale / DAU | Not claimed | — |
 
@@ -47,10 +51,9 @@
 
 ## Operators often miss
 
-1. Solana build host ≠ Termux  
-2. Policy ≠ product  
-3. Upgraded scaffold ≠ PROVEN  
-4. Never commit mint/authority keys  
+1. DEMONSTRATED ≠ PROVEN network product  
+2. Solana build host ≠ Termux  
+3. Policy ≠ product  
 
 ## Track A
 
