@@ -1,20 +1,23 @@
 # Viewer destroy / wipe
 
-## Rule (locked)
+## Rule
 
-Destruction is **hard by design**:
+1. **Deep settings** only  
+2. Type **Viewer name** exactly  
+3. Confirm via **phone call or SMS** to bound number (not email-primary)  
+4. Then wipe  
 
-1. Viewer opens **deep settings** (not a casual menu)  
-2. Types **their Viewer name** exactly  
-3. Confirms via **phone call or SMS** to the number bound for recovery — **not** email as the primary factor  
-4. Only then wipe local keys + request chain-side deactivation where applicable  
+## What is wiped
 
-## Why phone not email
+- Local age/identity material (Destroy = Restart)  
+- **L0/L1 continuous learning** prefs and session memory ([CONTINUOUS-LEARNING](CONTINUOUS-LEARNING.md))  
+- Cached entitlement / signal  
+- Request chain deactivation when entitlement program is live  
 
-Operational preference of the network founder path. SMS/call is still **SIM-swap exposed** — see [THREAT-MODEL](THREAT-MODEL.md). Long-term root remains device keystore + chain authority, not the phone number.
+## What is not claimed
+
+SMS is SIM-swap exposed ([THREAT-MODEL](THREAT-MODEL.md)). Root trust remains device keystore + chain authority.
 
 ## UX
 
-- No single “Delete account” on the home screen  
-- Multi-step with plain-language consequences (comms, sales, node)  
-- Export reminder before wipe when keys are exportable  
+Multi-step · plain consequences · export reminder if keys exportable · no home-screen one-tap delete
