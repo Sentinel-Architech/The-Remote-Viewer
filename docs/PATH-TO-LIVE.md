@@ -1,52 +1,48 @@
-# Path to live (get there)
+# Path to live
 
-Client policy: [`locked/CLIENT-SURFACE.md`](locked/CLIENT-SURFACE.md).  
-CI blocker: [`CI-BLOCKER.md`](CI-BLOCKER.md).
+Locks: [`LOCKED-INDEX.md`](LOCKED-INDEX.md) · Client: [`locked/CLIENT-SURFACE.md`](locked/CLIENT-SURFACE.md) · Caps: [`locked/ANDROID-CAPABILITIES.md`](locked/ANDROID-CAPABILITIES.md)
 
 ## Phase 0 — Compile
 
-**Status: BLOCKED** — SBF Cargo ~1.84 vs crates.io `edition2024`.
+**BLOCKED only on toolchain** ([CI-BLOCKER.md](CI-BLOCKER.md)) — product rules are not blocked.
 
-- [ ] `anchor build` green (build host or newer platform-tools)
-- [ ] Commit `solana/Cargo.lock` from green run
-- [ ] Artifacts: `.so` + IDL
-
-Scaffold: Anchor **0.32.1**.
+- [ ] `anchor build` green (host with platform-tools Cargo ≥ 1.85)
+- [ ] Commit `solana/Cargo.lock`
+- [ ] CI artifacts: `.so` + IDL
 
 ## Phase 1 — Devnet entitlement
 
-- [ ] Deploy + `initialize` → `grant_subscription` → `refresh_entitlement`
+- [ ] Deploy + initialize + grant + refresh
 - [ ] `unlimited_comms == true` on test Viewer
+- [ ] Practice authority transfer on devnet
 
 ## Phase 2 — Money rails
 
 - [ ] Collect **$96/year**
 - [ ] Ops → `grant_subscription`
-- [ ] Creator **95/5** settlement ≤7 days
+- [ ] Creator **95/5** settlement ≤7 days (0% platform)
 
-## Phase 3 — Surface (any capable phone)
+## Phase 3 — Surface (strength without gate)
 
-Graphene is a **tier**, not a gate. See CLIENT-SURFACE.
+- [ ] **Web/PWA** — any modern phone enters
+- [ ] **Android** shell + `clients/android-cap` `mapTier()`
+- [ ] Honest signal by tier
+- [ ] Graphene **T2** paths as upgrade
+- [ ] Integrity UI on every tier that ships UI
+- [ ] Brand: Sentinel logo + Remote Viewer hero
+- [ ] iOS only under full E2E rules
 
-- [ ] **Web/PWA baseline** — any modern phone browser can enter
-- [ ] **Android app** with capability detection (camera/mic/storage → T0/T1)
-- [ ] Signal tiers by device potential (weaker signal OK on lower tiers)
-- [ ] Graphene / Termux paths as **T2** enhancements (optical, local AI)
-- [ ] Integrity report entry (all tiers that can ship UI)
-- [ ] Brand assets in `branding/`
-- [ ] iOS only when E2E rules are met without silent compromise
+## Phase 4 — Network pressure
 
-## Phase 4 — Parity pressure
-
-- [ ] Pool PDA + spend
-- [ ] Viewer mail Phase A
+- [ ] Pool PDA + governed spend
+- [ ] Viewer mail Phase A (TRV domain plan)
 - [ ] Free-tier abuse limits
-- [ ] Node path → unlimited comms (any device that can host)
+- [ ] Node → unlimited comms (chain-verified)
 
-## Phase 5 — Only then
+## Phase 5 — Mainnet gate
 
 - [ ] Audit discussion
 - [ ] Mainnet decision
-- [ ] PROVEN entitlement in REALITY.md
+- [ ] PROVEN entitlement line in REALITY.md
 
-**Do not skip to Phase 5.**
+**No skipping to Phase 5.**
