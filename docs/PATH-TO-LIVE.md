@@ -1,48 +1,36 @@
 # Path to live
 
-Locks: [`LOCKED-INDEX.md`](LOCKED-INDEX.md) · Client: [`locked/CLIENT-SURFACE.md`](locked/CLIENT-SURFACE.md) · Caps: [`locked/ANDROID-CAPABILITIES.md`](locked/ANDROID-CAPABILITIES.md)
+**Start:** [STREAMLINE.md](STREAMLINE.md) · Wear: [locked/WEARABLES.md](locked/WEARABLES.md)
 
 ## Phase 0 — Compile
 
-**BLOCKED only on toolchain** ([CI-BLOCKER.md](CI-BLOCKER.md)) — product rules are not blocked.
+**BLOCKED** on SBF toolchain only ([CI-BLOCKER](CI-BLOCKER.md)).
 
-- [ ] `anchor build` green (host with platform-tools Cargo ≥ 1.85)
-- [ ] Commit `solana/Cargo.lock`
-- [ ] CI artifacts: `.so` + IDL
+- [ ] `anchor build` green · Cargo.lock · `.so` + IDL
 
 ## Phase 1 — Devnet entitlement
 
-- [ ] Deploy + initialize + grant + refresh
-- [ ] `unlimited_comms == true` on test Viewer
-- [ ] Practice authority transfer on devnet
+- [ ] Deploy · grant · refresh · `unlimited_comms`
 
 ## Phase 2 — Money rails
 
-- [ ] Collect **$96/year**
-- [ ] Ops → `grant_subscription`
-- [ ] Creator **95/5** settlement ≤7 days (0% platform)
+- [ ] **$96/year** · creator **95/5** · platform **0%**
 
-## Phase 3 — Surface (strength without gate)
+## Phase 3 — Surface
 
-- [ ] **Web/PWA** — any modern phone enters
-- [ ] **Android** shell + `clients/android-cap` `mapTier()`
-- [ ] Honest signal by tier
-- [ ] Graphene **T2** paths as upgrade
-- [ ] Integrity UI on every tier that ships UI
-- [ ] Brand: Sentinel logo + Remote Viewer hero
-- [ ] iOS only under full E2E rules
+- [ ] Web/PWA (any phone)  
+- [ ] Android + `mapTier()`  
+- [ ] **Wear OS glance + audio route** (optional)  
+- [ ] Graphene T2  
+- [ ] Integrity UI  
+- [ ] Brand assets  
 
-## Phase 4 — Network pressure
+## Phase 4 — Network
 
-- [ ] Pool PDA + governed spend
-- [ ] Viewer mail Phase A (TRV domain plan)
-- [ ] Free-tier abuse limits
-- [ ] Node → unlimited comms (chain-verified)
+- [ ] Pool · mail Phase A · free-tier limits · node path
 
 ## Phase 5 — Mainnet gate
 
-- [ ] Audit discussion
-- [ ] Mainnet decision
-- [ ] PROVEN entitlement line in REALITY.md
+- [ ] Audit · mainnet · PROVEN line  
 
 **No skipping to Phase 5.**
