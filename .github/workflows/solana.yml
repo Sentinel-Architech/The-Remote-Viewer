@@ -44,7 +44,7 @@ jobs:
             ~/.cargo/git
             ~/.cargo/bin
             solana/target
-          key: ${{ runner.os }}-a0301-sol${{ env.SOLANA_VERSION }}-z13-v5
+          key: ${{ runner.os }}-a0301-sol${{ env.SOLANA_VERSION }}-z13-v6
 
       - name: Install Solana ${{ env.SOLANA_VERSION }}
         run: |
@@ -67,13 +67,18 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y pkg-config build-essential libudev-dev libssl-dev
 
-      - name: Install Anchor (avm)
+      - name: Install Anchor
         run: |
-          cargo install --git https://github.com/coral-xyz/anchor --tag v${{ env.ANCHOR_VERSION }} avm --locked --force
+          set -e
           export PATH="$HOME/.cargo/bin:$PATH"
-          avm install ${{ env.ANCHOR_VERSION }}
-          avm use ${{ env.ANCHOR_VERSION }}
-          echo "$HOME/.avm/bin" >> $GITHUB_PATH
+          if cargo install --git https://github.com/coral-xyz/anchor --tag v${{ env.ANCHOR_VERSION }} avm --locked --force; then
+            avm install ${{ env.ANCHOR_VERSION }}
+            avm use ${{ env.ANCHOR_VERSION }}
+            echo "$HOME/.avm/bin" >> $GITHUB_PATH
+          else
+            echo "avm path failed; trying npm @coral-xyz/anchor-cli"
+            npm install -g @coral-xyz/anchor-cli@${{ env.ANCHOR_VERSION }} || npm install -g @coral-xyz/anchor-cli@0.30.1
+          fi
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           anchor --version
 
