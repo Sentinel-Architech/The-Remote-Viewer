@@ -1,9 +1,11 @@
 # Reality — authority for PROVEN claims
 
 **Updated 2026-08-14 (night).**  
-**Rule:** PROVEN = ran under operator control on a real device. Scripts in git alone are not PROVEN. Chat is subordinate to this file.
+**Rule:** PROVEN = ran under operator control on a real device. Scripts in git alone are not PROVEN.
 
-Protocol map: [`PROTOCOL.md`](PROTOCOL.md) · Vending: [`../digital-vending/PROTOCOL.md`](../digital-vending/PROTOCOL.md)
+**Promotion checklists:** [PROVEN-NEEDED.md](PROVEN-NEEDED.md)  
+**Protocol:** [PROTOCOL.md](PROTOCOL.md)  
+**Vending:** [../digital-vending/PROTOCOL.md](../digital-vending/PROTOCOL.md)
 
 ---
 
@@ -11,53 +13,45 @@ Protocol map: [`PROTOCOL.md`](PROTOCOL.md) · Vending: [`../digital-vending/PROT
 
 | Surface | Status | Notes |
 |---------|--------|--------|
-| Optical air-gap | **PROVEN** | age → Robust Soliton LT (TRVL) → peel → decrypt; GrapheneOS+Termux |
-| Local age identity | **PROVEN** | Device-held; not in git; Destroy = Restart |
-| Path B USDC memo → TRVL deliver | **PROVEN** | Payment signal ≠ delivery; local sales.log |
-| Empty-frame / empty sha refuse | **PROVEN** | log-sale + verifier |
-| Integrity Verifier | **PROVEN** | Contribution + sales.log attestation |
+| Optical air-gap | **PROVEN** | age → Soliton LT (TRVL) → peel → decrypt |
+| Local age identity | **PROVEN** | Device-held; Destroy = Restart |
+| Path B USDC memo → TRVL | **PROVEN** | Payment ≠ delivery |
+| Empty-frame refuse | **PROVEN** | log-sale + verifier |
+| Integrity Verifier | **PROVEN** | contribution + sales.log |
 | Path B recognition loop | **OPERATIONAL** | collect → attest → verify → issue → install |
-| Community pool gross visibility | **OPERATIONAL** | Public memo volume; no custody |
-| Dense local models (Termux) | **PROVEN** | e.g. TinyLlama / Qwen paths as operator-run |
-| Sparse MoE load+gen | **PROVEN** | Operator-run weights |
-| Hydra / integrity-pulse | **PROVEN** | modules/defense as operator-run |
-| Local operator UI | **PROVEN** | apps/ui under operator control |
-
-Prefer `optical-airgap/`, `digital-vending/`, `modules/integrity-verifier/`, and operator logs over any summary.
+| Pool gross visibility | **OPERATIONAL** | public memo volume; no custody |
+| Local models / MoE load | **PROVEN** | operator-run Termux paths |
+| Hydra / integrity-pulse | **PROVEN** | modules/defense |
+| Local operator UI | **PROVEN** | apps/ui |
 
 ---
 
-## Not PROVEN
+## Not PROVEN (upgraded scaffolds — need proof)
 
-| Item | State |
-|------|--------|
-| `trv_governance` on Solana | Scaffold + CI only — **not deployed** |
-| Green `anchor build` on GH Actions | **Blocked** (SBF Cargo / edition2024) |
-| $96 network sub collection | Policy only |
-| Creator 95/5 settlement rails | Policy + client helpers only |
-| Viewer mail @ TRV domain | Spec only |
-| Live social Integrity network | Policy + UI scaffold |
-| Wear OS companion app | Scaffold only |
-| Multi-phone production clients | Scaffold (PWA / android-cap) |
-| Scale / DAU claims | **Not claimed** |
-| Path B external founders | **0** |
+| Item | State | Checklist |
+|------|--------|-----------|
+| `trv_governance` on chain | Scaffold · CI build blocked | PROVEN-NEEDED **A** |
+| $96 sub collection | Policy only | After A + payments |
+| Creator settlement rails | Helpers only | **G** |
+| PWA as shipped client | Scaffold (code upgraded) | **B** |
+| android-cap live probes | Scaffold | **C** |
+| Wear companion | Scaffold | **D** |
+| Entitlement RPC client | Scaffold | **E** (needs A) |
+| Live Integrity network UI | Scaffold | **F** |
+| Continuous learning no-exfil | Policy + scaffold | **H** |
+| Viewer mail TRV domain | Spec | — |
+| Path B external founders | **0** | — |
+| Scale / DAU | Not claimed | — |
 
 ---
 
 ## Operators often miss
 
-1. Solana **build host ≠ Termux**  
-2. `declare_id!` is scaffold until `anchor keys list` on a real host  
-3. Policy ($96, splits, mail) ≠ shipped product  
-4. Mint/authority keys are root power — never commit  
-5. Green unit tests ≠ safe mainnet money  
+1. Solana build host ≠ Termux  
+2. Policy ≠ product  
+3. Upgraded scaffold ≠ PROVEN  
+4. Never commit mint/authority keys  
 
----
+## Track A
 
-## Track A (Solana entitlement)
-
-Design + program scaffold **0.32.1**. **Not on devnet.** Unblock: [CI-BLOCKER.md](CI-BLOCKER.md).
-
-## Reference environment (PROVEN work)
-
-GrapheneOS + Termux + branch `TheRemoteViewer`, optical + vending + verifier as operator-run.
+Anchor **0.32.1** scaffold. Not on devnet. [CI-BLOCKER.md](CI-BLOCKER.md).
