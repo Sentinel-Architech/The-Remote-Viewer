@@ -1,22 +1,24 @@
-# android-cap — device potential detection
+# android-cap — device potential (strong, honest)
 
-Scaffold for **any Android phone**. Graphene is detected as a stronger environment when present; it is not required.
+Not a Graphene detector. A **capability** detector for **any Android phone**.
 
-## Layout
+| File | Role |
+|------|------|
+| `potential.ts` | Types + `mapTier()` |
+| `map-tier.ts` | Re-export |
+| `probes.android.md` | Kotlin probe checklist |
 
-```text
-clients/android-cap/
-  README.md
-  potential.ts          # pure types + tier derivation (PWA + RN shared)
-  probes.android.md     # native probe checklist (Kotlin/Java)
-  map-tier.ts           # tier 0–3 from probe results
-```
+Policy: [`docs/locked/ANDROID-CAPABILITIES.md`](../../docs/locked/ANDROID-CAPABILITIES.md)  
+Surface: [`docs/locked/CLIENT-SURFACE.md`](../../docs/locked/CLIENT-SURFACE.md)
 
-## Use
+## Rules baked in
 
-1. Run probes at session start and when returning from settings.  
-2. Feed results into `mapTier()`.  
-3. Gate UI features on `DevicePotential`, not on marketing labels.  
-4. Entitlement (unlimited comms) still comes from Solana node/sub — not from tier alone.
+1. Tier is **derived from probes**, never a vanity picker.  
+2. Feature off when probe is `none` / `denied` — plain copy, no fake glow.  
+3. Graphene/local runtime raises tier when **detected**, not when advertised.  
+4. Node opt-in ≠ unlimited comms until **Solana entitlement** says so.  
+5. Permissions asked **at feature use**, not as a first-launch shakedown.
 
-See `docs/locked/ANDROID-CAPABILITIES.md`.
+## Signal
+
+`signalHint`: `weak` | `standard` | `strong` — product may throttle quality; it may **not** throttle rights (constitution, creator splits, safety rules).
