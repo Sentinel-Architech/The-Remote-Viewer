@@ -1,6 +1,6 @@
 # Reality — authority for PROVEN claims
 
-**Updated 2026-08-14 (23:02 ET).**  
+**Updated 2026-08-14 (23:10 ET).**  
 **Rule:** PROVEN = ran under operator control on a real device. Scripts in git alone are not PROVEN.
 
 **Promotion:** [PROVEN-NEEDED.md](PROVEN-NEEDED.md) · **Protocol:** [PROTOCOL.md](PROTOCOL.md)
@@ -16,45 +16,36 @@
 | Path B USDC memo → TRVL | **PROVEN** | Payment ≠ delivery |
 | Empty-frame refuse | **PROVEN** | log-sale + verifier |
 | Integrity Verifier | **PROVEN** | contribution + sales.log |
-| Path B recognition loop | **OPERATIONAL** | collect → attest → verify → issue → install |
-| Pool gross visibility | **OPERATIONAL** | public memo volume; no custody |
-| Local models / MoE load | **PROVEN** | operator-run Termux paths |
-| Hydra / integrity-pulse | **PROVEN** | modules/defense |
-| Local operator UI | **PROVEN** | apps/ui |
+| Path B recognition loop | **OPERATIONAL** | |
+| Pool gross visibility | **OPERATIONAL** | |
+| Local models / MoE load | **PROVEN** | operator-run |
+| Hydra / integrity-pulse | **PROVEN** | |
+| Local operator UI | **PROVEN** | |
 
 ---
 
-## DEMONSTRATED (operator device, not full product PROVEN)
+## DEMONSTRATED (operator device)
 
 | Surface | Status | Notes |
 |---------|--------|--------|
-| **PWA baseline** (`clients/pwa`) | **DEMONSTRATED** | 2026-08-14: Termux `http.server`, `127.0.0.1:8080` — Signal, Access, learning, tutorial (**B2**) |
-| **On-device learning L0** | **DEMONSTRATED** | **H1** persist across reload · **H2** Reset local data restores Welcome · **H3** scaffold has no learning upload (localStorage only, conduct opt-in default no) |
+| **PWA baseline** | **DEMONSTRATED** | B2 — `127.0.0.1:8080` |
+| **On-device learning L0** | **DEMONSTRATED** | H1 persist · H2 Reset wipe · H3 no upload |
+| **android-cap Termux probe** | **DEMONSTRATED (partial C)** | 2026-08-14 Pixel 7: API 37, localRuntime true, camera ready_or_present, mic tool_present; **keystore not probed** (needs native shell) |
 
 ---
 
 ## Not PROVEN
 
-| Item | State | Checklist |
-|------|--------|-----------|
-| `trv_governance` on chain | Scaffold · CI blocked | **A** |
-| $96 sub collection | Policy | After A |
-| Creator settlement rails | Helpers | **G** |
-| android-cap live probes | Scaffold | **C** |
-| Wear companion | Scaffold | **D** |
-| Entitlement RPC client | Scaffold | **E** (needs A) |
-| Live Integrity network UI | Scaffold | **F** |
-| Path B external founders | **0** | — |
-| Scale / DAU | Not claimed | — |
-
----
-
-## Operators often miss
-
-1. DEMONSTRATED ≠ PROVEN network product  
-2. Solana build host ≠ Termux  
-3. Policy ≠ product  
+| Item | State |
+|------|--------|
+| `trv_governance` on chain | Scaffold · CI blocked (**A**) |
+| Full mapTier + Keystore instrumentation | Needs Android shell |
+| Wear companion | Scaffold (**D**) |
+| Entitlement RPC | Needs **A** |
+| $96 rails / settlement | Policy (**G**) |
+| Live Integrity network | Scaffold (**F**) |
+| Path B external founders | **0** |
 
 ## Track A
 
-Anchor **0.32.1** scaffold. Not on devnet. [CI-BLOCKER.md](CI-BLOCKER.md).
+Anchor **0.32.1**. [CI-BLOCKER.md](CI-BLOCKER.md).
