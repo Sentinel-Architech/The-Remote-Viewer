@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0a1628" />
+  <title>The Remote Viewer</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="mark" aria-hidden="true">◆</div>
+    <div>
+      <h1>The Remote Viewer</h1>
+      <p class="tag">Any capable phone · Sentinel on watch</p>
+    </div>
+  </header>
+
+  <main>
+    <section id="signal" class="card">
+      <h2>Signal</h2>
+      <p id="signal-line">Detecting device potential…</p>
+    </section>
+
+    <section id="entitlement" class="card">
+      <h2>Access</h2>
+      <p id="entitlement-line">Chain entitlement not connected yet.</p>
+      <ul class="paths">
+        <li><strong>Free</strong> — weaker signal</li>
+        <li><strong>$96 / year</strong> — unlimited human comms</li>
+        <li><strong>Permanent node</strong> — unlimited while active</li>
+      </ul>
+    </section>
+
+    <section id="tutorial" class="card hidden">
+      <h2>Welcome</h2>
+      <div id="tutorial-body"></div>
+      <button type="button" id="tutorial-done">Got it</button>
+    </section>
+  </main>
+
+  <footer>
+    <p>Platform fee on creator sales: <strong>0%</strong>. Graphene optional.</p>
+  </footer>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
