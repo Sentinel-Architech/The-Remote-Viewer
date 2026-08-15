@@ -1,15 +1,15 @@
-# Clients
+# Clients — all ends
 
-**Truth:** [docs/REALITY.md](../docs/REALITY.md) · **Rails:** [docs/PROTOCOL.md](../docs/PROTOCOL.md)
+**Truth:** [docs/REALITY.md](../docs/REALITY.md) · **Map:** [docs/SYSTEM-ENDS.md](../docs/SYSTEM-ENDS.md)
 
-| Module | Role | State |
-|--------|------|--------|
-| `pwa/` | Any-phone entry + tutorial | Scaffold |
-| `android-cap/` | Device + wearable potential | Scaffold |
-| `wear-os/` | Glance + bridge (no keys) | Scaffold |
-| `entitlement/` | Access view from chain | Scaffold — no fake RPC success |
-| `safety-ui/` | Integrity + Area notices | Scaffold |
-| `creator/` | BPS 95/5 · 90/10 · 0% platform | Scaffold helpers |
-| `shared/` | Feature flags | Scaffold |
+| Module | End | State |
+|--------|-----|--------|
+| `pwa/` | Browser T0 entry | Scaffold |
+| `android-cap/` | Phone + wear potential | Scaffold |
+| `wear-os/` | Glance / bridge | Scaffold |
+| `entitlement/` | Access from chain | Scaffold |
+| `safety-ui/` | Integrity + Area | Scaffold |
+| `creator/` | BPS splits | Scaffold |
+| `shared/` | Flags + **learning** | Scaffold |
 
-PROVEN transport/vending live under `optical-airgap/` and `digital-vending/`, not here.
+PROVEN ends: `optical-airgap/` · `digital-vending/` · `modules/*` — not this folder.
