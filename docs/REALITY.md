@@ -1,6 +1,6 @@
 # Reality — authority for PROVEN claims
 
-**Updated 2026-08-14 (22:45 ET).**  
+**Updated 2026-08-14 (23:02 ET).**  
 **Rule:** PROVEN = ran under operator control on a real device. Scripts in git alone are not PROVEN.
 
 **Promotion:** [PROVEN-NEEDED.md](PROVEN-NEEDED.md) · **Protocol:** [PROTOCOL.md](PROTOCOL.md)
@@ -28,7 +28,8 @@
 
 | Surface | Status | Notes |
 |---------|--------|--------|
-| **PWA baseline** (`clients/pwa`) | **DEMONSTRATED** | 2026-08-14: Termux `http.server` from `clients/pwa`, browser `127.0.0.1:8080` — Signal, Access ($96/node/free), on-device learning card, Welcome tutorial. Checklist **B2** pass. Not chain entitlement; not store client. |
+| **PWA baseline** (`clients/pwa`) | **DEMONSTRATED** | 2026-08-14: Termux `http.server`, `127.0.0.1:8080` — Signal, Access, learning, tutorial (**B2**) |
+| **On-device learning L0** | **DEMONSTRATED** | **H1** persist across reload · **H2** Reset local data restores Welcome · **H3** scaffold has no learning upload (localStorage only, conduct opt-in default no) |
 
 ---
 
@@ -43,7 +44,6 @@
 | Wear companion | Scaffold | **D** |
 | Entitlement RPC client | Scaffold | **E** (needs A) |
 | Live Integrity network UI | Scaffold | **F** |
-| Continuous learning no-exfil attest | Partial (UI only) | **H** |
 | Path B external founders | **0** | — |
 | Scale / DAU | Not claimed | — |
 
