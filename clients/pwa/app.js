@@ -85,6 +85,24 @@ function showTutorialIfNeeded() {
   }
 }
 
+async function probeMedia() {
+  const out = document.getElementById("probe-line");
+  if (!out) return;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    out.textContent = "Media APIs none — camera/mic not available in this browser.";
+    return;
+  }
+  out.textContent = "Requesting mic (deny to test C3-style degrade)…";
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach((t) => t.stop());
+    out.textContent = "Mic probe: ready (permission granted). Voice path can enable.";
+  } catch (e) {
+    out.textContent =
+      "Mic probe: denied or failed — voice features stay off (honest degrade).";
+  }
+}
+
 showSignal();
 showLearning();
 showTutorialIfNeeded();
@@ -103,6 +121,9 @@ if (resetBtn) {
   };
 }
 
+const probeBtn = document.getElementById("probe-media");
+if (probeBtn) probeBtn.onclick = () => probeMedia();
+
 window.TRV = {
   loadLearning,
   saveLearning,
@@ -111,4 +132,5 @@ window.TRV = {
     showLearning();
   },
   clearAllLocal,
+  probeMedia,
 };
