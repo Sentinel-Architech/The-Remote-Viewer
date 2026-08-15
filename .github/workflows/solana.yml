@@ -12,7 +12,6 @@ on:
       - ".github/workflows/solana.yml"
   workflow_dispatch:
 
-# Frozen toolchain inside image — avoids host edition2024 / crates.io skew
 jobs:
   build-and-test:
     name: anchor-build-test
@@ -40,6 +39,17 @@ jobs:
 
       - name: npm install
         run: npm install
+
+      - name: Pin crates (edition2024 avoidance)
+        run: |
+          set -euo pipefail
+          cargo generate-lockfile 2>/dev/null || true
+          cargo update -p digest --precise 0.10.7 || true
+          cargo update -p indexmap --precise 2.6.0 || true
+          cargo update -p blake3 --precise 1.5.5 || true
+          cargo update -p zeroize --precise 1.3.0 || true
+          cargo update -p constant_time_eq --precise 0.3.1 || true
+          cargo tree -i digest 2>/dev/null | head -15 || true
 
       - name: Anchor build
         run: anchor build
