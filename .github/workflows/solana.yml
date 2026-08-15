@@ -12,11 +12,12 @@ on:
       - ".github/workflows/solana.yml"
   workflow_dispatch:
 
-# PATH-fixed: no metadaoproject/setup-anchor — install Solana CLI explicitly
 env:
   ANCHOR_VERSION: "0.30.1"
   SOLANA_VERSION: "1.18.18"
-  RUST_VERSION: "1.79.0"
+  # Host toolchain for cargo resolve (edition2024 crates need newer Cargo).
+  # SBF still uses Solana platform-tools via cargo-build-sbf.
+  RUST_VERSION: "1.81.0"
   SOLANA_BIN: "/home/runner/.local/share/solana/install/active_release/bin"
 
 jobs:
@@ -52,7 +53,7 @@ jobs:
             ~/.cargo/git
             ~/.cargo/bin
             solana/target
-          key: solana-anchor-${{ env.ANCHOR_VERSION }}-${{ env.SOLANA_VERSION }}-${{ env.RUST_VERSION }}-v9
+          key: solana-anchor-${{ env.ANCHOR_VERSION }}-${{ env.SOLANA_VERSION }}-${{ env.RUST_VERSION }}-v10
 
       - name: Install Solana CLI
         run: |
@@ -80,16 +81,16 @@ jobs:
           export PATH="${{ env.SOLANA_BIN }}:$HOME/.cargo/bin:$HOME/.avm/bin:$PATH"
           mkdir -p ~/.config/solana
           solana-keygen new --no-bip39-passphrase -o ~/.config/solana/id.json --force
-          solana --version
-          anchor --version
 
       - name: npm install
         run: npm install
 
-      - name: Pin zeroize
+      - name: Pin problematic crates
         run: |
           export PATH="${{ env.SOLANA_BIN }}:$HOME/.cargo/bin:$PATH"
+          cargo generate-lockfile 2>/dev/null || true
           cargo update -p zeroize --precise 1.3.0 || true
+          cargo update -p indexmap --precise 2.6.0 || true
 
       - name: Anchor build
         run: |
