@@ -1,60 +1,40 @@
-# Client surface — any capable phone
+# Client surface — any capable phone (+ optional wearables)
 
-**Locked 2026-08-14.** GrapheneOS is the *hardened tier*, not the only door.
+**Locked 2026-08-14.** GrapheneOS is the *hardened tier*, not the only door.  
+Wearables: [WEARABLES.md](WEARABLES.md) — optional endpoints, never a gate.
 
 ## Principle
 
-A Viewer should be able to use The Remote Viewer on **any phone that can reasonably run the client**, with capability scaled to what that device actually provides. No lock-in to one OEM, one ROM, or one app store as a hard requirement for membership.
+A Viewer uses The Remote Viewer on **any phone that can reasonably run the client**, with capability scaled to the device. Watches, earbuds, and bands **extend** modalities when present.
 
 ## Tiers (device potential → product strength)
 
 | Tier | Example devices | What Viewers get |
 |------|-----------------|------------------|
-| **T0 — Baseline** | Stock Android (recent), most mid/high phones | Account, text, web/DApp surface, sub/node entitlement, basic STT/TTS if OS allows |
-| **T1 — Capable** | Android with reliable camera + mic + secure storage | T0 + camera sight, mic hearing, on-device preference storage, wake phrase where OS permits |
-| **T2 — Hardened** | GrapheneOS / de-Googled + Termux-class local stack | T1 + optical air-gap paths, local models, stronger key custody, minimal Google surface |
-| **T3 — Edge node** | Phone or always-on small hardware that opts in as validator/node | T2 goals + permanent node path → unlimited comms entitlement |
+| **T0 — Baseline** | Stock Android, modern browsers | Account, text, web/DApp, sub/node entitlement, basic STT/TTS if OS allows |
+| **T1 — Capable** | Camera + mic + secure storage | T0 + sight, hearing, wake where OS permits |
+| **T2 — Hardened** | Graphene / de-Googled + local runtime | T1 + optical, local models, stronger custody |
+| **T3 — Edge node** | Always-on node host | Unlimited comms while chain says active |
+| **Wear adjunct** | Wear OS / earbuds / headset | Glance, haptics, audio route — keys stay phone-bridged |
 
-**Weaker signal on lower tiers is allowed** (already product policy). Exclusion of an entire phone class is not.
+**Weaker signal on lower tiers is allowed.** Exclusion of an entire phone *or* wearable class is not required for membership.
 
 ## Explicit non-gates
 
-- GrapheneOS is **not** required to join, buy $96, create, or sell.  
-- Pixel is **not** required.  
-- iOS is **not** forbidden by policy; ship when a real client path exists without violating E2E / no-backdoor rules.  
-- Expo Go / closed store-only demos are convenience, not the sovereignty definition.
-
-## Capability negotiation (client must)
-
-1. Detect what the device actually offers (camera, mic, biometrics, background, secure storage).  
-2. Enable features that work; **degrade clearly** when they do not (no fake “on” states).  
-3. Never claim Graphene-only features on stock if they are not present.  
-4. Prefer open clients (PWA / sideload / F-Droid-class) alongside any store build.
-
-## Store vs sideload
-
-| Channel | Role |
-|---------|------|
-| Web / PWA | Fastest “any phone” entry |
-| Android APK (sideload) | Full capability without single-store veto |
-| Play / other stores | Reach; must not become the only entitlement path |
-| Graphene / hardened | Best custody and local AI; marketing as *stronger*, not *exclusive* |
-
-## Security bar (all tiers)
-
-- No platform cut of creator earnings (still 95/5 and 90/10).  
-- Deepfake / non-distinguishable human likeness rules still apply.  
-- Integrity / Area bulletin behavior remains real-data and discrete.  
-- Keys: best available on device; document tradeoffs per tier.
+- GrapheneOS **not** required  
+- Pixel **not** required  
+- Wearable **not** required  
+- iOS when E2E holds  
 
 ## Engineering order
 
-1. Shared protocol + Solana entitlement (chain is source of truth).  
-2. Web/PWA baseline so *any* browser phone can enter.  
-3. Android app with capability detection (T0→T1).  
-4. Graphene / Termux paths as T2 enhancements.  
-5. iOS only when E2E and distribution rules are satisfied without silent compromise.
+1. Solana entitlement  
+2. Web/PWA  
+3. Android + `android-cap`  
+4. Wear OS glance + audio route  
+5. Graphene T2  
+6. iOS / watch bridge under E2E rules  
 
 ## One line
 
-**Any phone with the potential can be a Viewer; Graphene makes a stronger Viewer, not the only Viewer.**
+**Any capable phone can be a Viewer; wearables optional; Graphene stronger, not exclusive.**
