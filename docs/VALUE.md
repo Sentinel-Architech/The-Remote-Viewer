@@ -14,7 +14,7 @@ All tiers **can go live** and participate. Lower tier = weaker signal (discovery
 
 Suggested yearly band: **~$48–96** (pick one public number later). Billed yearly preferred over monthly drip.
 
-## Creator store (on-platform)
+## Creator store — digital content (non-NFT)
 
 Viewers may create and sell **their own digital content** on TRV.
 
@@ -24,8 +24,23 @@ Viewers may create and sell **their own digital content** on TRV.
 | **Community pool** | **5%** |
 | Platform | **0%** |
 
+## Creator store — NFTs minted through TRV
+
+NFTs **minted via The Remote Viewer** (primary or TRV marketplace sale):
+
+| Recipient | Share |
+|-----------|--------|
+| **Creator / Viewer** | **90%** |
+| **Community pool** | **10%** |
+| Platform | **0%** |
+
+- Applies to TRV-minted inventory sold on-platform.
+- Creator retains authorship; TRV is mint/distribution path.
+- Secondary royalty policy TBD (keep separate from primary 90/10).
+
+## Shared rules
+
 - All tiers may list; signal strength still follows tier.
-- Exclusivity: distribution on TRV per listing terms; creator retains copyright.
 - Pool is visible public goods / network health — not a silent tax.
 - Payments may start off-chain; on-chain split is the target accounting.
 
