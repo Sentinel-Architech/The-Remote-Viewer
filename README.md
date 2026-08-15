@@ -1,5 +1,8 @@
 # The Remote Viewer (TRV) / The Sentinel
 
+**New here or not technical?** → Start with **[START_HERE.md](START_HERE.md)**  
+It is written for complete beginners (college freshman level).
+
 **Status authority:** [`docs/REALITY.md`](docs/REALITY.md).  
 **Working branch:** [`TheRemoteViewer`](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/tree/TheRemoteViewer)
 
@@ -120,7 +123,7 @@ bash modules/path-b-recognition/install-founding.sh /path/to/founding-member-*.j
 ### Phone (Termux)
 
 ```bash
-pkg update && pkg install git python -y
+pkg update && pkg install git python age -y
 git clone -b TheRemoteViewer https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
 cd The-Remote-Viewer
 bash modules/defense/integrity-pulse.sh

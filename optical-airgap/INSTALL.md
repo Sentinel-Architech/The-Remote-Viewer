@@ -1,5 +1,7 @@
 # Optical Air-Gap — Install (Sentinel Standard)
 
+This guide is written so a complete beginner can follow it.
+
 | Doc | Purpose |
 |-----|---------|
 | [README.md](./README.md) | Overview |
@@ -15,23 +17,58 @@
 
 ---
 
-## Prerequisites
+## Prerequisites — install these first
 
-### Desktop
-- Git, **Node.js 20+**, optional **Rust 1.74+**
+### 1. The `age` encryption tool (required)
 
-### Mobile / Termux
-- Termux (F-Droid on Android)  
-- Any open-stack host works; **GrapheneOS** from **https://grapheneos.org/** is the hardened reference, not a gate  
-- `pkg install git nodejs` · optional `pkg install rust`  
-- **Use `$HOME/...` for files** — `/tmp` often fails on Termux  
+You need the free tool called **age** so you can create private keys and encrypt/decrypt messages.
+
+**On Termux (Android):**
+```bash
+pkg update && pkg install age -y
+```
+
+**On Ubuntu / Debian:**
+```bash
+sudo apt update && sudo apt install age -y
+```
+
+**On macOS:**
+```bash
+brew install age
+```
+
+**On Windows:**  
+Download the latest release from https://github.com/FiloSottile/age/releases  
+Put `age.exe` and `age-keygen.exe` in a folder that is in your PATH.
+
+Check it works:
+```bash
+age --version
+age-keygen --version
+```
+
+### 2. Other tools
+
+**Desktop**
+- Git
+- Node.js 20 or newer
+- Optional: Rust 1.74 or newer (only needed for the Rust CLI tests)
+
+**Mobile / Termux**
+- Termux (install from F-Droid)
+- GrapheneOS is the hardened reference phone OS, but any open Android works
+- Run: `pkg install git nodejs python`
+- Optional: `pkg install rust`
+
+**Important for Termux:** Always use `$HOME/...` for files. `/tmp` often fails or gets cleaned.
 
 ### Not required
 Play Services · Meta/Microsoft SDKs · CDN scripts · public DNS for `@sentinel.viewer`
 
 ---
 
-## 1. Clone + branch
+## 1. Clone the repository
 
 ```bash
 git clone https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
@@ -39,11 +76,9 @@ cd The-Remote-Viewer
 git checkout TheRemoteViewer
 ```
 
-Root `Cargo.toml` workspace includes `optical-airgap/rust`.
-
 ---
 
-## 2. TypeScript
+## 2. TypeScript / Node path
 
 ```bash
 cd optical-airgap
@@ -53,43 +88,46 @@ npm run test:golden
 
 ---
 
-## 3. Rust CLI
+## 3. Rust CLI (optional)
 
 ```bash
 cd optical-airgap/rust
 cargo test
-# offline later: rust/OFFLINE.md + scripts/vendor-offline.sh
+# offline later: see rust/OFFLINE.md + scripts/vendor-offline.sh
 ```
 
 ---
 
-## 4. Vault (keys)
+## 4. Vault (your private keys)
 
-See **[VAULT.md](./VAULT.md)**.
+See **[VAULT.md](./VAULT.md)** for the full rules.
 
 ```bash
 cd optical-airgap
-bash scripts/vault-setup.sh      # $HOME/vault-recipient.txt + vault-identity.txt
-bash scripts/e2e-age-lt.sh       # full age → LT → peel → decrypt
-bash scripts/vault-destroy.sh    # Destroy = Restart
+bash scripts/vault-setup.sh      # creates $HOME/vault-recipient.txt + vault-identity.txt
+bash scripts/e2e-age-lt.sh       # full age → LT → peel → decrypt test
+bash scripts/vault-destroy.sh    # Destroy = Restart (wipes the test keys)
 ```
 
-Rules: identity never in git/chat/screenshots; burn on exposure; Destroy after experiments.
+**Critical rules:**
+- Never put your private key (`AGE-SECRET-KEY-...`) in git, chat, or screenshots.
+- Burn / destroy test keys after you finish experimenting.
+- Loss of the private key = start over. That is the design.
 
 ---
 
-## 5. Security rules
+## 5. Security rules (short version)
 
-1. **Encrypt first** — never put plaintext in RDH/LT as the secret.  
-2. **Identity in Vault only** — never commit `AGE-SECRET-KEY-...`.  
-3. **Destroy = Restart** — wipe test keys and blobs after experiments.  
-4. RDH `checksumOk === false` → do not decrypt.  
+1. **Encrypt first** — never put plaintext into the frames as the secret.
+2. **Identity stays in the Vault only** — never commit private keys.
+3. **Destroy = Restart** — wipe test keys and files when you are done.
+4. If a checksum fails, do not decrypt.
 
 ---
 
 ## 6. Smoke tests
 
-### LT only
+### LT only (no age needed)
 
 ```bash
 cd optical-airgap/rust
@@ -102,8 +140,8 @@ cargo run --quiet --bin trv-optical -- frame-peel < $HOME/trvl.txt
 ```bash
 cd optical-airgap/optical
 python -m http.server 8765
-# open http://127.0.0.1:8765/qr-receiver.html
-# paste $HOME/trvl.txt → Ingest paste → ctrl=complete
+# open http://127.0.0.1:8765/qr-receiver.html in a browser
+# paste the content of $HOME/trvl.txt → Ingest paste
 ```
 
 ### Full age chain
@@ -120,22 +158,22 @@ bash optical-airgap/scripts/vault-destroy.sh
 
 | Symptom | Fix |
 |---------|-----|
-| `/tmp` permission denied | use `$HOME/...` |
-| `\~` path errors | use `$HOME`, never escaped tilde |
-| cargo treats `--frame-peel` as flag | space after `--`: `-- frame-peel` |
+| `/tmp` permission denied | use `$HOME/...` instead |
+| path errors with `~` | always write `$HOME`, never a literal tilde |
+| cargo treats arguments as flags | put a space after `--` : `-- frame-peel` |
 | vault-setup refuses existing identity | run `vault-destroy.sh` first |
-| camera blank on `file://` | use local HTTP server |
+| camera blank on `file://` | use the local HTTP server (`python -m http.server`) |
 
 ---
 
-## After successful install
+## After successful install checklist
 
-- [x] Branch `TheRemoteViewer`  
-- [x] Golden Soliton / frame-stream / frame-peel  
-- [x] Full age+LT chain  
-- [x] Offline QR + feedback controller  
-- [x] Exact original length (u32 prefix)  
-- [x] Vault setup / Destroy scripts  
+- [ ] Branch `TheRemoteViewer` checked out
+- [ ] `age` and `age-keygen` work
+- [ ] Golden Soliton / frame-stream / frame-peel works
+- [ ] Full age + LT chain works
+- [ ] Offline QR + feedback controller works
+- [ ] Vault setup / Destroy scripts work
 
-**Share:** INSTALL + OPEN-SOURCE + SENTINEL-STANDARD + VAULT.  
-**Never share:** age identities, Vault material, real payloads.
+**Share freely:** this INSTALL file, OPEN-SOURCE.md, SENTINEL-STANDARD.md, VAULT.md  
+**Never share:** age private keys, Vault material, or real secret payloads.
