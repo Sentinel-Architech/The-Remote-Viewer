@@ -14,7 +14,8 @@
 
 All tiers **can go live** and participate. Lower tier = weaker signal (discovery / relay priority), not a ban.
 
-Suggested yearly band: **~$48–96** (pick one public number later). Billed yearly preferred over monthly drip.
+**Public yearly price (default):** **$60 USD / year** (~$5/mo billed once).  
+Change only by published policy update. Node path remains free for unlimited comms while active.
 
 See `docs/PAYMENTS.md` for sub → `grant_subscription` flow.
 
@@ -65,4 +66,4 @@ See `docs/PAYMENTS.md` for sub → `grant_subscription` flow.
 - Soft paywalls inside basic privacy or safety features
 - Guaranteed income without buyers
 
-*SCAFFOLD. Not a live store.*
+*SCAFFOLD. Not a live store. Price is policy until payment rails collect it.*
