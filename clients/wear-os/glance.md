@@ -1,18 +1,22 @@
 # Glance UI
 
-## Lines
+## Access lines
 
 - `FREE · weak signal`  
 - `$96 · unlimited`  
 - `NODE · unlimited`  
 - `STALE · open phone`  
 
-## Haptics (optional)
+## Learning
 
-| Signal | Pattern intent |
-|--------|----------------|
+Preferences and L0/L1 memory live on **phone**, not watch. Glance does not show private learning state.
+
+## Haptics
+
+| Signal | Pattern |
+|--------|---------|
 | weak | single short |
 | standard | double short |
 | strong | long-short |
 
-Always duplicate status in text on phone for a11y.
+Text status always available on phone (a11y).
