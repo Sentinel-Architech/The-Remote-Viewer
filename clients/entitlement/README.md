@@ -1,20 +1,15 @@
-# Entitlement client stub
+# Entitlement client
 
-Reads Viewer unlimited-comms state after Phase 1 deploy.
+**Scaffold.** [PROTOCOL §4](../../docs/PROTOCOL.md) — not PROVEN on-chain.
 
-## Source of truth
-
-Solana `trv_governance` entitlement PDA — **not** the device tier.
+Source of truth when live: Solana `trv_governance` entitlement PDA.
 
 | Path | unlimited_comms |
 |------|-----------------|
-| Active yearly sub | true until expiry |
-| Permanent node registered + active | true while active |
-| Free | false (weaker signal in product) |
+| Active yearly ($96 policy) | true until expiry |
+| Active permanent node | true while active |
+| Free | false · weaker signal |
 
-## Files
+`read.ts` returns `source: "unknown"` until IDL + program id exist. **Do not invent success.**
 
-- `types.ts` — view models  
-- `read.ts` — placeholder until IDL artifact exists  
-
-Wire from PWA Access card and native shells the same way.
+See [REALITY.md](../../docs/REALITY.md) Not PROVEN table.
