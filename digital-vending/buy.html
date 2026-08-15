@@ -24,9 +24,6 @@
       border-radius: 6px; font-size: 0.95rem;
     }
     a.pay:hover { filter: brightness(1.1); }
-    a.pay.disabled, .pay-disabled {
-      background: #333; color: #888; pointer-events: none;
-    }
     pre { background:#111; padding:0.6rem; overflow:auto; font-size:0.8rem; border-radius:4px; }
     .qr-wrap {
       margin-top: 0.85rem; padding: 0.75rem; background: #fff; border-radius: 8px;
@@ -36,12 +33,19 @@
     .qr-label { margin-top: 0.4rem; font-size: 0.8rem; color: var(--muted); }
     .qr-fallback { color: var(--muted); font-size: 0.85rem; margin-top: 0.5rem; }
     a { color: var(--accent); }
+    .banner { border-left: 3px solid var(--accent); padding: 0.6rem 0.8rem; margin: 0.8rem 0; background: #0f1a12; font-size: 0.9rem; }
   </style>
 </head>
 <body>
   <h1>TRV Digital Vending</h1>
   <p>Pay <strong>USDC on Solana</strong> with the exact memo → receive <strong>age-encrypted TRVL</strong> frames.<br>
   Zero platform custody. Seller never holds your keys.</p>
+
+  <div class="banner">
+    <strong>Packs ≠ network sub.</strong> These SKUs are one-time catalog deliveries.
+    Unlimited human <em>comms</em> is a separate product: <strong>$96/year</strong> or an active node
+    (see <code>docs/public/PRICING.md</code>). Buying a pack does not unlock unlimited comms.
+  </div>
 
   <div class="card">
     <div class="muted">USDC sales address (Solana mainnet)</div>
@@ -57,7 +61,7 @@
       <pre>age-keygen -o identity.txt</pre>
       Keep <code>AGE-SECRET-KEY</code> private. Copy only the <code>age1…</code> public key.
     </li>
-    <li><strong>Preferred:</strong> open <a href="show-age1.html">show-age1.html</a>, paste your <code>age1…</code>, show the QR. Seller scans it. (No chat required for the key.)<br>
+    <li><strong>Preferred:</strong> open <a href="show-age1.html">show-age1.html</a>, paste your <code>age1…</code>, show the QR. Seller scans it.<br>
         Fallback: send <code>age1…</code> + tx signature by any channel you already use with the seller.</li>
     <li>Receive a <code>.trvl</code> file (or optical frames).</li>
     <li>Decrypt locally:
@@ -67,7 +71,7 @@
 
   <p class="muted">If you pay before the seller has your <code>age1</code>, delivery stays PENDING.<br>
   Destroy = Restart for any key that was exposed. Not financial advice.<br>
-  Full steps: <a href="../docs/public/BUY.md">docs/public/BUY.md</a></p>
+  Full steps: <a href="../docs/public/BUY.md">docs/public/BUY.md</a> · Pricing: <a href="../docs/public/PRICING.md">docs/public/PRICING.md</a></p>
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
   <script>
