@@ -6,6 +6,7 @@
 |------|------|
 | Reality / PROVEN | [REALITY.md](REALITY.md) |
 | Protocol map | [PROTOCOL.md](PROTOCOL.md) |
+| Continuous learning | [locked/CONTINUOUS-LEARNING.md](locked/CONTINUOUS-LEARNING.md) |
 | Vending protocol | [../digital-vending/PROTOCOL.md](../digital-vending/PROTOCOL.md) |
 | Client reach | [locked/CLIENT-SURFACE.md](locked/CLIENT-SURFACE.md) |
 | Wearables | [locked/WEARABLES.md](locked/WEARABLES.md) |
