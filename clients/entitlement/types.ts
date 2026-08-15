@@ -3,9 +3,11 @@ export type AccessPath = "free" | "yearly" | "node";
 export type EntitlementView = {
   path: AccessPath;
   unlimitedComms: boolean;
-  expiresAt: number | null; // unix seconds; null if node-based
+  expiresAt: number | null;
   signalPolicy: "weak" | "full";
   source: "chain" | "unknown";
+  /** Human line for UI — never claim chain if source unknown */
+  summary: string;
 };
 
 export function viewFromFlags(opts: {
@@ -21,6 +23,7 @@ export function viewFromFlags(opts: {
       expiresAt: null,
       signalPolicy: "weak",
       source: "unknown",
+      summary: "Chain not connected — policy paths only",
     };
   }
   if (opts.hasActiveNode) {
@@ -30,6 +33,7 @@ export function viewFromFlags(opts: {
       expiresAt: null,
       signalPolicy: "full",
       source: "chain",
+      summary: "Permanent node active — unlimited human comms",
     };
   }
   if (opts.hasActiveSub) {
@@ -39,6 +43,7 @@ export function viewFromFlags(opts: {
       expiresAt: opts.subExpiresAt,
       signalPolicy: "full",
       source: "chain",
+      summary: "Yearly network active — unlimited human comms",
     };
   }
   return {
@@ -47,5 +52,6 @@ export function viewFromFlags(opts: {
     expiresAt: null,
     signalPolicy: "weak",
     source: "chain",
+    summary: "Free path — weaker signal",
   };
 }
