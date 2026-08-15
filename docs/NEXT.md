@@ -1,30 +1,30 @@
 # NEXT
 
-## Now
+## Critical path
 
-1. **Solana Anchor CI green** (`anchor build`) on Actions  
+1. **Solana Anchor CI — `anchor build` green**  
 2. Commit `solana/Cargo.lock` after first green resolve  
-3. Upload `branding/sentinel-logo.png` + `remote-viewer-hero.png`  
-4. Phone: `git fetch && git merge origin/TheRemoteViewer --no-edit`
+3. Build host: `anchor keys list` → real program id (not Pixel)  
+4. Devnet deploy when tests are real-green  
 
-## Build host (not Pixel)
+## Parallel (any time)
 
-5. `anchor keys list` → replace scaffold `declare_id!` + `Anchor.toml`  
-6. `anchor test` fully green (not soft-fail)  
-7. Devnet deploy (manual)  
-8. Multisig for upgrade + config authority (`docs/AUTHORITY.md`)
+- Brand masters into `branding/` when a device has the files  
+- Pick public yearly sub price ($48–96 band)  
+- Mail domain name (no purchase required to decide the string)  
+- Sales key on cold/hardware practice (CUSTODY-OPS)  
 
-## Product rails
+## After CI green
 
-9. Sub payment → `grant_subscription` ops (`docs/PAYMENTS.md`)  
-10. Pool PDA + spend ix (`docs/POOL-GOVERNANCE.md`)  
-11. Creator store settlement (95/5, 90/10)  
-12. TRV mail domain + Phase A aliases (`docs/VIEWER-MAIL.md`)
+- Pool PDA + spend ix  
+- Creator settlement path  
+- Multisig authority  
+- Integrity report when client exists  
 
-## Later
+## Not now
 
-13. Integrity report plumbing when client exists  
-14. Mobile unpark / native path  
-15. Audit → only then mainnet discussion  
+- Mainnet  
+- Anchor 1.x rewrite  
+- Guaranteed living wage without buyers  
 
-Path B founders remain **0** until real process + people.
+Path B founders: **0**.
