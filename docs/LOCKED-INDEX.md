@@ -1,9 +1,12 @@
 # Locked index
 
-**Start:** [STREAMLINE.md](STREAMLINE.md)
+**Start:** [STREAMLINE.md](STREAMLINE.md) · **PROVEN:** [REALITY.md](REALITY.md) · **Rails:** [PROTOCOL.md](PROTOCOL.md)
 
 | Lock | File |
 |------|------|
+| Reality / PROVEN | [REALITY.md](REALITY.md) |
+| Protocol map | [PROTOCOL.md](PROTOCOL.md) |
+| Vending protocol | [../digital-vending/PROTOCOL.md](../digital-vending/PROTOCOL.md) |
 | Client reach | [locked/CLIENT-SURFACE.md](locked/CLIENT-SURFACE.md) |
 | Wearables | [locked/WEARABLES.md](locked/WEARABLES.md) |
 | Android probes | [locked/ANDROID-CAPABILITIES.md](locked/ANDROID-CAPABILITIES.md) |
@@ -17,9 +20,5 @@
 | Competitive | [locked/COMPETITIVE.md](locked/COMPETITIVE.md) |
 | Path | [PATH-TO-LIVE.md](PATH-TO-LIVE.md) |
 | CI blocker | [CI-BLOCKER.md](CI-BLOCKER.md) |
-
-## Code
-
-`clients/pwa` · `android-cap` (+ `wearable.ts`) · `entitlement` · `safety-ui` · `creator` · `shared/flags.ts` · `branding/` · `solana/`
 
 Economics: **$96** · **95/5** · **90/10** · platform **0%**
