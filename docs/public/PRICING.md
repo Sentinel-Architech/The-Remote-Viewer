@@ -1,30 +1,25 @@
 # TRV pricing (public)
 
-**Policy locked.** Checkout goes live only with payment rails + entitlement path.
+**Policy.** Live checkout only with payment rails + entitlement.
 
-Works on **any capable phone** ([CLIENT-SURFACE](../locked/CLIENT-SURFACE.md)). Graphene is optional strength, not a paywall.
+Any capable phone ([CLIENT-SURFACE](../locked/CLIENT-SURFACE.md)). Wearables optional. Learning on-device by default ([CONTINUOUS-LEARNING](../locked/CONTINUOUS-LEARNING.md)).
 
-## For Viewers
+## Viewers
 
 | Path | Price | Unlimited human comms |
 |------|------:|------------------------|
-| Free | $0 | No — **weaker signal** (honest) |
+| Free | $0 | No — weaker signal |
 | Yearly network | **$96 / year** | Yes |
-| Permanent node (active) | Your hardware/time | Yes while node stays active |
+| Permanent node (active) | Hardware/time | Yes while active |
 
-Packs in the digital vending catalog are **not** the $96 network sub.
+Vending **packs ≠** the $96 network sub.
 
-## For creators (platform fee = 0%)
+## Creators (platform **0%**)
 
-| Sale | You keep | Community pool | Platform |
-|------|----------|----------------|----------|
-| Digital content | **95%** | 5% | **0%** |
-| NFT primary (minted through TRV) | **90%** | 10% | **0%** |
-| NFT secondary royalty | **5%** to original creator | — | **0%** |
+| Sale | You keep | Pool | Platform |
+|------|----------|------|----------|
+| Digital | **95%** | 5% | **0%** |
+| NFT primary (TRV mint) | **90%** | 10% | **0%** |
+| NFT secondary royalty | **5%** to creator | — | **0%** |
 
-No core dependence on Apple IAP to exist.
-
-## Locks
-
-- [`LOCKED-INDEX.md`](../LOCKED-INDEX.md)  
-- [`locked/COMPETITIVE.md`](../locked/COMPETITIVE.md)  
+[SYSTEM-ENDS](../SYSTEM-ENDS.md) · [LOCKED-INDEX](../LOCKED-INDEX.md)
