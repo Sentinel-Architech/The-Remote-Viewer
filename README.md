@@ -1,22 +1,39 @@
 # The Remote Viewer (TRV) / The Sentinel
 
-**Status authority:** [`docs/REALITY.md`](docs/REALITY.md) (2026-08-13).  
-All other status claims are subordinate to that file.
+**Status authority:** [`docs/REALITY.md`](docs/REALITY.md).  
+**Working branch:** [`TheRemoteViewer`](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/tree/TheRemoteViewer)
+
+**Brand:** Sentinel = protector of the core ([`branding/BRAND.md`](branding/BRAND.md)).  
+Logo: `branding/sentinel-logo.png` · Hero: `branding/remote-viewer-hero.png` (upload masters if missing).
 
 **Historical note:** Unrelated to Technical Remote Viewing / PSI TECH / Ed Dames methodology.  
 This project is a local-first software system for digital sovereignty.
 
 **Solo-built · local-first · zero-custody · optical air-gap systems**
 
-Path B Independent Completion is open to any builder who completes the published checklist on a machine they control and submits offline attestation.  
-Recognition is currently originator-verified.  
-External finishers: **0** as of 2026-08-13.  
-Packs remain paid per item. No free catalog items.
+---
 
-**Builder guide:** [`docs/public/PATH-B-BUILDER.md`](docs/public/PATH-B-BUILDER.md)  
-**Reproduce proven claims:** [`docs/REPRODUCE.md`](docs/REPRODUCE.md)  
-**Review posture:** [`docs/public/REVIEW-AND-CONTRIBUTION.md`](docs/public/REVIEW-AND-CONTRIBUTION.md)  
-**Threat model (proven surfaces):** [`docs/security/threat-model.md`](docs/security/threat-model.md)
+## Track A — Solana governance (SCAFFOLD)
+
+On-chain entitlement, nodes, open voting, VALUE splits — **not mainnet, not audited.**
+
+| Item | Location |
+|------|----------|
+| Program | `solana/programs/trv_governance` |
+| Instruction index | [`solana/PROGRAM.md`](solana/PROGRAM.md) |
+| Toolchain | Anchor **0.30.1** · Solana **1.18.x** · Rust **1.79** · CI only |
+| Pixel | Client/reader — **no** Anchor SBF build |
+| VALUE splits | Digital **95/5** · NFT primary **90/10** · secondary **5%** creator |
+| Pool governance | [`docs/POOL-GOVERNANCE.md`](docs/POOL-GOVERNANCE.md) |
+| Payments → sub | [`docs/PAYMENTS.md`](docs/PAYMENTS.md) |
+| Authority keys | [`docs/AUTHORITY.md`](docs/AUTHORITY.md) |
+| Identity recovery | [`docs/IDENTITY.md`](docs/IDENTITY.md) |
+| Safety (locked) | [`docs/locked/SAFETY.md`](docs/locked/SAFETY.md) |
+
+```bash
+# Build host / CI only — not Termux
+cd solana && npm install && anchor build && anchor test
+```
 
 ---
 
@@ -28,10 +45,13 @@ Packs remain paid per item. No free catalog items.
 | **Path B** — Independent completion | **0** | Verified finishers only |
 | **Total Founding Sovereign Viewers** | **1** | |
 
-Path B earns Founding Member status + optional Integrity Verifier node.  
-**Packs stay paid.** No free catalog items.
+Path B Independent Completion is open to any builder who completes the published checklist on a machine they control and submits offline attestation.  
+Recognition is currently originator-verified.  
+**Packs remain paid per item.** No free catalog items.
 
-See [`docs/public/PATH-B-FINISHED.md`](docs/public/PATH-B-FINISHED.md) · [`docs/public/PATH-B-SUBMISSION.md`](docs/public/PATH-B-SUBMISSION.md) · locked docs 04 & 17.
+**Builder guide:** [`docs/public/PATH-B-BUILDER.md`](docs/public/PATH-B-BUILDER.md)  
+**Reproduce:** [`docs/REPRODUCE.md`](docs/REPRODUCE.md)  
+**Threat model:** [`docs/security/threat-model.md`](docs/security/threat-model.md)
 
 ---
 
@@ -47,10 +67,8 @@ See [`docs/public/PATH-B-FINISHED.md`](docs/public/PATH-B-FINISHED.md) · [`docs
 
 **Sales address:** `HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv`
 
-### Storefront (Pay + QR)
-
 - **In-repo:** [`digital-vending/buy.html`](digital-vending/buy.html)
-- **Preview:** [htmlpreview — buy.html](https://htmlpreview.github.io/?https://github.com/Sentinel-Archetecht/The-Remote-Viewer/blob/TheRemoteViewer/digital-vending/buy.html)
+- Protocol: [`digital-vending/PROTOCOL.md`](digital-vending/PROTOCOL.md) · [`docs/public/BUY.md`](docs/public/BUY.md)
 
 ### After you pay
 
@@ -58,61 +76,46 @@ See [`docs/public/PATH-B-FINISHED.md`](docs/public/PATH-B-FINISHED.md) · [`docs
 2. Send the seller only: your **`age1…` public key** + **tx signature**.
 3. Receive a `.trvl` file → decrypt locally.
 
-Protocol: [`digital-vending/PROTOCOL.md`](digital-vending/PROTOCOL.md) · Buyer steps: [`docs/public/BUY.md`](docs/public/BUY.md)
-
 ---
 
-**Local-first sovereign node** for GrapheneOS + Termux (and desktop Linux/macOS).
+## Local node (GrapheneOS + Termux / desktop)
 
 Not a cloud AI product. Not a live DePIN network. Not an always-on oracle.
 
-**Working branch:** [`TheRemoteViewer`](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/tree/TheRemoteViewer)  
-**Truth file:** [`docs/REALITY.md`](docs/REALITY.md) — PROVEN means ran on a real device under user control.  
-**Reproduce:** [`docs/REPRODUCE.md`](docs/REPRODUCE.md) · [`docs/TEST.md`](docs/TEST.md)
+**Truth file:** [`docs/REALITY.md`](docs/REALITY.md) — PROVEN means ran on a real device under user control.
 
 ```bash
 git clone -b TheRemoteViewer https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
 cd The-Remote-Viewer
-bash modules/defense/integrity-pulse.sh    # Hydra multi-head
-bash scripts/chat.sh                       # local assistant (after llama.cpp + weights optional)
+bash modules/defense/integrity-pulse.sh
+bash scripts/chat.sh
 ```
 
 ---
 
-## Status (2026-08-13)
+## Status snapshot
 
-| Capability | Status | Notes |
-|------------|--------|-------|
-| Optical air-gap | **PROVEN** | age → Soliton LT → peel → decrypt |
-| Digital vending (Path B) | **PROVEN** | Solana USDC memo → TRVL deliver on-device |
-| Integrity Verifier (first node role) | **PROVEN** | contribution + sales.log attestation |
-| Path B recognition loop | **OPERATIONAL** | collect → attest → verify → issue → install |
-| Community Pool gross visibility | **OPERATIONAL** | public Solana memo volume; no custody |
-| Validated-node count + tips | **OPERATIONAL** | per identity path; no central registry |
-| Defense / Hydra multi-head | **PROVEN** | seal + verifier + quarantine deliver gate |
-| MoE Stage B (dense) | **PROVEN** | TinyLlama + Qwen2.5-Coder via llama.cpp |
-| MoE Stage C (sparse) | **PROVEN** | TinyMixtral-4x248M-MoE load + generate |
-| Contribution ledger | **PROVEN** | offline JSONL hash-chain + verifier weight |
-| Local operator UI | **PROVEN** | `http://127.0.0.1:8765/` — copy-to-Termux console |
-| Mobile client UI | **DEMONSTRATED** | Hub / Viewer Profile / Shop / Talk on-device 2026-08-13 |
-| Public buy page | **OPEN** | `digital-vending/buy.html` + QR |
-| Local RAG | **SCAFFOLD** | BM25 + TF-IDF + session memory + chat |
-| Chain settlement | **NOT STARTED** | |
+Prefer [`docs/REALITY.md`](docs/REALITY.md) and [`STATUS.md`](STATUS.md) over any chat claim.
+
+| Capability | Notes |
+|------------|--------|
+| Optical air-gap | PROVEN (see REALITY) |
+| Digital vending Path B | PROVEN |
+| Solana `trv_governance` | **SCAFFOLD** — CI build gate |
+| Mobile Expo client | PARKED on Graphene |
+| EVM parallel | Learning; 9/9 on Pixel Anvil |
 
 ---
 
 ## 60-second paths
 
-### Path B (Independent Completion)
+### Path B
 
 ```bash
 bash modules/path-b-recognition/collect-proof.sh
 bash modules/path-b-recognition/make-attestation.sh
-# Transfer attestation → originator → receive founding-member-*.json
 bash modules/path-b-recognition/install-founding.sh /path/to/founding-member-*.json
 ```
-
-Full guide: [`docs/public/PATH-B-BUILDER.md`](docs/public/PATH-B-BUILDER.md)
 
 ### Phone (Termux)
 
@@ -130,45 +133,14 @@ bash apps/ui/serve-ui.sh
 # http://127.0.0.1:8765/
 ```
 
-### Pool / Nodes
-
-```bash
-bash modules/pool/gross.sh
-bash modules/nodes/count.sh
-```
-
----
-
-## Layout
-
-```text
-docs/public/PATH-B-BUILDER.md          Independent Completion guide
-docs/public/PATH-B-FINISHED.md         FINISHED checklist
-docs/REPRODUCE.md                      Third-party verification bootstrap
-docs/public/REVIEW-AND-CONTRIBUTION.md Review posture
-docs/security/threat-model.md          Threat model (proven surfaces)
-modules/path-b-recognition/            Recognition package
-modules/pool/                          Community Pool gross visibility
-modules/nodes/                         Validated-node count + tips
-digital-vending/buy.html               Public storefront (Pay + QR)
-optical-airgap/                        PROVEN transport
-modules/defense/                       Hydra multi-head (PROVEN)
-modules/integrity-verifier/            First validator role (PROVEN)
-apps/ui/                               Local operator console (PROVEN)
-docs/REALITY.md                        Status authority
-```
-
 ---
 
 ## What this is not
 
 - No required cloud login  
 - No public hosted EI endpoint  
-- No live multi-operator DePIN  
 - No free packs via Path B  
-- Keys, GGUFs, personal notes, and ledger events stay on **your** device  
-
----
+- Keys, GGUFs, personal notes stay on **your** device  
 
 ## License
 
