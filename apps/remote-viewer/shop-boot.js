@@ -1,6 +1,7 @@
 /**
  * Shop near top of Viewer Profile.
  * Solana checkout + Aurora + lock + GPS field + NFT mint.
+ * 50/50 split, zero simulation (originator 2026-08-16).
  */
 import {
   becomeValidated,
@@ -20,7 +21,8 @@ import {
 } from 'https://esm.sh/@solana/web3.js@1.95.4';
 
 const WALLET_KEY = 'rv-wallet-pubkey';
-const TREASURY = 'HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv';
+const CREATOR = '9XhGDthCvcDz3tLfTgXRLXx1W48fM5oQtrFTRot3yLYG';
+const COMMUNITY_POOL = '555y97LMoygGAWUWFngbprr5oMHFJsQqoFAbrHi5e8nt';
 const RPC = 'https://solana-rpc.publicnode.com';
 
 const PACKS = {
@@ -133,19 +135,30 @@ async function payWithSolana(credits) {
   try {
     const connection = new Connection(RPC, 'confirmed');
     const from = provider.publicKey;
-    const to = new PublicKey(TREASURY);
+
+    // Exact 50/50 split — zero residual
+    const creatorLamports = Math.floor(lamports / 2);
+    const poolLamports = lamports - creatorLamports;
 
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
     const tx = new Transaction({
       feePayer: from,
       recentBlockhash: blockhash,
-    }).add(
-      SystemProgram.transfer({
-        fromPubkey: from,
-        toPubkey: to,
-        lamports,
-      })
-    );
+    })
+      .add(
+        SystemProgram.transfer({
+          fromPubkey: from,
+          toPubkey: new PublicKey(CREATOR),
+          lamports: creatorLamports,
+        })
+      )
+      .add(
+        SystemProgram.transfer({
+          fromPubkey: from,
+          toPubkey: new PublicKey(COMMUNITY_POOL),
+          lamports: poolLamports,
+        })
+      );
 
     let signature;
     if (provider.signAndSendTransaction) {
@@ -228,7 +241,7 @@ function ensureShopUI() {
         <div class="actions">
           <button type="button" class="btn primary" id="buy-credits">Pay with Solana</button>
         </div>
-        <p class="soft" style="font-size:0.78rem;margin-top:0.5rem">Treasury receives SOL on-chain. Same settlement plane as Path B vending.</p>
+        <p class="soft" style="font-size:0.78rem;margin-top:0.5rem">50 % creator / 50 % Community Pool — SOL only. Credits granted only after confirmed on-chain transfer. Zero simulation.</p>
       </div>
       <div class="card" id="lock-panel"></div>
       <div class="card" id="nft-panel"></div>
