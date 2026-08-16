@@ -1,7 +1,7 @@
 /**
  * Shop near top of Viewer Profile.
  * Solana checkout + Aurora + lock + GPS field + NFT mint.
- * 50/50 split, zero simulation (originator 2026-08-16).
+ * 50/50 split, zero simulation, deliberate re-selection (originator 2026-08-16).
  */
 import {
   becomeValidated,
@@ -190,6 +190,17 @@ async function payWithSolana(credits) {
       toastFn(`+${r.granted} TRV · tx ${String(signature).slice(0, 8)}…`);
       renderShopUI(toastFn);
       renderWalletRow();
+
+      // Force deliberate new selection — no accidental second purchase
+      const packSelect = document.getElementById('credit-pack');
+      if (packSelect) {
+        packSelect.value = '';
+        packSelect.selectedIndex = -1;
+      }
+      if (buyBtn) {
+        buyBtn.disabled = true;
+        buyBtn.textContent = 'Select a pack first';
+      }
     }
   } catch (e) {
     console.error(e);
@@ -197,9 +208,18 @@ async function payWithSolana(credits) {
     if (/User rejected|rejected|cancel/i.test(msg)) toastFn('Payment cancelled');
     else toastFn('Payment failed — try again');
   } finally {
+    // Only re-enable if a pack is still selected (i.e. failure path).
+    // Success path already forced "Select a pack first".
     if (buyBtn) {
-      buyBtn.disabled = false;
-      buyBtn.textContent = 'Pay with Solana';
+      const packSelect = document.getElementById('credit-pack');
+      const hasSelection = packSelect && packSelect.value;
+      if (hasSelection) {
+        buyBtn.disabled = false;
+        buyBtn.textContent = 'Pay with Solana';
+      } else {
+        buyBtn.disabled = true;
+        buyBtn.textContent = 'Select a pack first';
+      }
     }
   }
 }
@@ -231,6 +251,7 @@ function ensureShopUI() {
         </div>
         <label style="margin-top:0.75rem">Buy TRV credits
           <select id="credit-pack">
+            <option value="">Select a pack…</option>
             <option value="25">25 credits · 0.02 SOL</option>
             <option value="50">50 credits · 0.04 SOL</option>
             <option value="100">100 credits · 0.07 SOL</option>
@@ -239,7 +260,7 @@ function ensureShopUI() {
         </label>
         <p class="soft" id="pack-prices" style="font-size:0.78rem;margin-top:0.35rem"></p>
         <div class="actions">
-          <button type="button" class="btn primary" id="buy-credits">Pay with Solana</button>
+          <button type="button" class="btn primary" id="buy-credits" disabled>Select a pack first</button>
         </div>
         <p class="soft" style="font-size:0.78rem;margin-top:0.5rem">50 % creator / 50 % Community Pool — SOL only. Credits granted only after confirmed on-chain transfer. Zero simulation.</p>
       </div>
@@ -300,9 +321,25 @@ function ensureShopUI() {
   const buy = document.getElementById('buy-credits');
   if (buy) {
     buy.onclick = () => {
-      const pack = Number(document.getElementById('credit-pack')?.value || 25);
+      const pack = Number(document.getElementById('credit-pack')?.value || 0);
+      if (!pack) {
+        toastFn('Select a pack first');
+        return;
+      }
       payWithSolana(pack);
     };
+  }
+
+  // Only enable Pay after user deliberately selects a pack
+  const packSelectInit = document.getElementById('credit-pack');
+  if (packSelectInit) {
+    packSelectInit.addEventListener('change', () => {
+      const btn = document.getElementById('buy-credits');
+      if (!btn) return;
+      const has = !!packSelectInit.value;
+      btn.disabled = !has;
+      btn.textContent = has ? 'Pay with Solana' : 'Select a pack first';
+    });
   }
 
   restoreSkin();
