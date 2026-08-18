@@ -22,17 +22,17 @@ See `docs/PAYMENTS.md` for sub → `grant_subscription`.
 
 | Recipient | Share |
 |-----------|--------|
-| **Creator** | **95%** |
-| **Community pool** | **5%** |
-| **Platform** | **0%** |
+| **Creator** | **80%** |
+| **Community pool** | **10%** |
+| **Platform** | **10%** |
 
 ## Creator store — NFT primary (TRV-minted)
 
 | Recipient | Share |
 |-----------|--------|
-| **Creator** | **90%** |
+| **Creator** | **80%** |
 | **Community pool** | **10%** |
-| **Platform** | **0%** |
+| **Platform** | **10%** |
 
 ## NFT secondary
 
@@ -44,7 +44,7 @@ See `docs/PAYMENTS.md` for sub → `grant_subscription`.
 
 ## Parity rules (do not dilute)
 
-1. **Platform fee on creator sales stays 0%** — not raised to “fund growth.”  
+1. **Platform fee on creator sales is 10%** — supports platform operations while keeping majority to creators.  
 2. **No forced Apple IAP** for core sub or creator checkout — web / Obtainium / Graphene paths.  
 3. **Processing/chain fees** are disclosed as network costs, not a hidden second platform cut.  
 4. **Free tier is not a ban** — signal is weaker, listings still allowed.  

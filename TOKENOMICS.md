@@ -1,6 +1,6 @@
 # The Remote Viewer — Tokenomics & Financial Design
 **Sovereign • Corporate-Free • Legally Cautious Edition**  
-Version 0.4 — aligned with `docs/VALUE.md` (2026-08-14)
+Version 0.5 — aligned with `docs/VALUE.md` (2026-08-17)
 
 > Not legal advice. Design intent only. Counsel before any token launch.
 
@@ -9,7 +9,7 @@ Version 0.4 — aligned with `docs/VALUE.md` (2026-08-14)
 1. **Corporate-Free** — no VC pre-mine, no company admin mint, no unilateral freeze  
 2. **Local-First** — value starts on user device  
 3. **Legally Cautious** — no investment promises, no FDIC-on-crypto claims, no yield marketing  
-4. **Creator-first commerce** — platform fee **0%** on creator sales (`docs/VALUE.md`, `docs/CREATOR-LIVING.md`)
+4. **Creator-first commerce** — platform fee **10%** on creator sales (`docs/VALUE.md`, `docs/CREATOR-LIVING.md`)
 
 ## Network access (not a token)
 
@@ -21,12 +21,12 @@ Version 0.4 — aligned with `docs/VALUE.md` (2026-08-14)
 
 Sub is **entitlement**, not $AR. See `docs/PAYMENTS.md` → `grant_subscription`.
 
-## Creator store splits (platform = 0)
+## Creator store splits (platform = 10%)
 
 | Sale | Creator | Pool | Platform |
 |------|---------|------|----------|
-| Digital | **95%** | 5% | **0%** |
-| NFT primary | **90%** | 10% | **0%** |
+| Digital | **80%** | 10% | **10%** |
+| NFT primary | **80%** | 10% | **10%** |
 | NFT secondary | **5%** royalty to creator | 0% | **0%** |
 
 ## AR Token ($AR) — design only, not launched

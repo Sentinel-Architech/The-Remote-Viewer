@@ -26,7 +26,7 @@ On-chain entitlement, nodes, open voting, VALUE splits — **not mainnet, not au
 | Instruction index | [`solana/PROGRAM.md`](solana/PROGRAM.md) |
 | Toolchain | Anchor **0.30.1** · Solana **1.18.x** · Rust **1.79** · CI only |
 | Pixel | Client/reader — **no** Anchor SBF build |
-| VALUE splits | Digital **95/5** · NFT primary **90/10** · secondary **5%** creator |
+| VALUE splits | Digital **80/10/10** · NFT primary **80/10/10** · secondary **5%** creator |
 | Pool governance | [`docs/POOL-GOVERNANCE.md`](docs/POOL-GOVERNANCE.md) |
 | Payments → sub | [`docs/PAYMENTS.md`](docs/PAYMENTS.md) |
 | Authority keys | [`docs/AUTHORITY.md`](docs/AUTHORITY.md) |
