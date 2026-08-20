@@ -1,41 +1,37 @@
-# Client Applications (Scaffold Only)
+# Client Applications
 
-**Status:** Scaffold / foundation only  
-**Date:** July 25, 2026
+**Updated:** 2026-08-20
 
-This directory contains the **starting structure** for web and mobile clients of The Remote Viewer.
+| Client | Path | Status |
+|--------|------|--------|
+| **Viewer Hub** | [`hub/`](hub/) | **LIVE** hosted DApp — briefing, daily watch, profile vault, Command |
+| Local operator UI | [`ui/`](ui/) | PROVEN local static UI (`serve-ui.sh`) |
+| Vanilla remote-viewer | [`remote-viewer/`](remote-viewer/) | Legacy local HTML |
+| Web Vite shell | [`web/`](web/) | **Old scaffold** — not the product UI. Use `hub/` |
+| Expo mobile | [`mobile/`](mobile/) | **PARKED / SCAFFOLD** — not an app-store client |
+| Shared types | [`shared/`](shared/) | Types / constants for the parked mobile+web shells |
 
-## Critical Notice
+## Viewer Hub (the real DApp)
 
-**This is not a secure, production-ready DApp.**
+Source: [`apps/hub`](hub/).  
+Live: [sentinelsecurityprotocol.grok.me](https://sentinelsecurityprotocol.grok.me)
 
-- No selective disclosure (SD-JWT / BBS+) is implemented.
-- No OpenID4VCI / OpenID4VP flows are implemented.
-- No hardware-backed keys, Bitstring Status List, or burn/destroy logic is implemented.
-- No claim is made that identity, Vault, or membership security is active.
+This is a production Viewer surface (TanStack Start, Better Auth, PGLite/Neon). It is **not** a claim that locked Phase 2 crypto (SD-JWT, OpenID4VCI, hardware Keystore, burn) is implemented. Those remain in [`docs/locked/`](../docs/locked/).
 
-All real security behavior is defined in the locked documents under [`docs/locked/`](../docs/locked/).  
-Implementation must follow the [Implementation Roadmap](../docs/locked/07-Implementation-Roadmap.md) and especially the [Phase 2 Privacy Technical Design](../docs/locked/08-Phase2-Privacy-Technical-Design.md).
+Citizen lock on the hub is an **on-device hash**. Destroy = Restart still applies to age keys on the local path.
 
-## Structure
+## What must not be contradicted
+
+- Do **not** describe “web & mobile clients” as if both were still scaffolds. **Web product = `apps/hub` (LIVE). Mobile Expo = still scaffold.**
+- Do **not** run `apps/web` and expect the Sentinel hub. You will get the old notice.
+- Do **not** read hub-live as Solana-live. Chain remains SCAFFOLD.
 
 ```
 apps/
-├── web/          # Web client scaffold (Vite + React + TypeScript)
-├── mobile/       # Mobile client scaffold (Expo + React Native + TypeScript)
-└── shared/       # Shared types, constants, and interfaces only
+├── hub/            # LIVE Viewer Hub DApp
+├── ui/             # Local operator UI (PROVEN)
+├── remote-viewer/  # Legacy vanilla
+├── web/            # Old Vite scaffold (superseded by hub/)
+├── mobile/         # Expo scaffold (PARKED)
+└── shared/         # Shared types for web/mobile scaffolds
 ```
-
-## Relationship to Locked Principles
-
-| Locked Document | How this scaffold respects it |
-|-----------------|--------------------------------|
-| Identity Layer | Modules are named and separated so identity can be added without central personal data stores |
-| Vault Principles | No Vault access code exists; boundary is documented |
-| Destroy = Restart | No identity state is persisted in a way that pretends to be burn-capable yet |
-| Implementation Roadmap | Folder layout follows Phase 0 → Phase 1 readiness |
-| Phase 2 Privacy Design | Privacy modules are placeholders only; real crypto comes later |
-
-## Next Real Work
-
-See `docs/locked/07-Implementation-Roadmap.md` Phase 0 and Phase 1.

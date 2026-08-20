@@ -1,3 +1,5 @@
+> **Status 2026-08-20:** A live Viewer Hub now exists at [`apps/hub`](apps/hub). This solo-launch plan is **historical intent**. Do not read “frontend scaffold” here as the current product state.
+
 # Phase 1: Solo DApp Launch (6-8 weeks, 100% solo)
 **You are the architect, developer, QA, and ops. This is optimized for one person.**
 

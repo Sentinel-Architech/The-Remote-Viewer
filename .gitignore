@@ -79,3 +79,10 @@ temp/
 
 # === Misc ===
 .gitleaks-report.json
+
+# Viewer Hub product assets (hosted DApp) — root ignores *.png/*.jpg
+!apps/hub/public/**/*.png
+!apps/hub/public/**/*.jpg
+!apps/hub/public/**/*.svg
+!branding/**/*.png
+!branding/**/*.jpg

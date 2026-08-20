@@ -10,9 +10,35 @@ It is written for complete beginners (college freshman level).
 Logo: `branding/sentinel-logo.png` · Hero: `branding/remote-viewer-hero.png` (upload masters if missing).
 
 **Historical note:** Unrelated to Technical Remote Viewing / PSI TECH / Ed Dames methodology.  
-This project is a local-first software system for digital sovereignty.
+This project is a local-first software system for digital sovereignty **plus** a hosted Viewer Hub.
 
-**Solo-built · local-first · zero-custody · optical air-gap systems**
+**Solo-built · local-first node · zero-custody packs · optical air-gap · live Viewer Hub**
+
+---
+
+## Live Viewer Hub (hosted DApp)
+
+**This is the product Remote Viewers use today. It is not a scaffold.**
+
+| | |
+|--|--|
+| **Live** | [sentinelsecurityprotocol.grok.me](https://sentinelsecurityprotocol.grok.me) |
+| **Source** | [`apps/hub`](apps/hub) |
+| **Status** | **LIVE** as of 2026-08-20 |
+
+Shipped on the hub:
+
+- Sign-in (Google / X / email)
+- Age + OFAC gate
+- **Mandatory one-time briefing** — 12 stations, no skip, no close, seals `tutorial_at`
+- Daily Watch — Viewers intercept hostile packets to defend The Sentinel, then claim TRV
+- Dedicated profile vault (`/hub/profile`) — portrait, identity extras, finances, docs, live icon
+- Public Viewer card (`/v/$handle`)
+- Command, OS, live, people, make, rails, Citizen lock (on-device hash)
+
+`apps/web` is the **old Vite scaffold**. Do not treat it as the product UI.
+
+The hub is a **hosted** Viewer surface (Better Auth + Postgres). It does **not** replace the local-first optical / Path B node, and it is **not** company recovery of age keys. Destroy = Restart still holds on the local path.
 
 ---
 
@@ -102,6 +128,7 @@ Prefer [`docs/REALITY.md`](docs/REALITY.md) and [`STATUS.md`](STATUS.md) over an
 
 | Capability | Notes |
 |------------|--------|
+| **Viewer Hub DApp** | **LIVE** — [`apps/hub`](apps/hub) · briefing · daily watch · profile vault |
 | Optical air-gap | PROVEN (see REALITY) |
 | Digital vending Path B | PROVEN |
 | Solana `trv_governance` | **SCAFFOLD** — CI build gate |
@@ -111,6 +138,17 @@ Prefer [`docs/REALITY.md`](docs/REALITY.md) and [`STATUS.md`](STATUS.md) over an
 ---
 
 ## 60-second paths
+
+### Viewer Hub
+
+```bash
+cd apps/hub
+npm install
+npm run dev
+# http://127.0.0.1:8080/
+```
+
+Hosted: [sentinelsecurityprotocol.grok.me](https://sentinelsecurityprotocol.grok.me)
 
 ### Path B
 
@@ -129,7 +167,7 @@ cd The-Remote-Viewer
 bash modules/defense/integrity-pulse.sh
 ```
 
-### Operator UI
+### Operator UI (local)
 
 ```bash
 bash apps/ui/serve-ui.sh
@@ -140,10 +178,13 @@ bash apps/ui/serve-ui.sh
 
 ## What this is not
 
-- No required cloud login  
-- No public hosted EI endpoint  
-- No free packs via Path B  
-- Keys, GGUFs, personal notes stay on **your** device  
+- No company-held key recovery. Lose the age secret → start over (intentional).
+- No required cloud login for the **local-first node / optical path**.
+- The **hosted Viewer Hub** does use accounts. That is a separate surface, documented in [`apps/hub`](apps/hub).
+- No public hosted EI endpoint — local models stay on **your** device.
+- No free packs via Path B.
+- Keys, GGUFs, personal notes on the local path stay on **your** device.
+- Solana governance is **not** live. Saying the hub is live is not saying the chain is live.
 
 ## License
 

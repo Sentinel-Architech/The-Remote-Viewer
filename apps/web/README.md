@@ -1,17 +1,10 @@
-# Web Client (Scaffold Only)
+# Web Client (old scaffold — superseded)
 
-Vite + React + TypeScript shell for The Remote Viewer.
+Vite + React + TypeScript **shell**. This is **not** the product UI.
 
-**This is not secure.** It does not implement identity, credentials, selective disclosure, keys, or burn.
+**The live Viewer Hub is [`apps/hub`](../hub/).**  
+Hosted at [sentinelsecurityprotocol.grok.me](https://sentinelsecurityprotocol.grok.me).
 
-## Run (after install)
+This folder is kept so old links and scripts do not break. If you `npm run dev` here you will see an explicit scaffold notice. That is expected. Do not file issues against this shell as if it were the hub.
 
-```bash
-cd apps/web
-npm install
-npm run dev
-```
-
-Open the printed local URL. You will see an explicit scaffold notice, not a product UI.
-
-Follow `docs/locked/07-Implementation-Roadmap.md` for real identity work.
+Identity, briefing, daily watch, and the profile vault live in `apps/hub`. Locked Phase 2 crypto (SD-JWT / OpenID4VCI / hardware keys) is still not in either folder — see `docs/locked/`.

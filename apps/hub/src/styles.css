@@ -1,0 +1,135 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme {
+  --color-bg: #08090b;
+  --color-background: #08090b;
+  --color-surface: #12141a;
+  --color-card: #12141a;
+  --color-card-foreground: #ecece8;
+  --color-elevated: #181b22;
+  --color-popover: #12141a;
+  --color-popover-foreground: #ecece8;
+  --color-fg: #ecece8;
+  --color-foreground: #ecece8;
+  --color-muted: #8a8d88;
+  --color-muted-foreground: #8a8d88;
+  --color-primary: #e8ece9;
+  --color-primary-foreground: #08090b;
+  --color-secondary: #181b22;
+  --color-secondary-foreground: #ecece8;
+  --color-accent: #c5cfc8;
+  --color-accent-foreground: #08090b;
+  --color-border: rgb(236 236 232 / 12%);
+  --color-input: rgb(236 236 232 / 14%);
+  --color-ring: #c5cfc8;
+  --color-destructive: #c45c4a;
+  --color-ok: #7d9a7e;
+  --color-warn: #c4a574;
+  --radius: 0.75rem;
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --font-sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Newsreader", "Iowan Old Style", "Palatino Linotype", serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
+  }
+  html,
+  body,
+  #app {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    min-height: 100%;
+    min-height: 100dvh;
+  }
+  body {
+    font-family: var(--font-sans);
+    letter-spacing: -0.011em;
+    overflow-x: clip;
+  }
+  img,
+  video {
+    max-width: 100%;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    font-family: var(--font-display);
+    letter-spacing: -0.03em;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+}
+
+.trv-live-dot {
+  animation: trv-live 1.4s ease-in-out infinite;
+}
+
+.trv-brief-enter {
+  animation: trv-brief-in 280ms ease-out both;
+}
+
+@keyframes trv-brief-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes trv-live {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 767px) {
+  h1 {
+    font-size: clamp(1.55rem, 6.5vw, 2.1rem);
+    line-height: 1.12;
+  }
+  h2 {
+    font-size: clamp(1.15rem, 4.5vw, 1.45rem);
+  }
+}

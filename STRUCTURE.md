@@ -3,7 +3,7 @@
 **Working branch:** `TheRemoteViewer`  
 **Cleanup / reality branch:** `cleanup/professional-structure`
 
-This document describes the *actual* layout. See also **[docs/REALITY.md](docs/REALITY.md)** for the status of every major concept (Proven / Scaffold / Design / Rejected).
+This document describes the *actual* layout. See also **[docs/REALITY.md](docs/REALITY.md)** for the status of every major concept (LIVE / Proven / Scaffold / Design / Rejected).
 
 ## Root
 
@@ -23,9 +23,10 @@ This document describes the *actual* layout. See also **[docs/REALITY.md](docs/R
 ## Proven / Active Code Paths
 
 ```
+apps/hub/                # LIVE hosted Viewer Hub DApp (briefing, daily watch, profile vault)
 optical-airgap/          # age + Robust Soliton LT optical transport (PROVEN on GrapheneOS + Termux)
 modules/                 # New: real, runnable open modules (self-heal, local-identity, contribution)
-apps/                    # mobile + web + shared identity/treasury
+apps/                    # hub (LIVE) + ui (PROVEN) + web/mobile scaffolds
 desktop/                 # Rust desktop components
 digital-vending/         # Self-hosted digital goods delivery
 edge-esp32/              # ESP32 firmware stubs
@@ -33,6 +34,18 @@ grok/                    # On-device specialist router + skills
 site/                    # Pure static HTML (optical QR + vending) — zero corporate runtime
 mobile/                  # Termux daemon helpers
 protocols/  scripts/  src/  web/
+```
+
+## apps/ (clients)
+
+```
+apps/
+├── hub/            # LIVE Viewer Hub — source of the hosted DApp
+├── ui/             # Local operator UI (PROVEN)
+├── remote-viewer/  # Legacy vanilla
+├── web/            # Old Vite scaffold (superseded by hub/)
+├── mobile/         # Expo scaffold (PARKED)
+└── shared/         # Shared types for parked shells
 ```
 
 ## modules/ (Concepts → Reality)
@@ -50,7 +63,7 @@ These replace former root-level concept notes that were vaporware or centralized
 
 ```
 docs/
-├── REALITY.md           # Status table: every concept → Proven / Scaffold / Design / Rejected
+├── REALITY.md           # Status table: every concept → LIVE / Proven / Scaffold / Design / Rejected
 ├── locked/              # Frozen architectural decisions
 ├── public/              # Install, posture, release hygiene
 ├── distribution/        # Obtainium / Android identity
@@ -64,7 +77,8 @@ docs/
 - Centralized 21+ digit key assignment systems → **REJECTED** (conflicts with zero-trust)
 - Full post-quantum / FHE / ZK re-implementations → **DESIGN only** until real libraries are integrated
 - Java enterprise scaffolding from old Project Structure docs → historical only
+- Treating `apps/web` as the product UI → **superseded** by `apps/hub` (2026-08-20)
 
 ---
 
-**Rule:** Prefer working, auditable code under user control over speculative file proliferation at the root. Optical air-gap is the reference standard for "real".
+**Rule:** Prefer working, auditable code under user control over speculative file proliferation at the root. Optical air-gap is the reference standard for local-first "real". The Viewer Hub is the reference standard for the hosted command surface.

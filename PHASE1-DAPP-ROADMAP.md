@@ -1,3 +1,5 @@
+> **Status 2026-08-20:** The live Viewer Hub DApp is [`apps/hub`](apps/hub) ([sentinelsecurityprotocol.grok.me](https://sentinelsecurityprotocol.grok.me)). This Phase 1 document is **historical intent** for an EVM/testnet DApp. It is **not** a description of what is running. Solana `trv_governance` remains SCAFFOLD. Expo mobile remains PARKED.
+
 # Phase 1: Minimum Viable DApp (4-6 weeks)
 **Target: Testnet launch with storage + governance contracts, web wallet integration, token rewards for optical air-gap verification**
 

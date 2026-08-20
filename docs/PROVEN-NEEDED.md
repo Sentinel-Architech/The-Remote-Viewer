@@ -1,6 +1,13 @@
-# Scaffold → PROVEN
+# Scaffold → LIVE / PROVEN
 
-Authority: [REALITY.md](REALITY.md).
+Authority: [REALITY.md](REALITY.md).  
+**Updated:** 2026-08-20
+
+## LIVE (hosted)
+
+Viewer Hub DApp — [`apps/hub`](../apps/hub) · briefing · daily watch · profile vault · public card
+
+This is **not** the old `apps/web` scaffold.
 
 ## PROVEN
 
@@ -23,5 +30,7 @@ Optical TRVL · Path B · verifier · recognition · local models/UI/defense
 | **D** | Wear OS device |
 | **E** | After A |
 | **F / G** | Rails / real handoff |
+| **Mobile Expo** | Still PARKED — not the hub |
 
-**Next hard gate: A.**
+**Next hard gate (chain): A.**  
+Hub is already live; do not list it as open.
