@@ -1,10 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { pageHead } from "@/lib/trv/seo";
 import { Shield } from "lucide-react";
 import { FluidRipple } from "@/components/fluid-ripple";
 import { Button } from "@/components/ui/button";
 import { EO_LEDGER, NCMEC_NAME, NCMEC_TIP, STATUTE_GAPS } from "@/lib/trv/compliance";
 
-export const Route = createFileRoute("/compliance")({ component: CompliancePage });
+export const Route = createFileRoute("/compliance")({
+  head: () =>
+    pageHead({
+      title: "Orders",
+      description: "Operating ledger of executive orders and statutes that actually bind The Remote Viewer Network.",
+      path: "/compliance",
+    }),
+  component: CompliancePage });
 
 function CompliancePage() {
   return (

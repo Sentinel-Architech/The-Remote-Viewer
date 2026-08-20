@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useViewer } from "@/components/viewer-context";
-import { convertToTrv, confirmPreviewOnramp, getBilling, inviteOrgSeat, startStripeOnramp, subscribePlan } from "@/lib/trv/server";
+import { convertToTrv, confirmPreviewOnramp, getBilling, inviteOrgSeat, startOutsideTrial, startStripeOnramp, subscribePlan } from "@/lib/trv/server";
 import { formatSol, usdToSolMicro, type OnrampDest } from "@/lib/trv/onramp";
 import { isUnlocked } from "@/lib/trv/wallet-client";
 import {
@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { isPaidTrialActive, isPaidTrialExpired, formatTrialClock, msUntil, PAID_TRIAL_HOURS } from "@/lib/trv/trial";
 
 type BillingSearch = { plan?: string; edition?: Edition };
 
@@ -193,6 +194,40 @@ function BillingPage() {
           <Badge variant="muted">{formatSol(live?.solMicro ?? 0)} SOL</Badge>
         </div>
       </div>
+
+
+      {live && planById(live.planId).usdMonth === 0 && !live.paidTrialUsed ? (
+        <section className="rounded-[var(--radius-xl)] border border-accent/40 bg-card p-5">
+          <h2 className="font-display text-xl">Outside trial · {PAID_TRIAL_HOURS}h of Verified</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            No card. One shot. Handshake still gates methods. Self-serve — this button is the whole sales team.
+          </p>
+          <Button
+            className="mt-4"
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              try {
+                const p = await startOutsideTrial();
+                if (p) setProfile(p);
+                toast.success("Verified trial live for 48 hours.");
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : "Trial failed");
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            Start 2-day Verified trial
+          </Button>
+        </section>
+      ) : null}
+      {live && isPaidTrialActive(live) ? (
+        <p className="text-sm text-accent">Trial clock · {formatTrialClock(msUntil(live.paidTrialUntil))} of Verified remaining.</p>
+      ) : null}
+      {live && isPaidTrialExpired(live) ? (
+        <p className="text-sm text-warn">Outside trial ended. Subscribe below to keep Verified — still self-serve.</p>
+      ) : null}
 
       <section className="rounded-[var(--radius-xl)] border border-border bg-card p-5">
         <h2 className="font-display text-xl">Convert to native TRV</h2>

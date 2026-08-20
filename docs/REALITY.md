@@ -13,11 +13,14 @@
 | Surface | Status | Notes |
 |---------|--------|--------|
 | Viewer Hub DApp | **LIVE** | [`apps/hub`](../apps/hub) · [sentinelsecurityprotocol.grok.me](https://sentinelsecurityprotocol.grok.me) |
-| Mandatory briefing | **LIVE** | 12 stations, no skip; `viewer_profiles.tutorial_at` |
+| Mandatory briefing | **LIVE** | Stations, no skip; `viewer_profiles.tutorial_at` |
 | Daily Watch | **LIVE** | Defend / Mesh / Honeypot → claim TRV |
 | Profile vault | **LIVE** | `/hub/profile` · public card `/v/$handle` · live icon |
 | Age + OFAC gate | **LIVE** | Before Command |
 | Citizen lock | **LIVE (hash)** | On-device hash. Not hardware Keystore |
+| Skill audit | **LIVE** | `/hub/audit` · doctrine + edge + live helm · par 70 |
+| Native wallet | **LIVE (Ed25519)** | PIN vault on-device. Pubkey = base58(Ed25519). Hash-v1 unlock still works. **Not mainnet.** |
+| Stripe on-ramp | **LIVE (keyed)** | Checkout when `STRIPE_SECRET_KEY` is set; otherwise preview rail. Stripe is never identity. |
 
 This hub uses accounts (Better Auth + Postgres). That does not make it a recovery service for age keys.
 
@@ -66,4 +69,4 @@ This hub uses accounts (Better Auth + Postgres). That does not make it a recover
 
 ## Track A
 
-Anchor **0.32.1**. [CI-BLOCKER.md](CI-BLOCKER.md).
+Anchor **0.32.1**. [CI-BLOCKER.md](CI-BLOCKER.md). Ed25519 keys in `apps/hub` do not promote Track A. Promotion still needs a chain build host.

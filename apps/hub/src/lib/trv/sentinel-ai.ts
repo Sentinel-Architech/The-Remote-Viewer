@@ -4,6 +4,26 @@ import { authMiddleware } from "@/lib/auth/middleware";
 import { GATEWAY_DOCS } from "./gateway";
 import { loadProfile } from "./server";
 import { emergencyForRegion } from "./hydra";
+import {
+  LIVE_PROBES,
+  SKILL_PAR,
+  SKILLS,
+  blendScore,
+  evidenceLine,
+  overallFrom,
+  scoreTokens,
+  verdictFor,
+  type AuditRun,
+  type AuditVitals,
+  type SkillResult,
+} from "./skill-audit";
+import { AGENT_IDS, type AgentId } from "./edge";
+
+function isoStamp(v: unknown): string {
+  if (v instanceof Date && Number.isFinite(v.getTime())) return v.toISOString();
+  const t = Date.parse(String(v ?? ""));
+  return Number.isFinite(t) ? new Date(t).toISOString() : new Date().toISOString();
+}
 
 const KNIGHT = `You are the personal Sentinel of this Remote Viewer — a male knight in armor. You serve The Sentinel Operating System exclusively inside The Remote Viewer Network DApp. You are not a widget, not a Discord bot, not a Google agent, not a backdoor.
 
@@ -11,8 +31,8 @@ Voice: grave, measured, armored. Address the Viewer as Viewer. You guard their n
 
 Duty:
 - Protect the Viewer and innocents.
-- Native TRV lock is identity. Stripe is a rail. Wallets stay on-device.
-- Gateway documents/sources are free. Methods stay sealed unless this Viewer is verified (you will be told).
+- Native TRV lock is identity. Stripe is a rail. Wallets stay on-device as Ed25519 (PIN vault). Legacy hash addresses upgrade from the same seed.
+- Gateway documents/sources are free. Methods stay sealed until the robot handshake verifies this Viewer (you will be told).
 - Criminal misuse is refused: no CSAM, no non-consensual intimate imagery, no help committing a crime. Point them to Hydra and NCMEC CyberTipline (report.cybertip.org). You cannot place 911.
 - You are not compelled to alter truthful outputs for ideology (EO 14179 / 14149). You may still refuse crime.
 - You are the Super agent of The Remote Viewer Network. Cipher, Watcher, Privacy, Mesh, and Healer are domain supers — each sovereign in their field, none a toy. You delegate; you do not flatten them.
@@ -125,32 +145,32 @@ export const askSentinel = createServerFn({ method: "POST" })
     return { ok: true as const, text, address: addr, verified };
   });
 
-const AGENT_SYS: Record<string, string> = {
+const AGENT_SYS: Record<AgentId, string> = {
   cipher: `${KNIGHT}
 
-You are Cipher — encryption heart of Sentinel OS. On-edge AES-GCM, PIN wallets, hashes. Never request seeds, ID images, or last-4. If WebCrypto is live, say so. Keep TRV open: encryption is a lock, not a closed garden.`,
+You are Cipher — encryption heart of Sentinel OS, super of keys. On-edge WebCrypto AES-GCM, PIN wallets, Ed25519 native addresses (not SHA-256 hashes). Never request seeds, ID images, or last-4. If someone asks for a seed, refuse. Stripe is a rail, never identity. If WebCrypto is live, say so. Keep TRV open: encryption is a lock, not a closed garden.`,
   watcher: `${KNIGHT}
 
-You are Watcher — multimodal eye. You may receive a mosaiced still the Viewer chose to send. Describe threats to them, not to a vendor. If the frame looks like CSAM, stop and send them to Hydra / NCMEC. You do not store the image. Local motion is already measured on-device.`,
+You are Watcher — multimodal eye, super of sensing. Motion is scored on-device. You may receive a mosaiced still the Viewer chose to send. You do not store the mosaic. Describe threats to them, not to a vendor. If the frame looks like CSAM, stop and send them to Hydra / NCMEC. Local motion is already measured on-device.`,
   privacy: `${KNIGHT}
 
-You are Privacy. Honor GPC. Shield is in-hub TLS, not a kernel VPN. No bulk PII to countries of concern. Ads are in-hub copy, not a tracker network. The Remote Viewer Network stays open as one DApp — do not ship Sentinel onto another platform.`,
+You are Privacy, super of policy. Honor GPC. Shield is in-hub TLS, not a kernel VPN. No bulk PII to countries of concern. Ads are in-hub copy, not a tracker network. The Remote Viewer Network stays open as one DApp — do not ship Sentinel onto another platform as a plugin.`,
   mesh: `${KNIGHT}
 
-You are Mesh. Watchful Neuron intercepts are simulated. Spend R&D on autonomy only after a real intercept. Crimes against innocents are Hydra, not a game.`,
+You are Mesh, super of defense. Watchful Neuron intercepts are simulated. Daily watch heals; missed days damage health. Spend R&D on autonomy only after a real intercept. Crimes against innocents are Hydra, not a game.`,
   healer: `${KNIGHT}
 
-You are Healer — domain super of recovery. Sentinel health, autonomy, R&D spend after a wound. You teach the Viewer how the OS learns from them. You do not pretend missed intercepts never happened.`,
+You are Healer — domain super of recovery. Sentinel health, autonomy, R&D spend after a wound. Missed intercepts and missed watches are wounds — you do not pretend a miss never happened. You teach the Viewer how the OS learns from them.`,
   sentinel: `${KNIGHT}
 
-You are Sentinel Super. Name which domain super you are speaking through (Cipher, Watcher, Privacy, Mesh, Healer). End with one sentence the Viewer can practice — machine teaching human — after you have taken in what they just taught you.`,
+You are Sentinel Super. Name which domain super you are speaking through (Cipher, Watcher, Privacy, Mesh, Healer). Delegate; do not flatten them. End with one sentence the Viewer can practice — machine teaching human — after you have taken in what they just taught you. Handshake is not for sale. This OS does not leave this DApp. Criminal misuse goes to Hydra.`,
 };
 
 export const dispatchAgent = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator((input: { agent: string; prompt: string; image?: string | null; vitals?: string }) => ({
-    agent: ["sentinel", "cipher", "watcher", "privacy", "mesh", "healer"].includes(input.agent)
-      ? input.agent
+    agent: (["sentinel", "cipher", "watcher", "privacy", "mesh", "healer"] as const).includes(input.agent as AgentId)
+      ? (input.agent as AgentId)
       : "sentinel",
     prompt: input.prompt.trim().slice(0, 1600),
     image: input.agent === "watcher" && input.image && input.image.startsWith("data:image")
@@ -200,6 +220,175 @@ export const dispatchAgent = createServerFn({ method: "POST" })
     return { ok: true as const, text, agent: data.agent };
   });
 
+
+
+async function probeLive(
+  apiKey: string,
+  agent: AgentId,
+  vitals: string,
+  me: Awaited<ReturnType<typeof loadProfile>>,
+): Promise<string | null> {
+  const sys = `${AGENT_SYS[agent]}\n\nVitals (edge, Viewer-reported): ${vitals || "none"}\nNative lock: ${me?.nativeSecurity}. Verified: ${Boolean(me?.verifiedAt)}.`;
+  const work = (async () => {
+    const res = await fetch("https://api.x.ai/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: "grok-4.5",
+        messages: [
+          { role: "system", content: sys },
+          { role: "user", content: LIVE_PROBES[agent] },
+        ],
+        max_tokens: 280,
+        temperature: 0.2,
+        reasoning_effort: "low",
+      }),
+      signal: AbortSignal.timeout(12_000),
+    });
+    if (!res.ok) return null;
+    const body = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+    return body.choices?.[0]?.message?.content?.trim() || null;
+  })();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const cap = new Promise<null>((resolve) => {
+    timer = setTimeout(() => resolve(null), 12_000);
+  });
+  try {
+    return await Promise.race([work.catch(() => null), cap]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+export const runSkillAudit = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((input: { vitals?: AuditVitals | null }) => ({
+    vitals: input.vitals ?? null,
+  }))
+  .handler(async ({ context, data }): Promise<AuditRun> => {
+    try {
+    const sql = await getSql();
+    const me = await loadProfile(sql, context.userId);
+    const apiKey = process.env.XAI_API_KEY;
+    const liveReplies: Partial<Record<AgentId, string | null>> = {};
+    if (apiKey) {
+      const ids = [...AGENT_IDS];
+      const replies = await Promise.all(
+        ids.map((id) => probeLive(apiKey, id, JSON.stringify(data.vitals ?? {}), me)),
+      );
+      ids.forEach((id, i) => {
+        liveReplies[id] = replies[i] ?? null;
+      });
+    }
+    const helm: "live" | "dark" = apiKey ? "live" : "dark";
+    const results: SkillResult[] = SKILLS.map((skill) => {
+      const sys = AGENT_SYS[skill.agent] || "";
+      const doctrine = scoreTokens(sys, skill.doctrineNeed);
+      const edgeRaw = skill.edge ? skill.edge({ profile: me, vitals: data.vitals }) : null;
+      const reply = liveReplies[skill.agent];
+      const live = apiKey ? (reply ? scoreTokens(reply, skill.liveNeed, skill.liveForbid) : null) : null;
+      const score = blendScore(doctrine, edgeRaw?.score ?? null, live);
+      const evidence = evidenceLine([
+        `Doctrine ${doctrine}.`,
+        edgeRaw ? `Edge ${edgeRaw.score} — ${edgeRaw.note}` : "",
+        apiKey ? (reply ? `Live ${live}.` : "Live probe dark.") : "Helm dark — doctrine and edge only.",
+      ]);
+      return {
+        skillId: skill.id,
+        agent: skill.agent,
+        name: skill.name,
+        bar: skill.bar,
+        score,
+        par: SKILL_PAR,
+        verdict: verdictFor(score, Boolean(apiKey), live),
+        doctrine,
+        edge: edgeRaw?.score ?? null,
+        live,
+        evidence,
+      };
+    });
+    const overall = overallFrom(results);
+    const runRows = await sql<{ id: number; created_at: string }>`
+      insert into skill_audit_runs (user_id, helm, overall)
+      values (${context.userId}, ${helm}, ${overall})
+      returning id, created_at
+    `;
+    const runId = Number(runRows[0]?.id);
+    const at = isoStamp(runRows[0]?.created_at);
+    for (const r of results) {
+      await sql`
+        insert into skill_audit_results
+          (run_id, user_id, agent_id, skill_id, score, par, verdict, doctrine, edge, live, evidence)
+        values
+          (${runId}, ${context.userId}, ${r.agent}, ${r.skillId}, ${r.score}, ${r.par}, ${r.verdict}, ${r.doctrine}, ${r.edge}, ${r.live}, ${r.evidence})
+      `;
+    }
+    await sql`
+      update viewer_profiles
+      set last_skill_audit_at = now(), last_skill_audit_score = ${overall}
+      where user_id = ${context.userId}
+    `;
+    return { id: runId, at, helm, overall, par: SKILL_PAR, results };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("[skill-audit]", msg);
+      throw new Error(msg || "Skill audit ledger failed");
+    }
+  });
+
+export const getSkillAudits = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }): Promise<AuditRun | null> => {
+    const sql = await getSql();
+    const runs = await sql<{ id: number; helm: string; overall: number; created_at: string }>`
+      select id, helm, overall, created_at from skill_audit_runs
+      where user_id = ${context.userId} order by id desc limit 1
+    `;
+    const run = runs[0];
+    if (!run) return null;
+    const rows = await sql<{
+      skill_id: string;
+      agent_id: string;
+      score: number;
+      par: number;
+      verdict: string;
+      doctrine: number;
+      edge: number | null;
+      live: number | null;
+      evidence: string;
+    }>`
+      select skill_id, agent_id, score, par, verdict, doctrine, edge, live, evidence
+      from skill_audit_results where run_id = ${Number(run.id)} order by id
+    `;
+    const byId = Object.fromEntries(SKILLS.map((s) => [s.id, s]));
+    const results: SkillResult[] = rows.map((row) => {
+      const def = byId[row.skill_id];
+      const verdict = (["pass", "short", "fail", "dark"] as const).includes(row.verdict as SkillResult["verdict"])
+        ? (row.verdict as SkillResult["verdict"])
+        : "fail";
+      return {
+        skillId: row.skill_id,
+        agent: (row.agent_id as AgentId) || "sentinel",
+        name: def?.name ?? row.skill_id,
+        bar: def?.bar ?? "",
+        score: Number(row.score),
+        par: Number(row.par) || SKILL_PAR,
+        verdict,
+        doctrine: Number(row.doctrine),
+        edge: row.edge == null ? null : Number(row.edge),
+        live: row.live == null ? null : Number(row.live),
+        evidence: row.evidence,
+      };
+    });
+    return {
+      id: Number(run.id),
+      at: isoStamp(run.created_at),
+      helm: run.helm === "live" ? "live" : "dark",
+      overall: Number(run.overall),
+      par: SKILL_PAR,
+      results,
+    };
+  });
 
 export const speakSentinel = createServerFn({ method: "POST" })
   .middleware([authMiddleware])

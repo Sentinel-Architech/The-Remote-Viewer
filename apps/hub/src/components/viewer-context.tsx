@@ -45,8 +45,10 @@ export function ViewerProvider({ children }: { children: ReactNode }) {
       typeof window !== "undefined" ? localStorage.getItem("trv-ref") || undefined : undefined;
     const edition =
       typeof window !== "undefined" ? localStorage.getItem("trv-edition") || undefined : undefined;
+    const paidTrial =
+      typeof window !== "undefined" ? localStorage.getItem("trv-paid-trial") === "verified" : false;
     const p = await ensureProfile({
-      data: { displayName, referral, edition },
+      data: { displayName, referral, edition, paidTrial },
     });
     setProfile(p);
     await refreshWatch().catch(() => {});

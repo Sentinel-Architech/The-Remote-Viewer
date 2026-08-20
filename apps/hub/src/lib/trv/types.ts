@@ -29,6 +29,9 @@ export type ViewerProfile = {
   phantomPubkey: string | null;
   solMicro: number;
   trialUntil: string | null;
+  paidTrialUntil: string | null;
+  paidTrialPlan: string | null;
+  paidTrialUsed: boolean;
   orgName: string | null;
   orgSeats: number;
   isPublic: boolean;
@@ -45,6 +48,8 @@ export type ViewerProfile = {
   ageOk: boolean;
   ofacOk: boolean;
   tutorialAt: string | null;
+  lastSkillAuditAt: string | null;
+  lastSkillAuditScore: number | null;
   uiTheme: string | null;
   honeypotArmed?: boolean;
   lastWatchOn?: string | null;
@@ -87,6 +92,20 @@ export type PublicViewer = {
   liveNow: boolean;
   liveTitle: string | null;
   citizenSealed: boolean;
+};
+
+export type PublicViewerCard = {
+  handle: string;
+  displayName: string;
+  bio: string;
+  craft: string;
+  locationLabel: string;
+  statusLine: string;
+  avatarData: string | null;
+  liveNow: boolean;
+  liveTitle: string | null;
+  neuronStage: number;
+  tier: string;
 };
 
 export type ViewerDoc = {

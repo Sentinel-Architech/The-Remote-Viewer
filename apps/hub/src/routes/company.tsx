@@ -1,10 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { pageHead } from "@/lib/trv/seo";
 import { Building2, Check, Shield, Users } from "lucide-react";
 import { FluidRipple } from "@/components/fluid-ripple";
 import { Button } from "@/components/ui/button";
 import { COMPANY_PLANS, USD_TO_TRV } from "@/lib/trv/saas";
 
-export const Route = createFileRoute("/company")({ component: CompanyLanding });
+export const Route = createFileRoute("/company")({
+  head: () =>
+    pageHead({
+      title: "Company",
+      description: "Company seats on The Remote Viewer Network. Same Sentinel OS, no corporate identity backdoor.",
+      path: "/company",
+    }),
+  component: CompanyLanding });
 
 function chooseCompany() {
   try {

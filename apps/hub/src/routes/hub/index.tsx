@@ -9,16 +9,21 @@ import { effectiveFeeRate, planById } from "@/lib/trv/saas";
 import { WatchClaim } from "@/components/watch-claim";
 import { LiveBadge, ViewerMark } from "@/components/viewer-mark";
 import { Brain, Cpu, Globe, Landmark, ScrollText, Shield } from "lucide-react";
+import { retentionTasks } from "@/lib/trv/retention";
+import { isPaidTrialActive, formatTrialClock, msUntil } from "@/lib/trv/trial";
+import { SKILL_PAR } from "@/lib/trv/skill-audit";
 
 export const Route = createFileRoute("/hub/")({ component: Command });
 
 function Command() {
-  const { profile } = useViewer();
+  const { profile, watch } = useViewer();
   if (!profile) {
     return <div className="p-8 text-sm text-muted-foreground">Binding node…</div>;
   }
   const fee = Math.round(effectiveFeeRate(profile.planId, profile.tier, Boolean(profile.citizenAt)) * 100);
   const plan = planById(profile.planId);
+  const tasks = retentionTasks(profile, watch);
+  const trialOn = isPaidTrialActive(profile);
 
   return (
     <div className="space-y-6 p-5 md:p-8">
@@ -44,15 +49,47 @@ function Command() {
           {profile.nativeSecurity ? "Native TRV lock" : "Bridged identity"}
         </Badge>
         <Badge>{TIER_LABEL[profile.tier as keyof typeof TIER_LABEL] ?? profile.tier}</Badge>
-        <Badge variant="muted">{plan.name} plan</Badge>
+        <Badge variant="muted">{trialOn ? `Verified trial · ${formatTrialClock(msUntil(profile.paidTrialUntil))}` : `${plan.name} plan`}</Badge>
         <Badge variant="muted">{profile.edition === "company" ? "Company" : "We The People"}</Badge>
         <Badge variant={profile.citizenAt ? "native" : "warn"}>
           {profile.citizenAt ? "US Citizen lock" : "Citizen lock open"}
         </Badge>
         <Badge variant="muted">{STAGE_LABEL[profile.neuronStage]}</Badge>
+        {profile.lastSkillAuditScore != null ? (
+          <Badge variant={profile.lastSkillAuditScore >= SKILL_PAR ? "native" : "warn"}>
+            Skill audit {profile.lastSkillAuditScore}
+          </Badge>
+        ) : (
+          <Badge variant="muted">Skill audit open</Badge>
+        )}
       </div>
 
       <WatchClaim />
+
+      {tasks.length > 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Keep this node</CardTitle>
+            <CardDescription>
+              Retention is duty. Daily watch, handshake, wallet, then convert the trial if it still fits.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {tasks.map((task) => (
+              <div key={task.id} className="flex flex-wrap items-start justify-between gap-2 rounded-[var(--radius-md)] border border-border p-3">
+                <div className="min-w-0">
+                  <p className="text-sm text-fg">{task.title}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{task.body}</p>
+                </div>
+                <Button asChild size="sm" variant={task.urgency === "now" ? "default" : "secondary"}>
+                  <Link to={task.to as never}>{task.urgency === "now" ? "Now" : "Open"}</Link>
+                </Button>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      ) : null}
+
 
       {!profile.citizenAt && (
         <Card className="border-warn/40">

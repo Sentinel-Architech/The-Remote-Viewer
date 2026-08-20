@@ -39,12 +39,17 @@ export const COVENANT = [
   {
     id: "ads",
     title: "Unverified feed is ads, not surveillance",
-    body: "Skip handshake and the commons shows a 30-second native ad every 90 seconds of watch. That is not a tracker network. Referral trial is ad-free. Methods stay sealed.",
+    body: "Skip handshake and the commons shows a 30-second native ad every 90 seconds of watch. That is not a tracker network. Referral trial is ad-free. Outside viewership may try Verified for two days, self-serve, no card. Methods stay sealed until handshake.",
   },
   {
     id: "source",
     title: "Open source, no secret bans",
     body: "This OS is one codebase. A hidden filter against a people or a faith would be a backdoor and would ship in the source. Community tags are explicit: adult (blurred), cannabis garden, civic / 2A education. Brand voice is Sentinel — not a shadow ban list.",
+  },
+  {
+    id: "outside-trial",
+    title: "Outside viewership is a 2-day self-serve trial",
+    body: "Anyone arriving from the journal, a Viewer card, or search may start Verified for 48 hours without a ticket or a card. One trial per node. The robot handshake still gates methods. After two days the node returns to Initiate unless they subscribe from Billing. This is not a sales call.",
   },
   {
     id: "orders",

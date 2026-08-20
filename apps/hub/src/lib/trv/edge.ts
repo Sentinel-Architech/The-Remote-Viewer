@@ -19,7 +19,7 @@ export const AGENTS: Record<
     name: "Cipher",
     field: "encryption",
     rank: "domain-super",
-    duty: "Super of keys. WebCrypto, PIN wallets, hashes. Never asks for a seed.",
+    duty: "Super of keys. WebCrypto, PIN wallets, Ed25519 addresses. Never asks for a seed.",
     senses: "keys",
   },
   watcher: {

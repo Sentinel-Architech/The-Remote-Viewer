@@ -4,7 +4,12 @@ import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { HubShell } from "@/components/hub-shell";
 import { ViewerProvider } from "@/components/viewer-context";
 
-export const Route = createFileRoute("/hub")({ component: HubLayout });
+export const Route = createFileRoute("/hub")({
+  head: () => ({
+    meta: [{ name: "robots", content: "noindex,nofollow" }],
+  }),
+  component: HubLayout,
+});
 
 function HubLayout() {
   const { user, isPending } = useCurrentUserState();

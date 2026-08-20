@@ -7,6 +7,7 @@ import {
   CircleUser,
   Cpu,
   Film,
+  Gauge,
   Gift,
   Globe,
   KeyRound,
@@ -43,6 +44,7 @@ import { Sheet, SheetContent } from "./ui/sheet";
 import { Button } from "./ui/button";
 import { claimWatch } from "@/lib/trv/server";
 import { toast } from "sonner";
+import { TrialStrip } from "./trial-strip";
 
 const NAV = [
   { to: "/hub", label: "Command", icon: LayoutDashboard },
@@ -50,6 +52,7 @@ const NAV = [
   { to: "/hub/mesh", label: "Mesh", icon: Globe },
   { to: "/hub/shop", label: "Rewards", icon: Gift },
   { to: "/hub/os", label: "OS", icon: Cpu },
+  { to: "/hub/audit", label: "Audit", icon: Gauge },
   { to: "/hub/live", label: "Live", icon: Radio },
   { to: "/hub/clips", label: "Clips", icon: Film },
   { to: "/hub/friends", label: "Friends", icon: Users },
@@ -227,6 +230,7 @@ export function HubShell() {
               <UserButton />
             </div>
           </header>
+          <TrialStrip />
           <DutyStrip />
           <Outlet />
         </main>

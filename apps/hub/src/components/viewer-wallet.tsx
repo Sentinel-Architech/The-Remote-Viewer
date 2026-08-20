@@ -7,11 +7,17 @@ import {
   connectPhantom,
   createWallet,
   exportSeedIfUnlocked,
+  exportSolanaSecretIfUnlocked,
   isUnlocked,
   loadVault,
   lockWallet,
   onWalletChange,
+  sessionVaultCurve,
+  signHelmProof,
   unlockWallet,
+  upgradeVaultToEd25519,
+  vaultCurve,
+  type VaultCurve,
 } from "@/lib/trv/wallet-client";
 import { formatSol } from "@/lib/trv/onramp";
 import { Button } from "./ui/button";
@@ -27,14 +33,21 @@ export function WalletDock() {
   const [unlocked, setUnlocked] = useState(false);
   const [pin, setPin] = useState("");
   const [pubkey, setPubkey] = useState<string | null>(null);
+  const [curve, setCurve] = useState<VaultCurve>("hash-v1");
   const [busy, setBusy] = useState(false);
+  const [proof, setProof] = useState<string | null>(null);
 
   useEffect(() => {
     void loadVault().then((v) => {
       setHasVault(Boolean(v));
       setPubkey(v?.pubkey ?? profile?.walletPubkey ?? null);
+      setCurve(vaultCurve(v));
     });
-    const off = onWalletChange(() => setUnlocked(isUnlocked()));
+    const off = onWalletChange(() => {
+      setUnlocked(isUnlocked());
+      const c = sessionVaultCurve();
+      if (c) setCurve(c);
+    });
     setUnlocked(isUnlocked());
     const onOpen = () => setOpen(true);
     window.addEventListener("trv-open-wallet", onOpen);
@@ -64,10 +77,11 @@ export function WalletDock() {
       setHasVault(true);
       setUnlocked(true);
       setPubkey(pk);
+      setCurve("ed25519");
       const p = await bindWalletPubkey({ data: pk });
       if (p) setProfile(p);
       setPin("");
-      toast.success("Native wallet sealed on this device.");
+      toast.success("Ed25519 wallet sealed on this device.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Create failed");
     } finally {
@@ -81,10 +95,45 @@ export function WalletDock() {
       const pk = await unlockWallet(pin);
       setUnlocked(true);
       setPubkey(pk);
+      setCurve(sessionVaultCurve() ?? "hash-v1");
       setPin("");
       toast.success("Wallet unlocked for this session.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Unlock failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function upgrade() {
+    setBusy(true);
+    try {
+      const pk = await upgradeVaultToEd25519();
+      setPubkey(pk);
+      setCurve("ed25519");
+      const p = await bindWalletPubkey({ data: pk });
+      if (p) setProfile(p);
+      toast.success("Address upgraded to Ed25519. Same seed, chain-ready pubkey.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upgrade failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function prove() {
+    setBusy(true);
+    try {
+      const out = await signHelmProof();
+      setProof(`${out.message}\n${out.signature}`);
+      try {
+        await navigator.clipboard.writeText(out.signature);
+        toast.success("Helm proof signed. Signature copied.");
+      } catch {
+        toast.success("Helm proof signed.");
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Sign failed");
     } finally {
       setBusy(false);
     }
@@ -121,11 +170,17 @@ export function WalletDock() {
           <h2 className="font-display text-xl">Viewer wallet</h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             Your keys live on this device, behind a PIN you set — the default
-            unlock. Stripe can fund TRV or SOL. Phantom is an optional export,
+            unlock. New vaults mint an Ed25519 address (Solana-shaped, not
+            mainnet). Stripe funds TRV or SOL. Phantom is an optional export,
             not the lock.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Badge variant={unlocked ? "native" : "warn"}>{unlocked ? "Unlocked" : "Locked"}</Badge>
+            {hasVault ? (
+              <Badge variant={curve === "ed25519" ? "native" : "warn"}>
+                {curve === "ed25519" ? "Ed25519" : "Legacy hash"}
+              </Badge>
+            ) : null}
             {profile?.phantomPubkey ? <Badge variant="muted">Phantom linked</Badge> : null}
           </div>
           <p className="mt-3 font-mono text-lg tabular-nums">{profile?.credits ?? 0} TRV</p>
@@ -148,11 +203,20 @@ export function WalletDock() {
                 autoComplete="new-password"
               />
               <Button className="w-full" disabled={busy} onClick={() => void create()}>
-                <KeyRound className="size-4" /> Seal native wallet
+                <KeyRound className="size-4" /> Seal Ed25519 wallet
               </Button>
             </div>
           ) : unlocked ? (
             <div className="mt-4 space-y-2">
+              {curve === "hash-v1" ? (
+                <Button className="w-full" disabled={busy} onClick={() => void upgrade()}>
+                  Upgrade to Ed25519 address
+                </Button>
+              ) : (
+                <Button variant="secondary" className="w-full" disabled={busy} onClick={() => void prove()}>
+                  Sign helm proof
+                </Button>
+              )}
               <Button variant="secondary" className="w-full" onClick={() => lockWallet()}>
                 Lock now
               </Button>
@@ -168,6 +232,25 @@ export function WalletDock() {
               >
                 Copy seed (unlocked only)
               </Button>
+              {curve === "ed25519" ? (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  disabled={busy}
+                  onClick={() => {
+                    void exportSolanaSecretIfUnlocked().then((secret) => {
+                      if (!secret) return;
+                      void navigator.clipboard.writeText(secret);
+                      toast.success("64-byte secret copied. Not a mainnet send.");
+                    });
+                  }}
+                >
+                  Copy Solana secret
+                </Button>
+              ) : null}
+              {proof ? (
+                <p className="break-all font-mono text-[11px] text-muted-foreground">{proof}</p>
+              ) : null}
             </div>
           ) : (
             <div className="mt-4 space-y-2">
@@ -191,7 +274,8 @@ export function WalletDock() {
             </p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
               Connect only if you want SOL to land on a Phantom address. Native
-              TRV wallet remains the default.
+              TRV wallet remains the default. Ed25519 here is chain-ready, not
+              a mainnet program.
             </p>
             {profile?.phantomPubkey ? (
               <p className="mt-2 break-all font-mono text-[11px]">{profile.phantomPubkey}</p>

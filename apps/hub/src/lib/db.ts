@@ -1,4 +1,4 @@
-/** Which database backend is active. Includes briefing (0015) migrations under /migrations. */
+/** Which database backend is active. Includes skill-audit (0017) migrations under /migrations. */
 export type DbSource = "neon" | "pglite";
 
 // An empty/whitespace DATABASE_URL (an easy misconfig in deploy UIs) must mean

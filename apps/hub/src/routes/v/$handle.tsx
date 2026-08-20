@@ -10,12 +10,28 @@ import { ProfileChrome } from "@/components/profile-chrome";
 import { ShareBeam } from "@/components/share-beam";
 import { parseTheme } from "@/lib/trv/themes";
 import { LiveBadge, ViewerMark } from "@/components/viewer-mark";
+import { JsonLd } from "@/components/json-ld";
+import { pageHead, personJsonLd, breadcrumbJsonLd } from "@/lib/trv/seo";
+import { NETWORK_NAME } from "@/lib/trv/network";
 
-export const Route = createFileRoute("/v/$handle")({ component: PublicViewer });
+export const Route = createFileRoute("/v/$handle")({
+  loader: ({ params }) => getPublicProfile({ data: params.handle }),
+  head: ({ loaderData, params }) => {
+    const p = loaderData?.profile;
+    return pageHead({
+      title: p ? `${p.displayName} (@${p.handle})` : "Viewer not found",
+      description: p?.bio || p?.statusLine || `Public Remote Viewer profile for @${params.handle} on The Remote Viewer Network. Live icon when they are on station.`,
+      path: `/v/${params.handle}`,
+      index: Boolean(p),
+    });
+  },
+  component: PublicViewer,
+});
 
 function PublicViewer() {
   const { handle } = Route.useParams();
-  const [data, setData] = useState<Awaited<ReturnType<typeof getPublicProfile>> | undefined>(undefined);
+  const loaded = Route.useLoaderData();
+  const [data, setData] = useState<Awaited<ReturnType<typeof getPublicProfile>> | undefined>(loaded);
 
   useEffect(() => {
     void getPublicProfile({ data: handle }).then(setData);
@@ -43,6 +59,22 @@ function PublicViewer() {
   const p = data.profile;
   return (
     <main className="relative min-h-dvh bg-bg text-fg">
+      <JsonLd
+        data={personJsonLd({
+          name: p.displayName || p.handle,
+          handle: p.handle,
+          description: p.bio || p.statusLine || `Remote Viewer @${p.handle}`,
+          path: `/v/${p.handle}`,
+          jobTitle: p.craft || undefined,
+        })}
+      />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: NETWORK_NAME, path: "/" },
+          { name: "Viewers", path: "/viewers" },
+          { name: p.displayName || p.handle, path: `/v/${p.handle}` },
+        ])}
+      />
       <div className="absolute inset-0 opacity-40">
         <FluidRipple viscosity={0.28} waveStrength={0.45} colorMap="frost" vortex={1.8} />
       </div>
@@ -118,18 +150,20 @@ function PublicViewer() {
           <div className="mt-6 flex flex-col gap-2">
             {p.liveNow ? (
               <Button asChild>
-                <Link to="/login">
+                <Link to="/login" search={{ trial: "verified" } as never}>
                   <Radio className="size-4" />
-                  This Viewer is live — register to watch
+                  Live now — try Verified 2 days
                 </Link>
               </Button>
             ) : (
               <Button asChild>
-                <Link to="/login">Register through this Viewer</Link>
+                <Link to="/login" search={{ trial: "verified" } as never}>
+                  Register · 2-day Verified trial
+                </Link>
               </Button>
             )}
             <Button asChild variant="secondary">
-              <Link to="/">The Remote Viewer Network</Link>
+              <Link to="/viewers">Viewer directory</Link>
             </Button>
           </div>
           {data.nfts.length > 0 && (

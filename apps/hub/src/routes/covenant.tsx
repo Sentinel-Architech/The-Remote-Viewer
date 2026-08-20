@@ -1,11 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { pageHead } from "@/lib/trv/seo";
 import { Shield } from "lucide-react";
 import { FluidRipple } from "@/components/fluid-ripple";
 import { Button } from "@/components/ui/button";
 import { COVENANT } from "@/lib/trv/covenant";
 import { NETWORK_NAME } from "@/lib/trv/network";
 
-export const Route = createFileRoute("/covenant")({ component: CovenantPage });
+export const Route = createFileRoute("/covenant")({
+  head: () =>
+    pageHead({
+      title: "Covenant",
+      description: "Zero-backdoor covenant for The Remote Viewer Network. Native lock, self-serve DApp, 2-day outside trial, daily watch.",
+      path: "/covenant",
+    }),
+  component: CovenantPage });
 
 function CovenantPage() {
   return (

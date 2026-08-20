@@ -36,8 +36,9 @@ function ReferralLanding() {
         </h1>
         <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
           Register with a native TRV lock and you receive {REFERRAL_TRIAL_DAYS} days
-          ad-free plus {REFERRAL_NEW_CREDITS} TRV. Gateway methods still need the
-          robot handshake — the trial never skips that.
+          ad-free plus {REFERRAL_NEW_CREDITS} TRV. Outside viewership can also start
+          48 hours of Verified — a different trial, still self-serve. Gateway methods
+          still need the robot handshake.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button asChild size="lg">

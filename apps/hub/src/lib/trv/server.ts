@@ -17,6 +17,7 @@ import { usdToSolMicro, type OnrampDest } from "./onramp";
 import { classifyLure, lessonFor } from "./honeypot";
 import { assertImageData, parseLinks, sanitizeHttps } from "./profile";
 import { shopById } from "./shop";
+import { PAID_TRIAL_CREDITS, PAID_TRIAL_PLAN, paidTrialUntilIso } from "./trial";
 import type {
   ForumPost,
   InvoiceRow,
@@ -24,6 +25,7 @@ import type {
   NftRow,
   OrgSnapshot,
   PublicViewer,
+  PublicViewerCard,
   SaleRow,
   ShopPurchase,
   ViewerDoc,
@@ -71,6 +73,9 @@ export function mapProfile(r: ProfileRow): ViewerProfile {
     phantomPubkey: r.phantom_pubkey ? String(r.phantom_pubkey) : null,
     solMicro: num(r.sol_micro),
     trialUntil: r.trial_until ? String(r.trial_until) : null,
+    paidTrialUntil: r.paid_trial_until ? String(r.paid_trial_until) : null,
+    paidTrialPlan: r.paid_trial_plan ? String(r.paid_trial_plan) : null,
+    paidTrialUsed: Boolean(r.paid_trial_used),
     orgName: r.org_name ? String(r.org_name) : null,
     orgSeats: num(r.org_seats),
     isPublic: r.is_public !== false,
@@ -87,6 +92,12 @@ export function mapProfile(r: ProfileRow): ViewerProfile {
     ageOk: Boolean(r.age_ok),
     ofacOk: Boolean(r.ofac_ok),
     tutorialAt: r.tutorial_at ? String(r.tutorial_at) : null,
+    lastSkillAuditAt: r.last_skill_audit_at
+      ? r.last_skill_audit_at instanceof Date
+        ? r.last_skill_audit_at.toISOString()
+        : String(r.last_skill_audit_at)
+      : null,
+    lastSkillAuditScore: r.last_skill_audit_score == null ? null : num(r.last_skill_audit_score),
     uiTheme: r.ui_theme ? String(r.ui_theme) : null,
     honeypotArmed: Boolean(r.honeypot_armed),
     lastWatchOn: r.last_watch_on ? String(r.last_watch_on).slice(0, 10) : null,
@@ -125,21 +136,80 @@ export async function loadProfile(sql: Awaited<ReturnType<typeof getSql>>, userI
     where p.user_id = ${userId}
     limit 1
   `;
-  return rows[0] ? mapProfile(rows[0]) : null;
+  if (!rows[0]) return null;
+  return expirePaidTrial(sql, mapProfile(rows[0]));
+}
+
+async function expirePaidTrial(
+  sql: Awaited<ReturnType<typeof getSql>>,
+  profile: ViewerProfile,
+): Promise<ViewerProfile> {
+  if (!profile.paidTrialUntil) return profile;
+  const end = Date.parse(profile.paidTrialUntil);
+  if (!Number.isFinite(end) || end > Date.now()) return profile;
+  const trialPlan = profile.paidTrialPlan || PAID_TRIAL_PLAN;
+  const renew = profile.planRenewsAt ? Date.parse(profile.planRenewsAt) : 0;
+  const stillOnTrial =
+    profile.planId === trialPlan && Number.isFinite(renew) && renew > 0 && renew <= end + 120_000;
+  if (!stillOnTrial) return profile;
+  await sql`
+    update viewer_profiles
+    set plan_id = 'initiate', plan_renews_at = null
+    where user_id = ${profile.userId}
+  `;
+  return { ...profile, planId: "initiate", planRenewsAt: null };
+}
+
+async function grantOutsideTrial(
+  sql: Awaited<ReturnType<typeof getSql>>,
+  userId: string,
+  existing: ViewerProfile,
+) {
+  if (existing.paidTrialUsed) throw new Error("This node already used the 2-day Verified trial.");
+  const current = planById(existing.planId);
+  if (current.usdMonth > 0) throw new Error("Already on a paid plan.");
+  const until = paidTrialUntilIso();
+  await sql`
+    update viewer_profiles
+    set plan_id = ${PAID_TRIAL_PLAN},
+        plan_renews_at = ${until},
+        paid_trial_until = ${until},
+        paid_trial_plan = ${PAID_TRIAL_PLAN},
+        paid_trial_used = true,
+        credits = credits + ${PAID_TRIAL_CREDITS}
+    where user_id = ${userId}
+  `;
+  await sql`
+    insert into saas_invoices (user_id, plan_id, usd_cents, credits, kind, memo)
+    values (${userId}, ${PAID_TRIAL_PLAN}, 0, ${PAID_TRIAL_CREDITS}, 'trial', 'outside-2d-verified')
+  `;
+  const next = await loadProfile(sql, userId);
+  if (!next) throw new Error("Trial failed to bind");
+  return next;
 }
 
 export const ensureProfile = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator((input: { displayName?: string; native?: boolean; referral?: string; edition?: string }) => ({
+  .validator((input: { displayName?: string; native?: boolean; referral?: string; edition?: string; paidTrial?: boolean }) => ({
     displayName: (input.displayName || "Remote Viewer").slice(0, 48),
     native: Boolean(input.native),
     referral: input.referral?.trim().slice(0, 24).toLowerCase() || null,
     edition: input.edition === "company" ? "company" : "people",
+    paidTrial: Boolean(input.paidTrial),
   }))
   .handler(async ({ context, data }) => {
     const sql = await getSql();
     const existing = await loadProfile(sql, context.userId);
-    if (existing) return existing;
+    if (existing) {
+      if (data.paidTrial && !existing.paidTrialUsed && planById(existing.planId).usdMonth === 0) {
+        try {
+          return await grantOutsideTrial(sql, context.userId, existing);
+        } catch {
+          return existing;
+        }
+      }
+      return existing;
+    }
     let handle = slugify(data.displayName);
     for (let i = 0; i < 8; i++) {
       const clash = await sql<{ n: number }>`select count(*)::int as n from viewer_profiles where handle = ${handle}`;
@@ -158,10 +228,24 @@ export const ensureProfile = createServerFn({ method: "POST" })
         await sql`update viewer_profiles set credits = credits + ${REFERRAL_BONUS_CREDITS} where user_id = ${ref[0].user_id}`;
       }
     }
+    const paidUntil = data.paidTrial ? paidTrialUntilIso() : null;
+    if (paidUntil) credits += PAID_TRIAL_CREDITS;
     await sql`
-      insert into viewer_profiles (user_id, handle, display_name, native_security, edition, referral_handle, credits, trial_until)
-      values (${context.userId}, ${handle}, ${data.displayName}, ${data.native}, ${data.edition}, ${data.referral}, ${credits}, ${trial})
+      insert into viewer_profiles (
+        user_id, handle, display_name, native_security, edition, referral_handle, credits, trial_until,
+        plan_id, plan_renews_at, paid_trial_until, paid_trial_plan, paid_trial_used
+      )
+      values (
+        ${context.userId}, ${handle}, ${data.displayName}, ${data.native}, ${data.edition}, ${data.referral}, ${credits}, ${trial},
+        ${paidUntil ? PAID_TRIAL_PLAN : "initiate"}, ${paidUntil}, ${paidUntil}, ${paidUntil ? PAID_TRIAL_PLAN : null}, ${Boolean(paidUntil)}
+      )
     `;
+    if (paidUntil) {
+      await sql`
+        insert into saas_invoices (user_id, plan_id, usd_cents, credits, kind, memo)
+        values (${context.userId}, ${PAID_TRIAL_PLAN}, 0, ${PAID_TRIAL_CREDITS}, 'trial', 'outside-2d-verified')
+      `;
+    }
     const made = await loadProfile(sql, context.userId);
     if (!made) throw new Error("Node failed to bind");
     return made;
@@ -876,6 +960,60 @@ export const getPublicReferrer = createServerFn({ method: "GET" })
     `;
     return rows[0] ? { handle: rows[0].handle, displayName: rows[0].display_name } : null;
   });
+
+export const startOutsideTrial = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const sql = await getSql();
+    const me = await loadProfile(sql, context.userId);
+    if (!me) throw new Error("Node missing");
+    return grantOutsideTrial(sql, context.userId, me);
+  });
+
+export const listPublicViewers = createServerFn({ method: "GET" }).handler(async () => {
+  const sql = await getSql();
+  await sql`update live_sessions set active = false where active = true and ends_at < now()`;
+  const rows = await sql<ProfileRow>`
+    select p.handle, p.display_name, p.bio, p.craft, p.location_label, p.status_line,
+      p.avatar_data, p.neuron_stage, p.tier,
+      exists(
+        select 1 from live_sessions l
+        where l.user_id = p.user_id and l.active = true and l.ends_at > now()
+      ) as live_now,
+      (
+        select l.title from live_sessions l
+        where l.user_id = p.user_id and l.active = true and l.ends_at > now()
+        order by l.id desc limit 1
+      ) as live_title
+    from viewer_profiles p
+    where p.is_public = true
+    order by live_now desc, p.created_at desc
+    limit 80
+  `;
+  return rows.map(
+    (r): PublicViewerCard => ({
+      handle: str(r.handle),
+      displayName: str(r.display_name),
+      bio: str(r.bio),
+      craft: str(r.craft),
+      locationLabel: str(r.location_label),
+      statusLine: str(r.status_line),
+      avatarData: r.avatar_data ? String(r.avatar_data) : null,
+      liveNow: Boolean(r.live_now),
+      liveTitle: r.live_title ? String(r.live_title) : null,
+      neuronStage: num(r.neuron_stage),
+      tier: str(r.tier) || "initiate",
+    }),
+  );
+});
+
+export const listPublicHandles = createServerFn({ method: "GET" }).handler(async () => {
+  const sql = await getSql();
+  const rows = await sql<{ handle: string; created_at: string }>`
+    select handle, created_at from viewer_profiles where is_public = true order by created_at desc limit 500
+  `;
+  return rows.map((r) => ({ handle: r.handle, createdAt: String(r.created_at) }));
+});
 
 async function orgSnap(sql: Awaited<ReturnType<typeof getSql>>, orgId: number | null): Promise<OrgSnapshot | null> {
   if (!orgId) return null;

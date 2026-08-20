@@ -11,15 +11,33 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FluidRipple } from "@/components/fluid-ripple";
 import { AlertTriangle, Shield } from "lucide-react";
 import { NETWORK_NAME, NETWORK_TAG } from "@/lib/trv/network";
+import { PAID_TRIAL_HOURS } from "@/lib/trv/trial";
+import { pageHead } from "@/lib/trv/seo";
 
-export const Route = createFileRoute("/login")({ component: Login });
+type LoginSearch = { tab?: string; trial?: string };
+
+export const Route = createFileRoute("/login")({
+  validateSearch: (s: Record<string, unknown>): LoginSearch => ({
+    tab: s.tab === "signin" ? "signin" : undefined,
+    trial: s.trial === "verified" || s.trial === "1" ? "verified" : undefined,
+  }),
+  head: () =>
+    pageHead({
+      title: "Native lock",
+      description: `Register a native TRV lock. Outside Viewers can start ${PAID_TRIAL_HOURS} hours of Verified with no card.`,
+      path: "/login",
+      index: false,
+    }),
+  component: Login,
+});
 
 function Login() {
   const { user, isPending } = useCurrentUserState();
   const userId = user?.id;
   const displayName = user?.displayName ?? undefined;
   const navigate = useNavigate();
-  const [tab, setTab] = useState("register");
+  const search = Route.useSearch();
+  const [tab, setTab] = useState(search.tab === "signin" ? "signin" : "register");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,8 +47,21 @@ function Login() {
   const [ofac, setOfac] = useState(false);
 
   useEffect(() => {
+    if (search.trial === "verified") {
+      try {
+        localStorage.setItem("trv-paid-trial", "verified");
+      } catch {
+        /* ignore */
+      }
+    }
+    if (search.tab === "signin") setTab("signin");
+  }, [search.trial, search.tab]);
+
+  useEffect(() => {
     if (isPending || !userId) return;
-    void ensureProfile({ data: { displayName } })
+    const paidTrial =
+      typeof window !== "undefined" ? localStorage.getItem("trv-paid-trial") === "verified" : false;
+    void ensureProfile({ data: { displayName, paidTrial } })
       .then(() => navigate({ to: "/hub" }))
       .catch(() => navigate({ to: "/hub" }));
   }, [isPending, userId, displayName, navigate]);
@@ -39,9 +70,10 @@ function Login() {
     await authClient.getSession();
     const referral = typeof window !== "undefined" ? localStorage.getItem("trv-ref") || undefined : undefined;
     const edition = typeof window !== "undefined" ? localStorage.getItem("trv-edition") || undefined : undefined;
+    const paidTrial = typeof window !== "undefined" ? localStorage.getItem("trv-paid-trial") === "verified" : false;
     try {
       await ensureProfile({
-        data: { displayName: opts.displayName, native: opts.native, referral, edition },
+        data: { displayName: opts.displayName, native: opts.native, referral, edition, paidTrial },
       });
       if (opts.native) await markNativeSecurity();
     } catch {
@@ -167,6 +199,11 @@ function Login() {
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="register">
+                {search.trial === "verified" ? (
+                  <p className="mb-3 rounded-[var(--radius-md)] border border-accent/40 bg-elevated p-3 text-sm">
+                    Outside trial · {PAID_TRIAL_HOURS} hours of Verified after this lock. No card. Handshake still required.
+                  </p>
+                ) : null}
                 <form className="space-y-3" onSubmit={register}>
                   <div>
                     <Label htmlFor="name">Viewer name</Label>
@@ -214,7 +251,7 @@ function Login() {
                     I am not a sanctioned person and I am not opening this node for a foreign-adversary controlled application.
                   </label>
                   <Button type="submit" className="w-full" disabled={busy || !age18 || !ofac}>
-                    {busy ? "Sealing lock…" : "Create native TRV lock"}
+                    {busy ? "Sealing lock…" : search.trial === "verified" ? "Create lock · start 2-day trial" : "Create native TRV lock"}
                   </Button>
                 </form>
               </TabsContent>

@@ -6,8 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { COMPANY_PLANS, PEOPLE_PLANS, USD_TO_TRV, type Edition, type SaasPlan } from "@/lib/trv/saas";
 import { cn } from "@/lib/utils";
+import { pageHead } from "@/lib/trv/seo";
+import { PAID_TRIAL_HOURS } from "@/lib/trv/trial";
 
-export const Route = createFileRoute("/pricing")({ component: PricingPage });
+export const Route = createFileRoute("/pricing")({
+  head: () =>
+    pageHead({
+      title: "Pricing",
+      description: `People and Company editions on one native ledger. Outside Viewers try Verified for ${PAID_TRIAL_HOURS} hours, self-serve, no card.`,
+      path: "/pricing",
+    }),
+  component: PricingPage,
+});
 
 function PricingPage() {
   const [edition, setEdition] = useState<Edition>("people");
@@ -27,8 +37,11 @@ function PricingPage() {
             <Button asChild variant="ghost" size="sm">
               <Link to="/login">Sign in</Link>
             </Button>
+            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+              <Link to="/dapp">DApp</Link>
+            </Button>
             <Button asChild size="sm">
-              <Link to="/login">Register</Link>
+              <Link to="/login" search={{ trial: "verified" } as never}>2-day trial</Link>
             </Button>
           </div>
         </header>
@@ -42,8 +55,14 @@ function PricingPage() {
             We The People keep a sovereign node. Companies get seats on the same
             Sentinel OS — never a corporate identity provider, never a telemetry
             phone-home. USD-backed funds convert to native TRV credits. Documents
-            stay free. Methods stay behind handshake + plan.
+            stay free. Methods stay behind handshake + plan. Outside viewership
+            starts Verified for {PAID_TRIAL_HOURS} hours — one shot, no ticket.
           </p>
+          <Button asChild className="mt-6" size="lg">
+            <Link to="/login" search={{ trial: "verified" } as never}>
+              Try Verified free for 2 days
+            </Link>
+          </Button>
         </section>
 
         <div className="mx-auto mt-8 flex w-full max-w-md rounded-[var(--radius-lg)] border border-border bg-card/80 p-1">
@@ -138,8 +157,11 @@ function PlanCard({ plan, featured }: { plan: SaasPlan; featured?: boolean }) {
         ))}
       </ul>
       <Button asChild className="mt-5 w-full" variant={featured ? "default" : "secondary"}>
-        <Link to="/hub/billing" search={{ plan: plan.id, edition: plan.edition } as never}>
-          {plan.usdMonth === 0 ? "Start free" : "Subscribe"}
+        <Link
+          to={plan.id === "verified" ? "/login" : "/hub/billing"}
+          search={(plan.id === "verified" ? { trial: "verified" } : { plan: plan.id, edition: plan.edition }) as never}
+        >
+          {plan.id === "verified" ? "Start 2-day trial" : plan.usdMonth === 0 ? "Start free" : "Subscribe"}
         </Link>
       </Button>
     </article>

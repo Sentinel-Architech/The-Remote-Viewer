@@ -1,3 +1,7 @@
 User-agent: *
-Disallow: /api/lure/
+Allow: /
 Disallow: /hub/
+Disallow: /api/
+Disallow: /login
+
+Sitemap: /sitemap.xml

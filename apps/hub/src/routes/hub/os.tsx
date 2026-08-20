@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { dispatchAgent } from "@/lib/trv/sentinel-ai";
@@ -117,6 +117,20 @@ function OsPage() {
           on this node. {profile?.federatedOptIn ? "Federated lessons on (identity-stripped)." : "Federated share is off."}
         </p>
       </div>
+
+      <section className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-xl)] border border-border bg-card p-4">
+        <div>
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Skill audit</p>
+          <p className="mt-1 text-sm">
+            {profile?.lastSkillAuditScore != null
+              ? `Last overall ${profile.lastSkillAuditScore} · par 70`
+              : "Doctrine, edge, and live helm — not yet scored on this node."}
+          </p>
+        </div>
+        <Button asChild variant="secondary">
+          <Link to="/hub/audit">Open audit</Link>
+        </Button>
+      </section>
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[

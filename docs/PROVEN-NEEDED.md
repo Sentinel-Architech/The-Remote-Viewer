@@ -5,7 +5,7 @@ Authority: [REALITY.md](REALITY.md).
 
 ## LIVE (hosted)
 
-Viewer Hub DApp — [`apps/hub`](../apps/hub) · briefing · daily watch · profile vault · public card
+Viewer Hub DApp — [`apps/hub`](../apps/hub) · briefing · daily watch · profile vault · public card · skill audit · Ed25519 native wallet (not mainnet)
 
 This is **not** the old `apps/web` scaffold.
 
@@ -25,7 +25,7 @@ Optical TRVL · Path B · verifier · recognition · local models/UI/defense
 
 | ID | Needs |
 |----|--------|
-| **A** | Build host `anchor build` |
+| **A** | Build host `anchor build` — **cannot be flipped from the hub sandbox** |
 | **C full** | Native Android Keystore + mapTier wiring |
 | **D** | Wear OS device |
 | **E** | After A |
@@ -33,4 +33,4 @@ Optical TRVL · Path B · verifier · recognition · local models/UI/defense
 | **Mobile Expo** | Still PARKED — not the hub |
 
 **Next hard gate (chain): A.**  
-Hub is already live; do not list it as open.
+Hub is already live; do not list it as open. Ed25519 addresses are chain-ready keys only.

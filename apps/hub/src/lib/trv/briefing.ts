@@ -5,6 +5,7 @@ import {
   CircleUser,
   Cpu,
   Film,
+  Gauge,
   Gift,
   Globe,
   IdCard,
@@ -76,11 +77,23 @@ export const BRIEFING_STEPS: BriefStep[] = [
     kicker: "Station · OS",
     title: "Sentinel OS and the mic",
     where: "Left rail · OS · header mic",
-    body: "The OS is Super over Cipher, Watcher, Privacy, Mesh, and Healer — each a super in their field. Human trains machine; machine trains human. Mosaic leaves this device only if you send it. Speak from the mic in the phone header, or open OS on the rail.",
+    body: "The OS is Super over Cipher, Watcher, Privacy, Mesh, and Healer — each a super in their field. Human trains machine; machine trains human. Skill audit (rail · Audit) scores those supers against par. Mosaic leaves this device only if you send it. Speak from the mic in the phone header, or open OS on the rail.",
     icon: Cpu,
     stops: [
       { icon: Cpu, label: "OS", line: "Dispatch agents, edge vitals, lessons" },
+      { icon: Gauge, label: "Audit", line: "Skill scores · doctrine, edge, live helm" },
       { icon: Mic, label: "Speak", line: "Header mic · hands-free helm" },
+    ],
+  },
+  {
+    kicker: "Station · Audit",
+    title: "Skills must stay at par",
+    where: "Left rail · Audit · also from OS",
+    body: "Cipher, Watcher, Privacy, Mesh, Healer, and Sentinel Super are scored on doctrine (the written skill), edge vitals (this node), and live helm probes. Below par is a wound Healer names. You run the audit — the OS does not grade itself in secret.",
+    icon: Gauge,
+    stops: [
+      { icon: Gauge, label: "Audit", line: "Run the battery · par is 70" },
+      { icon: Cpu, label: "OS", line: "Brief a super that scored short" },
     ],
   },
   {
@@ -146,12 +159,12 @@ export const BRIEFING_STEPS: BriefStep[] = [
     kicker: "Station · Lock",
     title: "Citizen, billing, wallet",
     where: "Command · Billing · header key",
-    body: "US Citizen lock photographs a state or federal ID and a live selfie. Images stay on this device; a one-way hash stops fake nodes. Billing is plans, USD→TRV, and Company seats. The key icon opens your PIN-locked Solana vault. A Company owner cannot unlock a seat wallet.",
+    body: "US Citizen lock photographs a state or federal ID and a live selfie. Images stay on this device; a one-way hash stops fake nodes. Billing is plans, USD→TRV, and Company seats. The key icon opens your PIN-locked Ed25519 vault (legacy hash addresses can upgrade on unlock). A Company owner cannot unlock a seat wallet.",
     icon: Landmark,
     stops: [
       { icon: IdCard, label: "Citizen", line: "On-device ID hash · from Command" },
       { icon: Landmark, label: "Billing", line: "Plans, convert, seats" },
-      { icon: KeyRound, label: "Wallet", line: "Header key · PIN vault" },
+      { icon: KeyRound, label: "Wallet", line: "Header key · Ed25519 PIN vault" },
     ],
   },
   {

@@ -7,9 +7,21 @@ import { Slider } from "@/components/ui/slider";
 import { SignedIn, SignedOut } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { NETWORK_NAME, NETWORK_SHORT, NETWORK_TAG } from "@/lib/trv/network";
-import { Shield, Waves, Building2, Users } from "lucide-react";
+import { Shield, Waves, Building2, Users, BookOpen, Wallet, Timer } from "lucide-react";
+import { JOURNAL } from "@/lib/trv/journal";
+import { pageHead, SEO_DEFAULT_DESC, orgJsonLd, webSiteJsonLd, softwareJsonLd } from "@/lib/trv/seo";
+import { JsonLd } from "@/components/json-ld";
+import { PAID_TRIAL_HOURS } from "@/lib/trv/trial";
 
-export const Route = createFileRoute("/")({ component: Landing });
+export const Route = createFileRoute("/")({
+  head: () =>
+    pageHead({
+      title: NETWORK_NAME,
+      description: SEO_DEFAULT_DESC,
+      path: "/",
+    }),
+  component: Landing,
+});
 
 function Landing() {
   const { isPending } = useCurrentUserState();
@@ -22,6 +34,9 @@ function Landing() {
 
   return (
     <main className="relative min-h-dvh overflow-x-clip bg-bg text-fg">
+      <JsonLd data={orgJsonLd()} />
+      <JsonLd data={webSiteJsonLd()} />
+      <JsonLd data={softwareJsonLd()} />
       {/* honeypot canaries — scanners follow. not a real admin. */}
       {/* /api/lure/.env  /api/lure/wp-login.php  /api/lure/wallet/export */}
       <div className="absolute inset-0">
@@ -51,22 +66,27 @@ function Landing() {
           ) : (
             <>
               <SignedOut>
-                <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-                  <Link to="/company">Company</Link>
+                <Button asChild variant="ghost" size="sm" className="hidden md:inline-flex">
+                  <Link to="/journal">Journal</Link>
                 </Button>
                 <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-                  <Link to="/compliance">Orders</Link>
+                  <Link to="/viewers">Viewers</Link>
+                </Button>
+                <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+                  <Link to="/dapp">DApp</Link>
                 </Button>
                 <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
                   <Link to="/pricing">Pricing</Link>
                 </Button>
                 <Button asChild size="sm">
-                  <Link to="/login">Register</Link>
+                  <Link to="/login" search={{ trial: "verified" } as never}>
+                    2-day trial
+                  </Link>
                 </Button>
               </SignedOut>
               <SignedIn>
                 <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-                  <Link to="/company">Company</Link>
+                  <Link to="/journal">Journal</Link>
                 </Button>
                 <Button asChild size="sm">
                   <Link to="/hub">Open hub</Link>
@@ -77,16 +97,17 @@ function Landing() {
         </nav>
       </header>
 
-      <section className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-4 pb-28 pt-8 text-center md:px-6 md:pt-16">
+      <section className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-4 pb-16 pt-8 text-center md:px-6 md:pt-16">
         <p className="mb-4 text-[11px] font-medium tracking-[0.28em] uppercase text-accent">
-          {NETWORK_SHORT} · consenting honeypot
+          {NETWORK_SHORT} · self-serve DApp
         </p>
         <h1 className="font-display text-4xl leading-[1.05] text-fg md:text-6xl">
           The Remote Viewer Network
         </h1>
         <p className="mt-5 max-w-xl text-sm leading-relaxed text-muted-foreground md:text-base">
           {NETWORK_TAG} Remote Viewers must check in daily to defend The Sentinel
-          and earn TRV rewards for keeping the system safe. You arm the pot.
+          and earn TRV rewards for keeping the system safe. Outside viewership
+          tries Verified for {PAID_TRIAL_HOURS} hours — self-serve, no card.
           Native lock first.
         </p>
         <div className="mt-8 flex w-full max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
@@ -97,14 +118,15 @@ function Landing() {
             onClick={() => {
               try {
                 localStorage.setItem("trv-edition", "people");
+                localStorage.setItem("trv-paid-trial", "verified");
               } catch {
                 /* ignore */
               }
             }}
           >
-            <Link to="/login">
+            <Link to="/login" search={{ trial: "verified" } as never}>
               <Shield className="size-4" />
-              Native TRV register
+              Try Verified · 2 days
             </Link>
           </Button>
           <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
@@ -116,10 +138,12 @@ function Landing() {
         <div className="mt-8 grid w-full max-w-lg gap-3 text-left sm:grid-cols-2">
           <Link
             to="/login"
+            search={{ trial: "verified" } as never}
             className="rounded-[var(--radius-lg)] border border-border bg-card/80 p-4"
             onClick={() => {
               try {
                 localStorage.setItem("trv-edition", "people");
+                localStorage.setItem("trv-paid-trial", "verified");
               } catch {
                 /* ignore */
               }
@@ -127,7 +151,9 @@ function Landing() {
           >
             <Users className="size-4 text-accent" />
             <p className="mt-2 font-display text-lg">We The People</p>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Individual node. Your lock, your pot.</p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              Individual node. {PAID_TRIAL_HOURS}h Verified trial. Your lock, your pot.
+            </p>
           </Link>
           <Link
             to="/company"
@@ -144,6 +170,54 @@ function Landing() {
             <p className="mt-2 font-display text-lg">Company</p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Same OS. Seats, not a backdoor.</p>
           </Link>
+        </div>
+      </section>
+
+      <section className="relative z-10 mx-auto max-w-3xl px-4 pb-10">
+        <div className="grid gap-3 sm:grid-cols-3">
+          <article className="rounded-[var(--radius-xl)] border border-border bg-card/90 p-4 text-left">
+            <Timer className="size-4 text-accent" />
+            <h2 className="mt-2 font-display text-lg">2-day paid trial</h2>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              Outside Viewers get Verified for {PAID_TRIAL_HOURS} hours. One shot. Handshake still required.
+            </p>
+          </article>
+          <article className="rounded-[var(--radius-xl)] border border-border bg-card/90 p-4 text-left">
+            <Wallet className="size-4 text-accent" />
+            <h2 className="mt-2 font-display text-lg">Self-serve DApp</h2>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              Native lock, device PIN wallet, optional Phantom. No ticket. Stripe is a rail.
+            </p>
+            <Link to="/dapp" className="mt-2 inline-block text-xs text-accent underline-offset-4 hover:underline">
+              Walk the four steps
+            </Link>
+          </article>
+          <article className="rounded-[var(--radius-xl)] border border-border bg-card/90 p-4 text-left">
+            <BookOpen className="size-4 text-accent" />
+            <h2 className="mt-2 font-display text-lg">Organic journal</h2>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              Gateway 1983, daily watch, public Viewer cards. Crawlable, RSS, sitemap.
+            </p>
+            <Link to="/journal" className="mt-2 inline-block text-xs text-accent underline-offset-4 hover:underline">
+              Read the record
+            </Link>
+          </article>
+        </div>
+      </section>
+
+      <section className="relative z-10 mx-auto max-w-3xl px-4 pb-10">
+        <div className="rounded-[var(--radius-xl)] border border-border bg-card/90 p-5 text-left">
+          <p className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground">From the journal</p>
+          <ul className="mt-4 space-y-3">
+            {JOURNAL.slice(0, 4).map((a) => (
+              <li key={a.slug}>
+                <Link to="/journal/$slug" params={{ slug: a.slug }} className="block hover:text-accent">
+                  <span className="font-display text-lg">{a.title}</span>
+                  <span className="mt-1 block text-xs text-muted-foreground">{a.dek}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 

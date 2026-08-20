@@ -4,7 +4,8 @@ import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { Toaster } from "sonner";
 import appCss from "../styles.css?url";
 
-import { NETWORK_NAME, NETWORK_TAG } from "@/lib/trv/network";
+import { NETWORK_NAME } from "@/lib/trv/network";
+import { SEO_DEFAULT_DESC } from "@/lib/trv/seo";
 
 const APP_NAME = NETWORK_NAME;
 
@@ -17,8 +18,9 @@ export const Route = createRootRoute({
       { name: "theme-color", content: "#08090b" },
       {
         name: "description",
-        content: NETWORK_TAG,
+        content: SEO_DEFAULT_DESC,
       },
+      { name: "robots", content: "index,follow,max-image-preview:large" },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
@@ -29,6 +31,8 @@ export const Route = createRootRoute({
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap",
       },
+      { rel: "alternate", type: "application/rss+xml", title: `${APP_NAME} Journal`, href: "/rss.xml" },
+      { rel: "sitemap", href: "/sitemap.xml" },
     ],
   }),
   component: () => (

@@ -13,10 +13,16 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CompanyRouteImport } from './routes/company'
 import { Route as ComplianceRouteImport } from './routes/compliance'
 import { Route as CovenantRouteImport } from './routes/covenant'
+import { Route as DappRouteImport } from './routes/dapp'
+import { Route as FaqRouteImport } from './routes/faq'
 import { Route as HubRouteRouteImport } from './routes/hub/route'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as RssDotxmlRouteImport } from './routes/rss[.]xml'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ViewersRouteImport } from './routes/viewers'
 import { Route as HubIndexRouteImport } from './routes/hub/index'
+import { Route as HubAuditRouteImport } from './routes/hub/audit'
 import { Route as HubBillingRouteImport } from './routes/hub/billing'
 import { Route as HubBrowserRouteImport } from './routes/hub/browser'
 import { Route as HubCitizenRouteImport } from './routes/hub/citizen'
@@ -36,6 +42,8 @@ import { Route as HubProfileRouteImport } from './routes/hub/profile'
 import { Route as HubSettingsRouteImport } from './routes/hub/settings'
 import { Route as HubShopRouteImport } from './routes/hub/shop'
 import { Route as HubThemeRouteImport } from './routes/hub/theme'
+import { Route as JournalIndexRouteImport } from './routes/journal/index'
+import { Route as JournalSlugRouteImport } from './routes/journal/$slug'
 import { Route as RHandleRouteImport } from './routes/r/$handle'
 import { Route as VHandleRouteImport } from './routes/v/$handle'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -62,6 +70,16 @@ const CovenantRoute = CovenantRouteImport.update({
   path: '/covenant',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DappRoute = DappRouteImport.update({
+  id: '/dapp',
+  path: '/dapp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HubRouteRoute = HubRouteRouteImport.update({
   id: '/hub',
   path: '/hub',
@@ -77,9 +95,29 @@ const PricingRoute = PricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RssDotxmlRoute = RssDotxmlRouteImport.update({
+  id: '/rss.xml',
+  path: '/rss.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ViewersRoute = ViewersRouteImport.update({
+  id: '/viewers',
+  path: '/viewers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HubIndexRoute = HubIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => HubRouteRoute,
+} as any)
+const HubAuditRoute = HubAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
   getParentRoute: () => HubRouteRoute,
 } as any)
 const HubBillingRoute = HubBillingRouteImport.update({
@@ -177,6 +215,16 @@ const HubThemeRoute = HubThemeRouteImport.update({
   path: '/theme',
   getParentRoute: () => HubRouteRoute,
 } as any)
+const JournalIndexRoute = JournalIndexRouteImport.update({
+  id: '/journal/',
+  path: '/journal/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JournalSlugRoute = JournalSlugRouteImport.update({
+  id: '/journal/$slug',
+  path: '/journal/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RHandleRoute = RHandleRouteImport.update({
   id: '/r/$handle',
   path: '/r/$handle',
@@ -209,8 +257,14 @@ export interface FileRoutesByFullPath {
   '/company': typeof CompanyRoute
   '/compliance': typeof ComplianceRoute
   '/covenant': typeof CovenantRoute
+  '/dapp': typeof DappRoute
+  '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/rss.xml': typeof RssDotxmlRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/viewers': typeof ViewersRoute
+  '/hub/audit': typeof HubAuditRoute
   '/hub/billing': typeof HubBillingRoute
   '/hub/browser': typeof HubBrowserRoute
   '/hub/citizen': typeof HubCitizenRoute
@@ -230,9 +284,11 @@ export interface FileRoutesByFullPath {
   '/hub/settings': typeof HubSettingsRoute
   '/hub/shop': typeof HubShopRoute
   '/hub/theme': typeof HubThemeRoute
+  '/journal/$slug': typeof JournalSlugRoute
   '/r/$handle': typeof RHandleRoute
   '/v/$handle': typeof VHandleRoute
   '/hub/': typeof HubIndexRoute
+  '/journal/': typeof JournalIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/lure/$': typeof ApiLureSplatRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
@@ -242,8 +298,14 @@ export interface FileRoutesByTo {
   '/company': typeof CompanyRoute
   '/compliance': typeof ComplianceRoute
   '/covenant': typeof CovenantRoute
+  '/dapp': typeof DappRoute
+  '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/rss.xml': typeof RssDotxmlRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/viewers': typeof ViewersRoute
+  '/hub/audit': typeof HubAuditRoute
   '/hub/billing': typeof HubBillingRoute
   '/hub/browser': typeof HubBrowserRoute
   '/hub/citizen': typeof HubCitizenRoute
@@ -263,9 +325,11 @@ export interface FileRoutesByTo {
   '/hub/settings': typeof HubSettingsRoute
   '/hub/shop': typeof HubShopRoute
   '/hub/theme': typeof HubThemeRoute
+  '/journal/$slug': typeof JournalSlugRoute
   '/r/$handle': typeof RHandleRoute
   '/v/$handle': typeof VHandleRoute
   '/hub': typeof HubIndexRoute
+  '/journal': typeof JournalIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/lure/$': typeof ApiLureSplatRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
@@ -277,8 +341,14 @@ export interface FileRoutesById {
   '/company': typeof CompanyRoute
   '/compliance': typeof ComplianceRoute
   '/covenant': typeof CovenantRoute
+  '/dapp': typeof DappRoute
+  '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/rss.xml': typeof RssDotxmlRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/viewers': typeof ViewersRoute
+  '/hub/audit': typeof HubAuditRoute
   '/hub/billing': typeof HubBillingRoute
   '/hub/browser': typeof HubBrowserRoute
   '/hub/citizen': typeof HubCitizenRoute
@@ -298,9 +368,11 @@ export interface FileRoutesById {
   '/hub/settings': typeof HubSettingsRoute
   '/hub/shop': typeof HubShopRoute
   '/hub/theme': typeof HubThemeRoute
+  '/journal/$slug': typeof JournalSlugRoute
   '/r/$handle': typeof RHandleRoute
   '/v/$handle': typeof VHandleRoute
   '/hub/': typeof HubIndexRoute
+  '/journal/': typeof JournalIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/lure/$': typeof ApiLureSplatRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
@@ -313,8 +385,14 @@ export interface FileRouteTypes {
     | '/company'
     | '/compliance'
     | '/covenant'
+    | '/dapp'
+    | '/faq'
     | '/login'
     | '/pricing'
+    | '/rss.xml'
+    | '/sitemap.xml'
+    | '/viewers'
+    | '/hub/audit'
     | '/hub/billing'
     | '/hub/browser'
     | '/hub/citizen'
@@ -334,9 +412,11 @@ export interface FileRouteTypes {
     | '/hub/settings'
     | '/hub/shop'
     | '/hub/theme'
+    | '/journal/$slug'
     | '/r/$handle'
     | '/v/$handle'
     | '/hub/'
+    | '/journal/'
     | '/api/auth/$'
     | '/api/lure/$'
     | '/api/stripe/webhook'
@@ -346,8 +426,14 @@ export interface FileRouteTypes {
     | '/company'
     | '/compliance'
     | '/covenant'
+    | '/dapp'
+    | '/faq'
     | '/login'
     | '/pricing'
+    | '/rss.xml'
+    | '/sitemap.xml'
+    | '/viewers'
+    | '/hub/audit'
     | '/hub/billing'
     | '/hub/browser'
     | '/hub/citizen'
@@ -367,9 +453,11 @@ export interface FileRouteTypes {
     | '/hub/settings'
     | '/hub/shop'
     | '/hub/theme'
+    | '/journal/$slug'
     | '/r/$handle'
     | '/v/$handle'
     | '/hub'
+    | '/journal'
     | '/api/auth/$'
     | '/api/lure/$'
     | '/api/stripe/webhook'
@@ -380,8 +468,14 @@ export interface FileRouteTypes {
     | '/company'
     | '/compliance'
     | '/covenant'
+    | '/dapp'
+    | '/faq'
     | '/login'
     | '/pricing'
+    | '/rss.xml'
+    | '/sitemap.xml'
+    | '/viewers'
+    | '/hub/audit'
     | '/hub/billing'
     | '/hub/browser'
     | '/hub/citizen'
@@ -401,9 +495,11 @@ export interface FileRouteTypes {
     | '/hub/settings'
     | '/hub/shop'
     | '/hub/theme'
+    | '/journal/$slug'
     | '/r/$handle'
     | '/v/$handle'
     | '/hub/'
+    | '/journal/'
     | '/api/auth/$'
     | '/api/lure/$'
     | '/api/stripe/webhook'
@@ -415,10 +511,17 @@ export interface RootRouteChildren {
   CompanyRoute: typeof CompanyRoute
   ComplianceRoute: typeof ComplianceRoute
   CovenantRoute: typeof CovenantRoute
+  DappRoute: typeof DappRoute
+  FaqRoute: typeof FaqRoute
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
+  RssDotxmlRoute: typeof RssDotxmlRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ViewersRoute: typeof ViewersRoute
+  JournalSlugRoute: typeof JournalSlugRoute
   RHandleRoute: typeof RHandleRoute
   VHandleRoute: typeof VHandleRoute
+  JournalIndexRoute: typeof JournalIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiLureSplatRoute: typeof ApiLureSplatRoute
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
@@ -454,6 +557,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CovenantRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dapp': {
+      id: '/dapp'
+      path: '/dapp'
+      fullPath: '/dapp'
+      preLoaderRoute: typeof DappRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/hub': {
       id: '/hub'
       path: '/hub'
@@ -475,11 +592,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rss.xml': {
+      id: '/rss.xml'
+      path: '/rss.xml'
+      fullPath: '/rss.xml'
+      preLoaderRoute: typeof RssDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/viewers': {
+      id: '/viewers'
+      path: '/viewers'
+      fullPath: '/viewers'
+      preLoaderRoute: typeof ViewersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/hub/': {
       id: '/hub/'
       path: '/'
       fullPath: '/hub/'
       preLoaderRoute: typeof HubIndexRouteImport
+      parentRoute: typeof HubRouteRoute
+    }
+    '/hub/audit': {
+      id: '/hub/audit'
+      path: '/audit'
+      fullPath: '/hub/audit'
+      preLoaderRoute: typeof HubAuditRouteImport
       parentRoute: typeof HubRouteRoute
     }
     '/hub/billing': {
@@ -615,6 +760,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HubThemeRouteImport
       parentRoute: typeof HubRouteRoute
     }
+    '/journal/': {
+      id: '/journal/'
+      path: '/journal'
+      fullPath: '/journal/'
+      preLoaderRoute: typeof JournalIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/journal/$slug': {
+      id: '/journal/$slug'
+      path: '/journal/$slug'
+      fullPath: '/journal/$slug'
+      preLoaderRoute: typeof JournalSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/r/$handle': {
       id: '/r/$handle'
       path: '/r/$handle'
@@ -654,6 +813,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface HubRouteRouteChildren {
+  HubAuditRoute: typeof HubAuditRoute
   HubBillingRoute: typeof HubBillingRoute
   HubBrowserRoute: typeof HubBrowserRoute
   HubCitizenRoute: typeof HubCitizenRoute
@@ -677,6 +837,7 @@ interface HubRouteRouteChildren {
 }
 
 const HubRouteRouteChildren: HubRouteRouteChildren = {
+  HubAuditRoute: HubAuditRoute,
   HubBillingRoute: HubBillingRoute,
   HubBrowserRoute: HubBrowserRoute,
   HubCitizenRoute: HubCitizenRoute,
@@ -709,10 +870,17 @@ const rootRouteChildren: RootRouteChildren = {
   CompanyRoute: CompanyRoute,
   ComplianceRoute: ComplianceRoute,
   CovenantRoute: CovenantRoute,
+  DappRoute: DappRoute,
+  FaqRoute: FaqRoute,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
+  RssDotxmlRoute: RssDotxmlRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ViewersRoute: ViewersRoute,
+  JournalSlugRoute: JournalSlugRoute,
   RHandleRoute: RHandleRoute,
   VHandleRoute: VHandleRoute,
+  JournalIndexRoute: JournalIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiLureSplatRoute: ApiLureSplatRoute,
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,
