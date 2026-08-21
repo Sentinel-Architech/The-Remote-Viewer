@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { NeuronField } from "@/components/neuron-field";
+import { NeuralSpace } from "@/components/neural-space";
 import { WatchClaim } from "@/components/watch-claim";
 import { useViewer } from "@/components/viewer-context";
 
@@ -13,15 +13,15 @@ function NeuronPage() {
       <div className="px-5 pt-5">
         <h1 className="font-display text-3xl">Watchful Neuron</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          You are the neuron. Intercept hostile packets before they reach the
-          holographic core. One clean intercept fulfills daily duty — then claim
-          TRV for keeping The Sentinel safe.
+          You are inside the brain. Hostile signals travel neural pathways toward
+          the core. Tilt or drag to look. Discover the correct response — the
+          tissue lights up and the Sentinel self-heals.
         </p>
         <div className="mt-4">
           <WatchClaim layout="compact" />
         </div>
       </div>
-      <NeuronField profile={profile} onProfile={setProfile} />
+      <NeuralSpace profile={profile} onProfile={setProfile} />
     </div>
   );
 }
