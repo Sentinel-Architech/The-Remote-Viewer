@@ -28,16 +28,22 @@ function Landing() {
       <JsonLd data={webSiteJsonLd()} />
       <JsonLd data={softwareJsonLd()} />
 
-      {/* Full-page eye background */}
+      {/* Full-page background — eye when present, intentional dark fallback otherwise */}
       <div className="fixed inset-0 -z-10">
         <img
           src="/images/gateway-eye.jpg"
           alt=""
           className="h-full w-full object-cover object-center"
           draggable={false}
+          onError={(e) => {
+            // Hide broken image so the CSS fallback shows cleanly
+            e.currentTarget.style.display = "none";
+          }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/65 to-black/95" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.55)_70%)]" />
+        {/* Always-on dark treatment so the page never looks broken */}
+        <div className="absolute inset-0 bg-black/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/70 to-black" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.6)_70%)]" />
       </div>
 
       <header className="relative z-10 flex items-center justify-between gap-2 px-4 py-3 md:px-8 md:py-4">
