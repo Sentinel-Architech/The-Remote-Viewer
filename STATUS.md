@@ -1,11 +1,12 @@
 # TRV status
 
 **Truth:** [docs/REALITY.md](docs/REALITY.md) · **Queues:** [docs/PROVEN-NEEDED.md](docs/PROVEN-NEEDED.md)  
-**Updated:** 2026-08-20
+**Updated:** 2026-08-22
 
 | | |
 |--|--|
 | **LIVE** | Hosted Viewer Hub — [`apps/hub`](apps/hub) · [sentinelsecurityprotocol.grok.me](https://sentinelsecurityprotocol.grok.me) · briefing · daily watch · profile vault · public card `/v/$handle` · skill audit · Ed25519 native wallet (chain-ready keys, **not** mainnet) |
+| IN SOURCE | **SENTINEL OS jack-in** — 3D neuron flight on Defend / OS (`apps/hub/src/os-sim`). Watch intercept via `logDefense`. LIVE on grok.me after host republish. |
 | PROVEN | Optical · Path B · verifier · local operator |
 | **DEMONSTRATED** | PWA **B** · Learning **H** · **C partial** (Pixel 7 Termux probe) |
 | Open | **A** Solana `trv_governance` · C full Keystore · D Wear · E · F · G |

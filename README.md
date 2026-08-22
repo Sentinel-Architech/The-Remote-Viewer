@@ -35,6 +35,7 @@ Shipped on the hub:
 - Dedicated profile vault (`/hub/profile`) — portrait, identity extras, finances, docs, live icon
 - Public Viewer card (`/v/$handle`)
 - Command, OS, live, people, make, rails, Citizen lock (on-device hash)
+- **SENTINEL OS jack-in** — 3D neuron flight on Defend / OS. Scan, name, pulse. Catalog writes OS memory. A landed pulse counts as daily watch.
 
 `apps/web` is the **old Vite scaffold**. Do not treat it as the product UI.
 
@@ -128,7 +129,7 @@ Prefer [`docs/REALITY.md`](docs/REALITY.md) and [`STATUS.md`](STATUS.md) over an
 
 | Capability | Notes |
 |------------|--------|
-| **Viewer Hub DApp** | **LIVE** — [`apps/hub`](apps/hub) · briefing · daily watch · profile vault |
+| **Viewer Hub DApp** | **LIVE** — [`apps/hub`](apps/hub) · briefing · daily watch · SENTINEL OS jack-in (source; live after republish) · profile vault |
 | Optical air-gap | PROVEN (see REALITY) |
 | Digital vending Path B | PROVEN |
 | Solana `trv_governance` | **SCAFFOLD** — CI build gate |

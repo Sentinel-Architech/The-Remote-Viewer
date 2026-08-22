@@ -1,6 +1,6 @@
 # Reality — authority for PROVEN / LIVE claims
 
-**Updated 2026-08-20.**  
+**Updated 2026-08-22.**  
 **Rule:** PROVEN = ran under operator control on a real device. Scripts in git alone are not PROVEN.  
 **LIVE** = a hosted product surface that is running now. LIVE is not PROVEN-on-device, and it is not mainnet.
 
@@ -15,6 +15,7 @@
 | Viewer Hub DApp | **LIVE** | [`apps/hub`](../apps/hub) · [sentinelsecurityprotocol.grok.me](https://sentinelsecurityprotocol.grok.me) |
 | Mandatory briefing | **LIVE** | Stations, no skip; `viewer_profiles.tutorial_at` |
 | Daily Watch | **LIVE** | Defend / Mesh / Honeypot → claim TRV |
+| SENTINEL OS jack-in | **IN SOURCE** | 3D neuron flight on `/hub/neuron` and `/hub/os`. [`docs/SENTINEL-OS-JACK.md`](SENTINEL-OS-JACK.md). LIVE after grok.me republish. |
 | Profile vault | **LIVE** | `/hub/profile` · public card `/v/$handle` · live icon |
 | Age + OFAC gate | **LIVE** | Before Command |
 | Citizen lock | **LIVE (hash)** | On-device hash. Not hardware Keystore |

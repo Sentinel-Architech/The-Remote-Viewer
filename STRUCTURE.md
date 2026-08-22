@@ -23,7 +23,7 @@ This document describes the *actual* layout. See also **[docs/REALITY.md](docs/R
 ## Proven / Active Code Paths
 
 ```
-apps/hub/                # LIVE hosted Viewer Hub DApp (briefing, daily watch, profile vault)
+apps/hub/                # LIVE hosted Viewer Hub DApp (briefing, daily watch, profile vault; SENTINEL OS jack-in in source)
 optical-airgap/          # age + Robust Soliton LT optical transport (PROVEN on GrapheneOS + Termux)
 modules/                 # New: real, runnable open modules (self-heal, local-identity, contribution)
 apps/                    # hub (LIVE) + ui (PROVEN) + web/mobile scaffolds
