@@ -1,0 +1,8 @@
+# crates/sentinel-lsm/Cargo.toml
+[package]
+name = "sentinel-lsm"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+aya = { version = "0.12", optional = true }
