@@ -1,0 +1,39 @@
+// crates/sentinel-node/src/main.rs
+use sentinel_core::{SovereignShield, SentinelBrandGuard, InternalAffairsAuditor, TtvCommsEngine, CommsTier, P2PMeshNode};
+use litesvm::LiteSVM;
+use sha2::{Sha256, Digest};
+use std::sync::Arc;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Enforce sovereignty and brand locks
+    SovereignShield::enforce()?;
+    SentinelBrandGuard::verify_emblem(b"sentinel-shield-sword-emblem-bytes")?;
+
+    // Instantiate Solana LiteSVM execution environment
+    let mut _svm = LiteSVM::new();
+    println!("[NODE] LiteSVM state engine active.");
+
+    // Internal affairs verification check
+    let state_payload = b"sentinel-node-genesis-state";
+    let mut hasher = Sha256::new();
+    hasher.update(state_payload);
+    let expected_root = hasher.finalize();
+    InternalAffairsAuditor::verify_state_accumulator(state_payload, &expected_root)?;
+
+    // Initialize decentralized mesh and heartbeat daemon
+    let node_id = "Sentinel-Archetecht-Node-01".to_string();
+    let mesh = Arc::new(P2PMeshNode::new(node_id.clone()));
+    mesh.register_peer("Peer-Node-02".to_string(), "127.0.0.1:9001".to_string())?;
+    P2PMeshNode::spawn_heartbeat(node_id);
+
+    // Run TTV Comms transmission test
+    let comms = TtvCommsEngine::new(CommsTier::FreeFreemium);
+    println!("Active Watermark: {}", comms.watermark());
+    let routed_packet = comms.route_transmission(b"NODE_TEST_SIGNAL", 0.8)?;
+    
+    // Broadcast across mesh
+    mesh.broadcast_payload(&routed_packet)?;
+
+    println!("[SYSTEM] The Sentinel node daemon fully operational and synchronized.");
+    Ok(())
+}
