@@ -1,0 +1,35 @@
+// crates/sentinel-mesh/src/transport.rs
+// Encrypted packet framing and transmission handler for decentralized mesh routing.
+
+pub struct MeshPacketRouter;
+
+impl MeshPacketRouter {
+    pub fn encapsulate_payload(destination_id: u64, payload: &[u8]) -> Vec<u8> {
+        let mut packet = Vec::with_capacity(8 + 4 + payload.len());
+        packet.extend(&destination_id.to_le_bytes());
+        packet.extend(&(payload.len() as u32).to_le_bytes());
+        packet.extend(payload);
+        packet
+    }
+
+    pub fn decapsulate_payload(packet: &[u8]) -> Result<(u64, &[u8]), &'static str> {
+        if packet.len() < 12 {
+            return Err("Packet length below minimum structural threshold.");
+        }
+
+        let mut dest_bytes = [0u8; 8];
+        dest_bytes.copy_from_slice(&packet[0..8]);
+        let destination_id = u64::from_le_bytes(dest_bytes);
+
+        let mut len_bytes = [0u8; 4];
+        len_bytes.copy_from_slice(&packet[8..12]);
+        let payload_len = u32::from_le_bytes(len_bytes) as usize;
+
+        if packet.len() < 12 + payload_len {
+            return Err("Malformed payload length indicator or truncated stream.");
+        }
+
+        let payload = &packet[12..12 + payload_len];
+        Ok((destination_id, payload))
+    }
+}
