@@ -1,0 +1,3 @@
+# Verify complete workspace migration module integration
+cargo test -p sentinel-sync --verbose
+cargo build --bin sentinel-node --release
