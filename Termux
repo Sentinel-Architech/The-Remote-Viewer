@@ -1,0 +1,17 @@
+#!/data/data/com.termux/files/usr/bin/sh
+set -e
+
+echo "[SYSTEM] Initializing The Sentinel Security Protocol workspace build..."
+cd ~/The-Remote-Viewer
+
+# Enforce native optimization flags and strict single-core building for mobile/Termux stability
+export RUSTFLAGS="-C target-cpu=native"
+export CARGO_BUILD_JOBS=1
+
+echo "[BUILD] Compiling workspace crates (sentinel-core, sentinel-node, sentinel-ui)..."
+cargo build --release --workspace
+
+echo "[PERMISSIONS] Locking down secure key partitions and runtime sockets..."
+chmod 0700 crates/sentinel-node/ || true
+
+echo "[READY] The Remote Viewer and TTV Comms sovereign stack compiled and locked."
