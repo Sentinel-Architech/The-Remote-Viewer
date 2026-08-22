@@ -1,0 +1,8 @@
+# crates/sentinel-mesh/Cargo.toml
+[package]
+name = "sentinel-mesh"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.0", features = ["full"] }
