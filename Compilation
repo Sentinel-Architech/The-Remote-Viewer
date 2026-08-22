@@ -1,0 +1,4 @@
+# Workspace verification and release compilation
+cargo check --workspace
+cargo build --release --workspace
+cargo test --workspace
