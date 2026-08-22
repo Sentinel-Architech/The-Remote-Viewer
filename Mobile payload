@@ -1,0 +1,41 @@
+// crates/sentinel-graphene/src/crypto.rs
+// Local zero-trust cryptographic sealing for mobile payloads prior to socket transmission.
+
+use ring::aead::{SealingKey, OpeningKey, LessSafeKey, UnboundKey, AES_256_GCM, Aad};
+use ring::rand::{SecureRandom, SystemRandom};
+
+pub struct MobileCryptoVault {
+    rng: SystemRandom,
+}
+
+impl MobileCryptoVault {
+    pub fn new() -> Self {
+        Self {
+            rng: SystemRandom::new(),
+        }
+    }
+
+    pub fn generate_ephemeral_key(&self) -> [u8; 32] {
+        let mut key = [0u8; 32];
+        self.rng.fill(&mut key).expect("RNG fault during key generation.");
+        key
+    }
+
+    pub fn seal_payload(&self, key_bytes: &[u8; 32], plaintext: &[u8]) -> Result<Vec<u8>, &'static str> {
+        let unbound_key = UnboundKey::new(&AES_256_GCM, key_bytes)
+            .map_err(|_| "Failed to create unbound cryptographic key.")?;
+        let mut sealing_key = LessSafeKey::new(unbound_key);
+
+        let mut nonce_bytes = [0u8; 12];
+        self.rng.fill(&nonce_bytes).map_err(|_| "Nonce generation failed.")?;
+        let nonce = ring::aead::Nonce::assume_unique_for_prefix(nonce_bytes);
+
+        let mut payload = plaintext.to_vec();
+        sealing_key.seal_in_place_append_tag(nonce, Aad::empty(), &mut payload)
+            .map_err(|_| "Encryption sealing fault.")?;
+
+        let mut final_packet = nonce_bytes.to_vec();
+        final_packet.extend(payload);
+        Ok(final_packet)
+    }
+}
