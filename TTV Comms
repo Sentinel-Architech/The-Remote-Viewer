@@ -1,0 +1,17 @@
+// crates/sentinel-ui/src/main.rs
+use sentinel_core::{TtvCommsEngine, CommsTier, SentinelBrandGuard};
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    SentinelBrandGuard::verify_emblem(b"sentinel-shield-sword-emblem-bytes")?;
+
+    println!("==================================================");
+    println!("🛡️ THE REMOTE VIEWER // THE SENTINEL INTERFACE");
+    println!("==================================================");
+    println!("Status:        [SECURE // MESH ACTIVE]");
+    println!("Access Tier:   TIER 1: FREEMIUM (TTV COMMS)");
+    println!("Watermark:     {}", TtvCommsEngine::new(CommsTier::FreeFreemium).watermark());
+    println!("==================================================");
+
+    println!("[UI] HUD Telemetry and TTV Comms interface rendered successfully.");
+    Ok(())
+}
