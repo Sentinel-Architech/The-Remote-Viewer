@@ -1,0 +1,31 @@
+// crates/sentinel-display/src/lib.rs
+// Embedded firmware module for ESP32-S3 Rotary Display human-machine interface.
+
+#![no_std]
+
+pub struct RotaryDisplayInterface {
+    brightness: u8,
+    active_node_state: bool,
+}
+
+impl RotaryDisplayInterface {
+    pub fn new() -> Self {
+        Self {
+            brightness: 80,
+            active_node_state: true,
+        }
+    }
+
+    pub fn handle_rotation(&mut self, delta: i8) {
+        let new_brightness = (self.brightness as i16) + (delta as i16) * 5;
+        self.brightness = new_brightness.clamp(10, 100) as u8;
+    }
+
+    pub fn render_status_screen(&self) -> &'static str {
+        if self.active_node_state {
+            "[DISPLAY] STATUS: SECURE // SOVEREIGN MESH ONLINE"
+        } else {
+            "[DISPLAY] STATUS: AIR-GAP ISOLATED // STANDBY"
+        }
+    }
+}
