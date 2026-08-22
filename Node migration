@@ -1,0 +1,21 @@
+// crates/sentinel-node/src/main.rs
+use sentinel_sync::UniversalMigrationEngine;
+use std::env;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    println!("🛡️ THE SENTINEL // SOVEREIGN NODE & MIGRATION DAEMON");
+    
+    let args: Vec<String> = env::args().collect();
+    if args.len() > 2 && args[1] == "--migrate" {
+        let source = &args[2];
+        let target = args.get(3).map(|s| s.as_str()).unwrap_or("./sovereign_vault");
+        
+        println!("[NODE] Triggering Universal Migration Engine...");
+        UniversalMigrationEngine::execute_one_click_migration(source, target)?;
+    } else {
+        println!("[NODE] Running in standard mesh / local state mode.");
+        println!("[USAGE] sentinel-node --migrate <path_to_export_archive> [target_vault]");
+    }
+
+    Ok(())
+}
