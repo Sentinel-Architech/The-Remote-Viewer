@@ -1,0 +1,20 @@
+// crates/sentinel-sync/tests/migration_integration_test.rs
+use sentinel_sync::UniversalMigrationEngine;
+use std::fs;
+use tempfile::tempdir;
+
+#[test]
+fn test_universal_migration_pipeline() {
+    let dir = tempdir().unwrap();
+    let source_file = dir.path().join("corporate_export.zip");
+    fs::write(&source_file, b"mock-archive-data").unwrap();
+
+    let target_vault = dir.path().join("sovereign_vault");
+
+    let result = UniversalMigrationEngine::execute_one_click_migration(
+        source_file.to_str().unwrap(),
+        target_vault.to_str().unwrap(),
+    );
+
+    assert!(result.is_ok());
+}
