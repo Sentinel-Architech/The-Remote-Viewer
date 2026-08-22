@@ -1,0 +1,33 @@
+// crates/sentinel-node/src/main.rs
+mod svm_runtime;
+
+use sentinel_sync::UniversalMigrationEngine;
+use sentinel_mesh::SovereignMeshNode;
+use svm_runtime::SovereignSVMRuntime;
+use std::env;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    println!("🛡️ THE SENTINEL // UNIFIED SOVEREIGN DAEMON");
+
+    // Initialize in-process Solana SVM runtime
+    let _svm_runtime = SovereignSVMRuntime::initialize();
+
+    // Bind local sovereign mesh listener
+    let mesh_node = SovereignMeshNode::bind("127.0.0.1:8080")?;
+    mesh_node.listen_loop();
+
+    let args: Vec<String> = env::args().collect();
+    if args.len() > 2 && args[1] == "--migrate" {
+        let source = &args[2];
+        let target = args.get(3).map(|s| s.as_str()).unwrap_or("./sovereign_vault");
+        
+        println!("[NODE] Triggering Universal Migration Engine...");
+        UniversalMigrationEngine::execute_one_click_migration(source, target)?;
+    } else {
+        println!("[NODE] Sovereign node online. Mesh synchronization & SVM runtime active.");
+    }
+
+    // Block main thread to keep mesh listener and daemon alive
+    std::thread::park();
+    Ok(( ))
+}
