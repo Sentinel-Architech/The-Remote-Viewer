@@ -1,0 +1,46 @@
+// crates/sentinel-node/src/svm_runtime.rs
+use litesvm::LiteSVM;
+use solana_sdk::{
+    native_token::LAMPORTS_PER_SOL,
+    pubkey::Pubkey,
+    signature::{Keypair, Signer},
+    system_instruction,
+    transaction::Transaction,
+};
+
+pub struct SovereignSVMRuntime {
+    svm: LiteSVM,
+    payer: Keypair,
+}
+
+impl SovereignSVMRuntime {
+    pub fn initialize() -> Self {
+        let mut svm = LiteSVM::new();
+        let payer = Keypair::new();
+        svm.airdrop(&payer.pubkey(), 100 * LAMPORTS_PER_SOL).unwrap();
+        
+        println!("[SVM] In-process LiteSVM sovereign execution context active.");
+        Self { svm, payer }
+    }
+
+    pub fn execute_local_state_transition(&mut self, recipient: Pubkey, amount_lamports: u64) -> Result<String, &'static str> {
+        let tx = system_instruction::transfer(
+            &self.payer.pubkey(),
+            &recipient,
+            amount_lamports,
+        );
+
+        let blockhash = self.svm.latest_blockhash();
+        let transaction = Transaction::new_signed_with_payer(
+            &[tx],
+            Some(&self.payer.pubkey()),
+            &[&self.payer],
+            blockhash,
+        );
+
+        match self.svm.send_transaction(transaction) {
+            Ok(result) => Ok(format!("Transaction executed successfully. Signature: {:?}", result)),
+            Err(_) => Err("Sovereign VM execution faulted during state transition."),
+        }
+    }
+}
