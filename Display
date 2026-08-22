@@ -1,0 +1,8 @@
+# crates/sentinel-display/Cargo.toml
+[package]
+name = "sentinel-display"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+# Embedded no_std target configuration for ESP32-S3 hardware peripherals
