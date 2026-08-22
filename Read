@@ -1,0 +1,16 @@
+# README.md
+
+# The Sentinel Security Protocol (`The-Remote-Viewer`)
+
+Open-source, decentralized, zero-trust application framework featuring in-process Solana execution via LiteSVM, 24/7 mesh synchronization, TTV Comms (Talk, Text, Video), and cryptographic brand protection for **The Sentinel** emblem.
+
+## 🛡️ Architecture & Components
+* **`sentinel-core`**: Core math, state accumulators, regulatory safe-harbor enforcement, and cryptographic brand verification.
+* **`sentinel-mesh`**: Decentralized peer-to-peer gossip network and broadcast routing.
+* **`sentinel-node`**: Main sovereign node daemon combining Solana LiteSVM execution with live mesh syncing.
+* **`sentinel-ui`**: Terminal and GUI telemetry dashboard featuring Tier 1 Freemium TTV Comms with distance-based signal fading.
+
+## 🚀 Quick Start
+```bash
+sh deploy.sh
+cargo test --workspace
