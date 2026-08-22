@@ -1,0 +1,16 @@
+# Cargo.toml (Workspace Root)
+[workspace]
+members = [
+    "crates/sentinel-core",
+    "crates/sentinel-node",
+    "crates/sentinel-ui"
+]
+resolver = "2"
+
+[workspace.package]
+version = "1.0.0"
+edition = "2021"
+
+[workspace.dependencies]
+sha2 = "0.10"
+litesvm = "0.1"
