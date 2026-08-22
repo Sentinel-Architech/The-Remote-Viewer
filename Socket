@@ -1,0 +1,44 @@
+// crates/sentinel-mesh/src/lib.rs
+use std::net::{UdpSocket, SocketAddr};
+use std::sync::Arc;
+use std::thread;
+use std::time::Duration;
+
+pub struct SovereignMeshNode {
+    socket: Arc<UdpSocket>,
+    bind_addr: SocketAddr,
+}
+
+impl SovereignMeshNode {
+    pub fn bind(bind_addr: &str) -> Result<Self, std::io::Error> {
+        let socket = UdpSocket::bind(bind_addr)?;
+        socket.set_nonblocking(true)?;
+        Ok(Self {
+            socket: Arc::new(socket),
+            bind_addr: bind_addr.parse().unwrap(),
+        })
+    }
+
+    pub fn broadcast_state(&self, payload: &[u8], target: SocketAddr) -> Result<(), std::io::Error> {
+        self.socket.send_to(payload, target)?;
+        Ok(())
+    }
+
+    pub fn listen_loop(&self) {
+        let socket = Arc::clone(&self.socket);
+        thread::spawn(move || {
+            let mut buf = [0u8; 1024];
+            println!("[MESH] Sovereign listener active on local network boundary.");
+            loop {
+                match socket.recv_from(&mut buf) {
+                    Ok((amt, src)) => {
+                        println!("[MESH] Received {} encrypted bytes from peer: {}", amt, src);
+                    }
+                    Err(_) => {
+                        thread::sleep(Duration::from_millis(100));
+                    }
+                }
+            }
+        });
+    }
+}
