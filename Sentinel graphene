@@ -1,0 +1,8 @@
+# crates/sentinel-graphene/Cargo.toml
+[package]
+name = "sentinel-graphene"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+# Unix domain socket and low-level system integrations operate natively via std
