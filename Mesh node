@@ -1,0 +1,24 @@
+// crates/sentinel-sync/src/lib.rs
+// Distributed consensus synchronization layer for sovereign mesh nodes.
+
+pub struct SovereignSyncEngine {
+    node_id: u64,
+    sync_epoch: u64,
+}
+
+impl SovereignSyncEngine {
+    pub const fn new(node_id: u64) -> Self {
+        Self {
+            node_id,
+            sync_epoch: 1,
+        }
+    }
+
+    pub fn generate_sync_manifest(&self, payload_hash: &[u8; 32]) -> Vec<u8> {
+        let mut manifest = Vec::new();
+        manifest.extend(&self.node_id.to_le_bytes());
+        manifest.extend(&self.sync_epoch.to_le_bytes());
+        manifest.extend(payload_hash);
+        manifest
+    }
+}
