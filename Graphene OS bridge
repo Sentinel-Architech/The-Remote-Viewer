@@ -1,0 +1,38 @@
+// crates/sentinel-graphene/src/lib.rs
+// GrapheneOS / Termux local bridge interface for sovereign vault synchronization.
+
+use std::os::unix::net::UnixStream;
+use std::io::{Write, Read};
+use std::path::Path;
+
+pub struct GrapheneOSBridge {
+    socket_path: String,
+}
+
+impl GrapheneOSBridge {
+    pub fn new(socket_path: &str) -> Self {
+        Self {
+            socket_path: socket_path.to_string(),
+        }
+    }
+
+    /// Connects to the local sovereign daemon over an isolated UNIX domain socket
+    /// running inside the GrapheneOS app sandbox / Termux boundary.
+    pub fn send_local_payload(&self, payload: &[u8]) -> Result<Vec<u8>, &'static str> {
+        if !Path::new(&self.socket_path).exists() {
+            return Err("Sovereign socket boundary not found. Ensure daemon is active.");
+        }
+
+        let mut stream = UnixStream::connect(&self.socket_path)
+            .map_err(|_| "Failed to establish local UNIX domain socket connection.")?;
+
+        stream.write_all(payload)
+            .map_err(|_| "Failed to write payload to local socket.")?;
+
+        let mut response = Vec::new();
+        stream.read_to_end(&mut response)
+            .map_err(|_| "Failed to read response from sovereign daemon.")?;
+
+        Ok(response)
+    }
+}
