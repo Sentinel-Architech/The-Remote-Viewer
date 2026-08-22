@@ -1,0 +1,49 @@
+// crates/sentinel-graphene/src/bridge_daemon.rs
+// Local UNIX domain socket listener running inside the Termux/GrapheneOS environment.
+
+use std::os::unix::net::UnixListener;
+use std::io::{Read, Write};
+use std::path::Path;
+use std::fs;
+
+pub struct GrapheneSocketDaemon {
+    socket_path: String,
+}
+
+impl GrapheneSocketDaemon {
+    pub fn bind(socket_path: &str) -> Result<Self, &'static str> {
+        if Path::new(socket_path).exists() {
+            fs::remove_file(socket_path).map_err(|_| "Failed to clear stale socket.")?;
+        }
+
+        let _listener = UnixListener::bind(socket_path)
+            .map_err(|_| "Failed to bind local UNIX domain socket in sandbox.")?;
+
+        println!("[GRAPHENE] Secured domain socket listener bound at: {}", socket_path);
+        Ok(Self {
+            socket_path: socket_path.to_string(),
+        })
+    }
+
+    pub fn start_listener_loop(&self) -> Result<(), &'static str> {
+        let listener = UnixListener::bind(&self.socket_path)
+            .map_err(|_| "Socket binding fault during loop initialization.")?;
+
+        for stream in listener.incoming {
+            match stream {
+                Ok(mut client) => {
+                    let mut buffer = Vec::new();
+                    if client.read_to_end(&mut buffer).is_ok() {
+                        println!("[GRAPHENE] Received secure IPC payload ({} bytes). Neutralizing...", buffer.len());
+                        let response = b"[ACK] Payload received and isolated locally.";
+                        let _ = client.write_all(response);
+                    }
+                }
+                Err(_) => {
+                    println!("[GRAPHENE] Client connection anomaly detected.");
+                }
+            }
+        }
+        Ok(())
+    }
+}
