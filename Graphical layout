@@ -1,0 +1,48 @@
+// crates/sentinel-display/src/ui.rs
+// Graphical layout and state management engine for the ESP32-S3 rotary display interface.
+
+#![no_std]
+
+pub enum DisplayScreen {
+    StatusOverview,
+    MeshPeers,
+    OpticalTransfer,
+    SystemSettings,
+}
+
+pub struct UIRenderEngine {
+    current_screen: DisplayScreen,
+    selected_index: usize,
+    max_options: usize,
+}
+
+impl UIRenderEngine {
+    pub const fn new() -> Self {
+        Self {
+            current_screen: DisplayScreen::StatusOverview,
+            selected_index: 0,
+            max_options: 4,
+        }
+    }
+
+    pub fn navigate(&mut self, direction: i8) {
+        if direction > 0 {
+            self.selected_index = (self.selected_index + 1) % self.max_options;
+        } else {
+            self.selected_index = if self.selected_index == 0 {
+                self.max_options - 1
+            } else {
+                self.selected_index - 1
+            };
+        }
+    }
+
+    pub fn select_active_screen(&mut self) {
+        self.current_screen = match self.selected_index {
+            0 => DisplayScreen::StatusOverview,
+            1 => DisplayScreen::MeshPeers,
+            2 => DisplayScreen::OpticalTransfer,
+            _ => DisplayScreen::SystemSettings,
+        };
+    }
+}
