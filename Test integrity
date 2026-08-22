@@ -1,0 +1,29 @@
+// tests/sovereign_integration_test.rs
+use sentinel_core::{SovereignShield, SentinelBrandGuard, InternalAffairsAuditor, TtvCommsEngine, CommsTier, P2PMeshNode};
+use sha2::{Sha256, Digest};
+use std::sync::Arc;
+
+#[test]
+fn test_sovereign_workspace_integrity() {
+    // 1. Verify Sovereign Shield
+    assert!(SovereignShield::enforce().is_ok());
+
+    // 2. Verify Brand Protection
+    assert!(SentinelBrandGuard::verify_emblem(b"sentinel-shield-sword-emblem-bytes").is_ok());
+
+    // 3. Verify Internal Affairs State Accumulator
+    let state = b"test-state-root";
+    let mut hasher = Sha256::new();
+    hasher.update(state);
+    let root = hasher.finalize();
+    assert!(InternalAffairsAuditor::verify_state_accumulator(state, &root).is_ok());
+
+    // 4. Verify TTV Comms Tier Routing & Fading
+    let comms = TtvCommsEngine::new(CommsTier::FreeFreemium);
+    let packet = comms.route_transmission(b"SECURE_PING", 0.9).unwrap();
+    assert!(!packet.is_empty());
+
+    // 5. Verify Mesh Node Registration
+    let mesh = Arc::new(P2PMeshNode::new("Test-Node".to_string()));
+    assert!(mesh.register_peer("Peer-02".to_string(), "127.0.0.1:8080".to_string()).is_ok());
+}
