@@ -1,0 +1,11 @@
+// crates/sentinel-sync/src/lib.rs
+mod engine;
+pub use engine::SovereignVaultPipeline;
+
+pub struct UniversalMigrationEngine;
+
+impl UniversalMigrationEngine {
+    pub fn execute_one_click_migration(source_path: &str, destination_vault: &str) -> Result<(), &'static str> {
+        SovereignVaultPipeline::ingest_and_neutralize(source_path, destination_vault)
+    }
+}
