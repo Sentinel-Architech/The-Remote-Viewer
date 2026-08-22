@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# scripts/deploy_sovereign.sh
+# Automated local cross-compilation and verification script for The Sentinel framework.
+
+set -e
+
+echo "🛡️ [BUILD] Initiating sovereign workspace compilation..."
+
+# Ensure rustup target for embedded ESP32-S3 or local native targets are aligned
+export RUSTFLAGS="-C target-cpu=native"
+
+echo "[BUILD] Verifying workspace code integrity..."
+cargo check --workspace
+
+echo "[BUILD] Running sovereign integration tests..."
+cargo test --test sovereign_integration
+
+echo "[SUCCESS] Sovereign workspace build and verification complete."
