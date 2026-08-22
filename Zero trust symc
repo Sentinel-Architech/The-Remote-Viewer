@@ -1,0 +1,22 @@
+// crates/sentinel-sync/src/protocol.rs
+// Zero-trust synchronization protocol handshake and state verification.
+
+pub struct SyncProtocol;
+
+impl SyncProtocol {
+    pub fn verify_manifest(manifest: &[u8]) -> Result<(u64, u64), &'static str> {
+        if manifest.len() < 48 {
+            return Err("Manifest payload size insufficient for state verification.");
+        }
+
+        let mut node_id_bytes = [0u8; 8];
+        node_id_bytes.copy_from_slice(&manifest[0..8]);
+        let node_id = u64::from_le_bytes(node_id_bytes);
+
+        let mut epoch_bytes = [0u8; 8];
+        epoch_bytes.copy_from_slice(&manifest[8..16]);
+        let sync_epoch = u64::from_le_bytes(epoch_bytes);
+
+        Ok((node_id, sync_epoch))
+    }
+}
