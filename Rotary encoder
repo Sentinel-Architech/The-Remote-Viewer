@@ -1,0 +1,49 @@
+// crates/sentinel-display/src/input.rs
+// Rotary encoder interrupt handler and input state machine for Elecrow ESP32-S3 Rotary Display.
+
+#![no_std]
+
+pub enum RotaryEvent {
+    Clockwise,
+    CounterClockwise,
+    Pressed,
+    Released,
+}
+
+pub struct RotaryEncoderState {
+    last_state: u8,
+    button_pressed: bool,
+}
+
+impl RotaryEncoderState {
+    pub const fn new() -> Self {
+        Self {
+            last_state: 0,
+            button_pressed: false,
+        }
+    }
+
+    pub fn poll_pins(&mut self, clk: bool, dt: bool, sw: bool) -> Option<RotaryEvent> {
+        let current_state = ((clk as u8) << 1) | (dt as u8);
+        let mut event = None;
+
+        if current_state != self.last_state {
+            if (self.last_state == 0 && current_state == 1) || (self.last_state == 3 && current_state == 2) {
+                event = Some(RotaryEvent::Clockwise);
+            } else if (self.last_state == 0 && current_state == 2) || (self.last_state == 3 && current_state == 1) {
+                event = Some(RotaryEvent::CounterClockwise);
+            }
+            self.last_state = current_state;
+        }
+
+        if sw && !self.button_pressed {
+            self.button_pressed = true;
+            return Some(RotaryEvent::Pressed);
+        } else if !sw && self.button_pressed {
+            self.button_pressed = false;
+            return Some(RotaryEvent::Released);
+        }
+
+        event
+    }
+}
