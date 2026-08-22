@@ -4,7 +4,7 @@ Hosted Remote Viewer command surface for **The Sentinel**.
 
 **Live:** [sentinelsecurityprotocol.grok.me](https://sentinelsecurityprotocol.grok.me)  
 **Branch:** [`TheRemoteViewer`](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/tree/TheRemoteViewer)  
-**Status (2026-08-20):** **LIVE** hosted DApp — not a scaffold.
+**Status (2026-08-22):** **LIVE** hosted DApp — not a scaffold. SENTINEL OS jack-in is in this folder; grok.me picks it up on republish.
 
 This folder is the product UI Remote Viewers use today. It is a **separate surface** from the local-first optical air-gap / Path B node. Those paths are unchanged and still live under `optical-airgap/`, `digital-vending/`, and `modules/`.
 
@@ -19,6 +19,7 @@ This folder is the product UI Remote Viewers use today. It is a **separate surfa
 | Briefing | overlay after age gate | **12 stations, no skip, no close, Escape blocked.** Seals once (`tutorial_at`) |
 | Command | `/hub` | Sentinel health, autonomy, daily duty strip |
 | Daily Watch | `/hub` Defend · Mesh · Honeypot | Intercept hostile packets, then claim TRV. Missed days damage health |
+| SENTINEL OS jack-in | `/hub/neuron` · `/hub/os` | 3D neuron flight. Scan, name, pulse. Catalog → OS memory. Pulse counts as watch |
 | Profile vault | `/hub/profile` | Portrait, identity extras, finances, docs, live icon |
 | Public card | `/v/$handle` | Shareable Viewer card |
 | OS | `/hub/os` | Super / Cipher / Watcher / Privacy / Mesh / Healer + mic |

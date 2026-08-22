@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { Radio } from "lucide-react";
 import { toast } from "sonner";
 import { dispatchAgent } from "@/lib/trv/sentinel-ai";
 import {
@@ -20,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { useViewer } from "@/components/viewer-context";
+import { JackInSession } from "@/components/os-sim/JackInSession";
 
 export const Route = createFileRoute("/hub/os")({ component: OsPage });
 
@@ -37,6 +39,7 @@ function OsPage() {
   const [cam, setCam] = useState(false);
   const [motion, setMotion] = useState(0);
   const [mosaic, setMosaic] = useState<string | null>(null);
+  const [jacked, setJacked] = useState(false);
 
   async function refreshEdge() {
     const v = edgeVitals();
@@ -104,6 +107,7 @@ function OsPage() {
   }
 
   const v = vitals;
+  if (jacked) return <JackInSession onClose={() => setJacked(false)} />;
 
   return (
     <div className="space-y-6 p-5 md:p-8">
@@ -117,6 +121,20 @@ function OsPage() {
           on this node. {profile?.federatedOptIn ? "Federated lessons on (identity-stripped)." : "Federated share is off."}
         </p>
       </div>
+
+      <section className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-xl)] border border-accent/40 bg-card p-4">
+        <div>
+          <p className="text-[11px] uppercase tracking-wide text-accent">Jack in</p>
+          <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+            Fly the tissue as a guided neuron. Scan unknown signatures with Sentinel on comms.
+            Named classes auto-heal. A landed pulse counts as today's watch intercept.
+          </p>
+        </div>
+        <Button onClick={() => setJacked(true)}>
+          <Radio />
+          Jack into SENTINEL OS
+        </Button>
+      </section>
 
       <section className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-xl)] border border-border bg-card p-4">
         <div>

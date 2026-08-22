@@ -44,3 +44,9 @@
 ## Operator
 
 [PIXEL-OPERATOR.md](PIXEL-OPERATOR.md)
+
+## Hub stations
+
+| File | Role |
+|------|------|
+| [SENTINEL-OS-JACK.md](SENTINEL-OS-JACK.md) | 3D neuron flight jack-in (IN SOURCE) |
