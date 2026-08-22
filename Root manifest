@@ -1,0 +1,11 @@
+# Cargo.toml (Root Workspace Manifest)
+[workspace]
+members = [
+    "crates/sentinel-sync",
+    "crates/sentinel-mesh",
+    "crates/sentinel-lsm",
+    "crates/sentinel-graphene",
+    "crates/sentinel-optic",
+    "crates/sentinel-node"
+]
+resolver = "2"
