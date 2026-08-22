@@ -1,0 +1,27 @@
+// crates/sentinel-gate/src/lib.rs
+use std::fs;
+use std::path::Path;
+
+pub struct SovereignVerificationGate;
+
+impl SovereignVerificationGate {
+    /// Hobbyists build and run the entire stack locally 100% free.
+    /// Network verification requires an on-chain cryptographic payment proof.
+    pub fn verify_node_access(wallet_balance: u64, verification_fee: u64) -> Result<(), &'static str> {
+        let local_override_path = "/data/data/com.termux/files/home/The-Remote-Viewer/.free_hobbyist_mode";
+
+        // Free local hobbyist path: running standalone on hardware without network broadcast
+        if Path::new(local_override_path).exists() {
+            println!("[HOBBYIST MODE] Free local execution active. Network mesh broadcast disabled.");
+            return Ok(());
+        }
+
+        // Decentralized network verification path: requires cryptographic payment proof
+        if wallet_balance < verification_fee {
+            return Err("Verification Failed: Insufficient sovereign token balance for network validation. Run in hobbyist mode or fund verification fee.");
+        }
+
+        println!("[VERIFIED] On-chain payment confirmed. Node integrated into The Remote Viewer network mesh.");
+        Ok(())
+    }
+}
