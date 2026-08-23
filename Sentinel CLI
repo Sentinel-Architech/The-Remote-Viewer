@@ -1,0 +1,28 @@
+// crates/sentinel-cli/src/main.rs
+// The Sentinel CLI: Lightweight Sovereign Command-Line Interface for Node Management
+
+use std::io::{Read, Write};
+use std::net::TcpStream;
+use std::env;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let args: Vec<String> = env::args().collect();
+    let endpoint = if args.len() > 1 { &args[1] } else { "127.0.0.1:9050" };
+
+    println!("[*] Connecting to Sovereign Node at {}...", endpoint);
+
+    let mut stream = TcpStream::connect(endpoint)?;
+    
+    // Transmit SOVEREIGN_AUTH_V1 cryptographic header frame
+    let auth_frame = b"SOVEREIGN_AUTH_V1_CLI_CONNECT";
+    stream.write_all(auth_frame)?;
+    stream.flush()?;
+
+    let mut response_buffer = Vec::new();
+    stream.read_to_end(&mut response_buffer)?;
+
+    let response_str = String::from_utf8_lossy(&response_buffer);
+    println!("[+] Sovereign Node Response:\n{}", response_str);
+
+    Ok(())
+}
