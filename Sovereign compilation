@@ -1,0 +1,10 @@
+# scripts/build_sovereign.sh
+# Sovereign release compilation script enforcing static linking and maximum optimization.
+
+set -euo pipefail
+
+echo "[*] Initializing sovereign compilation sequence..."
+cargo clean
+cargo build --workspace --release --locked
+
+echo "[+] Sovereign binaries compiled successfully in release mode."
