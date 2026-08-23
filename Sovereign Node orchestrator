@@ -1,0 +1,24 @@
+# crates/sentinel-node/Cargo.toml
+[package]
+name = "sentinel-node"
+version = "1.0.0"
+edition = "2021"
+authors = ["The Sentinel Archetecht"]
+description = "Sovereign node orchestrator for The Sentinel Security Protocol."
+
+[dependencies]
+tokio = { version = "1.38", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sentinel-sync = { path = "../sentinel-sync" }
+sentinel-mesh = { path = "../sentinel-mesh" }
+sentinel-lsm = { path = "../sentinel-lsm" }
+sentinel-graphene = { path = "../sentinel-graphene" }
+sentinel-optic = { path = "../sentinel-optic" }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
