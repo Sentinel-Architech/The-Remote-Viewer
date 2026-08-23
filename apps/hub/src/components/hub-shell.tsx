@@ -7,6 +7,7 @@ import {
   CircleUser,
   Cpu,
   Film,
+  Fingerprint,
   Gauge,
   Gift,
   Globe,
@@ -48,6 +49,7 @@ import { TrialStrip } from "./trial-strip";
 
 const NAV = [
   { to: "/hub", label: "Command", icon: LayoutDashboard },
+  { to: "/hub/node", label: "Node", icon: Fingerprint },
   { to: "/hub/neuron", label: "Defend", icon: Brain },
   { to: "/hub/mesh", label: "Mesh", icon: Globe },
   { to: "/hub/shop", label: "Rewards", icon: Gift },
