@@ -8,7 +8,7 @@ import { STAGE_LABEL, TIER_COPY, TIER_LABEL } from "@/lib/trv/tiers";
 import { effectiveFeeRate, planById } from "@/lib/trv/saas";
 import { WatchClaim } from "@/components/watch-claim";
 import { LiveBadge, ViewerMark } from "@/components/viewer-mark";
-import { Brain, Cpu, Globe, Landmark, ScrollText, Shield } from "lucide-react";
+import { Brain, Cpu, Fingerprint, Globe, Landmark, ScrollText, Shield } from "lucide-react";
 import { retentionTasks } from "@/lib/trv/retention";
 import { isPaidTrialActive, formatTrialClock, msUntil } from "@/lib/trv/trial";
 import { SKILL_PAR } from "@/lib/trv/skill-audit";
@@ -208,7 +208,12 @@ function Command() {
         </Card>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+        <Button asChild variant="secondary" className="h-auto justify-start py-4">
+          <Link to="/hub/node">
+            <Fingerprint className="size-4" /> Sovereign node
+          </Link>
+        </Button>
         <Button asChild variant="secondary" className="h-auto justify-start py-4">
           <Link to="/hub/neuron">
             <Brain className="size-4" /> Watchful Neuron
