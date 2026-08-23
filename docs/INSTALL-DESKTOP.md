@@ -75,3 +75,20 @@ If you never set a passphrase, identity files stay mode `600` and you use them d
 - Phone-home telemetry from the installer  
 
 Barebones remains the reference. Track B is sugar on top of the same tree.
+
+---
+
+## Sovereign node runtime (desktop crate)
+
+The daemon in `desktop/` now opens a **sled** identity store next to heed
+(default feature `runtime`). Heavy extras stay off unless you ask:
+
+```bash
+cargo check --manifest-path desktop/Cargo.toml
+# optional:
+cargo run --manifest-path desktop/Cargo.toml --features ollama   # local llama3
+cargo run --manifest-path desktop/Cargo.toml --features zkml     # tract-onnx
+```
+
+Identity is local. Destroy = Restart. See [SOVEREIGN-NODE-RUNTIME.md](SOVEREIGN-NODE-RUNTIME.md)
+and [desktop/RUNTIME.md](../desktop/RUNTIME.md). The hosted hub station is `/hub/node`.
