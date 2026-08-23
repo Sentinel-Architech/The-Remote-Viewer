@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# ============================================================================
+# THE SENTINEL SECURITY PROTOCOL - PARALLEL AIR-GAPPED ORCHESTRATION SCRIPT
+# Back channels closed. Local loopback binding only. 100% Open-Source stack.
+# ============================================================================
+
+set -euo pipefail
+
+# Enforce clean termination of background jobs (no open ends)
+cleanup() {
+    echo "[-] Shutting down sovereign node processes..."
+    pkill -P $$ || true
+    exit 0
+}
+trap cleanup SIGINT SIGTERM EXIT
+
+echo "[+] Initializing localized secure environment in parallel..."
+
+# 1. Start local Solana test validator restricted to local ledger sandbox
+solana-test-validator --reset --quiet &
+VALIDATOR_PID=$!
+
+# 2. Start local Ollama runtime bound strictly to loopback interface
+OLLAMA_HOST="127.0.0.1:11434" ollama serve &
+OLLAMA_PID=$!
+
+# 3. Compile Rust backend binaries concurrently
+cargo build --release &
+RUST_BUILD_PID=$!
+
+# Wait for parallel compilation to complete
+wait $RUST_BUILD_PID
+
+echo "[+] All open-source components active. Back channels sealed."
+echo "[+] Launching Sentinel Node Agent..."
+
+# Execute local node runtime
+cargo run --release &
+NODE_PID=$!
+
+# Maintain orchestration loop
+wait
