@@ -1,0 +1,29 @@
+# /etc/systemd/system/sentinel-sovereign.service
+# Production systemd service unit for continuous, zero-trust sovereign node background execution.
+
+[Unit]
+Description=The Sentinel Sovereign Node & Remote Viewer Daemon
+After=network.target local-fs.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/lib/sentinel
+ExecStart=/usr/local/bin/sentinel-sovereign
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+# Hardening / Security Sandboxing
+ProtectSystem=strict
+ProtectHome=true
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target
