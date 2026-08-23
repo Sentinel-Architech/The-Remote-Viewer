@@ -1,0 +1,31 @@
+// ============================================================================
+// THE SENTINEL SECURITY PROTOCOL - UNIFIED ASYNC RUNTIME ORCHESTRATOR (main.rs)
+// ============================================================================
+
+mod mesh;
+mod mesh_loop;
+
+use std::error::Error;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
+    println!("[*] Initializing Sentinel Sovereign Node...");
+
+    // 1. Initialize local cryptographic identity seed (isolated to sled block storage)
+    let node_seed = b"sentinel_sovereign_secure_seed_2026";
+
+    // 2. Build and launch the air-gapped P2P mesh transport
+    let (swarm, topic) = mesh::build_mesh_node(node_seed).await?;
+    let mesh_handle = tokio::spawn(async move {
+        if let Err(e) = mesh_loop::run_mesh_event_loop(swarm).await {
+            eprintln!("[-] Mesh loop error: {}", e);
+        }
+    });
+
+    println!("[+] Sentinel Node active. Mesh topic active: {}", topic);
+
+    // 3. Keep sovereign runtime alive across background execution loops
+    mesh_handle.await?;
+
+    Ok(())
+}
