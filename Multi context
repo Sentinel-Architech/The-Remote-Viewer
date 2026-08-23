@@ -1,0 +1,267 @@
+// ============================================================================
+// THE SENTINEL SECURITY PROTOCOL - ABSOLUTE UNIFIED SOVEREIGN MONOLITH
+// Language: Multi-Context Embedded Artifact (Rust & TypeScript Blueprint)
+// ============================================================================
+
+/* 
+   ============================================================================
+   MODULE 1: SOLANA ANCHOR TOKEN-STREAMING SETTLEMENT PROGRAM (settlement.rs)
+   ============================================================================
+*/
+
+use anchor_lang::prelude::*;
+use anchor_spl::token_interface::{self, Mint, TokenAccount, TokenInterface, TransferChecked};
+
+declare_id!("TokenStreaming22222222222222222222222222222222");
+
+#[program]
+pub mod token_streaming_enhanced {
+    use super::*;
+
+    pub fn stream_payment_batch(
+        ctx: Context<StreamPaymentBatch>, 
+        total_tokens: u64, 
+        cost_per_token: u64,
+        decimals: u8
+    ) -> Result<()> {
+        let escrow = &mut ctx.accounts.escrow;
+        let total_cost = total_tokens.checked_mul(cost_per_token).ok_or(CustomError::Overflow)?;
+        
+        require!(escrow.balance >= total_cost, CustomError::InsufficientEscrowBalance);
+        escrow.balance -= total_cost;
+
+        let seeds = &[
+            b"escrow",
+            escrow.client.as_ref(),
+            escrow.node.as_ref(),
+            &[escrow.bump],
+        ];
+        let signer = &[&seeds[..]];
+
+        let cpi_accounts = TransferChecked {
+            from: ctx.accounts.escrow_vault.to_account_info(),
+            mint: ctx.accounts.mint.to_account_info(),
+            to: ctx.accounts.node_token_account.to_account_info(),
+            authority: ctx.accounts.escrow.to_account_info(),
+        };
+        
+        let cpi_program = ctx.accounts.token_program.to_account_info();
+        token_interface::transfer_checked(
+            CpiContext::new_with_signer(cpi_program, cpi_accounts, signer),
+            total_cost,
+            decimals,
+        )?;
+
+        Ok(())
+    }
+}
+
+#[derive(Accounts)]
+pub struct StreamPaymentBatch<'info> {
+    #[account(
+        mut,
+        seeds = [b"escrow", escrow.client.as_ref(), escrow.node.as_ref()],
+        bump = escrow.bump
+    )]
+    pub escrow: Account<'info, EscrowState>,
+    pub mint: InterfaceAccount<'info, Mint>,
+    #[account(
+        mut,
+        seeds = [b"vault", escrow.key().as_ref()],
+        bump
+    )]
+    pub escrow_vault: InterfaceAccount<'info, TokenAccount>,
+    #[account(mut)]
+    pub node_token_account: InterfaceAccount<'info, TokenAccount>,
+    pub token_program: Interface<'info, TokenInterface>,
+    pub authority: Signer<'info>,
+}
+
+#[account]
+pub struct EscrowState {
+    pub client: Pubkey,
+    pub node: Pubkey,
+    pub balance: u64,
+    pub bump: u8,
+}
+
+#[error_code]
+pub enum CustomError {
+    #[msg("Arithmetic overflow during batch cost calculation.")]
+    Overflow,
+    #[msg("Insufficient balance in escrow vault for batched token streaming.")]
+    InsufficientEscrowBalance,
+}
+
+
+/* 
+   ============================================================================
+   MODULE 2: RUST BACKEND CORE & TAURI RUNTIME ORCHESTRATOR (src/lib.rs)
+   ============================================================================
+*/
+
+use tauri::Manager;
+use sled::{Db, Result as SledResult};
+use ollama_rs::{Ollama, generation::completion::request::GenerationRequest};
+use tokio_stream::StreamExt;
+use tract_onnx::prelude::*;
+use std::path::Path;
+use std::error::Error;
+
+pub struct LocalStateStore {
+    db: Db,
+}
+
+impl LocalStateStore {
+    pub fn new<P: AsRef<Path>>(path: P) -> SledResult<Self> {
+        let db = sled::open(path)?;
+        Ok(Self { db })
+    }
+
+    pub fn set_node_identity(&self, pubkey_hex: &str, secret_seed: &[u8]) -> SledResult<()> {
+        self.db.insert(format!("identity:{}", pubkey_hex), secret_seed)?;
+        self.db.flush()?;
+        Ok(())
+    }
+
+    pub fn get_node_identity(&self, pubkey_hex: &str) -> SledResult<Option<Vec<u8>>> {
+        let val = self.db.get(format!("identity:{}", pubkey_hex))?;
+        Ok(val.map(|v| v.to_vec()))
+    }
+}
+
+pub struct ModelOrchestrator {
+    client: Ollama,
+    model_name: String,
+}
+
+impl ModelOrchestrator {
+    pub fn new(host: String, port: u16, model_name: String) -> Self {
+        Self {
+            client: Ollama::new(host, port),
+            model_name,
+        }
+    }
+
+    pub async fn generate_stream_response(
+        &self, 
+        prompt: String, 
+        mut callback: impl FnMut(String)
+    ) -> Result<(), Box<dyn Error>> {
+        let request = GenerationRequest::new(self.model_name.clone(), prompt);
+        let mut stream = self.client.generate_stream(request).await?;
+
+        while let Some(res) = stream.next().await {
+            let chunk = res?;
+            callback(chunk.response);
+        }
+        Ok(())
+    }
+}
+
+pub struct VerifiableInferenceEngine {
+    model: TypedModel,
+}
+
+impl VerifiableInferenceEngine {
+    pub fn load_onnx_model(model_path: &str) -> Result<Self, Box<dyn Error>> {
+        let model = tract_onnx::onnx()
+            .model_for_path(model_path)?
+            .into_optimized()?
+            .into_typed()?;
+        Ok(Self { model })
+    }
+}
+
+pub struct AppState {
+    pub state_store: LocalStateStore,
+    pub orchestrator: ModelOrchestrator,
+}
+
+#[tauri::command]
+async fn execute_node_attestation(
+    state: tauri::State<'_, AppState>,
+    pubkey_hex: String
+) -> Result<String, String> {
+    match state.state_store.get_node_identity(&pubkey_hex) {
+        Ok(Some(_)) => Ok(format!("Node verified: {}", pubkey_hex)),
+        _ => Err("Node identity not found in local store.".into()),
+    }
+}
+
+
+/* 
+   ============================================================================
+   MODULE 3: TYPESCRIPT FRONTEND IPC CLIENT & STREAMING BINDING (src/app.ts)
+   ============================================================================
+*/
+
+/*
+import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
+
+export interface InferencePayload {
+    prompt: string;
+    nodePubkey: string;
+    signature: string;
+}
+
+export class SentinelClient {
+    public async verifyIdentity(nodePubkey: string): Promise<string> {
+        return await invoke<string>('execute_node_attestation', { pubkeyHex: nodePubkey });
+    }
+
+    public async dispatchInference(payload: InferencePayload, onToken: (token: string) => void): Promise<void> {
+        const status = await this.verifyIdentity(payload.nodePubkey);
+        console.info("Hardware Enclave Status:", status);
+
+        const response = await fetch('http://127.0.0.1:4000/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Node-Pubkey': payload.nodePubkey,
+                'X-Solana-Signature': payload.signature
+            },
+            body: JSON.stringify({
+                model: 'ollama/llama3',
+                messages: [{ role: 'user', content: payload.prompt }],
+                stream: true
+            })
+        });
+
+        if (!response.ok) {
+            if (response.status === 402) {
+                throw new Error("Payment Required: Solana escrow vault balance depleted.");
+            }
+            throw new Error(`Proxy gateway error code: ${response.status}`);
+        }
+
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        if (!reader) throw new Error("Failed to allocate stream reader buffer.");
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            const clean = chunk.replace(/^data: /, '');
+            if (clean.trim() === '[DONE]') break;
+
+            try {
+                const parsed = JSON.parse(clean);
+                const token = parsed.choices?.[0]?.delta?.content || '';
+                if (token) onToken(token);
+            } catch {
+                onToken(clean);
+            }
+        }
+    }
+
+    public async listenToMeshEvents(onEvent: (msg: string) => void): Promise<void> {
+        await listen<string>('mesh-status-update', (event) => {
+            onEvent(event.payload);
+        });
+    }
+}
+*/
