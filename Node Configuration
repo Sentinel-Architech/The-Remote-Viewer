@@ -1,0 +1,28 @@
+// crates/sentinel-node/src/config.rs
+// Sovereign node configuration parser for zero-trust network parameters and policy gates.
+
+pub struct NodeConfig {
+    pub node_id: u64,
+    pub listen_address: String,
+    pub zero_trust_enforced: bool,
+}
+
+impl NodeConfig {
+    pub const fn default_secure() -> Self {
+        Self {
+            node_id: 0xDEADBEEFCAFEBABE,
+            listen_address: String::new(), // In production, bind strictly to local/mesh interfaces
+            zero_trust_enforced: true,
+        }
+    }
+
+    pub fn validate(&self) -> Result<(), &'static str> {
+        if !self.zero_trust_enforced {
+            return Err("Zero-trust enforcement flag is disabled; operational policy violation.");
+        }
+        if self.node_id == 0 {
+            return Err("Invalid node identifier initialized.");
+        }
+        Ok(())
+    }
+}
