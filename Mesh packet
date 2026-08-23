@@ -1,0 +1,55 @@
+// crates/sentinel-mesh/src/lib.rs
+// Encrypted mesh packet routing, decapsulation, and zero-trust peer transport layer.
+
+use std::collections::HashMap;
+
+pub struct MeshPacket {
+    pub source_node: u64,
+    pub destination_node: u64,
+    pub ciphertext: Vec<u8>,
+}
+
+pub struct SecureMeshRouter {
+    node_id: u64,
+    peer_table: HashMap<u64, String>,
+}
+
+impl SecureMeshRouter {
+    pub const fn new(node_id: u64) -> Self {
+        Self {
+            node_id,
+            peer_table: HashMap::new(),
+        }
+    }
+
+    pub fn register_peer(&mut self, peer_id: u64, endpoint: String) {
+        self.peer_table.insert(peer_id, endpoint);
+    }
+
+    pub fn encapsulate_packet(&self, destination_node: u64, payload: &[u8]) -> Result<MeshPacket, &'static str> {
+        if payload.is_empty() {
+            return Err("Mesh routing fault: empty payload encapsulation attempt.");
+        }
+
+        // Apply cryptographic wrapper (simulated PQC envelope)
+        let mut ciphertext = Vec::with_capacity(payload.len() + 32);
+        ciphertext.extend(b"PQC_ENCAP_HEADER");
+        ciphertext.extend(payload);
+
+        Ok(MeshPacket {
+            source_node: self.node_id,
+            destination_node,
+            ciphertext,
+        })
+    }
+
+    pub fn decapsulate_packet(&self, packet: &MeshPacket) -> Result<Vec<u8>, &'static str> {
+        if packet.destination_node != self.node_id {
+            return Err("Mesh routing fault: packet destination mismatch.");
+        }
+        if packet.ciphertext.len() < 16 || &packet.ciphertext[..16] != b"PQC_ENCAP_HEADER" {
+            return Err("Mesh routing fault: invalid cryptographic envelope.");
+        }
+        Ok(packet.ciphertext[16..].to_vec())
+    }
+}
