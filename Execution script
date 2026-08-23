@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+IMAGE_NAME="sentinel-anchor-host:latest"
+
+# Build the local deterministic host image
+docker build -t $IMAGE_NAME .
+
+# Execute a clean anchor verifiable build mounting current workspace
+docker run --rm \
+  -v "$(pwd)":/workspace \
+  -v cargo-cache:/usr/local/cargo/registry \
+  $IMAGE_NAME --verifiable
