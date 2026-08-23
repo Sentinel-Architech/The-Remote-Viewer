@@ -1,0 +1,7 @@
+# crates/sentinel-graphene/Cargo.toml
+[package]
+name = "sentinel-graphene"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
