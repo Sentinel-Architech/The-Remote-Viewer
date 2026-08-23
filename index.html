@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>The Sentinel OS & Remote Viewer Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: #111827;
+            --accent: #10b981;
+            --accent-dim: #065f46;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border: #374151;
+            --danger: #ef4444;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: monospace; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 2rem; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 800px; }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 2rem; }
+        h1 { font-size: 1.25rem; letter-spacing: 0.05em; color: var(--accent); }
+        .status-badge { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted); }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background-color: var(--danger); transition: background-color 0.3s; }
+        .dot.active { background-color: var(--accent); box-shadow: 0 0 10px var(--accent); }
+        .panel { background-color: var(--panel-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        h2 { font-size: 1rem; margin-bottom: 1rem; color: var(--text-main); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+        .metric-box { background: var(--bg-color); border: 1px solid var(--border); padding: 1rem; border-radius: 4px; }
+        .metric-label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem; }
+        .metric-value { font-size: 1rem; color: var(--accent); }
+        button { background-color: var(--accent-dim); color: var(--text-main); border: 1px solid var(--accent); padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; transition: background 0.2s; }
+        button:hover { background-color: var(--accent); color: var(--bg-color); }
+        pre { background: var(--bg-color); border: 1px solid var(--border); padding: 1rem; border-radius: 4px; font-size: 0.85rem; color: var(--text-muted); max-height: 200px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>// THE SENTINEL // REMOTE VIEWER</h1>
+        <div class="status-badge">
+            <div id="statusDot" class="dot"></div>
+            <span id="statusText">DISCONNECTED</span>
+        </div>
+    </header>
+
+    <div class="panel">
+        <h2>Node Telemetry & State Root</h2>
+        <div class="grid">
+            <div class="metric-box">
+                <div class="metric-label">NODE ID</div>
+                <div id="nodeId" class="metric-value">----</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-label">SYSTEM TIMESTAMP</div>
+                <div id="nodeTime" class="metric-value">----</div>
+            </div>
+        </div>
+        <button onclick="pollNodeState()">PING & AUTHENTICATE NODE</button>
+    </div>
+
+    <div class="panel">
+        <h2>Encrypted Audit Stream Log</h2>
+        <pre id="auditLog">Waiting for network interaction...</pre>
+    </div>
+</div>
+
+<script>
+    const NODE_ENDPOINT = "http://127.0.0.1:9050";
+
+    async function pollNodeState() {
+        const log = document.getElementById('auditLog');
+        const dot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        
+        log.innerText += "\n[*] Transmitting SOVEREIGN_AUTH_V1 frame to local node...";
+
+        try {
+            // Note: Direct browser fetch to raw TCP sockets requires a CORS-enabled proxy or native WebSocket.
+            // For local-first pure testing, ensure the daemon speaks HTTP/WS or use local file bindings.
+            const response = await fetch(NODE_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/octet-stream' },
+                body: new Uint8Array([0x53, 0x4F, 0x56, 0x45, 0x52, 0x45, 0x49, 0x47, 0x4E, 0x5F, 0x41, 0x55, 0x54, 0x48, 0x5F, 0x31])
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('nodeId').innerText = data.node_id;
+                document.getElementById('nodeTime').innerText = data.timestamp;
+                dot.classList.add('active');
+                statusText.innerText = "OPERATIONAL";
+                log.innerText += `\n[+] Response received from Node ID ${data.node_id}. State nominal.`;
+            } else {
+                throw new Error("Node rejected authentication frame.");
+            }
+        } catch (err) {
+            dot.classList.remove('active');
+            statusText.innerText = "OFFLINE / ERROR";
+            log.innerText += `\n[-] Connection fault: Ensure the sovereign node daemon is running locally on port 9050.`;
+        }
+    }
+</script>
+
+</body>
+</html>
