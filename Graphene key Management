@@ -1,0 +1,36 @@
+// crates/sentinel-node/src/main.rs
+// Sovereign node orchestrator entry point for The Sentinel Security Protocol.
+
+use sentinel_graphene::GrapheneKeyManager;
+use sentinel_lsm::SovereignLsmEngine;
+use sentinel_mesh::MeshPacketRouter;
+use sentinel_optic::OpticalAirGapEncoder;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    println!("[*] Initializing The Sentinel Security Protocol Node...");
+
+    // Initialize hardware security layer
+    let key_manager = GrapheneKeyManager::new();
+    key_manager.enforce_hardware_isolation()?;
+    println!("[+] Hardware isolation boundary verified.");
+
+    // Initialize eBPF LSM runtime monitoring
+    let lsm_engine = SovereignLsmEngine::new();
+    let socket_check = lsm_engine.inspect_socket_operation(42, 8080);
+    println!("[+] Sovereign LSM engine active. Socket check: {}", socket_check);
+
+    // Initialize mesh packet routing
+    let sample_payload = b"Sentinel Sovereign Sync Payload";
+    let encapsulated = MeshPacketRouter::encapsulate_payload(0xDEADBEEF, sample_payload);
+    let (dest_id, _) = MeshPacketRouter::decapsulate_payload(&encapsulated)?;
+    println!("[+] Mesh packet router functional. Target ID: {:016X}", dest_id);
+
+    // Initialize optical air-gap encoder
+    let encoder = OpticalAirGapEncoder::new(64);
+    let optical_frames = encoder.encode_payload(sample_payload)?;
+    println!("[+] Optical air-gap encoder generated {} transmission frames.", optical_frames.len());
+
+    println!("[*] Node successfully orchestrated and locked into zero-trust execution state.");
+    Ok(())
+}
