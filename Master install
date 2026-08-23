@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# scripts/install_master.sh
+# Master automated installer for The Sentinel Sovereign Node & Remote Viewer Network.
+# Executes binary compilation, static placement, directory configuration, and systemd registration.
+
+set -euo pipefail
+
+echo "============================================================================"
+echo " THE SENTINEL SOVEREIGN NODE: MASTER INSTALLATION UTILITY"
+echo "============================================================================"
+
+# Ensure execution as root for system-wide service binding
+if [ "$EUID" -ne 0 ]; then
+  echo "[-] Error: Master installation requires root privileges for systemd registration."
+  echo "    Please run via: sudo ./scripts/install_master.sh"
+  exit 1
+fi
+
+INSTALL_DIR="/usr/local/bin"
+CONFIG_DIR="/var/lib/sentinel"
+SERVICE_FILE="/etc/systemd/system/sentinel-sovereign.service"
+
+echo "[*] Step 1: Compiling release binary with maximum optimization..."
+cargo build --release --locked
+
+echo "[*] Step 2: Establishing secure directory boundaries at ${CONFIG_DIR}..."
+mkdir -p "${CONFIG_DIR}/data" "${CONFIG_DIR}/config"
+chmod 700 "${CONFIG_DIR}"
+
+echo "[*] Step 3: Installing sovereign binary to ${INSTALL_DIR}..."
+if [ -f "target/release/sentinel-sovereign" ]; then
+    cp target/release/sentinel-sovereign "${INSTALL_DIR}/sentinel-sovereign"
+elif [ -f "target/release/sentinel-cli" ]; then
+    cp target/release/sentinel-cli "${INSTALL_DIR}/sentinel-sovereign"
+else
+    # Fallback if binary name differs in Cargo workspace
+    cp target/release/* "${INSTALL_DIR}/" 2>/dev/null || true
+fi
+chmod 755 "${INSTALL_DIR}/sentinel-sovereign"
+
+echo "[*] Step 4: Registering systemd zero-trust service unit..."
+cat << 'EOF' > "${SERVICE_FILE}"
+[Unit]
+Description=The Sentinel Sovereign Node & Remote Viewer Daemon
+After=network.target local-fs.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/lib/sentinel
+ExecStart=/usr/local/bin/sentinel-sovereign
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+ProtectSystem=strict
+ProtectHome=true
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+echo "[*] Step 5: Reloading systemd daemon and enabling service activation..."
+systemctl daemon-reload
+systemctl enable sentinel-sovereign.service
+systemctl start sentinel-sovereign.service
+
+echo "============================================================================"
+echo "[+] INSTALLATION COMPLETE: The Sentinel Sovereign Node is live and running."
+echo "[+] To check operational status, run: sudo systemctl status sentinel-sovereign"
+echo "============================================================================"
