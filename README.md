@@ -36,6 +36,7 @@ Shipped on the hub:
 - Public Viewer card (`/v/$handle`)
 - Command, OS, live, people, make, rails, Citizen lock (on-device hash)
 - **SENTINEL OS jack-in** — 3D neuron flight on Defend / OS. Scan, name, pulse. Catalog writes OS memory. A landed pulse counts as daily watch.
+- **Sovereign node runtime** — `/hub/node`: local Ed25519 identity, nonce attestation, button-press orchestrator, SHA-256 zkML receipt. Desktop twin is `desktop/src/runtime`.
 
 `apps/web` is the **old Vite scaffold**. Do not treat it as the product UI.
 
@@ -114,6 +115,8 @@ Not a cloud AI product. Not a live DePIN network. Not an always-on oracle.
 
 **Truth file:** [`docs/REALITY.md`](docs/REALITY.md) — PROVEN means ran on a real device under user control.
 
+The desktop crate now includes the **unified sovereign node runtime** (sled identity by default; ollama-rs and tract-onnx behind features). Hub viewers use `/hub/node`. Docs: [`docs/SOVEREIGN-NODE-RUNTIME.md`](docs/SOVEREIGN-NODE-RUNTIME.md) · [`desktop/RUNTIME.md`](desktop/RUNTIME.md).
+
 ```bash
 git clone -b TheRemoteViewer https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
 cd The-Remote-Viewer
@@ -129,7 +132,7 @@ Prefer [`docs/REALITY.md`](docs/REALITY.md) and [`STATUS.md`](STATUS.md) over an
 
 | Capability | Notes |
 |------------|--------|
-| **Viewer Hub DApp** | **LIVE** — [`apps/hub`](apps/hub) · briefing · daily watch · SENTINEL OS jack-in (source; live after republish) · profile vault |
+| **Viewer Hub DApp** | **LIVE** — [`apps/hub`](apps/hub) · briefing · daily watch · SENTINEL OS jack-in (source; live after republish) · `/hub/node` sovereign runtime (source; live after republish) · profile vault |
 | Optical air-gap | PROVEN (see REALITY) |
 | Digital vending Path B | PROVEN |
 | Solana `trv_governance` | **SCAFFOLD** — CI build gate |
