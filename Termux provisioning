@@ -1,0 +1,23 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# scripts/termux_provision.sh
+# Automated Termux provisioning script for native mobile execution of The Sentinel Sovereign Node.
+
+set -euo pipefail
+
+echo "[*] Initializing mobile sovereign environment provisioning..."
+
+# 1. Update packages and install core build dependencies
+pkg update -y && pkg upgrade -y
+pkg install -y rust clang make git openssl
+
+# 2. Configure cargo environment for mobile target architecture
+export RUSTFLAGS="-C target-cpu=native -C panic=abort -C strip=symbols"
+
+# 3. Create secure local storage directory structure
+SENTINEL_MOBILE_HOME="${HOME}/.sentinel"
+mkdir -p "${SENTINEL_MOBILE_HOME}/data" "${SENTINEL_MOBILE_HOME}/config"
+
+echo "[+] Termux environment prepared."
+echo "[+] To compile and run the sovereign node locally on this device, execute:"
+echo "    cargo build --release"
+echo "    ./target/release/sentinel-sovereign"
