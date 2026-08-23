@@ -1,0 +1,38 @@
+package com.sentinel.shell
+
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.util.concurrent.TimeUnit
+
+object ShellExecutor {
+    fun execute(command: String, timeoutSeconds: Long = 10): Result<String> {
+        return try {
+            val process = ProcessBuilder(listOf("sh", "-c", command))
+                .redirectErrorStream(true)
+                .start()
+
+            val output = StringBuilder()
+            BufferedReader(InputStreamReader(process.inputStream)).use { reader ->
+                var line: String?
+                while (reader.readLine().also { line = it } != null) {
+                    output.append(line).append("\n")
+                }
+            }
+
+            val finished = process.waitFor(timeoutSeconds, TimeUnit.SECONDS)
+            if (!finished) {
+                process.destroyForcibly()
+                return Result.failure(RuntimeException("Shell execution timed out."))
+            }
+
+            val exitCode = process.exitValue()
+            if (exitCode == 0) {
+                Result.success(output.toString().trim())
+            } else {
+                Result.failure(RuntimeException("Command exited with code $exitCode:\n$output"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+}
