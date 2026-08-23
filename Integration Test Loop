@@ -1,0 +1,23 @@
+// crates/sentinel-node/tests/integration_test.rs
+// Integration test suite for the sovereign node service and telemetry pipeline.
+
+use sentinel_node::config::NodeConfig;
+use sentinel_node::service::SovereignNodeService;
+
+#[test]
+fn test_sovereign_node_lifecycle() {
+    let config = NodeConfig::default_secure();
+    assert!(config.validate().is_ok());
+
+    let mut service = SovereignNodeService::new(config);
+    assert!(service.initialize().is_ok());
+
+    let heartbeat_result = service.execute_heartbeat();
+    assert!(heartbeat_result.is_ok());
+
+    let record = heartbeat_result.unwrap();
+    assert!(!record.is_empty());
+
+    service.shutdown();
+    assert!(service.execute_heartbeat().is_err());
+}
