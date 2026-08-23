@@ -1,0 +1,30 @@
+use libp2p::{swarm::SwarmEvent, gossipsub, ping};
+use futures::StreamExt;
+use std::error::Error;
+
+pub async fn run_mesh_event_loop(
+    mut swarm: libp2p::Swarm<crate::mesh::SentinelMeshBehaviour>
+) -> Result<(), Box<dyn Error>> {
+    loop {
+        tokio::select! {
+            event = swarm.select_next_some() => match event {
+                SwarmEvent::NewListenAddr { address, .. } => {
+                    println!("[+] Mesh loop active on address: {}", address);
+                }
+                SwarmEvent::Behaviour(crate::mesh::SentinelMeshBehaviourEvent::Gossipsub(
+                    gossipsub::Event::Message { propagation_source, message_id, message }
+                )) => {
+                    let text = String::from_utf8_lossy(&message.data);
+                    println!("[*] Received mesh payload from {}: {}", propagation_source, text);
+                }
+                SwarmEvent::Behaviour(crate::mesh::SentinelMeshBehaviourEvent::Ping(
+                    ping::Event { result: Ok(ping::Success::Ping { rtt }), .. }
+                )) => {
+                    // Zero-trust node health heartbeat latency tracking
+                    tracing::trace!("Peer ping latency: {:?}", rtt);
+                }
+                _ => {}
+            },
+        }
+    }
+}
