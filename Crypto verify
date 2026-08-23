@@ -1,0 +1,46 @@
+// ============================================================================
+// THE SENTINEL SECURITY PROTOCOL - CRYPTOGRAPHIC VERIFICATION (crypto.rs)
+// ============================================================================
+
+use ed25519_dalek::{Signer, SigningKey, VerifyingKey, Signature, Verifier};
+use rand::rngs::OsRng;
+use std::error::Error;
+
+pub struct SovereignIdentity {
+    signing_key: SigningKey,
+    verifying_key: VerifyingKey,
+}
+
+impl SovereignIdentity {
+    pub fn generate() -> Self {
+        let mut csprng = OsRng;
+        let signing_key = SigningKey::generate(&mut csprng);
+        let verifying_key = signing_key.verifying_key();
+        Self { signing_key, verifying_key }
+    }
+
+    pub fn from_seed(seed: &[u8]) -> Result<Self, Box<dyn Error>> {
+        let mut bytes = [0u8; 32];
+        let len = std::cmp::min(seed.len(), 32);
+        bytes[..len].copy_from_slice(&seed[..len]);
+        
+        let signing_key = SigningKey::from_bytes(&bytes);
+        let verifying_key = signing_key.verifying_key();
+        Ok(Self { signing_key, verifying_key })
+    }
+
+    pub fn sign_payload(&self, message: &[u8]) -> Signature {
+        self.signing_key.sign(message)
+    }
+
+    pub fn verify_payload(verifying_key_bytes: &[u8], message: &[u8], signature_bytes: &[u8]) -> Result<bool, Box<dyn Error>> {
+        let verifying_key = VerifyingKey::from_bytes(verifying_key_bytes.try_into()?)?;
+        let signature = Signature::from_bytes(signature_bytes.try_into()?);
+        
+        Ok(verifying_key.verify(message, &signature).is_ok())
+    }
+
+    pub fn get_public_bytes(&self) -> &[u8] {
+        self.verifying_key.as_bytes()
+    }
+}
