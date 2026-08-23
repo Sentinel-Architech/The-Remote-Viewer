@@ -1,0 +1,34 @@
+// crates/sentinel-node/src/main.rs
+// Master execution harness for The Sentinel Security Protocol node daemon.
+
+use sentinel_node::master::MasterSovereignOrchestrator;
+use std::thread;
+use std::time::Duration;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    println!("[*] Launching The Sentinel Security Protocol Daemon...");
+
+    let node_id = 0xDEADBEEFCAFEBABE;
+    let storage_path = "/tmp/sentinel_sovereign_store.db".to_string();
+
+    let mut orchestrator = MasterSovereignOrchestrator::new(node_id, storage_path);
+    orchestrator.initialize_and_bootstrap()?;
+
+    println!("[*] Master orchestrator active. Entering continuous autonomous telemetry and self-heal loop.");
+
+    for iteration in 1..=5 {
+        match orchestrator.execute_autonomous_cycle() {
+            Ok(audit_record) => {
+                println!("[+] Cycle {}: Audit record generated ({} bytes). Node healthy.", iteration, audit_record.len());
+            }
+            Err(e) => {
+                eprintln!("[-] Cycle {} anomaly: {}. Triggering recovery...", iteration, e);
+                orchestrator.attempt_self_heal()?;
+            }
+        }
+        thread::sleep(Duration::from_secs(1));
+    }
+
+    println!("[+] Sovereign node daemon execution completed successfully.");
+    Ok(())
+}
