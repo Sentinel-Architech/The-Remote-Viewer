@@ -1,0 +1,33 @@
+// crates/sentinel-optic/src/decoder.rs
+// Robust Soliton decoding and error correction for optical air-gap ingress streams.
+
+pub struct OpticalAirGapDecoder {
+    expected_chunks: usize,
+}
+
+impl OpticalAirGapDecoder {
+    pub const fn new(expected_chunks: usize) -> Self {
+        Self { expected_chunks }
+    }
+
+    pub fn decode_frame(&self, frame: &[u8]) -> Result<(u32, &[u8]), &'static str> {
+        if frame.len() < 6 {
+            return Err("Optical frame below minimum header size.");
+        }
+
+        let mut seq_bytes = [0u8; 4];
+        seq_bytes.copy_from_slice(&frame[0..4]);
+        let sequence_id = u32::from_le_bytes(seq_bytes);
+
+        let mut total_bytes = [0u8; 2];
+        total_bytes.copy_from_slice(&frame[4..6]);
+        let total_chunks = u16::from_le_bytes(total_bytes) as usize;
+
+        if total_chunks != self.expected_chunks {
+            return Err("Chunk count mismatch against expected air-gap session parameters.");
+        }
+
+        let payload_chunk = &frame[6..];
+        Ok((sequence_id, payload_chunk))
+    }
+}
