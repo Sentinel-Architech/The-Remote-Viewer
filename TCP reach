@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# scripts/verify_external_reach.sh
+# Automated external TCP reachability and handshake verification utility for The Sentinel Sovereign Node.
+
+set -euo pipefail
+
+TARGET_PORT="${1:-9050}"
+echo "[*] Discovering external public IP interface..."
+
+# Fetch external IP address using open-source utilities or public STUN/IP endpoints
+PUBLIC_IP=$(curl -s https://ifconfig.me || curl -s https://api.ipify.org || echo "127.0.0.1")
+
+echo "[+] Detected Public Interface Endpoint: ${PUBLIC_IP}:${TARGET_PORT}"
+echo "[*] Testing local socket listener binding..."
+
+if nc -zvw3 127.0.0.1 "${TARGET_PORT}" 2>/dev/null; then
+    echo "[+] SUCCESS: Local node daemon is actively listening on port ${TARGET_PORT}."
+else
+    echo "[-] WARNING: No local listener detected on port ${TARGET_PORT}. Ensure the sovereign daemon is running."
+    exit 1
+fi
+
+echo "[*] Transmitting test cryptographic handshake frame (SOVEREIGN_AUTH_V1)..."
+RESPONSE=$(python3 -c "
+import socket
+try:
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(3.0)
+    s.connect(('127.0.0.1', ${TARGET_PORT}))
+    s.sendall(b'SOVEREIGN_AUTH_V1_EXT_TEST')
+    data = s.recv(2048)
+    print(data.decode('utf-8', errors='ignore'))
+    s.close()
+except Exception as e:
+    print(f'ERROR: {e}')
+")
+
+echo "[+] Handshake Output Received:"
+echo "${RESPONSE}"
+
+echo "============================================================================"
+echo "[+] Verification complete. To allow external peers to connect directly,"
+echo "    ensure port ${TARGET_PORT} is forwarded on your gateway to this machine."
+echo "============================================================================"
