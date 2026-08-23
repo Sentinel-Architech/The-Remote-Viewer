@@ -1,0 +1,59 @@
+// ============================================================================
+// THE SENTINEL SECURITY PROTOCOL - P2P MESH NETWORK LAYER (mesh.rs)
+// Air-gapped encrypted transport using rust-libp2p (Noise + Gossipsub)
+// ============================================================================
+
+use libp2p::{
+    gossipsub::{self, IdentTopic, MessageAuthenticity, ValidationMode},
+    noise, ping, swarm::{NetworkBehaviour, SwarmEvent},
+    tcp, yamux, Identity, PeerId, Swarm, Transport
+};
+use std::error::Error;
+use std::time::Duration;
+
+#[derive(NetworkBehaviour)]
+pub struct SentinelMeshBehaviour {
+    pub gossipsub: gossipsub::Behaviour,
+    pub ping: ping::Behaviour,
+}
+
+pub async fn build_mesh_node(pubkey_seed: &[u8]) -> Result<(Swarm<SentinelMeshBehaviour>, IdentTopic), Box<dyn Error>> {
+    let mut rng_seed = [0u8; 32];
+    let len = std::cmp::min(pubkey_seed.len(), 32);
+    rng_seed[..len].copy_from_slice(&pubkey_seed[..len]);
+    
+    let id_keys = Identity::ed25519_from_bytes(&mut rng_seed)?;
+    let peer_id = PeerId::from(id_keys.public());
+    println!("[+] Mesh Node PeerId initialized: {}", peer_id);
+
+    let transport = tcp::tokio::Transport::new(tcp::Config::default())
+        .upgrade(libp2p::core::upgrade::Version::V1)
+        .authenticate(noise::Config::new(&id_keys)?)
+        .multiplex(yamux::Config::default())
+        .boxed();
+
+    let gossipsub_config = gossipsub::ConfigBuilder::default()
+        .heartbeat_interval(Duration::from_secs(1))
+        .validation_mode(ValidationMode::Strict)
+        .build()?;
+
+    let mut gossipsub = gossipsub::Behaviour::new(
+        MessageAuthenticity::Signed(id_keys),
+        gossipsub_config,
+    )?;
+
+    let topic = IdentTopic::new("sentinel-mesh-v1");
+    gossipsub.subscribe(&topic)?;
+
+    let behaviour = SentinelMeshBehaviour {
+        gossipsub,
+        ping: ping::Behaviour::new(ping::Config::new().with_interval(Duration::from_secs(10))),
+    };
+
+    let mut swarm = Swarm::new(transport, behaviour, peer_id, libp2p::tokio::Config::default());
+    
+    // Bind strictly to local loopback interface for zero leakage
+    swarm.listen_on("/ip4/127.0.0.1/tcp/0".parse()?)?;
+
+    Ok((swarm, topic))
+}
