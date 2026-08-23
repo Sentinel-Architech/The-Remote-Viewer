@@ -9,6 +9,13 @@ description = "The Remote Viewer desktop orchestrator"
 name = "remote-viewer"
 path = "src/main.rs"
 
+[features]
+default = ["runtime"]
+runtime = ["dep:sled"]
+tauri-ipc = ["dep:tauri", "runtime"]
+ollama = ["dep:ollama-rs", "dep:tokio-stream"]
+zkml = ["dep:tract-onnx"]
+
 [dependencies]
 tokio = { version = "1", features = ["full"] }
 sodiumoxide = "0.2"
@@ -23,3 +30,8 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 directories = "6"
 zeroize = "1"
+sled = { version = "0.34", optional = true }
+tauri = { version = "2", optional = true }
+ollama-rs = { version = "0.2", optional = true }
+tokio-stream = { version = "0.1", optional = true }
+tract-onnx = { version = "0.21", optional = true }

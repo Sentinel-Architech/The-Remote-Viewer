@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Sovereign Node",
+  "version": "0.1.0",
+  "identifier": "com.sentinel.sovereign-node",
+  "build": {
+    "frontendDist": "../apps/hub/dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Sovereign Node",
+        "width": 1280,
+        "height": 800
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  }
+}
