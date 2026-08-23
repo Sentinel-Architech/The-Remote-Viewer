@@ -1,0 +1,25 @@
+// crates/sentinel-node/tests/master_integration_test.rs
+// Comprehensive integration test suite for the Master Sovereign Orchestrator daemon.
+
+use sentinel_node::master::MasterSovereignOrchestrator;
+
+#[test]
+fn test_master_bootstrap_and_autonomous_cycle() {
+    let node_id = 0x123456789ABCDEF0;
+    let storage_path = "/tmp/sentinel_test_store.db".to_string();
+
+    let mut orchestrator = MasterSovereignOrchestrator::new(node_id, storage_path);
+    
+    // Test bootstrap sequence
+    assert!(orchestrator.initialize_and_bootstrap().is_ok());
+    assert!(orchestrator.is_healthy());
+
+    // Test autonomous execution cycle
+    let cycle_result = orchestrator.execute_autonomous_cycle();
+    assert!(cycle_result.is_ok());
+    assert!(!cycle_result.unwrap().is_empty());
+
+    // Test manual self-heal trigger
+    assert!(orchestrator.attempt_self_heal().is_ok());
+    assert!(orchestrator.is_healthy());
+}
