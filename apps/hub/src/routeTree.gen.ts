@@ -37,6 +37,7 @@ import { Route as HubLiveRouteImport } from './routes/hub/live'
 import { Route as HubMarketRouteImport } from './routes/hub/market'
 import { Route as HubMeshRouteImport } from './routes/hub/mesh'
 import { Route as HubNeuronRouteImport } from './routes/hub/neuron'
+import { Route as HubNodeRouteImport } from './routes/hub/node'
 import { Route as HubOsRouteImport } from './routes/hub/os'
 import { Route as HubProfileRouteImport } from './routes/hub/profile'
 import { Route as HubSettingsRouteImport } from './routes/hub/settings'
@@ -190,6 +191,11 @@ const HubNeuronRoute = HubNeuronRouteImport.update({
   path: '/neuron',
   getParentRoute: () => HubRouteRoute,
 } as any)
+const HubNodeRoute = HubNodeRouteImport.update({
+  id: '/node',
+  path: '/node',
+  getParentRoute: () => HubRouteRoute,
+} as any)
 const HubOsRoute = HubOsRouteImport.update({
   id: '/os',
   path: '/os',
@@ -279,6 +285,7 @@ export interface FileRoutesByFullPath {
   '/hub/market': typeof HubMarketRoute
   '/hub/mesh': typeof HubMeshRoute
   '/hub/neuron': typeof HubNeuronRoute
+  '/hub/node': typeof HubNodeRoute
   '/hub/os': typeof HubOsRoute
   '/hub/profile': typeof HubProfileRoute
   '/hub/settings': typeof HubSettingsRoute
@@ -320,6 +327,7 @@ export interface FileRoutesByTo {
   '/hub/market': typeof HubMarketRoute
   '/hub/mesh': typeof HubMeshRoute
   '/hub/neuron': typeof HubNeuronRoute
+  '/hub/node': typeof HubNodeRoute
   '/hub/os': typeof HubOsRoute
   '/hub/profile': typeof HubProfileRoute
   '/hub/settings': typeof HubSettingsRoute
@@ -363,6 +371,7 @@ export interface FileRoutesById {
   '/hub/market': typeof HubMarketRoute
   '/hub/mesh': typeof HubMeshRoute
   '/hub/neuron': typeof HubNeuronRoute
+  '/hub/node': typeof HubNodeRoute
   '/hub/os': typeof HubOsRoute
   '/hub/profile': typeof HubProfileRoute
   '/hub/settings': typeof HubSettingsRoute
@@ -407,6 +416,7 @@ export interface FileRouteTypes {
     | '/hub/market'
     | '/hub/mesh'
     | '/hub/neuron'
+    | '/hub/node'
     | '/hub/os'
     | '/hub/profile'
     | '/hub/settings'
@@ -448,6 +458,7 @@ export interface FileRouteTypes {
     | '/hub/market'
     | '/hub/mesh'
     | '/hub/neuron'
+    | '/hub/node'
     | '/hub/os'
     | '/hub/profile'
     | '/hub/settings'
@@ -490,6 +501,7 @@ export interface FileRouteTypes {
     | '/hub/market'
     | '/hub/mesh'
     | '/hub/neuron'
+    | '/hub/node'
     | '/hub/os'
     | '/hub/profile'
     | '/hub/settings'
@@ -725,6 +737,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HubNeuronRouteImport
       parentRoute: typeof HubRouteRoute
     }
+    '/hub/node': {
+      id: '/hub/node'
+      path: '/node'
+      fullPath: '/hub/node'
+      preLoaderRoute: typeof HubNodeRouteImport
+      parentRoute: typeof HubRouteRoute
+    }
     '/hub/os': {
       id: '/hub/os'
       path: '/os'
@@ -828,6 +847,7 @@ interface HubRouteRouteChildren {
   HubMarketRoute: typeof HubMarketRoute
   HubMeshRoute: typeof HubMeshRoute
   HubNeuronRoute: typeof HubNeuronRoute
+  HubNodeRoute: typeof HubNodeRoute
   HubOsRoute: typeof HubOsRoute
   HubProfileRoute: typeof HubProfileRoute
   HubSettingsRoute: typeof HubSettingsRoute
@@ -852,6 +872,7 @@ const HubRouteRouteChildren: HubRouteRouteChildren = {
   HubMarketRoute: HubMarketRoute,
   HubMeshRoute: HubMeshRoute,
   HubNeuronRoute: HubNeuronRoute,
+  HubNodeRoute: HubNodeRoute,
   HubOsRoute: HubOsRoute,
   HubProfileRoute: HubProfileRoute,
   HubSettingsRoute: HubSettingsRoute,
