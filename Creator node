@@ -1,0 +1,104 @@
+// crates/sentinel-node/src/main.rs
+// Master Creator Node Orchestrator: Binding The Sentinel-Archetecht Identity to the Network
+
+mod identity;
+use identity::SovereignIdentity;
+
+use std::fs::{OpenOptions, create_dir_all};
+use std::io::{Read, Write};
+use std::net::{TcpListener, TcpStream};
+use std::path::Path;
+use std::sync::{Arc, Mutex};
+use std::thread;
+use std::time::{SystemTime, UNIX_EPOCH};
+use std::collections::HashMap;
+
+pub struct SovereignNodeDaemon {
+    handle: String,
+    node_id: u64,
+    bind_addr: String,
+    storage_path: String,
+}
+
+impl SovereignNodeDaemon {
+    pub fn new(handle: String, node_id: u64, bind_addr: String, storage_path: String) -> Self {
+        Self {
+            handle,
+            node_id,
+            bind_addr,
+            storage_path,
+        }
+    }
+
+    pub fn bootstrap(&self) -> Result<(), &'static str> {
+        println!("[*] Initializing Network Node for Creator: {}", self.handle);
+        let identity = SovereignIdentity::provision_creator_identity()?;
+        println!("[+] Sovereign Identity Bound | Node ID: 0x{:016X}", identity.node_id);
+        println!("[+] Cryptographic State Root: {}", identity.public_key_hash);
+        Ok(())
+    }
+
+    pub fn run_server(self: Arc<Self>) -> Result<(), Box<dyn std::error::Error>> {
+        self.bootstrap()?;
+        let listener = TcpListener::bind(&self.bind_addr)?;
+        println!("[+] Creator Network Listener Active on {}", self.bind_addr);
+
+        for stream in listener.incoming() {
+            match stream {
+                Ok(mut client_stream) => {
+                    let node_id = self.node_id;
+                    let handle = self.handle.clone();
+                    thread::spawn(move || {
+                        if let Err(e) = Self::handle_client(&mut client_stream, node_id, &handle) {
+                            eprintln!("[-] Session anomaly: {}", e);
+                        }
+                    });
+                }
+                Err(e) => {
+                    eprintln!("[-] Transport error: {}", e);
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn handle_client(stream: &mut TcpStream, node_id: u64, handle: &str) -> Result<(), Box<dyn std::error::Error>> {
+        let mut buffer = [0u8; 2048];
+        let bytes_read = stream.read(&mut buffer)?;
+        if bytes_read == 0 {
+            return Err("Empty transmission.".into());
+        }
+
+        let request = &buffer[..bytes_read];
+        if request.len() < 16 || &request[..16] != b"SOVEREIGN_AUTH_V1" {
+            stream.write_all(b"HTTP/1.1 403 Forbidden\r\nContent-Length: 23\r\n\r\nUnauthorized State Root")?;
+            return Err("Unauthorized frame rejected.".into());
+        }
+
+        let timestamp = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
+        let json_response = format!(
+            "{{\"creator\":\"{}\",\"node_id\":\"{:016X}\",\"status\":\"sovereign_primary\",\"timestamp\":{}}}",
+            handle, node_id, timestamp
+        );
+
+        let http_payload = format!(
+            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+            json_response.len(),
+            json_response
+        );
+
+        stream.write_all(http_payload.as_bytes())?;
+        stream.flush()?;
+        Ok(())
+    }
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let handle = "Sentinel-Archetecht".to_string();
+    let node_id = 0x53454E54494E454C; // "SENTINEL" creator address root
+    let bind_addr = "127.0.0.1:9050".to_string();
+    let storage_path = "/var/lib/sentinel/sovereign_store.db".to_string();
+
+    let daemon = Arc::new(SovereignNodeDaemon::new(handle, node_id, bind_addr, storage_path));
+    daemon.run_server()
+}
