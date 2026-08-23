@@ -50,3 +50,4 @@
 | File | Role |
 |------|------|
 | [SENTINEL-OS-JACK.md](SENTINEL-OS-JACK.md) | 3D neuron flight jack-in (IN SOURCE) |
+| [SOVEREIGN-NODE-RUNTIME.md](SOVEREIGN-NODE-RUNTIME.md) | Unified sled / ollama-rs / tract-onnx runtime + hub `/hub/node` |
