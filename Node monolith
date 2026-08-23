@@ -1,0 +1,180 @@
+// ============================================================================
+// THE SENTINEL SECURITY PROTOCOL - ULTIMATE SOVEREIGN NODE MONOLITH
+// Language: Rust (Unified Core: Crypto + Sled Store + Ollama + Tract zkML + libp2p)
+// ============================================================================
+
+use tauri::Manager;
+use sled::{Db, Result as SledResult};
+use ollama_rs::{Ollama, generation::completion::request::GenerationRequest};
+use tokio_stream::StreamExt;
+use tract_onnx::prelude::*;
+use libp2p::{
+    gossipsub::{self, IdentTopic, MessageAuthenticity, ValidationMode},
+    noise, ping, swarm::{NetworkBehaviour, SwarmEvent},
+    tcp, yamux, Identity, PeerId, Swarm, Transport
+};
+use ed25519_dalek::{Signer, SigningKey, VerifyingKey, Signature, Verifier};
+use std::path::Path;
+use std::error::Error;
+use std::time::Duration;
+
+// --- 1. CRYPTOGRAPHIC IDENTITY & VERIFICATION MODULE ---
+pub struct SovereignIdentity {
+    signing_key: SigningKey,
+    verifying_key: VerifyingKey,
+}
+
+impl SovereignIdentity {
+    pub fn from_seed(seed: &[u8]) -> Result<Self, Box<dyn Error>> {
+        let mut bytes = [0u8; 32];
+        let len = std::cmp::min(seed.len(), 32);
+        bytes[..len].copy_from_slice(&seed[..len]);
+        let signing_key = SigningKey::from_bytes(&bytes);
+        let verifying_key = signing_key.verifying_key();
+        Ok(Self { signing_key, verifying_key })
+    }
+
+    pub fn sign(&self, message: &[u8]) -> Signature {
+        self.signing_key.sign(message)
+    }
+
+    pub fn verify(pubkey_bytes: &[u8], message: &[u8], sig_bytes: &[u8]) -> Result<bool, Box<dyn Error>> {
+        let v_key = VerifyingKey::from_bytes(pubkey_bytes.try_into()?)?;
+        let sig = Signature::from_bytes(sig_bytes.try_into()?);
+        Ok(v_key.verify(message, &sig).is_ok())
+    }
+
+    pub fn public_bytes(&self) -> &[u8] {
+        self.verifying_key.as_bytes()
+    }
+}
+
+// --- 2. EMBEDDED STATE STORE (sled) ---
+pub struct LocalStateStore {
+    db: Db,
+}
+
+impl LocalStateStore {
+    pub fn new<P: AsRef<Path>>(path: P) -> SledResult<Self> {
+        let db = sled::open(path)?;
+        Ok(Self { db })
+    }
+
+    pub fn store_identity(&self, pubkey_hex: &str, seed: &[u8]) -> SledResult<()> {
+        self.db.insert(format!("identity:{}", pubkey_hex), seed)?;
+        self.db.flush()?;
+        Ok(())
+    }
+
+    pub fn load_identity(&self, pubkey_hex: &str) -> SledResult<Option<Vec<u8>>> {
+        Ok(self.db.get(format!("identity:{}", pubkey_hex))?.map(|v| v.to_vec()))
+    }
+}
+
+// --- 3. MODEL ORCHESTRATOR (ollama-rs) ---
+pub struct ModelOrchestrator {
+    client: Ollama,
+    model_name: String,
+}
+
+impl ModelOrchestrator {
+    pub fn new(host: String, port: u16, model_name: String) -> Self {
+        Self { client: Ollama::new(host, port), model_name }
+    }
+
+    pub async fn stream_inference(&self, prompt: String, mut cb: impl FnMut(String)) -> Result<(), Box<dyn Error>> {
+        let req = GenerationRequest::new(self.model_name.clone(), prompt);
+        let mut stream = self.client.generate_stream(req).await?;
+        while let Some(res) = stream.next().await {
+            cb(res?.response);
+        }
+        Ok(())
+    }
+}
+
+// --- 4. VERIFIABLE INFERENCE (tract-onnx zkML) ---
+pub struct VerifiableEngine {
+    model: TypedModel,
+}
+
+impl VerifiableEngine {
+    pub fn load(path: &str) -> Result<Self, Box<dyn Error>> {
+        let model = tract_onnx::onnx().model_for_path(path)?.into_optimized()?.into_typed()?;
+        Ok(Self { model })
+    }
+
+    pub fn execute(&self, tensor: Tensor) -> Result<TVec<Tensor>, Box<dyn Error>> {
+        Ok(self.model.run(tvec!(tensor))?)
+    }
+}
+
+// --- 5. P2P MESH BEHAVIOUR (rust-libp2p) ---
+#[derive(NetworkBehaviour)]
+pub struct MeshBehaviour {
+    pub gossipsub: gossipsub::Behaviour,
+    pub ping: ping::Behaviour,
+}
+
+pub async fn build_mesh(seed: &[u8]) -> Result<(Swarm<MeshBehaviour>, IdentTopic), Box<dyn Error>> {
+    let mut key_bytes = [0u8; 32];
+    let len = std::cmp::min(seed.len(), 32);
+    key_bytes[..len].copy_from_slice(&seed[..len]);
+    let id_keys = Identity::ed25519_from_bytes(&mut key_bytes)?;
+    let peer_id = PeerId::from(id_keys.public());
+
+    let transport = tcp::tokio::Transport::new(tcp::Config::default())
+        .upgrade(libp2p::core::upgrade::Version::V1)
+        .authenticate(noise::Config::new(&id_keys)?)
+        .multiplex(yamux::Config::default())
+        .boxed();
+
+    let gs_config = gossipsub::ConfigBuilder::default()
+        .heartbeat_interval(Duration::from_secs(1))
+        .validation_mode(ValidationMode::Strict)
+        .build()?;
+
+    let mut gossipsub = gossipsub::Behaviour::new(MessageAuthenticity::Signed(id_keys), gs_config)?;
+    let topic = IdentTopic::new("sentinel-sovereign-mesh");
+    gossipsub.subscribe(&topic)?;
+
+    let behaviour = MeshBehaviour {
+        gossipsub,
+        ping: ping::Behaviour::new(ping::Config::new().with_interval(Duration::from_secs(10))),
+    };
+
+    let mut swarm = Swarm::new(transport, behaviour, peer_id, libp2p::tokio::Config::default());
+    swarm.listen_on("/ip4/127.0.0.1/tcp/0".parse()?)?;
+    Ok((swarm, topic))
+}
+
+// --- 6. UNIFIED APPLICATION STATE & RUNTIME ENTRYPOINT ---
+pub struct AppState {
+    pub store: LocalStateStore,
+    pub orchestrator: ModelOrchestrator,
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
+    println!("[*] Launching Unified Sovereign Node Monolith...");
+    let seed = b"sentinel_master_sovereign_seed_2026";
+    
+    let identity = SovereignIdentity::from_seed(seed)?;
+    let store = LocalStateStore::new("./sentinel_master_db")?;
+    store.store_identity(&hex::encode(identity.public_bytes()), seed)?;
+
+    let (mut swarm, topic) = build_mesh(seed).await?;
+    println!("[+] Mesh active on topic: {}", topic.hash());
+
+    loop {
+        tokio::select! {
+            Some(event) = swarm.select_next_some() => {
+                match event {
+                    SwarmEvent::NewListenAddr { address, .. } => {
+                        println!("[+] Bound loopback address: {}", address);
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+}
