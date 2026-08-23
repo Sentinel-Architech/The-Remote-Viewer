@@ -1,0 +1,28 @@
+# Sentinel Protocol: F/G Policy & Handoff Framework
+
+## Overview
+This document defines the Filter (F) and Guard (G) operational boundaries for native shell execution within the Sentinel architecture. All subsystems must adhere to these rules to maintain zero-trust integrity.
+
+---
+
+## F: Filter Layer (Ingress Control)
+1. **Command Sanitization**: All execution strings must pass through an explicit lexical analyzer.
+2. **Character Blacklisting**: Strips command chaining (`&&`, `||`, `;`), pipes (`|`), background execution (`&`), and command substitution (`` ` ``, `$()`).
+3. **Path Restrictions**: Binaries must resolve strictly within permitted execution scopes. Arbitrary path traversal (`../`) is intercepted and rejected.
+
+---
+
+## G: Guard Layer (Execution & Runtime Enforcement)
+1. **Hard Timeouts**: Processes are assigned a strict execution ceiling (default: 10 seconds). Exceeding this limit triggers an immediate process tree termination via `SIGKILL`.
+2. **Resource Isolation**: Standard error streams are merged or isolated based on call parameters. Output buffers are restricted in size to prevent memory exhaustion attacks.
+3. **Volatile Cleanse**: All execution logs, strings, and standard output buffers are scrubbed from memory immediately upon exit.
+
+---
+
+## Handoff Decision Matrix
+
+| State | Condition | Action |
+| :--- | :--- | :--- |
+| **Pass** | Input matches whitelist & passes filter | Proceed to sandbox execution |
+| **Reject** | Invalid characters or path traversal detected | Halt execution, log anomaly, return `Err` |
+| **Abort** | Timeout or runtime resource threshold breached | Issue `SIGKILL`, zeroize memory buffers |
