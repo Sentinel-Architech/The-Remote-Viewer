@@ -1,0 +1,6 @@
+// crates/sentinel-node/src/lib.rs
+// Library interface for sentinel-node orchestrator modules.
+
+pub mod config;
+pub mod telemetry;
+pub mod service;
