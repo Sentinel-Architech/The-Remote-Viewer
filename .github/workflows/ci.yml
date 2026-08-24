@@ -12,14 +12,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: metadaoproject/setup-anchor@v3.3
-      - name: Inspect Workspace
+      - name: Locate Anchor and Build
         run: |
-          pwd
-          ls -la
-          find . -name "Anchor.toml"
-      - name: Build Program
-        run: anchor build --ignore-keys
-      - name: Find and Stage Artifacts
+          if [ -f "Anchor.toml" ]; then
+            anchor build --ignore-keys
+          elif [ -f "solana/Anchor.toml" ]; then
+            cd solana && anchor build --ignore-keys
+          else
+            cargo build-sbf --release
+          fi
+      - name: Stage Binaries
         run: |
           mkdir -p staging
           find . -name "*.so" -exec cp {} staging/ \;
