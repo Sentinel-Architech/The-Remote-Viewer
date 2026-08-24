@@ -13,10 +13,17 @@ jobs:
       - uses: actions/checkout@v4
       - uses: metadaoproject/setup-anchor@v3.3
       - name: Build Program
-        run: anchor build --ignore-keys
-        working-directory: solana
+        run: |
+          cd solana
+          anchor build --ignore-keys
+      - name: Stage Artifacts
+        run: |
+          mkdir -p staging
+          find solana -name "*.so" -exec cp {} staging/ \;
+          echo "Staged binaries:"
+          ls -la staging/
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: solana-programs
-          path: solana/target/deploy/*.so
+          path: staging/
