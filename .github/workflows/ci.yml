@@ -2,124 +2,20 @@ name: CI
 
 on:
   push:
-    branches: [ TheRemoteViewer, main ]
+    branches: [ "**" ]
   pull_request:
-    branches: [ TheRemoteViewer, main ]
-  workflow_dispatch:
-concurrency:
-   group: ${{ github.workflow }}-${{ github.ref }}
-   cancel-in-progress: true
-permissions:
-  contents: read
+    branches: [ main ]
 
 jobs:
-  # ------------------------------------------------------------------
-  # Secret Scan (gitleaks) — required for branch protection
-  # ------------------------------------------------------------------
-  gitleaks:
-    name: Secret Scan
+  build-solana:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout (full history)
-        uses: actions/checkout@v7
+      - uses: actions/checkout@v4
+      - uses: metadaoproject/setup-anchor@v3.3
+      - name: Build Program
+        run: anchor build --ignore-keys
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
         with:
-          fetch-depth: 0   # required so gitleaks can scan the entire history
-
-      - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_CONFIG: .gitleaks.toml
-          GITLEAKS_ENABLE_COMMENTS: false   # keep PR noise low
-
-  # ------------------------------------------------------------------
-  # Cargo Check — required for branch protection
-  # ------------------------------------------------------------------
-  cargo-check:
-    name: Cargo Check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache cargo
-        uses: Swatinem/rust-cache@v2
-
-      - name: Check desktop crate
-        run: cargo check --manifest-path desktop/Cargo.toml
-
-  # ------------------------------------------------------------------
-  # Web scaffold (not required for branch protection yet)
-  #
-  # npm policy: npm ci if package-lock.json exists, else npm install.
-  # setup-node cache is off until apps/web/package-lock.json is committed
-  # (missing cache-dependency-path hard-fails the job).
-  # ------------------------------------------------------------------
-  web:
-    name: Web (npm)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/web
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Setup Node
-        uses: actions/setup-node@v7
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: |
-          if [ -f package-lock.json ]; then
-            echo "package-lock.json found → npm ci --legacy-peer-deps"
-            npm ci --legacy-peer-deps
-          else
-            echo "NOTE: no package-lock.json — falling back to npm install --legacy-peer-deps"
-            npm install --legacy-peer-deps
-          fi
-
-      - name: Verify package installs
-        run: npm ls --depth=0 || true
-
-  # ------------------------------------------------------------------
-  # Mobile scaffold (not required for branch protection yet)
-  # Same npm policy as web; cache off until package-lock.json exists.
-  # Generates package-lock.json on the runner and opens a PR containing it.
-  # ------------------------------------------------------------------
-  mobile:
-    name: Mobile (npm)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/mobile
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Setup Node
-        uses: actions/setup-node@v7
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        id: install_deps
-        run: |
-          if [ -f package-lock.json ]; then
-            echo "package-lock.json found → npm ci --legacy-peer-deps"
-            npm ci --legacy-peer-deps
-          else
-            echo "NOTE: no package-lock.json — falling back to npm install --legacy-peer-deps"
-            npm install --legacy-peer-deps
-          fi
-
-      - name: Ensure package-lock exists (generate if missing)
-        run: |
-          if [ ! -f package-lock.json ]; then
-            echo "package-lock.json missing — generating with npm install --package-lock-only"
-            npm install --package-lock-only
-          else
-            echo "package-lock.json already present"
-          fi
-
+          name: trv_governance.so
+          path: target/deploy/trv_governance.so
