@@ -14,8 +14,9 @@ jobs:
       - uses: metadaoproject/setup-anchor@v3.3
       - name: Build Program
         run: anchor build --ignore-keys
+        working-directory: solana
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: trv_governance.so
-          path: target/deploy/trv_governance.so
+          path: solana/target/deploy/trv_governance.so
