@@ -162,25 +162,24 @@ function Login() {
             {NETWORK_NAME}
           </Link>
           <h1 className="mt-4 font-display text-4xl leading-tight md:text-5xl">
-            Lock a native node
+            Stand watch in sixty seconds
           </h1>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground">
-            {NETWORK_TAG} Native TRV security is email plus a password stored in this hub — not
-            a Google or X session. Corporate identity is a bridge for migration
-            in. Sentinel does not go out. M-o-E, Shield, and native mints assume you hold the lock.
+            {NETWORK_TAG} Create a native lock, land one intercept, claim the watch.
+            Briefing and wallets wait until after that first win.
           </p>
           <ul className="mt-6 space-y-2 text-sm text-muted-foreground">
             <li className="flex gap-2">
               <Shield className="mt-0.5 size-4 shrink-0 text-accent" />
-              Credentials live in TRV. No corporate backdoor is required.
+              Email plus password. No ticket, no card to start.
             </li>
             <li className="flex gap-2">
               <Shield className="mt-0.5 size-4 shrink-0 text-accent" />
-              After register, paste any export from another platform.
+              One intercept on Command. Then claim TRV.
             </li>
             <li className="flex gap-2">
               <Shield className="mt-0.5 size-4 shrink-0 text-accent" />
-              Robot handshake later unlocks Gateway methods — documents stay free.
+              Come back tomorrow. Miss a day and The Sentinel takes damage.
             </li>
           </ul>
         </div>
@@ -251,7 +250,7 @@ function Login() {
                     I am not a sanctioned person and I am not opening this node for a foreign-adversary controlled application.
                   </label>
                   <Button type="submit" className="w-full" disabled={busy || !age18 || !ofac}>
-                    {busy ? "Sealing lock…" : search.trial === "verified" ? "Create lock · start 2-day trial" : "Create native TRV lock"}
+                    {busy ? "Sealing lock…" : search.trial === "verified" ? "Create lock · start 2-day trial" : "Create lock · stand watch"}
                   </Button>
                 </form>
               </TabsContent>

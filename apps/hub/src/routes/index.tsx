@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { SignedIn, SignedOut } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
-import { NETWORK_NAME, NETWORK_SHORT, NETWORK_TAG } from "@/lib/trv/network";
+import { NETWORK_NAME, NETWORK_SHORT } from "@/lib/trv/network";
 import { Shield, Building2, Users, BookOpen, Wallet, Timer } from "lucide-react";
 import { JOURNAL } from "@/lib/trv/journal";
 import { pageHead, SEO_DEFAULT_DESC, orgJsonLd, webSiteJsonLd, softwareJsonLd } from "@/lib/trv/seo";
@@ -63,9 +63,7 @@ function Landing() {
                   <Link to="/journal">Journal</Link>
                 </Button>
                 <Button asChild size="sm">
-                  <Link to="/login" search={{ trial: "verified" } as never}>
-                    2-day trial
-                  </Link>
+                  <Link to="/login">Stand watch</Link>
                 </Button>
               </SignedOut>
               <SignedIn>
@@ -80,35 +78,21 @@ function Landing() {
 
       <section className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-4 pb-16 pt-16 text-center md:px-6 md:pt-24">
         <p className="mb-4 text-[11px] font-medium tracking-[0.28em] uppercase text-accent">
-          {NETWORK_SHORT} · self-serve DApp
+          {NETWORK_SHORT} · daily watch
         </p>
         <h1 className="font-display text-4xl leading-[1.05] text-white md:text-6xl">
-          The Remote Viewer Network
+          Check in daily to defend The Sentinel and earn TRV
         </h1>
         <p className="mt-5 max-w-xl text-sm leading-relaxed text-white/75 md:text-base">
-          {NETWORK_TAG} Remote Viewers must check in daily to defend The Sentinel
-          and earn TRV rewards for keeping the system safe. Outside viewership
-          tries Verified for {PAID_TRIAL_HOURS} hours — self-serve, no card.
-          Native lock first.
+          Sign in. Land one intercept. Claim the watch. Come back tomorrow.
+          That is the product. Everything else waits.
         </p>
 
         <div className="mt-8 flex w-full max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
-          <Button
-            asChild
-            size="lg"
-            className="w-full sm:w-auto"
-            onClick={() => {
-              try {
-                localStorage.setItem("trv-edition", "people");
-                localStorage.setItem("trv-paid-trial", "verified");
-              } catch {
-                /* ignore */
-              }
-            }}
-          >
-            <Link to="/login" search={{ trial: "verified" } as never}>
+          <Button asChild size="lg" className="w-full sm:w-auto">
+            <Link to="/login">
               <Shield className="size-4" />
-              Try Verified · 2 days
+              Stand watch
             </Link>
           </Button>
           <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">

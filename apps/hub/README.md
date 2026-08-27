@@ -16,8 +16,8 @@ This folder is the product UI Remote Viewers use today. It is a **separate surfa
 |---------|-------|--------|
 | Sign-in | `/login` | Google, X, or email-password (Better Auth) |
 | Age + OFAC | overlay on first hub entry | Required before Command |
-| Briefing | overlay after age gate | **12 stations, no skip, no close, Escape blocked.** Seals once (`tutorial_at`) |
-| Command | `/hub` | Sentinel health, autonomy, daily duty strip |
+| Briefing | Command, after first watch | Optional 12-station map. Skip / Later. Seals `tutorial_at` if you finish it. |
+| Command | `/hub` | **Intercept now** + claim TRV. First win lives here. |
 | Daily Watch | `/hub` Defend · Mesh · Honeypot | Intercept hostile packets, then claim TRV. Missed days damage health |
 | SENTINEL OS jack-in | `/hub/neuron` · `/hub/os` | 3D neuron flight. Scan, name, pulse. Catalog → OS memory. Pulse counts as watch |
 | Profile vault | `/hub/profile` | Portrait, identity extras, finances, docs, live icon |
