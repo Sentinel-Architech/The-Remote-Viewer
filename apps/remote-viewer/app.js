@@ -121,12 +121,20 @@ function saveSocial(obj) {
 function normalizeSocialUrl(platform, handle) {
   const h = (handle || '').trim();
   if (!h) return '';
-  if (/^https?:\/\//i.test(h)) return h;
+  if (/^https?:\/\//i.test(h)) return safeHref(h);
   const meta = SOCIAL_META[platform];
-  if (!meta) return h;
-  if (platform === 'discord') return h;
-  if (platform === 'website') return h.startsWith('http') ? h : 'https://' + h;
-  return (meta.base || '') + h.replace(/^@/, '');
+  if (!meta) return '';
+  if (platform === 'discord') return h.replace(/[<>"']/g, '');
+  if (platform === 'website') return safeHref(h.startsWith('http') ? h : 'https://' + h);
+  return safeHref((meta.base || '') + h.replace(/^@/, ''));
+}
+
+function safeHref(url) {
+  try {
+    const u = new URL(url);
+    if (u.protocol === 'https:' || u.protocol === 'http:') return u.href;
+  } catch {}
+  return '';
 }
 
 function escapeHtml(s) {
@@ -159,12 +167,12 @@ function renderSocialLinks() {
   el.innerHTML = keys
     .map((k) => {
       const meta = SOCIAL_META[k] || { label: k };
-      const url = links[k];
+      const url = safeHref(links[k]) || '#';
       return `<div class="id-chip" style="display:flex;justify-content:space-between;gap:0.5rem;align-items:center;margin:0.35rem 0">
         <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);word-break:break-all;text-decoration:none">
-          <strong style="color:var(--text)">${meta.label}</strong> · ${escapeHtml(url)}
+          <strong style="color:var(--text)">${escapeHtml(meta.label)}</strong> · ${escapeHtml(url)}
         </a>
-        <button type="button" class="btn quiet" data-unlink="${k}">Remove</button>
+        <button type="button" class="btn quiet" data-unlink="${escapeHtml(k)}">Remove</button>
       </div>`;
     })
     .join('');
@@ -232,8 +240,8 @@ function renderFollows() {
     .map(
       (id) =>
         `<div class="id-chip" style="display:flex;justify-content:space-between;gap:0.5rem;align-items:center">
-          <span style="word-break:break-all">${id}</span>
-          <button type="button" class="btn quiet" data-unfollow="${id}">Unfollow</button>
+          <span style="word-break:break-all">${escapeHtml(id)}</span>
+          <button type="button" class="btn quiet" data-unfollow="${escapeHtml(id)}">Unfollow</button>
         </div>`
     )
     .join('');

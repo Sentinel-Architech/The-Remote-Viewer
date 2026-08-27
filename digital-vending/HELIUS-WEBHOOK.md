@@ -20,14 +20,14 @@ Near–real-time alternative to RPC polling. Same deliver path: memo → SKU →
    - **Account addresses:** `HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv` (your `SALES_ADDRESS`)
    - **Webhook URL:** `https://YOUR_DOMAIN/helius` (HTTPS required)
    - **Transaction types:** Any / transfers (whatever the UI exposes for token transfers)
-3. Optional: set an auth header value; mirror it as `TRV_WEBHOOK_SECRET` on the receiver.
+3. **Required:** set an auth header value; mirror it as `TRV_WEBHOOK_SECRET` on the receiver (min 16 characters). The receiver **will not start** without it.
 
 ## 2. Receiver on VPS
 
 ```bash
 export SALES_ADDRESS='HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv'
 export DELIVER_DIR="$HOME/trv-deliver"
-export TRV_WEBHOOK_SECRET='long-random-string'   # must match Helius auth header if set
+export TRV_WEBHOOK_SECRET='long-random-string'   # required; must match Helius auth header
 export HELIUS_BIND=127.0.0.1
 export HELIUS_PORT=8787
 
@@ -67,7 +67,11 @@ Then receiver/`auto-deliver` writes `.trvl` (or leaves `.PENDING` until drop exi
 
 ## 5. Security
 
-- Prefer `TRV_WEBHOOK_SECRET` + HTTPS
+- **`TRV_WEBHOOK_SECRET` is required.** Unsigned POSTs are rejected. Receiver refuses to bind if the secret is missing or shorter than 16 characters.
+- Bind loopback only (`127.0.0.1`); terminate TLS with Caddy/nginx. Non-loopback bind is refused.
+- Only allowlisted catalog memos (`TRV-Posture-Lite` etc.) map to SKUs. Untrusted memo text is never passed to bash.
+- Solana signatures are validated as base58 before `auto-deliver.sh`.
+- Sales-address match is on transfer destination accounts, not a JSON substring.
 - Firewall: only 443 public; SSH admin; nothing else
 - Host holds ciphertext + public `age1` drops — not buyer private keys
 - Rotate secret if leaked; Destroy = Restart for any test identities that hit logs

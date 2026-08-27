@@ -62,10 +62,17 @@
     catalog.forEach(item => {
       const div = document.createElement("div");
       div.className = "item";
-      div.innerHTML = `<h2>${item.title}</h2>
-        <div class="price">${item.price}</div>
-        <div class="memo">Memo: ${item.memo}</div>
-        <p>${item.description}</p>`;
+      const h2 = document.createElement("h2");
+      h2.textContent = item.title;
+      const price = document.createElement("div");
+      price.className = "price";
+      price.textContent = item.price;
+      const memo = document.createElement("div");
+      memo.className = "memo";
+      memo.textContent = "Memo: " + item.memo;
+      const p = document.createElement("p");
+      p.textContent = item.description;
+      div.append(h2, price, memo, p);
       catEl.appendChild(div);
 
       const opt = document.createElement("option");

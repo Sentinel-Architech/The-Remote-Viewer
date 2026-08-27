@@ -133,30 +133,35 @@ function renderFeed(events) {
         .filter((t) => t[0] === 't')
         .map((t) => t[1])
         .slice(0, 5);
-      const tagHtml = tags.map((t) => '<span class="pill">#' + escape(t) + '</span>').join(' ');
+      const tagHtml = tags.map((t) => '<span class="pill">#' + escapeHtml(t) + '</span>').join(' ');
       return (
         '<div class="card" style="margin:0.5rem 0">' +
         '<p class="muted" style="margin:0 0 0.35rem;font-size:0.78rem">' +
-        escape(shortNpub(ev.pubkey)) +
+        escapeHtml(shortNpub(ev.pubkey)) +
         ' · ' +
         when +
         (tagHtml ? ' · ' + tagHtml : '') +
         '</p>' +
         '<p style="margin:0;white-space:pre-wrap">' +
-        escape(ev.content || '') +
+        escapeHtml(ev.content || '') +
         '</p>' +
         '<p class="muted" style="margin:0.4rem 0 0;font-family:var(--mono);font-size:0.7rem">id ' +
-        escape((ev.id || '').slice(0, 16)) +
+        escapeHtml((ev.id || '').slice(0, 16)) +
         '…</p></div>'
       );
     })
     .join('');
 }
 
-function escape(s) {
-  return String(s).replace(/[&<>"']/g, (ch) => {
-    return ({ '&': '&', '<': '<', '>': '>', '"': '"', "'": '&#39;' })[ch];
-  });
+function escapeHtml(s) {
+  const map = {
+    '&': '&' + 'amp;',
+    '<': '&' + 'lt;',
+    '>': '&' + 'gt;',
+    '"': '&' + 'quot;',
+    "'": '&' + '#39;',
+  };
+  return String(s).replace(/[&<>"']/g, (ch) => map[ch] || ch);
 }
 
 function renderFollowing() {
@@ -171,7 +176,7 @@ function renderFollowing() {
       return (
         '<div class="row" style="margin-top:0.35rem">' +
         '<code style="flex:1;font-size:0.75rem;word-break:break-all">' +
-        escape(np) +
+        escapeHtml(np) +
         '</code>' +
         '<button type="button" class="btn danger" data-unf="' +
         i +
@@ -202,7 +207,7 @@ function renderDrafts() {
       return (
         '<div class="card" style="margin:0.4rem 0">' +
         '<p style="margin:0;white-space:pre-wrap">' +
-        escape(d.body || '') +
+        escapeHtml(d.body || '') +
         '</p>' +
         '<div class="row">' +
         '<button type="button" class="btn" data-load-draft="' +
