@@ -4,11 +4,11 @@ Helius webhook receiver for TRV Path B sales.
 
 - Listens on 127.0.0.1 (put Caddy/nginx or an SSH tunnel in front for HTTPS).
 - No age secrets. No wallet keys. Ciphertext deliver only via existing bash tools.
-- Auth: optional shared secret header X-TRV-Webhook-Secret
+- Auth: REQUIRED shared secret (X-TRV-Webhook-Secret or Authorization).
 
 Env:
   SALES_ADDRESS          required (Solana base58)
-  TRV_WEBHOOK_SECRET     optional shared secret
+  TRV_WEBHOOK_SECRET     required shared secret (>= 16 chars)
   TRV_ROOT               repo root (default: parent of this file's parent)
   DELIVER_DIR            default $HOME/trv-deliver
   HELIUS_BIND            default 127.0.0.1
@@ -20,6 +20,7 @@ transactionTypes = [Any] or TOKEN / TRANSFER as available.
 
 from __future__ import annotations
 
+import hmac
 import json
 import os
 import re
@@ -42,56 +43,71 @@ MEMO_RE = re.compile(
     r"(TRV-Posture-Lite|TRV-Posture-Pack|SENTINEL-ZK-01|TEST-HELLO)",
     re.I,
 )
+# Solana signatures are base58; never pass arbitrary strings to the shell.
+SIG_RE = re.compile(r"^[1-9A-HJ-NP-Za-km-z]{64,128}$")
+SKU_RE = re.compile(r"^[a-z0-9-]{3,48}$")
+USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+
+FALLBACK_SKU = {
+    "TRV-POSTURE-LITE": "trv-posture-lite",
+    "TRV-POSTURE-PACK": "trv-posture-pack",
+    "SENTINEL-ZK-01": "sentinel-skill-zk-01",
+    "TEST-HELLO": "hello-sentinel-demo",
+}
 
 
 def log(msg: str) -> None:
     print(f"[helius] {msg}", flush=True)
 
 
+def load_sku_map() -> dict[str, str]:
+    mapping = dict(FALLBACK_SKU)
+    catalog_path = VENDING / "catalog.json"
+    try:
+        items = json.loads(catalog_path.read_text(encoding="utf-8"))
+        if isinstance(items, list):
+            for item in items:
+                if not isinstance(item, dict):
+                    continue
+                memo = str(item.get("memo") or "").strip()
+                sku = str(item.get("id") or "").strip()
+                if memo and sku and SKU_RE.match(sku):
+                    mapping[memo.upper()] = sku
+    except OSError:
+        pass
+    return mapping
+
+
+def memo_to_sku(memo: str) -> str:
+    m = MEMO_RE.search(memo or "")
+    if not m:
+        return ""
+    return load_sku_map().get(m.group(1).upper(), "")
+
+
 def extract_memo(obj: dict) -> str:
-    """Best-effort memo from enhanced or raw-ish Helius payloads."""
-    # Direct fields some payloads use
-    for key in ("memo", "Memo"):
+    """Return only an allowlisted catalog memo token, never raw payload text."""
+    blob_parts = []
+    for key in ("memo", "Memo", "description"):
         v = obj.get(key)
         if isinstance(v, str) and v.strip():
-            return v.strip()
-
-    desc = obj.get("description") or ""
-    if isinstance(desc, str):
-        m = MEMO_RE.search(desc)
-        if m:
-            return m.group(1)
-
-    # instructions / innerInstructions blobs
-    blobs = []
+            blob_parts.append(v)
     for k in ("instructions", "innerInstructions", "events"):
         if k in obj:
-            blobs.append(json.dumps(obj.get(k)))
-    # raw log messages if present
+            blob_parts.append(json.dumps(obj.get(k)))
     meta = obj.get("meta") or {}
     if isinstance(meta, dict):
-        logs = meta.get("logMessages") or []
-        blobs.extend(str(x) for x in logs)
-
-    text = " ".join(blobs) + " " + json.dumps(obj)
-    m = MEMO_RE.search(text)
-    if m:
-        return m.group(1)
-
-    # Helius sometimes puts memo program data as readable string in events
-    events = obj.get("events") or {}
-    if isinstance(events, dict):
-        m = MEMO_RE.search(json.dumps(events))
-        if m:
-            return m.group(1)
-
-    return ""
+        for x in meta.get("logMessages") or []:
+            blob_parts.append(str(x))
+    blob_parts.append(json.dumps(obj))
+    m = MEMO_RE.search(" ".join(blob_parts))
+    return m.group(1) if m else ""
 
 
 def extract_sig(obj: dict) -> str:
     for key in ("signature", "txHash", "hash"):
         v = obj.get(key)
-        if isinstance(v, str) and len(v) > 40:
+        if isinstance(v, str) and SIG_RE.match(v):
             return v
     return ""
 
@@ -105,26 +121,43 @@ def extract_amount_hint(obj: dict) -> str:
         if not isinstance(t, dict):
             continue
         mint = (t.get("mint") or "").strip()
-        # USDC mainnet
-        if mint and mint != "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v":
+        if mint and mint != USDC_MINT:
             continue
-        to_acct = (t.get("toUserAccount") or t.get("toTokenAccount") or "").strip()
-        # If sales address appears as owner destination, prefer it
         raw = t.get("tokenAmount") or t.get("amount") or ""
         if raw is None:
             continue
         s = str(raw)
-        # normalized float-ish
         if s:
             return s.split(".")[0] if "." in s else s
     return ""
 
 
 def involves_sales_address(obj: dict) -> bool:
+    """True only if SALES_ADDRESS is a destination account, not a JSON substring."""
     if not SALES_ADDRESS:
-        return True
-    blob = json.dumps(obj)
-    return SALES_ADDRESS in blob
+        return False
+    fields: list[object] = []
+    for t in obj.get("tokenTransfers") or []:
+        if isinstance(t, dict):
+            fields.extend([t.get("toUserAccount"), t.get("toTokenAccount"), t.get("to")])
+    for t in obj.get("nativeTransfers") or []:
+        if isinstance(t, dict):
+            fields.append(t.get("toUserAccount"))
+    for a in obj.get("accountData") or []:
+        if isinstance(a, dict):
+            fields.append(a.get("account"))
+    return any(f == SALES_ADDRESS for f in fields if isinstance(f, str) and f)
+
+
+def secret_match(got: str, expected: str) -> bool:
+    if not got or not expected:
+        return False
+    a = got.encode("utf-8")
+    b = expected.encode("utf-8")
+    if len(a) != len(b):
+        hmac.compare_digest(b, b)
+        return False
+    return hmac.compare_digest(a, b)
 
 
 def process_tx(obj: dict) -> dict:
@@ -140,17 +173,12 @@ def process_tx(obj: dict) -> dict:
     if not memo:
         return {"ok": False, "error": "no catalog memo", "sig": sig}
 
-    # Map memo → SKU via existing script
-    try:
-        sku = subprocess.check_output(
-            ["bash", str(VENDING / "memo-to-sku.sh"), memo],
-            text=True,
-            stderr=subprocess.STDOUT,
-        ).strip()
-    except subprocess.CalledProcessError as e:
-        return {"ok": False, "error": "memo-to-sku failed", "detail": e.output, "sig": sig}
+    sku = memo_to_sku(memo)
+    if not sku or not SKU_RE.match(sku):
+        return {"ok": False, "error": "unknown memo", "sig": sig}
+    if not SIG_RE.match(sig):
+        return {"ok": False, "error": "bad signature"}
 
-    # auto-deliver: pending if no age1 drop yet (exit 2 is OK)
     cmd = ["bash", str(VENDING / "auto-deliver.sh"), sku, sig]
     env = os.environ.copy()
     env["DELIVER_DIR"] = str(DELIVER_DIR)
@@ -184,15 +212,19 @@ class Handler(BaseHTTPRequestHandler):
 
     def _auth_ok(self) -> bool:
         if not WEBHOOK_SECRET:
-            return True
-        got = self.headers.get("X-TRV-Webhook-Secret", "")
-        # Helius also allows authorization headers you set in dashboard
-        if got == WEBHOOK_SECRET:
-            return True
+            return False
+        candidates = [
+            self.headers.get("X-TRV-Webhook-Secret", ""),
+            self.headers.get("Authorization", ""),
+        ]
         auth = self.headers.get("Authorization", "")
-        if auth == WEBHOOK_SECRET or auth == f"Bearer {WEBHOOK_SECRET}":
-            return True
-        return False
+        if auth.lower().startswith("bearer "):
+            candidates.append(auth[7:].strip())
+        matched = False
+        for got in candidates:
+            if secret_match(got, WEBHOOK_SECRET):
+                matched = True
+        return matched
 
     def _send(self, code: int, body: dict) -> None:
         data = json.dumps(body).encode("utf-8")
@@ -205,7 +237,15 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         path = urlparse(self.path).path
         if path in ("/", "/health"):
-            self._send(200, {"ok": True, "service": "trv-helius-webhook", "sales": SALES_ADDRESS[:8] + "…" if SALES_ADDRESS else None})
+            self._send(
+                200,
+                {
+                    "ok": True,
+                    "service": "trv-helius-webhook",
+                    "sales": (SALES_ADDRESS[:8] + "…") if SALES_ADDRESS else None,
+                    "auth": "required",
+                },
+            )
             return
         self._send(404, {"ok": False, "error": "not found"})
 
@@ -229,7 +269,6 @@ class Handler(BaseHTTPRequestHandler):
             self._send(400, {"ok": False, "error": "invalid json"})
             return
 
-        # Helius sends a list of txs for enhanced webhooks
         items = payload if isinstance(payload, list) else [payload]
         results = []
         for obj in items:
@@ -245,11 +284,20 @@ def main() -> int:
     if not SALES_ADDRESS:
         log("ERROR: set SALES_ADDRESS")
         return 1
+    if not WEBHOOK_SECRET:
+        log("ERROR: set TRV_WEBHOOK_SECRET (required; refuse to start open)")
+        return 1
+    if len(WEBHOOK_SECRET) < 16:
+        log("ERROR: TRV_WEBHOOK_SECRET must be at least 16 characters")
+        return 1
+    if BIND not in ("127.0.0.1", "::1", "localhost"):
+        log(f"ERROR: HELIUS_BIND={BIND} refused — bind loopback only, put TLS in front")
+        return 1
     DELIVER_DIR.mkdir(parents=True, exist_ok=True)
     log(f"bind {BIND}:{PORT}")
     log(f"sales {SALES_ADDRESS}")
     log(f"deliver {DELIVER_DIR}")
-    log(f"secret {'set' if WEBHOOK_SECRET else 'NOT set (open receiver)'}")
+    log("secret set (required)")
     httpd = ThreadingHTTPServer((BIND, PORT), Handler)
     try:
         httpd.serve_forever()

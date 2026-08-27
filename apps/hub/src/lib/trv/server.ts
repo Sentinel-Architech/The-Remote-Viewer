@@ -1060,6 +1060,7 @@ export const convertToTrv = createServerFn({ method: "POST" })
     rail: input.rail.slice(0, 24),
   }))
   .handler(async ({ context, data }) => {
+    assertPreviewMintAllowed();
     const sql = await getSql();
     const credits = usdToCredits(data.usd);
     await sql`update viewer_profiles set credits = credits + ${credits} where user_id = ${context.userId}`;
@@ -1168,23 +1169,41 @@ export const confirmPreviewOnramp = createServerFn({ method: "POST" })
     dest: input.dest === "sol" ? "sol" : "trv",
   }))
   .handler(async ({ context, data }) => {
-    await settleOnramp(context.userId, data.usd, data.dest, `preview-${Date.now()}`);
+    assertPreviewMintAllowed();
+    await settleOnramp(context.userId, data.usd, data.dest, `preview-${context.userId}-${Date.now()}`);
     const sql = await getSql();
     return { profile: await loadProfile(sql, context.userId) };
   });
 
+function assertPreviewMintAllowed() {
+  if (process.env.STRIPE_SECRET_KEY) {
+    throw new Error("Preview credit mint is disabled while Stripe is configured.");
+  }
+  if (process.env.TRV_ALLOW_PREVIEW_ONRAMP !== "1") {
+    throw new Error("Preview credit mint is disabled. Pay with Stripe, or set TRV_ALLOW_PREVIEW_ONRAMP=1 on a local preview only.");
+  }
+}
+
 export async function settleOnramp(userId: string, usd: number, dest: OnrampDest, sessionId: string) {
   const sql = await getSql();
+  const memo = sessionId.slice(0, 80);
+  if (!userId || !memo) throw new Error("Missing settlement id");
+  const usdSafe = Math.max(0, Math.min(5000, Number(usd) || 0));
+  if (usdSafe <= 0) throw new Error("Invalid settlement amount");
+  const dup = await sql<{ n: number }>`
+    select count(*)::int as n from saas_invoices where memo = ${memo} and kind = 'stripe'
+  `;
+  if ((dup[0]?.n ?? 0) > 0) return;
   if (dest === "sol") {
-    const micro = usdToSolMicro(usd);
+    const micro = usdToSolMicro(usdSafe);
     await sql`update viewer_profiles set sol_micro = sol_micro + ${micro} where user_id = ${userId}`;
   } else {
-    const credits = Math.round(usd * USD_TO_TRV);
+    const credits = Math.round(usdSafe * USD_TO_TRV);
     await sql`update viewer_profiles set credits = credits + ${credits} where user_id = ${userId}`;
   }
   await sql`
     insert into saas_invoices (user_id, plan_id, usd_cents, credits, kind, memo)
-    values (${userId}, 'onramp', ${usd * 100}, ${dest === "trv" ? usd * USD_TO_TRV : 0}, 'stripe', ${sessionId.slice(0, 80)})
+    values (${userId}, 'onramp', ${usdSafe * 100}, ${dest === "trv" ? usdSafe * USD_TO_TRV : 0}, 'stripe', ${memo})
   `;
 }
 

@@ -206,8 +206,8 @@ export function renderNftUI(toast) {
       .map(
         (n) => `<div class="card" style="padding:0.7rem;margin:0.4rem 0">
           <strong>${escapeHtml(n.name)}</strong>
-          <div class="soft" style="font-size:0.78rem">${n.tier}${n.free ? ' · free' : ''}${n.gasWaived ? ' · gas waived' : ''} · ${new Date(n.mintedAt).toLocaleString()}</div>
-          <div class="soft" style="font-size:0.75rem;word-break:break-all">${n.id}</div>
+          <div class="soft" style="font-size:0.78rem">${escapeHtml(n.tier)}${n.free ? ' · free' : ''}${n.gasWaived ? ' · gas waived' : ''} · ${new Date(n.mintedAt).toLocaleString()}</div>
+          <div class="soft" style="font-size:0.75rem;word-break:break-all">${escapeHtml(n.id)}</div>
         </div>`
       )
       .join('');
@@ -246,8 +246,12 @@ export function renderNftUI(toast) {
 }
 
 function escapeHtml(s) {
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  const map = {
+    '&': '&' + 'amp;',
+    '<': '&' + 'lt;',
+    '>': '&' + 'gt;',
+    '"': '&' + 'quot;',
+    "'": '&' + '#39;',
+  };
+  return String(s).replace(/[&<>"']/g, (ch) => map[ch] || ch);
 }
