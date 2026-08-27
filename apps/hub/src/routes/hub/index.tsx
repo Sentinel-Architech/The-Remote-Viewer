@@ -12,6 +12,7 @@ import { Brain, Cpu, Fingerprint, Globe, Landmark, ScrollText, Shield } from "lu
 import { retentionTasks } from "@/lib/trv/retention";
 import { isPaidTrialActive, formatTrialClock, msUntil } from "@/lib/trv/trial";
 import { SKILL_PAR } from "@/lib/trv/skill-audit";
+import { openBriefing } from "@/lib/trv/briefing";
 
 export const Route = createFileRoute("/hub/")({ component: Command });
 
@@ -65,6 +66,22 @@ function Command() {
       </div>
 
       <WatchClaim />
+
+      {watch?.claimed && !profile.tutorialAt ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Optional map</CardTitle>
+            <CardDescription>
+              First watch is done. The 12-station briefing is here when you want the layout — not before duty.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button type="button" variant="secondary" onClick={() => openBriefing()}>
+              Open briefing
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {tasks.length > 0 ? (
         <Card>

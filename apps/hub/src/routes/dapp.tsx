@@ -5,32 +5,31 @@ import { JsonLd } from "@/components/json-ld";
 import { Button } from "@/components/ui/button";
 import { breadcrumbJsonLd, pageHead, softwareJsonLd } from "@/lib/trv/seo";
 import { NETWORK_NAME } from "@/lib/trv/network";
-import { PAID_TRIAL_HOURS } from "@/lib/trv/trial";
 
 const STEPS = [
   {
     n: "01",
     icon: Shield,
     title: "Native lock",
-    body: "Email plus password on this hub. Google and X are bridges only. 18+ and OFAC attestations are required. No sales engineer.",
+    body: "Email plus password. 18+ and OFAC on the same screen. No sales engineer. Google and X are bridges only.",
   },
   {
     n: "02",
     icon: Timer,
-    title: `${PAID_TRIAL_HOURS}-hour Verified trial`,
-    body: "Outside viewership gets the paid People tier for two days. One shot per node. Handshake still gates Gateway methods. No card on file.",
+    title: "First watch",
+    body: "Land one intercept on Command, then claim TRV. That is the product. Briefing, wallet, and Gateway wait.",
   },
   {
     n: "03",
-    icon: Wallet,
-    title: "Wallet on this device",
-    body: "PIN-sealed Ed25519 key on this device, optional Phantom. Stripe converts USD to TRV or SOL — it is never identity. A company owner cannot unlock a seat seed. Address is chain-ready, not a mainnet program.",
+    icon: KeyRound,
+    title: "Come back tomorrow",
+    body: "Claim the watch every UTC day. Missed days decay Sentinel health. Retention is duty, not a newsletter.",
   },
   {
     n: "04",
-    icon: KeyRound,
-    title: "Daily watch keeps you",
-    body: "Claim the watch every UTC day. TRV for keeping The Sentinel safe. Missed days decay health. Retention is duty, not a newsletter.",
+    icon: Wallet,
+    title: "Wallet when you need it",
+    body: "PIN-sealed Ed25519 on this device, optional Phantom. Stripe is a rail, never identity. Skip this until you have stood watch.",
   },
 ];
 
@@ -58,12 +57,11 @@ function DappPage() {
       <article className="mx-auto max-w-3xl px-5 py-10 md:px-8">
         <p className="text-[11px] tracking-[0.28em] uppercase text-accent">Self-serve DApp</p>
         <h1 className="mt-3 font-display text-4xl leading-tight md:text-5xl">
-          No ticket. No vendor remote. The node is yours.
+          Sign in. Intercept. Claim. Come back tomorrow.
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground md:text-base">
-          The Sentinel Operating System and every Remote Viewer node run only in this DApp.
-          Outside viewership starts here: four steps, then the hub. If you need a human to
-          click subscribe for you, you are in the wrong Network.
+          Check in daily to defend The Sentinel and earn TRV. First session is sixty seconds.
+          The 12-station briefing is optional after that first watch — not a wall in front of it.
         </p>
         <ol className="mt-10 space-y-4">
           {STEPS.map((step) => {
@@ -82,8 +80,8 @@ function DappPage() {
         </ol>
         <div className="mt-10 flex flex-col gap-3 sm:flex-row">
           <Button asChild size="lg">
-            <Link to="/login" search={{ trial: "verified" } as never}>
-              Register · start 2-day trial
+            <Link to="/login">
+              Stand watch
             </Link>
           </Button>
           <Button asChild size="lg" variant="secondary">

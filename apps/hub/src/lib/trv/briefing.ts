@@ -42,12 +42,27 @@ export type BriefStep = {
   seal?: boolean;
 };
 
+export const BRIEFING_OPEN = "trv-briefing-open";
+export const BRIEFING_FLAG = "trv-briefing-now";
+
+export function openBriefing() {
+  if (typeof window === "undefined") return;
+  sessionStorage.setItem(BRIEFING_FLAG, "1");
+  window.dispatchEvent(new Event(BRIEFING_OPEN));
+}
+
+export function closeBriefing() {
+  if (typeof window === "undefined") return;
+  sessionStorage.removeItem(BRIEFING_FLAG);
+  window.dispatchEvent(new Event(BRIEFING_OPEN));
+}
+
 export const BRIEFING_STEPS: BriefStep[] = [
   {
     kicker: "Viewer briefing",
-    title: "This map is required once",
-    where: "Every node · no skip",
-    body: "You are a Remote Viewer. The hub is a set of stations, not a feed. This briefing names each one and where it lives. There is no skip, no later, no close. Finish it once. After you seal it, this screen never returns.",
+    title: "The map is optional",
+    where: "Every node · after first watch",
+    body: "You are a Remote Viewer. The hub is a set of stations, not a feed. This map names each one. It is optional after your first watch — take it when you want the layout, not before you stand duty.",
     icon: LayoutDashboard,
   },
   {
@@ -183,8 +198,8 @@ export const BRIEFING_STEPS: BriefStep[] = [
   {
     kicker: "Viewer briefing",
     title: "Seal the map",
-    where: "Once · then the hub opens",
-    body: "You have the stations and where they live. Phone uses Home, Defend, Mesh, Rewards on the bottom bar — everything else is More. Desktop uses the left rail. Docks (wallet, evidence, mic) sit in the phone header. Check that you know the map. There is no skip. After you seal, this briefing does not return.",
+    where: "Optional · after first watch",
+    body: "You have the stations and where they live. Phone uses Home, Defend, Mesh, Rewards on the bottom bar — everything else is More. Desktop uses the left rail. Seal when you know the map. You can open this again from Command until you seal it.",
     icon: ShieldCheck,
     seal: true,
     stops: [

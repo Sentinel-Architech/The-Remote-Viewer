@@ -121,7 +121,7 @@ function DutyStrip() {
           </Button>
         ) : (
           <Button asChild size="sm">
-            <Link to="/hub/neuron">Stand watch</Link>
+            <Link to="/hub">Stand watch</Link>
           </Button>
         )}
       </div>
@@ -135,7 +135,7 @@ export function HubShell() {
   const company = profile?.edition === "company";
   const brand = company ? profile.orgName || "Company cell" : "We The People";
   const [more, setMore] = useState(false);
-  const lockBriefing = Boolean(profile && profile.ageOk && profile.ofacOk && !profile.tutorialAt);
+  const lockBriefing = false;
 
   return (
     <ViewerThemeRoot>

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useViewer } from "./viewer-context";
 import { completeTutorial } from "@/lib/trv/server";
-import { BRIEFING_STEPS } from "@/lib/trv/briefing";
+import { BRIEFING_FLAG, BRIEFING_OPEN, BRIEFING_STEPS, closeBriefing } from "@/lib/trv/briefing";
 import { NETWORK_NAME } from "@/lib/trv/network";
 import { Button } from "./ui/button";
 import { Progress } from "./ui/progress";
@@ -18,6 +18,11 @@ function readStep() {
   return Math.min(Math.max(0, Math.floor(n)), BRIEFING_STEPS.length - 1);
 }
 
+function wantsBriefing() {
+  if (typeof window === "undefined") return false;
+  return sessionStorage.getItem(BRIEFING_FLAG) === "1";
+}
+
 export function ViewerBriefing() {
   const { profile, setProfile } = useViewer();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -25,9 +30,17 @@ export function ViewerBriefing() {
   const [ready, setReady] = useState(false);
   const [acked, setAcked] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [want, setWant] = useState(false);
+
+  useEffect(() => {
+    const sync = () => setWant(wantsBriefing());
+    sync();
+    window.addEventListener(BRIEFING_OPEN, sync);
+    return () => window.removeEventListener(BRIEFING_OPEN, sync);
+  }, []);
 
   const locked =
-    Boolean(profile) && Boolean(profile?.ageOk) && Boolean(profile?.ofacOk) && !profile?.tutorialAt;
+    want && Boolean(profile) && Boolean(profile?.ageOk) && Boolean(profile?.ofacOk) && !profile?.tutorialAt;
 
   useEffect(() => {
     if (!locked) return;
@@ -52,6 +65,7 @@ export function ViewerBriefing() {
       if (e.key === "Escape") {
         e.preventDefault();
         e.stopPropagation();
+        defer();
         return;
       }
       if (e.key !== "Tab") return;
@@ -80,6 +94,12 @@ export function ViewerBriefing() {
     };
   }, [locked, ready, step, acked]);
 
+  function defer() {
+    closeBriefing();
+    setReady(false);
+    setAcked(false);
+  }
+
   if (!locked || !ready) return null;
 
   const total = BRIEFING_STEPS.length;
@@ -95,6 +115,7 @@ export function ViewerBriefing() {
       const p = await completeTutorial();
       if (p) setProfile(p);
       sessionStorage.removeItem(STEP_KEY);
+      closeBriefing();
       toast.success("Briefing sealed");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Seal failed");
@@ -166,11 +187,14 @@ export function ViewerBriefing() {
         <div className="mt-6">
           <Progress value={pct} />
           <p className="mt-2 font-mono text-[11px] tabular-nums text-muted-foreground">
-            {step + 1} of {total} · cannot skip
+            {step + 1} of {total} · optional
           </p>
         </div>
 
-        <div className="mt-4 flex gap-2">
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button type="button" variant="ghost" className="min-w-20" onClick={defer}>
+            Later
+          </Button>
           {step > 0 ? (
             <Button
               type="button"

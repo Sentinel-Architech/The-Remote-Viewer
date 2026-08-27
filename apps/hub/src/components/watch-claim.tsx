@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Brain, Bug, Clock, Gift, Globe, Shield } from "lucide-react";
-import { claimWatch } from "@/lib/trv/server";
+import { claimWatch, setHoneypot, tickHoneypot } from "@/lib/trv/server";
+import { pingWatch } from "@/lib/trv/watch-events";
 import { useViewer } from "./viewer-context";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
@@ -30,6 +31,25 @@ export function WatchClaim({ layout = "full" }: { layout?: "full" | "compact" })
     }, 1000);
     return () => window.clearInterval(id);
   }, [watch?.day, watch?.secondsLeft]);
+
+  async function intercept() {
+    setBusy(true);
+    try {
+      if (!profile?.honeypotArmed) {
+        const armed = await setHoneypot({ data: true });
+        if (armed) setProfile(armed);
+      }
+      const r = await tickHoneypot();
+      if (!r.ok) throw new Error(r.error || "Intercept failed");
+      pingWatch();
+      await refreshWatch();
+      toast.success("Intercept landed · claim the watch");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Intercept failed");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function claim() {
     setBusy(true);
@@ -82,7 +102,11 @@ export function WatchClaim({ layout = "full" }: { layout?: "full" | "compact" })
             <Button size="sm" disabled={busy} onClick={() => void claim()}>
               Claim {watch.nextCredits} TRV
             </Button>
-          ) : null}
+          ) : (
+            <Button size="sm" disabled={busy} onClick={() => void intercept()}>
+              Intercept now
+            </Button>
+          )}
         </CardContent>
       </Card>
     );
@@ -130,9 +154,12 @@ export function WatchClaim({ layout = "full" }: { layout?: "full" | "compact" })
           </Button>
         ) : (
           <div className="flex flex-wrap gap-2">
-            <Button asChild>
+            <Button disabled={busy} onClick={() => void intercept()}>
+              <Shield className="size-4" /> Intercept now
+            </Button>
+            <Button asChild variant="secondary">
               <Link to="/hub/neuron">
-                <Brain className="size-4" /> Stand watch — Neuron
+                <Brain className="size-4" /> Neuron
               </Link>
             </Button>
             <Button asChild variant="secondary">

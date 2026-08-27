@@ -2,7 +2,7 @@ import { NETWORK_NAME, NETWORK_SHORT, NETWORK_TAG } from "./network";
 import { PAID_TRIAL_HOURS } from "./trial";
 
 export const SEO_DEFAULT_DESC =
-  `${NETWORK_NAME} is a self-serve remote-viewing DApp. Check in daily to defend The Sentinel, earn TRV, and keep a native lock. Outside Viewers get ${PAID_TRIAL_HOURS} hours of Verified — no card, no ticket.`;
+  `${NETWORK_NAME}: check in daily to defend The Sentinel and earn TRV. Sign in, land one intercept, claim the watch. No ticket.`;
 
 export function pageTitle(title: string): string {
   if (title === NETWORK_NAME || title.startsWith(`${NETWORK_NAME}`)) return title;

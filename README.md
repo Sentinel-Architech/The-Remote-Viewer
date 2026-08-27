@@ -30,7 +30,7 @@ Shipped on the hub:
 
 - Sign-in (Google / X / email)
 - Age + OFAC gate
-- **Mandatory one-time briefing** — 12 stations, no skip, no close, seals `tutorial_at`
+- **First win** — intercept on Command, then claim TRV. Briefing is optional after that.
 - Daily Watch — Viewers intercept hostile packets to defend The Sentinel, then claim TRV
 - Dedicated profile vault (`/hub/profile`) — portrait, identity extras, finances, docs, live icon
 - Public Viewer card (`/v/$handle`)

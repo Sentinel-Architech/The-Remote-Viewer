@@ -15,7 +15,7 @@ If you can open a browser, you can use the hub. If you can paste commands into a
 
 | What works today | What does **not** work yet |
 |------------------|---------------------------|
-| **Viewer Hub** — sign-in, age/OFAC gate, mandatory briefing, daily watch, profile vault, public card | A full mobile app you download from an app store |
+| **Viewer Hub** — sign-in, age/OFAC gate, daily watch (intercept + claim), optional briefing, profile vault, public card | A full mobile app you download from an app store |
 | Encrypt a short message, turn it into special frames, and decrypt it again (optical air-gap) | Live blockchain voting or a running Solana governance network |
 | Create a private key that never leaves your phone or computer | Automatic recovery of your keys if you lose them (this will never be a company service) |
 | Buy a digital pack with USDC and receive an encrypted file you unlock yourself | SD-JWT / hardware Keystore / OpenID4VCI (locked design, not shipped) |
@@ -32,11 +32,11 @@ The hub **does** keep a Viewer session and a profile vault in Postgres. That is 
 
 Open **[sentinelsecurityprotocol.grok.me](https://sentinelsecurityprotocol.grok.me)**
 
-1. Create an account (Google, X, or email).
-2. Confirm age / OFAC.
-3. Finish the **briefing**. There is no skip. It names every station once, then you seal it.
-4. Check in on **Defend** (daily watch) to protect The Sentinel and claim TRV.
-5. Open **Profile** (`/hub/profile`) for portrait, extras, finances, docs, and the live icon.
+1. Create an account (email + password, or Google / X).
+2. Confirm age / OFAC (two checkboxes).
+3. On **Command**, tap **Intercept now**, then **Claim** the watch. That is the first win.
+4. The 12-station briefing is optional after that first watch — open it from Command when you want the map.
+5. Come back tomorrow. Miss a day and The Sentinel takes damage.
 
 Source for the hub: [`apps/hub`](apps/hub).  
 `apps/web` is an old scaffold. Ignore it if you want the real UI.
