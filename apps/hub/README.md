@@ -20,6 +20,7 @@ This folder is the product UI Remote Viewers use today. It is a **separate surfa
 | Command | `/hub` | **Intercept now** + claim TRV. First win lives here. |
 | Daily Watch | `/hub` Defend · Mesh · Honeypot | Intercept hostile packets, then claim TRV. Missed days damage health |
 | SENTINEL OS jack-in | `/hub/neuron` · `/hub/os` | 3D neuron flight. Scan, name, pulse. Catalog → OS memory. Pulse counts as watch |
+| Command Deck | `/hub/deck` | Rapier physics. Synapse (HSV / WNV / rabies in CSF) + God's Eye (emission / runoff / worm — byproducts only). Three seizes arm OS auto-defense. Local dossier. |
 | Profile vault | `/hub/profile` | Portrait, identity extras, finances, docs, live icon |
 | Public card | `/v/$handle` | Shareable Viewer card |
 | OS | `/hub/os` | Super / Cipher / Watcher / Privacy / Mesh / Healer + mic |

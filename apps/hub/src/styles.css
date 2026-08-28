@@ -40,6 +40,16 @@
   --font-sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   --font-display: "Newsreader", "Iowan Old Style", "Palatino Linotype", serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --color-card-2: #1a1d26;
+  --color-sage: #7d9a7e;
+  --color-ember: #c45c4a;
+  --color-neural: #140a0c;
+  --color-orbit: #020308;
+  --shadow-border: 0 0 0 1px rgb(197 207 200 / 0.1);
+  --shadow-border-hover: 0 0 0 1px rgb(197 207 200 / 0.2);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-quick: 150ms;
+  --motion-fast: 250ms;
 }
 
 @layer base {
@@ -171,3 +181,125 @@
     font-size: clamp(1.15rem, 4.5vw, 1.45rem);
   }
 }
+
+/* Command Deck visor + holographic physics legend (only after a discovery win/lose). */
+.visor-neural {
+  background: radial-gradient(
+    ellipse at center,
+    transparent 42%,
+    color-mix(in oklab, var(--color-neural) 58%, transparent) 100%
+  );
+}
+
+.visor-orbit {
+  background: radial-gradient(
+    ellipse at center,
+    transparent 50%,
+    color-mix(in oklab, var(--color-orbit) 64%, transparent) 100%
+  );
+}
+
+[data-heal="1"] .visor-neural {
+  background: radial-gradient(
+    ellipse at center,
+    transparent 46%,
+    color-mix(in oklab, var(--color-neural) 44%, transparent) 100%
+  );
+}
+
+[data-heal="2"] .visor-neural {
+  background: radial-gradient(
+    ellipse at center,
+    transparent 52%,
+    color-mix(in oklab, var(--color-sage) 28%, transparent) 100%
+  );
+}
+
+[data-sight="1"] .visor-orbit {
+  background: radial-gradient(
+    ellipse at center,
+    transparent 54%,
+    color-mix(in oklab, var(--color-orbit) 50%, transparent) 100%
+  );
+}
+
+[data-sight="2"] .visor-orbit {
+  background: radial-gradient(
+    ellipse at center,
+    transparent 58%,
+    color-mix(in oklab, var(--color-orbit) 36%, transparent) 100%
+  );
+}
+
+[data-rank="4"] .rank-chip,
+[data-rank="5"] .rank-chip,
+[data-rank="6"] .rank-chip,
+[data-rank="7"] .rank-chip,
+[data-rank="8"] .rank-chip {
+  box-shadow: 0 0 0 1px rgb(125 154 126 / 0.35);
+}
+
+.meter-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-sage);
+}
+
+.hologram {
+  position: relative;
+  overflow: hidden;
+  color: var(--color-foreground);
+  background: color-mix(in oklab, var(--color-card) 38%, transparent);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--color-sage) 14%, transparent),
+    color-mix(in oklab, var(--color-card) 22%, transparent) 46%,
+    color-mix(in oklab, var(--color-sage) 8%, transparent)
+  );
+  backdrop-filter: blur(16px) saturate(1.12);
+  -webkit-backdrop-filter: blur(16px) saturate(1.12);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--color-sage) 42%, transparent),
+    inset 0 1px 0 color-mix(in oklab, var(--color-foreground) 16%, transparent),
+    0 0 28px color-mix(in oklab, var(--color-sage) 16%, transparent);
+}
+
+.hologram::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0,
+    transparent 3px,
+    color-mix(in oklab, var(--color-sage) 7%, transparent) 4px
+  );
+  opacity: 0.4;
+  mix-blend-mode: overlay;
+}
+
+.hologram[data-outcome="lose"] {
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--color-ember) 38%, transparent),
+    inset 0 1px 0 color-mix(in oklab, var(--color-foreground) 12%, transparent),
+    0 0 28px color-mix(in oklab, var(--color-ember) 14%, transparent);
+}
+
+.hologram > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes hologram-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+

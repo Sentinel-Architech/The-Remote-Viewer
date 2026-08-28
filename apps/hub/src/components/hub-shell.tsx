@@ -6,6 +6,7 @@ import {
   Brain,
   CircleUser,
   Cpu,
+  Crosshair,
   Film,
   Fingerprint,
   Gauge,
@@ -51,6 +52,7 @@ const NAV = [
   { to: "/hub", label: "Command", icon: LayoutDashboard },
   { to: "/hub/node", label: "Node", icon: Fingerprint },
   { to: "/hub/neuron", label: "Defend", icon: Brain },
+  { to: "/hub/deck", label: "Deck", icon: Crosshair },
   { to: "/hub/mesh", label: "Mesh", icon: Globe },
   { to: "/hub/shop", label: "Rewards", icon: Gift },
   { to: "/hub/os", label: "OS", icon: Cpu },
@@ -74,6 +76,7 @@ const NAV = [
 const MOBILE_NAV = [
   { to: "/hub", label: "Home", icon: LayoutDashboard },
   { to: "/hub/neuron", label: "Defend", icon: Brain },
+  { to: "/hub/deck", label: "Deck", icon: Crosshair },
   { to: "/hub/mesh", label: "Mesh", icon: Globe },
   { to: "/hub/shop", label: "Rewards", icon: Gift },
 ] as const;
@@ -86,6 +89,7 @@ function DutyStrip() {
     pathname === "/hub" ||
     pathname === "/hub/" ||
     pathname.startsWith("/hub/neuron") ||
+    pathname.startsWith("/hub/deck") ||
     pathname.startsWith("/hub/mesh") ||
     pathname.startsWith("/hub/honeypot");
   if (!watch || watch.claimed || onField) return null;

@@ -28,6 +28,7 @@ import { Route as HubBrowserRouteImport } from './routes/hub/browser'
 import { Route as HubCitizenRouteImport } from './routes/hub/citizen'
 import { Route as HubClipsRouteImport } from './routes/hub/clips'
 import { Route as HubCreateRouteImport } from './routes/hub/create'
+import { Route as HubDeckRouteImport } from './routes/hub/deck'
 import { Route as HubForumRouteImport } from './routes/hub/forum'
 import { Route as HubFriendsRouteImport } from './routes/hub/friends'
 import { Route as HubGatewayRouteImport } from './routes/hub/gateway'
@@ -144,6 +145,11 @@ const HubClipsRoute = HubClipsRouteImport.update({
 const HubCreateRoute = HubCreateRouteImport.update({
   id: '/create',
   path: '/create',
+  getParentRoute: () => HubRouteRoute,
+} as any)
+const HubDeckRoute = HubDeckRouteImport.update({
+  id: '/deck',
+  path: '/deck',
   getParentRoute: () => HubRouteRoute,
 } as any)
 const HubForumRoute = HubForumRouteImport.update({
@@ -276,6 +282,7 @@ export interface FileRoutesByFullPath {
   '/hub/citizen': typeof HubCitizenRoute
   '/hub/clips': typeof HubClipsRoute
   '/hub/create': typeof HubCreateRoute
+  '/hub/deck': typeof HubDeckRoute
   '/hub/forum': typeof HubForumRoute
   '/hub/friends': typeof HubFriendsRoute
   '/hub/gateway': typeof HubGatewayRoute
@@ -318,6 +325,7 @@ export interface FileRoutesByTo {
   '/hub/citizen': typeof HubCitizenRoute
   '/hub/clips': typeof HubClipsRoute
   '/hub/create': typeof HubCreateRoute
+  '/hub/deck': typeof HubDeckRoute
   '/hub/forum': typeof HubForumRoute
   '/hub/friends': typeof HubFriendsRoute
   '/hub/gateway': typeof HubGatewayRoute
@@ -362,6 +370,7 @@ export interface FileRoutesById {
   '/hub/citizen': typeof HubCitizenRoute
   '/hub/clips': typeof HubClipsRoute
   '/hub/create': typeof HubCreateRoute
+  '/hub/deck': typeof HubDeckRoute
   '/hub/forum': typeof HubForumRoute
   '/hub/friends': typeof HubFriendsRoute
   '/hub/gateway': typeof HubGatewayRoute
@@ -407,6 +416,7 @@ export interface FileRouteTypes {
     | '/hub/citizen'
     | '/hub/clips'
     | '/hub/create'
+    | '/hub/deck'
     | '/hub/forum'
     | '/hub/friends'
     | '/hub/gateway'
@@ -449,6 +459,7 @@ export interface FileRouteTypes {
     | '/hub/citizen'
     | '/hub/clips'
     | '/hub/create'
+    | '/hub/deck'
     | '/hub/forum'
     | '/hub/friends'
     | '/hub/gateway'
@@ -492,6 +503,7 @@ export interface FileRouteTypes {
     | '/hub/citizen'
     | '/hub/clips'
     | '/hub/create'
+    | '/hub/deck'
     | '/hub/forum'
     | '/hub/friends'
     | '/hub/gateway'
@@ -674,6 +686,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HubCreateRouteImport
       parentRoute: typeof HubRouteRoute
     }
+    '/hub/deck': {
+      id: '/hub/deck'
+      path: '/deck'
+      fullPath: '/hub/deck'
+      preLoaderRoute: typeof HubDeckRouteImport
+      parentRoute: typeof HubRouteRoute
+    }
     '/hub/forum': {
       id: '/hub/forum'
       path: '/forum'
@@ -838,6 +857,7 @@ interface HubRouteRouteChildren {
   HubCitizenRoute: typeof HubCitizenRoute
   HubClipsRoute: typeof HubClipsRoute
   HubCreateRoute: typeof HubCreateRoute
+  HubDeckRoute: typeof HubDeckRoute
   HubForumRoute: typeof HubForumRoute
   HubFriendsRoute: typeof HubFriendsRoute
   HubGatewayRoute: typeof HubGatewayRoute
@@ -863,6 +883,7 @@ const HubRouteRouteChildren: HubRouteRouteChildren = {
   HubCitizenRoute: HubCitizenRoute,
   HubClipsRoute: HubClipsRoute,
   HubCreateRoute: HubCreateRoute,
+  HubDeckRoute: HubDeckRoute,
   HubForumRoute: HubForumRoute,
   HubFriendsRoute: HubFriendsRoute,
   HubGatewayRoute: HubGatewayRoute,

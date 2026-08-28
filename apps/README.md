@@ -4,7 +4,7 @@
 
 | Client | Path | Status |
 |--------|------|--------|
-| **Viewer Hub** | [`hub/`](hub/) | **LIVE** hosted DApp — briefing, daily watch, profile vault, Command |
+| **Viewer Hub** | [`hub/`](hub/) | **LIVE** hosted DApp — briefing, daily watch, profile vault, Command, Command Deck |
 | Local operator UI | [`ui/`](ui/) | PROVEN local static UI (`serve-ui.sh`) |
 | Vanilla remote-viewer | [`remote-viewer/`](remote-viewer/) | Legacy local HTML |
 | Web Vite shell | [`web/`](web/) | **Old scaffold** — not the product UI. Use `hub/` |
