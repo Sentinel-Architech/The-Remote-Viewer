@@ -35,3 +35,7 @@ apps/
 ├── mobile/         # Expo scaffold (PARKED)
 └── shared/         # Shared types for web/mobile scaffolds
 ```
+
+## Command Deck
+
+Synapse + God's Eye field, Mesh Board, HUB, Internal Affairs. Source: [`apps/command-deck`](./command-deck).
