@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Radio } from "lucide-react";
+import { Crosshair, Radio } from "lucide-react";
 import { toast } from "sonner";
 import { dispatchAgent } from "@/lib/trv/sentinel-ai";
 import {
@@ -130,10 +130,18 @@ function OsPage() {
             Named classes auto-heal. A landed pulse counts as today's watch intercept.
           </p>
         </div>
-        <Button onClick={() => setJacked(true)}>
-          <Radio />
-          Jack into SENTINEL OS
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => setJacked(true)}>
+            <Radio />
+            Jack into SENTINEL OS
+          </Button>
+          <Button asChild variant="secondary">
+            <Link to="/hub/deck">
+              <Crosshair />
+              Command Deck
+            </Link>
+          </Button>
+        </div>
       </section>
 
       <section className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-xl)] border border-border bg-card p-4">
