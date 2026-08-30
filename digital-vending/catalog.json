@@ -2,22 +2,24 @@
   {
     "id": "trv-posture-lite",
     "title": "TRV Posture Lite",
-    "price": "11 USDC",
+    "price": "11 USDC or 11 USD X Money",
     "memo": "TRV-Posture-Lite",
+    "x_money": "@Archtecht",
     "description": "Core zero-trust posture pack. Local-first, Destroy=Restart rules, optical air-gap basics.",
     "payload_path": "payloads/trv-posture-lite.txt",
     "recipient_required": true,
-    "notes": "Primary rail: USDC memo or manual. SPL TRV mint deferred (no aarch64 Solana CLI)."
+    "notes": "Rails: Solana USDC memo, X Money @Archtecht, or manual. Delivery age+TRVL or ZIP."
   },
   {
     "id": "trv-posture-pack",
     "title": "TRV Posture Pack",
-    "price": "25 USDC",
+    "price": "25 USDC or 25 USD X Money",
     "memo": "TRV-Posture-Pack",
-    "description": "Full posture pack including extended Sentinel Standard docs and sample scripts.",
+    "x_money": "@Archtecht",
+    "description": "Full posture pack including install, security, Obtainium, and threat model.",
     "payload_path": "payloads/trv-posture-pack.txt",
     "recipient_required": true,
-    "notes": "Replace payload file with full pack before live sales."
+    "notes": "Built by scripts/build-posture-pack.sh. Same SKU on Phantom and X Money."
   },
   {
     "id": "sentinel-skill-zk-01",
