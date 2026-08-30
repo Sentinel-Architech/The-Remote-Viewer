@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { isLearned, learnedCount as countLearned, osTitle as titleOfOs, rankFor, sigKey, useProgress } from "@/lib/progress";
 import { useIdentity } from "@/lib/identity";
-import { clearForcePulse, forceHotSnap, forceSnap, isRepairLock, raceFromRows, readPulse, readSeverity, usePulse } from "@/lib/pulse";
+import { clearForcePulse, forceHotSnap, forceMiss, forceSnap, isRepairLock, raceFromRows, readPulse, readSeverity, usePulse } from "@/lib/pulse";
 import { broadcastPulse, broadcastStanding, rowsFor, useLiveLead } from "@/lib/live";
 import { assertMeshAllowed, assertOsAllowed, assertRepairAllowed, assertSeizeAllowed, assertSpawnAllowed, assertTheaterAllowed, boundRepairText, deckVerdict, isTopicHeld, useAffairs } from "@/lib/affairs";
 import { probeNative, sanitizeIceServers } from "@/lib/native";
@@ -185,6 +185,13 @@ export function isTheaterNow() {
   const live = useLiveLead.getState();
   const pubkey = useIdentity.getState().pubkey ?? "";
   return readSeverity(clock, raceFromRows(rowsFor(live), pubkey), pulse.repairForced).lock;
+}
+
+export function isTheaterWait() {
+  if (isTheaterNow()) return false;
+  const p = usePulse.getState();
+  if (p.lastPhase === "snap") return false;
+  return p.missed;
 }
 
 function cap(bodies: SpawnedBody[]) {
@@ -568,7 +575,11 @@ export function bindPlaygroundTest() {
     },
     forceSnap: (ms?: number) => forceSnap(ms),
     forceHotSnap: (ms?: number) => forceHotSnap(ms),
-    clearForcePulse: () => clearForcePulse(),
+    forceMiss: (ms?: number) => forceMiss(ms),
+    clearForcePulse: () => {
+      clearForcePulse();
+      usePulse.setState({ missed: false, upgraded: false });
+    },
     readSeverity: (rows?: Array<{ pubkey: string; pulseScore: number; place: number }>, pubkey?: string) => {
       const live = useLiveLead.getState();
       const key = pubkey ?? useIdentity.getState().pubkey ?? "";

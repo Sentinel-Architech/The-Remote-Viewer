@@ -17,9 +17,9 @@ export const Route = createRootRoute({
       { title: APP_NAME },
       {
         name: "description",
-        content: `${DECK_NAME} for ${NETWORK_NAME}. Synapse heals tissue. God's Eye reads human byproducts — never bodies. One Remote Viewer HUB on every device. Native web stack A–Z — any Wi-Fi device. No Google identity, no wallet.`,
+        content: `In God We Trust. ${DECK_NAME} for ${NETWORK_NAME}. Synapse heals tissue. God's Eye reads human byproducts — never bodies. One Remote Viewer HUB on every device. Native web stack A–Z — any Wi-Fi device. No Google identity, no wallet.`,
       },
-      { name: "theme-color", content: "#08090b" },
+      { name: "theme-color", content: "#070910" },
       { name: "color-scheme", content: "dark" },
       { name: "format-detection", content: "telephone=no" },
     ],

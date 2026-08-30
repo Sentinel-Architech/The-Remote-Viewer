@@ -20,6 +20,7 @@ import {
   ScrollText,
   Shield,
   ShieldCheck,
+  Timer,
   Trash2,
   X,
 } from "lucide-react";
@@ -30,6 +31,7 @@ import {
   DECK_NAME,
   HUB_TAG,
   IDENTITY_TAG,
+  MOTTO,
   NATIVE_TAG,
   NETWORK_SHORT,
   NETWORK_TAG,
@@ -73,7 +75,12 @@ import { PlaygroundCanvas } from "./scene";
 import { BoardDashboard, InstallStrip } from "./board";
 import { RepairPanel } from "./repair";
 import { AffairsChip, AffairsPanel } from "./affairs";
+import { FriendsPanel, GuestGate, ShopPanel, SocialDock, useClaimSocial } from "./social";
+import { PillChip, PillGate, useHydratePill } from "./pill";
+import { lineFor, PILL_TAG, usePill, viewingLens } from "@/lib/pill";
 import { assertHubAllowed, assertMeshAllowed, useAffairs } from "@/lib/affairs";
+import { authEnabled, signOut } from "@/lib/auth/client";
+import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import {
   bindPlaygroundTest,
   KIND_LABEL,
@@ -96,7 +103,7 @@ const NEURAL_ICONS: Record<ShapeKind, typeof Circle> = {
 
 const SHAPE_KINDS: ShapeKind[] = ["sphere", "box", "cylinder"];
 
-type Panel = "vault" | "briefing" | "board" | "repair" | "affairs" | null;
+type Panel = "vault" | "briefing" | "board" | "repair" | "affairs" | "friends" | "shop" | null;
 
 function Meter({
   label,
@@ -140,11 +147,14 @@ function Toolbar() {
   const orbit = theater === "orbit";
   const clock = usePulseClock();
   const pressure = useSnapPressure();
+  const missed = usePulse((s) => s.missed);
   const snap = clock.phase === "snap";
   const now = pressure.lock;
+  const wait = missed && !snap;
+  const snapIn = Math.max(0, Math.ceil(clock.snapIn / 1000));
 
   return (
-    <div className="deck-toolbar pointer-events-none absolute inset-x-0 bottom-0 z-10 px-3 pb-[max(4.25rem,env(safe-area-inset-bottom))] sm:px-5 sm:pb-[max(0.85rem,env(safe-area-inset-bottom))]">
+    <div className="deck-toolbar pointer-events-none absolute inset-x-0 z-10 px-3 pb-2 sm:px-5">
       <div className="pointer-events-auto flex w-full max-w-[calc(100%-3.75rem)] flex-col gap-2 rounded-xl bg-card p-2 shadow-[var(--shadow-border)] sm:max-w-2xl sm:p-3">
         <div className="flex items-center gap-2" role="group" aria-label="Strain toggle">
           {SHAPE_KINDS.map((kind) => {
@@ -170,21 +180,24 @@ function Toolbar() {
         </div>
         <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Field taps">
           <Button
-            variant={now ? "primary" : "solid"}
+            variant={now ? "primary" : wait ? "ghost" : "solid"}
             aria-label={
               now
                 ? `NOW. Seize the nearest strain or wait for the next upgrade.`
                 : snap
                   ? `SNAP drop ${labels[selected]}. Score now — lock in ${Math.max(0, Math.ceil(pressure.hotIn / 1000))} seconds.`
-                  : `Drop ${labels[selected]}`
+                  : wait
+                    ? `You wait. Next SNAP in ${snapIn} seconds. Drop still stocks the field.`
+                    : `Drop ${labels[selected]}`
             }
             onClick={() => (now ? seizeNow() : spawn())}
-            className={cn("flex-1 sm:flex-none", now && "pulse-snap-hot")}
+            className={cn("flex-1 sm:flex-none", now && "pulse-snap-hot", wait && "pulse-wait")}
             data-snap={snap ? "1" : "0"}
             data-severity={pressure.severity}
+            data-wait={wait ? "1" : "0"}
           >
-            <CirclePlus className="size-4" strokeWidth={1.75} />
-            {now ? "NOW" : snap ? "SNAP" : "Drop"}
+            {wait ? <Timer className="size-4" strokeWidth={1.75} /> : <CirclePlus className="size-4" strokeWidth={1.75} />}
+            {now ? "NOW" : snap ? "SNAP" : wait ? "WAIT" : "Drop"}
           </Button>
           <Button
             variant="solid"
@@ -589,6 +602,8 @@ function VaultPanel({ onClose }: { onClose: () => void }) {
   const xpMax = nxt ? nxt.xp : rank.xp;
   const xpMin = rank.xp;
   const xpSpan = Math.max(1, xpMax - xpMin);
+  const { user, isPending } = useCurrentUserState();
+  const lens = usePill((s) => s.lens);
 
   async function copyKey() {
     if (!pubkey) return;
@@ -612,12 +627,30 @@ function VaultPanel({ onClose }: { onClose: () => void }) {
           <p className="text-xs font-medium tracking-widest text-muted uppercase">Profile vault</p>
           <p className="mt-1 font-display text-lg text-foreground">{rank.title}</p>
           <p className="font-mono text-xs text-sage">Lvl {rank.level}</p>
+          {isPending ? (
+            <div className="mt-2 h-11 w-28 rounded-md bg-foreground/12" aria-hidden />
+          ) : user ? (
+            <p className="mt-2 truncate text-sm text-foreground">{user.displayName ?? "Signed in with X"}</p>
+          ) : (
+            <p className="mt-2 text-sm text-muted">Guest · Viewer key only</p>
+          )}
+          {authEnabled && user ? (
+            <Button
+              variant="ghost"
+              className="mt-2"
+              aria-label="Sign out of X"
+              onClick={() => void signOut().catch(() => undefined)}
+            >
+              Sign out of X
+            </Button>
+          ) : null}
         </div>
         <Button variant="ghost" size="icon" aria-label="Close vault" onClick={onClose} className="size-11">
           <X className="size-4" strokeWidth={1.75} />
         </Button>
       </div>
       <p className="mt-2 text-sm leading-relaxed text-muted">{IDENTITY_TAG}</p>
+      {lens ? <p className="mt-2 text-xs leading-relaxed text-sage">{PILL_TAG[lens]}</p> : null}
       <HubDeck />
       <WireStrip />
       <NativeStack />
@@ -722,6 +755,8 @@ function Header({
           <h1 className="deck-title font-display mt-1 text-2xl font-semibold tracking-tight text-foreground">
             {DECK_NAME}
           </h1>
+          <p className="mt-1 text-xs font-medium tracking-[0.18em] text-sage uppercase">{MOTTO}</p>
+          <PillChip />
           <p className="deck-tag mt-1 hidden max-w-sm text-xs leading-relaxed text-muted sm:block">
             {orbit ? THEATER_ORBIT_TAG : NETWORK_TAG}
           </p>
@@ -847,6 +882,8 @@ function PulseStrip() {
   const youLead = Boolean(mine && mine.place === 1);
   const place = youLead ? "you #1" : mine ? `you #${mine.place}` : live.length ? "unposted" : "empty";
   const label = regionLabel(scope, region);
+  const viewing = viewingLens({ lens: usePill((s) => s.lens), glimpse: usePill((s) => s.glimpse) });
+  const voice = lineFor(now ? "now" : snap ? "snap" : missed ? "wait" : "pulse", viewing);
   const line = now
     ? `NOW ${secs}s`
     : snap
@@ -858,19 +895,12 @@ function PulseStrip() {
     <p
       className={cn(
         "max-w-[11rem] px-1 text-right font-mono text-xs tabular-nums",
-        now ? "text-ember" : snap ? "text-ember" : "text-muted",
+        now ? "text-ember" : snap ? "text-ember" : missed ? "text-ember" : "text-muted",
       )}
-      aria-label={
-        now
-          ? `NOW ${secs} seconds. ${place}. This lock is the upgrade. Seize or wait.`
-          : snap
-            ? `SNAP ${secs} seconds. Lock in ${hotIn} seconds. ${place}.`
-            : missed
-              ? `You wait. Next SNAP in ${snapIn} seconds. ${place}.`
-              : `${scope} pulse ${secs} seconds. ${place}.`
-      }
+      aria-label={`${voice} ${place}.`}
       data-phase={clock.phase}
       data-severity={pressure.severity}
+      data-wait={missed && !snap ? "1" : "0"}
       data-place={mine?.place ?? 0}
     >
       {line}
@@ -987,7 +1017,7 @@ function LiveLeadBar({ onOpen }: { onOpen: () => void }) {
     <div
       className={cn(
         "pointer-events-auto mt-2 w-fit max-w-[min(18rem,calc(100vw-7.5rem))] rounded-xl bg-card p-1 shadow-[var(--shadow-border)]",
-        now ? "pulse-snap-hot" : snap && "pulse-snap",
+        now ? "pulse-snap-hot" : snap ? "pulse-snap" : missed && "pulse-wait",
       )}
       data-phase={clock.phase}
       data-severity={pressure.severity}
@@ -1011,7 +1041,7 @@ function LiveLeadBar({ onOpen }: { onOpen: () => void }) {
         className="mt-1 block min-h-11 w-full rounded-lg px-2 py-1 text-left"
         aria-label="Open live mesh board"
       >
-        <p className={cn("font-mono text-xs tabular-nums", now || snap ? "text-ember" : "text-foreground")}>
+        <p className={cn("font-mono text-xs tabular-nums", now || snap || missed ? "text-ember" : "text-foreground")}>
           {now
             ? `NOW ${secs}s — seize or wait`
             : snap
@@ -1101,7 +1131,14 @@ export function Playground() {
   const pressure = useSnapPressure();
   const native = useNativeProbe();
   const iaHolds = useAffairs((s) => (Object.keys(s.held) as Array<keyof typeof s.held>).filter((k) => s.held[k]).length);
+  const missed = usePulse((s) => s.missed);
+  const wait = missed && phase !== "snap" && pressure.severity !== "snap";
   useLivePulseFeed();
+  useClaimSocial();
+  useHydratePill();
+  const pill = usePill((s) => s.lens);
+  const glimpse = usePill((s) => s.glimpse);
+  const viewing = viewingLens({ lens: pill, glimpse });
 
   useEffect(() => {
     bindPlaygroundTest();
@@ -1120,6 +1157,10 @@ export function Playground() {
       api.listBoard = listBoard;
       api.openRepair = () => setPanel("repair");
       api.openAffairs = () => setPanel("affairs");
+      api.openFriends = () => setPanel("friends");
+      api.choosePill = (pill: "red" | "blue") => usePill.getState().choose(pill);
+      api.peekPill = () => usePill.getState().peek();
+      api.pill = () => viewingLens(usePill.getState());
       api.postStanding = () => {
         if (!assertMeshAllowed()) throw new Error("Internal Affairs holds the Mesh Board.");
         const id = useIdentity.getState();
@@ -1233,6 +1274,11 @@ export function Playground() {
       data-affairs="1"
       data-wire="1"
       data-ia-holds={String(iaHolds)}
+      data-social="1"
+      data-auth="1"
+      data-pill={viewing ?? ""}
+      data-glimpse={glimpse ? "1" : "0"}
+      data-wait={wait ? "1" : "0"}
     >
       <div className="absolute inset-0">
         <FieldGate>
@@ -1246,14 +1292,32 @@ export function Playground() {
       {panel === "board" ? <BoardDashboard onClose={() => setPanel(null)} /> : null}
       {panel === "repair" ? <RepairPanel onClose={() => setPanel(null)} /> : null}
       {panel === "affairs" ? <AffairsPanel onClose={() => setPanel(null)} /> : null}
+      {panel === "friends" ? (
+        <FriendsPanel
+          onClose={() => setPanel(null)}
+          onPair={() => setPanel("vault")}
+          onBoard={() => setPanel("board")}
+          onShop={() => setPanel("shop")}
+        />
+      ) : null}
+      {panel === "shop" ? <ShopPanel onClose={() => setPanel(null)} /> : null}
+      <PillGate />
+      {panel === null && pill ? <GuestGate onPlay={() => undefined} /> : null}
       <Toolbar />
+      <SocialDock
+        panel={panel}
+        onFriends={() => setPanel(panel === "friends" ? null : "friends")}
+        onBoard={() => setPanel(panel === "board" ? null : "board")}
+        onYou={() => setPanel(panel === "vault" ? null : "vault")}
+      />
       <PhysicsLegend />
       <p className={cn("sr-only")}>
-        Command Deck for The Remote Viewer Network. Synapse: remote neuron in cerebrospinal fluid against HSV, West
+        Command Deck for The Remote Viewer Network. In God We Trust. Choose red or blue lens before sign-in. Same facts, two deliveries. Glimpse the other side. Synapse: remote neuron in cerebrospinal fluid against HSV, West
         Nile, and rabies. God's Eye: orbital mesh that reads human byproducts — emission, runoff, worm — never bodies.
         Seize each strain three times so Sentinel OS learns the signature and auto-defends in both theaters. Play by
         toggle and tap: select a type, tap Drop or the field, tap a strain to seize. SNAP window scores. Last four
-        seconds or a close race is NOW — tap NOW or the strain, or wait. Repair SNAP: tap Seize fix in the lock or wait. Live local, national, and globe boards. One Remote Viewer HUB syncs rank and Sentinel OS to
+        seconds or a close race is NOW — tap NOW or the strain, or wait. Miss the lock and Drop becomes WAIT until the
+        next SNAP. Repair SNAP: tap Seize fix in the lock or wait. Live local, national, and globe boards. One Remote Viewer HUB syncs rank and Sentinel OS to
         every paired device instantly. Native stack A–Z: WebCrypto, WebRTC host ICE, WebGL, PWA — no Google identity, no
         wallet. Sentinel Repair diagnoses by tap. GitHub automations open draft fix PRs. Command Deck never merges.
         One-tap install from Defense Front, X, and GitHub. Internal Affairs watches the watchers. All agents report on one

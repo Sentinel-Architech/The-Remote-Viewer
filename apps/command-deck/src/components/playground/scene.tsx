@@ -212,8 +212,17 @@ function useNowLock() {
   return usePulse((s) => s.lastSeverity === "snap" || s.repairForced);
 }
 
-function nowEmissive(base: number, now: boolean) {
-  return now ? Math.min(0.92, base * 3.4) : base;
+function useWaitLock() {
+  const missed = usePulse((s) => s.missed);
+  const now = useNowLock();
+  const snap = usePulse((s) => s.lastPhase === "snap");
+  return missed && !now && !snap;
+}
+
+function nowEmissive(base: number, now: boolean, wait = false) {
+  if (now) return Math.min(0.92, base * 3.4);
+  if (wait) return base * 0.28;
+  return base;
 }
 
 function ShapeVisual({ body }: { body: SpawnedBody }) {
@@ -221,6 +230,7 @@ function ShapeVisual({ body }: { body: SpawnedBody }) {
   const theater = usePlayground((s) => s.theater);
   const learned = useProgress((s) => s.learned);
   const now = useNowLock();
+  const wait = useWaitLock();
   const { kind, color, scale, role } = body;
   const sentinel = role === "sentinel";
   const r = SPHERE_RADIUS * scale;
@@ -241,7 +251,7 @@ function ShapeVisual({ body }: { body: SpawnedBody }) {
             bumpMap={orbit ? undefined : virus}
             bumpScale={orbit ? 0 : 0.07}
             emissive={color}
-            emissiveIntensity={nowEmissive(sentinel ? 0.35 : orbit ? 0.22 : 0.08, now && !sentinel)}
+            emissiveIntensity={nowEmissive(sentinel ? 0.35 : orbit ? 0.22 : 0.08, now && !sentinel, wait && !sentinel)}
             sheen={orbit ? 0 : 0.4}
             sheenColor={color}
           />
@@ -265,7 +275,7 @@ function ShapeVisual({ body }: { body: SpawnedBody }) {
               metalness={0.22}
               clearcoat={0.4}
               emissive={color}
-              emissiveIntensity={nowEmissive(0.1, now)}
+              emissiveIntensity={nowEmissive(0.1, now, wait)}
             />
           </mesh>
           {known ? <KnownRing radius={s * 0.72} /> : null}
@@ -285,7 +295,7 @@ function ShapeVisual({ body }: { body: SpawnedBody }) {
             bumpMap={virus}
             bumpScale={0.05}
             emissive={color}
-            emissiveIntensity={nowEmissive(0.1, now)}
+            emissiveIntensity={nowEmissive(0.1, now, wait)}
             sheen={0.5}
             sheenColor={color}
           />
@@ -319,7 +329,7 @@ function ShapeVisual({ body }: { body: SpawnedBody }) {
             metalness={0.45}
             clearcoat={0.3}
             emissive={color}
-            emissiveIntensity={nowEmissive(0.16, now)}
+            emissiveIntensity={nowEmissive(0.16, now, wait)}
           />
         </mesh>
         {known ? <KnownRing radius={CYL_RADIUS * scale * 1.8} /> : null}
@@ -340,7 +350,7 @@ function ShapeVisual({ body }: { body: SpawnedBody }) {
           metalness={0.12}
           clearcoat={0.42}
           emissive={color}
-          emissiveIntensity={nowEmissive(0.06, now)}
+          emissiveIntensity={nowEmissive(0.06, now, wait)}
         />
       </mesh>
       <mesh castShadow receiveShadow position={[0, -h * 0.32, 0]}>
@@ -351,7 +361,7 @@ function ShapeVisual({ body }: { body: SpawnedBody }) {
           metalness={0.1}
           clearcoat={0.4}
           emissive={color}
-          emissiveIntensity={nowEmissive(0.05, now)}
+          emissiveIntensity={nowEmissive(0.05, now, wait)}
         />
       </mesh>
       {known ? <KnownRing radius={br * 1.4} /> : null}
@@ -616,18 +626,21 @@ function SceneTint() {
   const cleared = useProgress((s) => s.cleared);
   const xp = useProgress((s) => s.xp);
   const now = useNowLock();
+  const wait = useWaitLock();
   const { gl, scene } = useThree();
   useEffect(() => {
     const heal = healTier(healed);
     const sight = sightTier(cleared, rankFor(xp).level);
     if (theater === "neural") {
-      gl.setClearColor(now ? "#2a0c0c" : NEURAL_FOG, 1);
-      scene.fog = new THREE.FogExp2(now ? "#2a0c0c" : NEURAL_FOG, 0.052 - heal * 0.01);
+      const fog = now ? "#2a0c0c" : wait ? "#0c1014" : NEURAL_FOG;
+      gl.setClearColor(fog, 1);
+      scene.fog = new THREE.FogExp2(fog, 0.052 - heal * 0.01 + (wait ? 0.018 : 0));
     } else {
-      gl.setClearColor(now ? "#140606" : ORBIT_FOG, 1);
-      scene.fog = new THREE.Fog(now ? "#140606" : ORBIT_FOG, 14 + sight * 4, 48 + sight * 10);
+      const fog = now ? "#140606" : wait ? "#030508" : ORBIT_FOG;
+      gl.setClearColor(fog, 1);
+      scene.fog = new THREE.Fog(fog, 14 + sight * 4, 48 + sight * 10);
     }
-  }, [theater, healed, cleared, xp, now, gl, scene]);
+  }, [theater, healed, cleared, xp, now, wait, gl, scene]);
   return null;
 }
 

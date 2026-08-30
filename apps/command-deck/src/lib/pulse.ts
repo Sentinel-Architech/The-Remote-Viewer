@@ -74,6 +74,25 @@ export function forceHotSnap(ms = SNAP_HOT_MS) {
   return forceSnap(ms, "hot");
 }
 
+export function forceOpen(ms = PULSE_MS - SNAP_MS) {
+  forceUntil = Date.now() + Math.max(1_000, ms);
+  forcePhase = "open";
+  forceReason = "open";
+  const clock = readPulse();
+  usePulse.setState({
+    lastPhase: "open",
+    lastSeverity: "watch",
+    repairForced: false,
+  });
+  return clock;
+}
+
+export function forceMiss(ms = PULSE_MS - SNAP_MS) {
+  forceOpen(ms);
+  usePulse.setState({ missed: true, upgraded: false });
+  return readPulse();
+}
+
 export function clearForcePulse() {
   forceUntil = 0;
   forcePhase = null;
@@ -103,7 +122,7 @@ export function readPulse(now = Date.now()): PulseClock {
       left,
       elapsed: PULSE_MS - left,
       phase,
-      snapIn: 0,
+      snapIn: phase === "snap" ? 0 : Math.max(0, left - SNAP_MS),
       hotIn: clockSeverity === "snap" ? 0 : Math.max(0, left - SNAP_HOT_MS),
       clockSeverity,
     };
