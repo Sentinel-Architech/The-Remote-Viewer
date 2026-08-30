@@ -148,7 +148,7 @@ export function BoardDashboard({ onClose }: { onClose: () => void }) {
       data-phase={clock.phase}
       data-severity={pressure.severity}
       className={cn(
-        "pointer-events-auto absolute inset-x-3 top-28 bottom-36 z-20 flex max-h-[min(42rem,74dvh)] flex-col overflow-hidden rounded-xl bg-card shadow-[var(--shadow-border)] sm:inset-auto sm:top-32 sm:right-16 sm:bottom-auto sm:h-auto sm:w-[min(36rem,calc(100%-5.5rem))] sm:max-h-[min(42rem,72dvh)]",
+        "pointer-events-auto absolute inset-x-3 top-28 bottom-36 z-40 flex max-h-[min(42rem,74dvh)] flex-col overflow-hidden rounded-xl bg-card shadow-[var(--shadow-border)] sm:inset-auto sm:top-32 sm:right-16 sm:bottom-auto sm:h-auto sm:w-[min(36rem,calc(100%-5.5rem))] sm:max-h-[min(42rem,72dvh)]",
         now ? "pulse-snap-hot" : snap && "pulse-snap",
       )}
     >

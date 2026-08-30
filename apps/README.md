@@ -10,6 +10,7 @@
 | Web Vite shell | [`web/`](web/) | **Old scaffold** — not the product UI. Use `hub/` |
 | Expo mobile | [`mobile/`](mobile/) | **PARKED / SCAFFOLD** — not an app-store client |
 | Shared types | [`shared/`](shared/) | Types / constants for the parked mobile+web shells |
+| **Command Deck** | [`command-deck/`](command-deck/) | **LIVE** Synapse + God's Eye, red/blue lens, Mesh Board, HUB |
 
 ## Viewer Hub (the real DApp)
 
@@ -33,6 +34,7 @@ apps/
 ├── remote-viewer/  # Legacy vanilla
 ├── web/            # Old Vite scaffold (superseded by hub/)
 ├── mobile/         # Expo scaffold (PARKED)
+├── command-deck/   # LIVE Command Deck (Synapse / God's Eye)
 └── shared/         # Shared types for web/mobile scaffolds
 ```
 

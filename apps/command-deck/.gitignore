@@ -1,0 +1,15 @@
+node_modules/
+.project_id
+.github_repo
+.env
+.env.*
+.vercel/
+.grok/
+artifacts/
+screenshots/
+attachments/
+dist/
+.output/
+*.log
+.DS_Store
+.preview.pid
