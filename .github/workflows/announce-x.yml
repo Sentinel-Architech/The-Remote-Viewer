@@ -1,0 +1,53 @@
+name: Announce release on X
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      text:
+        description: Optional override post text
+        required: false
+        type: string
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Build post text
+        id: text
+        env:
+          OVERRIDE: ${{ github.event.inputs.text }}
+          TAG: ${{ github.event.release.tag_name || github.ref_name }}
+          URL: ${{ github.event.release.html_url || format('{0}/{1}', github.server_url, github.repository) }}
+          REPO: ${{ github.event.repository.name }}
+        run: |
+          if [ -n "$OVERRIDE" ]; then
+            BODY="$OVERRIDE"
+          else
+            BODY=$(printf '%s\n%s' "${REPO} ${TAG} is out." "$URL")
+          fi
+          {
+            echo "body<<EOF"
+            printf '%s\n' "$BODY"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Post to X
+        env:
+          X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
+          TEXT: ${{ steps.text.outputs.body }}
+        run: |
+          if [ -z "$X_BEARER_TOKEN" ]; then
+            echo "X_BEARER_TOKEN secret not set. Skipping live post."
+            echo "Draft:"
+            printf '%s\n' "$TEXT"
+            exit 0
+          fi
+          PAYLOAD=$(python3 -c 'import json,os; print(json.dumps({"text": os.environ["TEXT"]}))')
+          curl -sS -X POST "https://api.x.com/2/tweets" \
+            -H "Authorization: Bearer $X_BEARER_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD"
