@@ -6,6 +6,7 @@ import {
   Brain,
   CircleUser,
   Cpu,
+  Crosshair,
   Film,
   Fingerprint,
   Gauge,
@@ -49,10 +50,11 @@ import { TrialStrip } from "./trial-strip";
 
 const NAV = [
   { to: "/hub", label: "Command", icon: LayoutDashboard },
+  { to: "/hub/deck", label: "Deck", icon: Crosshair },
   { to: "/hub/node", label: "Node", icon: Fingerprint },
   { to: "/hub/neuron", label: "Defend", icon: Brain },
   { to: "/hub/mesh", label: "Mesh", icon: Globe },
-  { to: "/hub/shop", label: "Rewards", icon: Gift },
+  { to: "/hub/shop", label: "TRV shop", icon: Gift },
   { to: "/hub/os", label: "OS", icon: Cpu },
   { to: "/hub/audit", label: "Audit", icon: Gauge },
   { to: "/hub/live", label: "Live", icon: Radio },
@@ -73,9 +75,9 @@ const NAV = [
 
 const MOBILE_NAV = [
   { to: "/hub", label: "Home", icon: LayoutDashboard },
-  { to: "/hub/neuron", label: "Defend", icon: Brain },
-  { to: "/hub/mesh", label: "Mesh", icon: Globe },
-  { to: "/hub/shop", label: "Rewards", icon: Gift },
+  { to: "/hub/deck", label: "Deck", icon: Crosshair },
+  { to: "/hub/shop", label: "Shop", icon: Gift },
+  { to: "/hub/friends", label: "Friends", icon: Users },
 ] as const;
 
 function DutyStrip() {
@@ -87,7 +89,8 @@ function DutyStrip() {
     pathname === "/hub/" ||
     pathname.startsWith("/hub/neuron") ||
     pathname.startsWith("/hub/mesh") ||
-    pathname.startsWith("/hub/honeypot");
+    pathname.startsWith("/hub/honeypot") ||
+    pathname.startsWith("/hub/deck");
   if (!watch || watch.claimed || onField) return null;
 
   return (
