@@ -25,15 +25,18 @@ jobs:
       - name: Build ZIP
         run: |
           chmod +x scripts/build-posture-pack.sh
-          ./scripts/build-posture-pack.sh
+          ./scripts/build-posture-pack.sh both
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: trv-posture-pack
+          name: trv-posture-packs
           path: |
+            dist/trv-posture-lite.zip
+            dist/trv-posture-lite-*.zip
             dist/trv-posture-pack.zip
             dist/trv-posture-pack-*.zip
+            dist/trv-posture-lite.tar.gz
             dist/trv-posture-pack.tar.gz
           if-no-files-found: error
           retention-days: 30
