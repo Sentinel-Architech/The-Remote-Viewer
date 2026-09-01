@@ -1,6 +1,8 @@
 /**
  * Shop near top of Viewer Profile.
- * Solana checkout + Aurora + lock + GPS field + NFT mint.
+ * Public TRV_POOL = X Money @Archtecht (human rail).
+ * Solana dual-transfer remains the sovereign on-chain path.
+ * X Money is not decentralized (Cross River / Visa). Do not delete SOL.
  * 50/50 split, zero simulation, deliberate re-selection (originator 2026-08-16).
  */
 import {
@@ -22,6 +24,9 @@ import {
 
 const WALLET_KEY = 'rv-wallet-pubkey';
 const CREATOR = '9XhGDthCvcDz3tLfTgXRLXx1W48fM5oQtrFTRot3yLYG';
+const TRV_POOL = '@Archtecht';
+const TRV_POOL_URL = 'https://x.com/Archtecht';
+// Sovereign Solana sink for PublicKey splits only — not the public TRV_POOL name.
 const COMMUNITY_POOL = '555y97LMoygGAWUWFngbprr5oMHFJsQqoFAbrHi5e8nt';
 const RPC = 'https://solana-rpc.publicnode.com';
 
@@ -136,7 +141,6 @@ async function payWithSolana(credits) {
     const connection = new Connection(RPC, 'confirmed');
     const from = provider.publicKey;
 
-    // Exact 50/50 split — zero residual
     const creatorLamports = Math.floor(lamports / 2);
     const poolLamports = lamports - creatorLamports;
 
@@ -191,7 +195,6 @@ async function payWithSolana(credits) {
       renderShopUI(toastFn);
       renderWalletRow();
 
-      // Force deliberate new selection — no accidental second purchase
       const packSelect = document.getElementById('credit-pack');
       if (packSelect) {
         packSelect.value = '';
@@ -208,14 +211,12 @@ async function payWithSolana(credits) {
     if (/User rejected|rejected|cancel/i.test(msg)) toastFn('Payment cancelled');
     else toastFn('Payment failed — try again');
   } finally {
-    // Only re-enable if a pack is still selected (i.e. failure path).
-    // Success path already forced "Select a pack first".
     if (buyBtn) {
       const packSelect = document.getElementById('credit-pack');
       const hasSelection = packSelect && packSelect.value;
       if (hasSelection) {
         buyBtn.disabled = false;
-        buyBtn.textContent = 'Pay with Solana';
+        buyBtn.textContent = 'Pay with Solana (sovereign)';
       } else {
         buyBtn.disabled = true;
         buyBtn.textContent = 'Select a pack first';
@@ -234,7 +235,7 @@ function ensureShopUI() {
     sec.innerHTML = `
       <div class="card">
         <h2>Shop</h2>
-        <p class="soft">TRV credits · Solana wallet · Aurora · NFT mint.</p>
+        <p class="soft">TRV credits · TRV_POOL @Archtecht · Aurora · NFT mint.</p>
         <p>Your TRV credits: <strong id="trv-balance">0</strong></p>
         <p class="soft" id="validated-status">Not yet a Validated Viewer</p>
         <div class="actions">
@@ -242,14 +243,18 @@ function ensureShopUI() {
         </div>
       </div>
       <div class="card">
-        <h2>Wallet & checkout</h2>
-        <p class="soft">Pay SOL on Solana. Credits unlock after the transaction confirms.</p>
+        <h2>TRV_POOL checkout</h2>
+        <p class="soft">Public pool is X Money <a href="${TRV_POOL_URL}" target="_blank" rel="noopener">${TRV_POOL}</a>. Send 11 or 25 USD with memo TRV-Posture-Lite or TRV-Posture-Pack, then DM the receipt.</p>
+        <div class="actions">
+          <a class="btn primary" id="pay-xmoney" href="${TRV_POOL_URL}" target="_blank" rel="noopener">Pay ${TRV_POOL} on X Money</a>
+        </div>
+        <p class="soft" style="font-size:0.78rem;margin-top:0.75rem">X Money is a bank rail (not decentralized). Solana below stays as the sovereign path.</p>
         <p class="soft" id="wallet-status">No wallet linked to this Viewer profile</p>
         <div class="actions">
-          <button type="button" class="btn primary" id="wallet-connect">Connect wallet</button>
+          <button type="button" class="btn" id="wallet-connect">Connect wallet</button>
           <button type="button" class="btn" id="wallet-disconnect">Unlink</button>
         </div>
-        <label style="margin-top:0.75rem">Buy TRV credits
+        <label style="margin-top:0.75rem">Sovereign SOL fallback
           <select id="credit-pack">
             <option value="">Select a pack…</option>
             <option value="25">25 credits · 0.02 SOL</option>
@@ -260,9 +265,9 @@ function ensureShopUI() {
         </label>
         <p class="soft" id="pack-prices" style="font-size:0.78rem;margin-top:0.35rem"></p>
         <div class="actions">
-          <button type="button" class="btn primary" id="buy-credits" disabled>Select a pack first</button>
+          <button type="button" class="btn" id="buy-credits" disabled>Select a pack first</button>
         </div>
-        <p class="soft" style="font-size:0.78rem;margin-top:0.5rem">50 % creator / 50 % Community Pool — SOL only. Credits granted only after confirmed on-chain transfer. Zero simulation.</p>
+        <p class="soft" style="font-size:0.78rem;margin-top:0.5rem">SOL path: 50 % creator / 50 % sink — credits after confirmed on-chain transfer. Zero simulation.</p>
       </div>
       <div class="card" id="lock-panel"></div>
       <div class="card" id="nft-panel"></div>
@@ -330,7 +335,6 @@ function ensureShopUI() {
     };
   }
 
-  // Only enable Pay after user deliberately selects a pack
   const packSelectInit = document.getElementById('credit-pack');
   if (packSelectInit) {
     packSelectInit.addEventListener('change', () => {
@@ -338,7 +342,7 @@ function ensureShopUI() {
       if (!btn) return;
       const has = !!packSelectInit.value;
       btn.disabled = !has;
-      btn.textContent = has ? 'Pay with Solana' : 'Select a pack first';
+      btn.textContent = has ? 'Pay with Solana (sovereign)' : 'Select a pack first';
     });
   }
 
