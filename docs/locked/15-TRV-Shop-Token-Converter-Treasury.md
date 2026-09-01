@@ -1,8 +1,8 @@
 # TRV Shop Token Converter & Treasury (Locked)
 
 **Status:** Locked — 2026-08-16 (originator revision: exact 50/50, creator address published, zero simulation)  
-**Chain:** Solana  
-**Community Pool (public):** `555y97LMoygGAWUWFngbprr5oMHFJsQqoFAbrHi5e8nt`  
+**Public TRV_POOL revised:** 2026-08-31 — X Money [@Archtecht](https://x.com/Archtecht)  
+**Chain (legacy SOL path):** Solana  
 **Creator receive (public):** `9XhGDthCvcDz3tLfTgXRLXx1W48fM5oQtrFTRot3yLYG`  
 **Depends on:** `05-Membership-Benefits.md`, `14-Community-Pool.md`, Identity Layer discount rules  
 **Does not alter:** Vault, Destroy = Restart semantics for identity, Class A data rules
@@ -13,11 +13,11 @@
 
 The **TRV Shop Token Converter** is the commerce settlement layer for native in-app purchases (digital goods, access, NFT-related fees where applicable). It:
 
-1. Accepts user payment in SOL (primary path).
+1. Accepts user payment on the public rail (**X Money @Archtecht**) or the legacy SOL path.
 2. Applies any locked membership discounts (identity-attested).
 3. Routes **every purchase** according to the treasury split below.
 4. Never takes custody of user identity keys, the Community Pool admin seed, or the creator wallet seed.
-5. **Zero simulation**: credits are granted only after a real, confirmed on-chain transfer. Simulation is forbidden once the first real purchase is PROVEN.
+5. **Zero simulation**: credits are granted only after a real, confirmed transfer. Simulation is forbidden once the first real purchase is PROVEN.
 
 ---
 
@@ -25,7 +25,8 @@ The **TRV Shop Token Converter** is the commerce settlement layer for native in-
 
 | Asset | Role | Notes |
 |-------|------|--------|
-| **SOL** | Primary and currently only settlement asset | Live path |
+| **X Money** | Public TRV_POOL rail | Handle `@Archtecht` |
+| **SOL** | Legacy settlement path | Still used by `shop-boot.js` dual-transfer |
 | **Allowlisted SPL tokens** | Deferred | Not implemented until PROVEN SOL path exists |
 
 ---
@@ -34,9 +35,10 @@ The **TRV Shop Token Converter** is the commerce settlement layer for native in-
 
 | Role | Address | Control | Public? |
 |------|---------|---------|---------|
-| **Community Pool** | `555y97LMoygGAWUWFngbprr5oMHFJsQqoFAbrHi5e8nt` | Originator | Yes |
+| **TRV_POOL (public)** | `@Archtecht` (X Money) | Originator | Yes |
+| **Legacy Solana sink** | `555y97LMoygGAWUWFngbprr5oMHFJsQqoFAbrHi5e8nt` | Originator | Implementation only |
 | **Creator** | `9XhGDthCvcDz3tLfTgXRLXx1W48fM5oQtrFTRot3yLYG` | Originator | Yes (published 2026-08-16) |
-| **User payer** | User’s own wallet | User | N/A |
+| **User payer** | User’s own wallet / X account | User | N/A |
 
 Identity burn does not move, claw back, or reassign any of these balances.
 
@@ -49,27 +51,27 @@ Identity burn does not move, claw back, or reassign any of these balances.
 | Bucket | Share | Destination |
 |--------|-------|-------------|
 | **Creator** | **50%** | `9XhGDthCvcDz3tLfTgXRLXx1W48fM5oQtrFTRot3yLYG` |
-| **Community Pool** | **50%** | `555y97LMoygGAWUWFngbprr5oMHFJsQqoFAbrHi5e8nt` |
+| **Community Pool / TRV_POOL** | **50%** | Public: `@Archtecht`. Legacy SOL sink only when the old dual-transfer path runs. |
 
-Exact integer split: `creatorLamports = Math.floor(total / 2)`, remainder to pool.  
+Exact integer split on the SOL path: `creatorLamports = Math.floor(total / 2)`, remainder to sink.  
 No residual. No default preference.
 
 Prior splits (10/90, 75/25) are fully superseded.
 
 ### 4.2 Voluntary tips / donations
 
-100 % to Community Pool. Not subject to the creator share.
+100 % to TRV_POOL (`@Archtecht`). Not subject to the creator share.
 
 ---
 
 ## 5. Zero-Simulation Rule
 
-- Credits may be granted **only** after `confirmTransaction` succeeds for a dual-transfer that matches the 50/50 rule.
+- Credits may be granted **only** after a confirmed X Money payment or `confirmTransaction` on the legacy SOL path.
 - No local-only credit grant, no mock signatures, no demo success path in the public build.
-- Once the first real mainnet purchase is confirmed and credits are issued from that signature, the simulation window is permanently closed.
+- Once the first real purchase is confirmed and credits are issued from that proof, the simulation window is permanently closed.
 
 ---
 
 ## 6. User-Facing Disclosure
 
-“50 % creator / 50 % Community Pool — SOL only. Credits granted only after confirmed on-chain transfer. Zero simulation.”
+“TRV_POOL is @Archtecht on X Money. 50 % creator / 50 % pool. Credits granted only after confirmed payment. Zero simulation.”
