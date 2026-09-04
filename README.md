@@ -4,7 +4,7 @@
 It is written for complete beginners (college freshman level).
 
 **Status authority:** [`docs/REALITY.md`](docs/REALITY.md).  
-**Working branch:** [`TheRemoteViewer`](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/tree/TheRemoteViewer)
+**Working branch:** [`TheRemoteViewer`](https://github.com/Sentinel-Architech/The-Remote-Viewer/tree/TheRemoteViewer)
 
 **Brand:** The Remote Viewer is the product. Its security service runs behind it.
 
@@ -117,7 +117,7 @@ Not a cloud AI product. Not a live DePIN network. Not an always-on oracle.
 The desktop crate now includes the **unified sovereign node runtime** (sled identity by default; ollama-rs and tract-onnx behind features). Hub viewers use `/hub/node`. Docs: [`docs/SOVEREIGN-NODE-RUNTIME.md`](docs/SOVEREIGN-NODE-RUNTIME.md) · [`desktop/RUNTIME.md`](desktop/RUNTIME.md).
 
 ```bash
-git clone -b TheRemoteViewer https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
+git clone -b TheRemoteViewer https://github.com/Sentinel-Architech/The-Remote-Viewer.git
 cd The-Remote-Viewer
 bash modules/defense/integrity-pulse.sh
 bash scripts/chat.sh
@@ -165,7 +165,7 @@ bash modules/path-b-recognition/install-founding.sh /path/to/founding-member-*.j
 
 ```bash
 pkg update && pkg install git python age -y
-git clone -b TheRemoteViewer https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
+git clone -b TheRemoteViewer https://github.com/Sentinel-Architech/The-Remote-Viewer.git
 cd The-Remote-Viewer
 bash modules/defense/integrity-pulse.sh
 ```
