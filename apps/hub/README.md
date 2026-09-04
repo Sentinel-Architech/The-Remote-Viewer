@@ -3,7 +3,7 @@
 Hosted Remote Viewer command surface.
 
 **Live:** [the-remote-viewer.grok.me](https://the-remote-viewer.grok.me)  
-**Branch:** [`TheRemoteViewer`](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/tree/TheRemoteViewer)  
+**Branch:** [`TheRemoteViewer`](https://github.com/Sentinel-Architech/The-Remote-Viewer/tree/TheRemoteViewer)  
 **Status (2026-08-22):** **LIVE** hosted DApp — not a scaffold. OS jack-in is in this folder; grok.me picks it up on republish.
 
 This folder is the product UI Remote Viewers use today. It is a **separate surface** from the local-first optical air-gap / Path B node. Those paths are unchanged and still live under `optical-airgap/`, `digital-vending/`, and `modules/`.
@@ -52,7 +52,7 @@ Be exact. Do not read this folder as if every TRV paper is shipped.
 ## Run
 
 ```bash
-git clone -b TheRemoteViewer https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
+git clone -b TheRemoteViewer https://github.com/Sentinel-Architech/The-Remote-Viewer.git
 cd The-Remote-Viewer/apps/hub
 npm install
 npm run dev
