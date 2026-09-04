@@ -21,6 +21,7 @@ export const ORIGIN_X = "https://x.com/Archtecht";
 export const ORIGIN_X_HANDLE = "@Archtecht";
 export const ORIGIN_GITHUB = "https://github.com/Sentinel-Architech/The-Remote-Viewer";
 export const ORIGIN_DF = "https://github.com/Sentinel-Architech/TheSentinel";
+export const ORIGIN_DECK = "https://the-remote-viewer.grok.me";
 export const ORIGIN_HUB = "https://sentinelsecurityprotocol.grok.me";
 export const HUB_SHOP = ORIGIN_HUB;
 export const HUB_FRIENDS = ORIGIN_HUB;
@@ -38,7 +39,7 @@ export const GATEWAY_TAG =
 
 export function sharePulseHref(score = 0) {
   const body = score
-    ? `Seized on The Remote Viewer Command Deck. Pulse ${score}. In God We Trust. Keys on the device. Sentinel named it.\n\n${ORIGIN_HUB}\n#TheRemoteViewer`
+    ? `Seized on The Remote Viewer Command Deck. Pulse ${score}. In God We Trust. Keys on the device. Sentinel named it.\n\n${ORIGIN_DECK}\n#TheRemoteViewer`
     : `The Remote Viewer — In God We Trust. Sovereign watch. Gateway Process. Sentinel OS. Keys on the device.\n\n${GATEWAY_HREF}\n#TheRemoteViewer`;
   return `${X_INTENT}?text=${encodeURIComponent(body)}`;
 }
