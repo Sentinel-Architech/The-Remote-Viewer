@@ -12,7 +12,7 @@
 
 | Surface | Status | Notes |
 |---------|--------|--------|
-| Viewer Hub DApp | **LIVE** | [`apps/hub`](../apps/hub) · [sentinelsecurityprotocol.grok.me](https://sentinelsecurityprotocol.grok.me) |
+| Viewer Hub DApp | **LIVE** | [`apps/hub`](../apps/hub) · [the-remote-viewer.grok.me](https://the-remote-viewer.grok.me) |
 | Viewer briefing | **OPTIONAL** | 12 stations after first watch; `viewer_profiles.tutorial_at` when sealed |
 | Daily Watch | **LIVE** | Defend / Mesh / Honeypot → claim TRV |
 | SENTINEL OS jack-in | **IN SOURCE** | 3D neuron flight on `/hub/neuron` and `/hub/os`. [`docs/SENTINEL-OS-JACK.md`](SENTINEL-OS-JACK.md). LIVE after grok.me republish. |
