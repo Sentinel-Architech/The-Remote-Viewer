@@ -12,18 +12,18 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@noble/ed25519": "^3.1.0",
+    "@noble/ed25519": "^3.2.0",
     "buffer": "^6.0.3",
-    "expo": "~57.0.14",
-    "expo-camera": "~57.0.3",
+    "expo": "~57.0.19",
+    "expo-camera": "~57.0.4",
     "expo-crypto": "~15.0.0",
     "expo-secure-store": "~15.0.0",
-    "expo-speech": "~57.0.1",
+    "expo-speech": "~57.0.2",
     "expo-speech-recognition": "^56.0.1",
     "expo-status-bar": "~57.0.1",
     "multiformats": "^13.3.1",
     "react": "19.2.8",
-    "react-native": "0.87.0"
+    "react-native": "0.87.1"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",
