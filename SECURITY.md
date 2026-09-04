@@ -2,7 +2,7 @@
 
 ## Project Purpose
 
-This repository contains The Remote Viewer / Sentinel Security Protocol — local-first, zero-custody, optical air-gap systems and related scaffolds. Design prioritizes user-held keys and no centralized backdoors.
+This repository contains The Remote Viewer — a local-first, zero-custody, optical air-gap system and related scaffolds. Design prioritizes user-held keys and no centralized backdoors. The security service that protects the Viewer Hub runs behind the product and is not the public name.
 
 ## Supported Versions
 
