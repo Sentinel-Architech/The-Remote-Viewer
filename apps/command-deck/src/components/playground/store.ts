@@ -336,7 +336,7 @@ export const usePlayground = create<PlaygroundState>((set, get) => ({
         briefing: note(
           theater === "orbit"
             ? "Internal Affairs holds God's Eye. Mesh stays closed."
-            : "Internal Affairs holds Synapse. CSF stays closed.",
+            : "Internal Affairs holds Neural Link. CSF stays closed.",
           get().briefing,
         ),
       });
@@ -449,7 +449,7 @@ export const usePlayground = create<PlaygroundState>((set, get) => ({
       );
     }
     if (result.autonomous) {
-      briefing = note("Sentinel OS autonomous. Self-defense live in Synapse and God's Eye.", briefing);
+      briefing = note("Sentinel OS autonomous. Self-defense live in Neural Link and God's Eye.", briefing);
     }
     if (result.ranked) briefing = note(`Rank up — ${result.ranked.title}. Combined dossier advanced.`, briefing);
     briefing = note(`Seized ${KIND_LABEL[theater][b.kind]}.`, briefing);

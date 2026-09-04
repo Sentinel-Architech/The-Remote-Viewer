@@ -77,6 +77,9 @@ import { RepairPanel } from "./repair";
 import { AffairsChip, AffairsPanel } from "./affairs";
 import { FriendsPanel, GuestGate, ShopPanel, SocialDock, useClaimSocial } from "./social";
 import { PillChip, PillGate, useHydratePill } from "./pill";
+import { SpecialistChip, SpecialistPanel } from "./specialist";
+import { DigitalLife } from "./life";
+import { useSpecialist } from "@/lib/specialist";
 import { lineFor, PILL_TAG, usePill, viewingLens } from "@/lib/pill";
 import { assertHubAllowed, assertMeshAllowed, useAffairs } from "@/lib/affairs";
 import { authEnabled, signOut } from "@/lib/auth/client";
@@ -103,7 +106,7 @@ const NEURAL_ICONS: Record<ShapeKind, typeof Circle> = {
 
 const SHAPE_KINDS: ShapeKind[] = ["sphere", "box", "cylinder"];
 
-type Panel = "vault" | "briefing" | "board" | "repair" | "affairs" | "friends" | "shop" | null;
+type Panel = "vault" | "briefing" | "board" | "repair" | "affairs" | "friends" | "shop" | "specialist" | null;
 
 function Meter({
   label,
@@ -328,10 +331,10 @@ function OsCatalog() {
       </div>
       <p className="mt-2 text-xs leading-relaxed text-muted">
         {armed
-          ? "All six signatures armed. Self-defense live in Synapse and God's Eye."
+          ? "All six signatures armed. Self-defense live in Neural Link and God's Eye."
           : "Seize a strain three times. The OS memorizes it and strikes that signature on its own."}
       </p>
-      <p className="mt-3 text-xs font-medium tracking-wide text-muted uppercase">Synapse</p>
+      <p className="mt-3 text-xs font-medium tracking-wide text-muted uppercase">Neural Link</p>
       <div className="mt-2 space-y-2">
         {neural.map((row) => (
           <SigMeter key={row.key} label={row.label} samples={samplesOf(learned, row.key)} />
@@ -651,6 +654,7 @@ function VaultPanel({ onClose }: { onClose: () => void }) {
       </div>
       <p className="mt-2 text-sm leading-relaxed text-muted">{IDENTITY_TAG}</p>
       {lens ? <p className="mt-2 text-xs leading-relaxed text-sage">{PILL_TAG[lens]}</p> : null}
+      <DigitalLife />
       <HubDeck />
       <WireStrip />
       <NativeStack />
@@ -764,7 +768,7 @@ function Header({
           <div className="pointer-events-auto mt-2 flex w-fit items-center gap-1 rounded-xl bg-card p-1 shadow-[var(--shadow-border)]">
             <Button
               variant={theater === "neural" ? "selected" : "ghost"}
-              aria-label="Enter synapse theater"
+              aria-label="Enter Neural Link"
               aria-pressed={theater === "neural"}
               disabled={freezeNeural && theater !== "neural"}
               onClick={() => setTheater("neural")}
@@ -855,6 +859,10 @@ function Header({
           <AffairsChip
             active={panel === "affairs"}
             onOpen={() => setPanel(panel === "affairs" ? null : "affairs")}
+          />
+          <SpecialistChip
+            active={panel === "specialist"}
+            onOpen={() => setPanel(panel === "specialist" ? null : "specialist")}
           />
         </div>
       </div>
@@ -1136,6 +1144,9 @@ export function Playground() {
   useLivePulseFeed();
   useClaimSocial();
   useHydratePill();
+  useEffect(() => {
+    useSpecialist.getState().hydrate();
+  }, []);
   const pill = usePill((s) => s.lens);
   const glimpse = usePill((s) => s.glimpse);
   const viewing = viewingLens({ lens: pill, glimpse });
@@ -1157,6 +1168,12 @@ export function Playground() {
       api.listBoard = listBoard;
       api.openRepair = () => setPanel("repair");
       api.openAffairs = () => setPanel("affairs");
+      api.openSpecialist = () => setPanel("specialist");
+      api.briefSpecialist = (job?: "strain" | "snap" | "affairs" | "now") => useSpecialist.getState().brief(job);
+      api.takeLife = (pin: string) => import("@/lib/life").then((m) => m.takeLife(pin));
+      api.wrapLife = (pin: string) => import("@/lib/life").then((m) => m.wrapLife(pin));
+      api.carryLife = (pin: string, raw: unknown) => import("@/lib/life").then((m) => m.carryLife(pin, raw));
+      api.destroyLife = () => import("@/lib/life").then((m) => m.destroyThisCopy());
       api.openFriends = () => setPanel("friends");
       api.choosePill = (pill: "red" | "blue") => usePill.getState().choose(pill);
       api.peekPill = () => usePill.getState().peek();
@@ -1272,6 +1289,7 @@ export function Playground() {
       data-repair="1"
       data-native={native.score}
       data-affairs="1"
+      data-specialist="1"
       data-wire="1"
       data-ia-holds={String(iaHolds)}
       data-social="1"
@@ -1292,6 +1310,7 @@ export function Playground() {
       {panel === "board" ? <BoardDashboard onClose={() => setPanel(null)} /> : null}
       {panel === "repair" ? <RepairPanel onClose={() => setPanel(null)} /> : null}
       {panel === "affairs" ? <AffairsPanel onClose={() => setPanel(null)} /> : null}
+      {panel === "specialist" ? <SpecialistPanel onClose={() => setPanel(null)} /> : null}
       {panel === "friends" ? (
         <FriendsPanel
           onClose={() => setPanel(null)}
@@ -1312,7 +1331,7 @@ export function Playground() {
       />
       <PhysicsLegend />
       <p className={cn("sr-only")}>
-        Command Deck for The Remote Viewer Network. In God We Trust. Choose red or blue lens before sign-in. Same facts, two deliveries. Glimpse the other side. Synapse: remote neuron in cerebrospinal fluid against HSV, West
+        Command Deck for The Remote Viewer Network. In God We Trust. Choose red or blue lens before sign-in. Same facts, two deliveries. Glimpse the other side. Two games only: Neural Link and God's Eye. Neural Link: remote neuron in cerebrospinal fluid against HSV, West
         Nile, and rabies. God's Eye: orbital mesh that reads human byproducts — emission, runoff, worm — never bodies.
         Seize each strain three times so Sentinel OS learns the signature and auto-defends in both theaters. Play by
         toggle and tap: select a type, tap Drop or the field, tap a strain to seize. SNAP window scores. Last four
@@ -1321,7 +1340,8 @@ export function Playground() {
         every paired device instantly. Native stack A–Z: WebCrypto, WebRTC host ICE, WebGL, PWA — no Google identity, no
         wallet. Sentinel Repair diagnoses by tap. GitHub automations open draft fix PRs. Command Deck never merges.
         One-tap install from Defense Front, X, and GitHub. Internal Affairs watches the watchers. All agents report on one
-        wire.
+        wire. On-device specialist names strains, briefs SNAP, and reports Affairs. Pair a local node for your own weights. Zero vendor keys.
+        Each Viewer owns their digital life. Take a PIN wrap. Carry it. Destroy a copy. X is a name, not the key.
       </p>
     </main>
   );

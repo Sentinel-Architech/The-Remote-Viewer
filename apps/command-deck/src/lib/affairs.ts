@@ -46,7 +46,7 @@ export const OUT_OF_BOUNDS =
 export const AFFAIR_AGENTS: AffairAgent[] = [
   {
     id: "synapse",
-    name: "Synapse",
+    name: "Neural Link",
     line: "CSF field. HSV, WNV, rabies. Tap to seize. No human bodies as pieces.",
     bounds: ["Virions only: HSV, WNV, Rabies", "Play is toggle and tap", "No human body meshes"],
     meta: false,
@@ -89,15 +89,20 @@ export const AFFAIR_AGENTS: AffairAgent[] = [
   {
     id: "os",
     name: "Sentinel OS",
-    line: "Learn three seizes per signature. Strike only what is learned.",
-    bounds: ["LEARN_NEED is three", "Strike learned signatures only", "Autonomous at 6/6, not before"],
+    line: "Learn three seizes per signature. Strike only what is learned. Specialist on-device or loopback.",
+    bounds: [
+      "LEARN_NEED is three",
+      "Strike learned signatures only",
+      "Autonomous at 6/6, not before",
+      "Specialist on-device or loopback node — no vendor keys",
+    ],
     meta: false,
   },
   {
     id: "vault",
     name: "Vault",
     line: "Ed25519 minted here. No OAuth. Origin links are not logins.",
-    bounds: ["Sovereign key on device", "No Google or Microsoft identity", "X / GitHub / DF are install links"],
+    bounds: ["Sovereign key on device", "No Google or Microsoft identity", "X / GitHub / DF are install links", "Digital life is PIN-wrapped on the Viewer — never a vendor backup"],
     meta: false,
   },
   {
@@ -266,8 +271,8 @@ function auditFirstOrder(): AffairFinding[] {
       "Virions only",
       neuralOk ? "clear" : "hold",
       neuralOk
-        ? `Synapse labels ${neural.map((s) => s.label).join(", ")}. Tap seize is live.`
-        : "Synapse labels left the medical set. Hold.",
+        ? `Neural Link labels ${neural.map((s) => s.label).join(", ")}. Tap seize is live.`
+        : "Neural Link labels left the medical set. Hold.",
     ),
   );
 
@@ -362,7 +367,7 @@ function independentMisses(first: AffairFinding[]): { topic: AffairTopic; reason
   const firstOf = (topic: AffairTopic) => first.find((f) => f.topic === topic);
 
   if (!neural.every((s) => NEURAL_OK.has(s.label)) && firstOf("synapse")?.verdict !== "hold") {
-    misses.push({ topic: "synapse", reason: "Synapse labels left HSV/WNV/Rabies and the Synapse agent did not escalate." });
+    misses.push({ topic: "synapse", reason: "Neural Link labels left HSV/WNV/Rabies and the Neural Link agent did not escalate." });
   }
   const orbitLabels = orbit.map((s) => s.label).join(" ");
   const orbitBad = !orbit.every((s) => ORBIT_OK.has(s.label)) || /body|bodies|person|people|human face/i.test(orbitLabels);
@@ -495,7 +500,7 @@ export function assertOsAllowed(theater: TheaterId) {
     return freeze("orbit", "strike", "God's Eye held. OS strike frozen.");
   }
   if (theater === "neural" && isTopicHeld("synapse")) {
-    return freeze("synapse", "strike", "Synapse held. OS strike frozen.");
+    return freeze("synapse", "strike", "Neural Link held. OS strike frozen.");
   }
   const learned = useProgress.getState().learned;
   return SIGNATURES.some((s) => s.theater === theater && isLearned(learned, s.key));
@@ -504,7 +509,7 @@ export function assertOsAllowed(theater: TheaterId) {
 export function assertTheaterAllowed(theater: TheaterId) {
   if (isTopicHeld("affairs")) return freeze("affairs", "theater", "Affairs held. Both theaters frozen.");
   if (theater === "neural" && isTopicHeld("synapse")) {
-    return freeze("synapse", "theater", "Synapse held. CSF field frozen.");
+    return freeze("synapse", "theater", "Neural Link held. CSF field frozen.");
   }
   if (theater === "orbit" && isTopicHeld("orbit")) {
     return freeze("orbit", "theater", "God's Eye held. Mesh freeze.");
