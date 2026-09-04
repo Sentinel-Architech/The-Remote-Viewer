@@ -3,9 +3,9 @@ export const NETWORK_NAME = "The Remote Viewer";
 export const NETWORK_SHORT = "TRV";
 export const MOTTO = "In God We Trust";
 export const NETWORK_TAG =
-  "In God We Trust. A sovereign American watch: social, education, finance rails, and digital life on your keys. Sentinel OS learns and self-heals. Games are a perk after you sign in.";
+  "In God We Trust. A sovereign American watch: social, education, finance rails, and digital life on your keys. Sentinel OS learns and self-heals. Two games: Neural Link and God's Eye.";
 export const DECK_NAME = "Command Deck";
-export const THEATER_NEURAL = "Synapse";
+export const THEATER_NEURAL = "Neural Link";
 export const THEATER_ORBIT = "God's Eye";
 export const THEATER_ORBIT_TAG = "Byproducts of human systems. Never bodies.";
 export const IDENTITY_TAG =
@@ -50,3 +50,7 @@ export const WIRE_TAG =
 export const AFFAIRS_NAME = "Internal Affairs";
 export const AFFAIRS_TAG =
   "One agent per topic. Affairs watches those agents. Holds freeze Repair, OS strikes, and any path that leaves the native wire.";
+export const SPECIALIST_TAG =
+  "On-device specialist. Names strains, briefs SNAP, reports Affairs. Pair a local node if you host weights. Zero vendor keys.";
+export const LIFE_TAG =
+  "Each Viewer owns this life. The key, rank, seizes, and lens live on the device. Take a PIN wrap. Carry it. Destroy a copy. X is a name, not ownership.";

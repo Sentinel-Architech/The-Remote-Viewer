@@ -21,9 +21,9 @@ export type SigKey = `${TheaterId}-${KindId}`;
 export const LEARN_NEED = 3;
 
 export const SIGNATURES = [
-  { key: "neural-sphere", theater: "neural", kind: "sphere", label: "HSV", field: "Synapse" },
-  { key: "neural-box", theater: "neural", kind: "box", label: "WNV", field: "Synapse" },
-  { key: "neural-cylinder", theater: "neural", kind: "cylinder", label: "Rabies", field: "Synapse" },
+  { key: "neural-sphere", theater: "neural", kind: "sphere", label: "HSV", field: "Neural Link" },
+  { key: "neural-box", theater: "neural", kind: "box", label: "WNV", field: "Neural Link" },
+  { key: "neural-cylinder", theater: "neural", kind: "cylinder", label: "Rabies", field: "Neural Link" },
   { key: "orbit-sphere", theater: "orbit", kind: "sphere", label: "Emission", field: "God's Eye" },
   { key: "orbit-box", theater: "orbit", kind: "box", label: "Runoff", field: "God's Eye" },
   { key: "orbit-cylinder", theater: "orbit", kind: "cylinder", label: "Worm", field: "God's Eye" },
@@ -56,6 +56,7 @@ type ProgressState = Snapshot & {
   onSnapBonus: () => Rank | null;
   onPulseUpgrade: (score: number) => Rank | null;
   applyRemote: (remote: Snapshot) => boolean;
+  replaceLocal: (remote: Snapshot) => void;
 };
 
 export function sigKey(theater: TheaterId, kind: KindId): SigKey {
@@ -287,6 +288,11 @@ export const useProgress = create<ProgressState>((set, get) => ({
     write(next);
     set(next);
     return true;
+  },
+  replaceLocal: (remote) => {
+    const next = parseSnapshot(remote) ?? emptySnapshot();
+    write(next);
+    set(next);
   },
 }));
 
