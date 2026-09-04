@@ -131,7 +131,7 @@ bash scripts/chat.sh
 Prefer [`docs/REALITY.md`](docs/REALITY.md) and [`STATUS.md`](STATUS.md) over any chat claim.
 
 | Capability | Notes |
-|------------|--------|
+|------------|-------|
 | **Viewer Hub DApp** | **LIVE** — [`apps/hub`](apps/hub) · briefing · daily watch · SENTINEL OS jack-in (source; live after republish) · `/hub/node` sovereign runtime (source; live after republish) · profile vault |
 | Optical air-gap | PROVEN (see REALITY) |
 | Digital vending Path B | PROVEN |
@@ -192,4 +192,10 @@ bash apps/ui/serve-ui.sh
 
 ## License
 
+**Source-available. Not MIT. Not OSI open source.**
+
 See [LICENSE](LICENSE).
+
+- **Humans** may copy, run, study, modify, and share forks under the same license **without a fee**.
+- **Corporations and other for-profit companies** need a written commercial grant before they copy or use it.
+- Third-party libraries keep the licenses in [CREDITS.md](CREDITS.md).
