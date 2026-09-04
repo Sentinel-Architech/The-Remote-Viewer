@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Eye, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { MOTTO } from "@/lib/trv";
+import { MOTTO, GATEWAY_HREF, GATEWAY_TITLE, GATEWAY_YEAR } from "@/lib/trv";
 import {
   FACTS,
   PILL_TAG,
@@ -23,8 +23,8 @@ function signInWithX() {
 
 function GatewayEye() {
   return (
-    <div className="gateway-eye" data-gateway-eye="1" aria-hidden="true">
-      <div className="gateway-eye-well">
+    <div className="gateway-eye" data-gateway-eye="1">
+      <div className="gateway-eye-well" aria-hidden="true">
         <div className="gateway-eye-iris">
           <span className="gateway-eye-paper" />
           <span className="gateway-eye-paper gateway-eye-paper-2" />
@@ -33,6 +33,15 @@ function GatewayEye() {
         <div className="gateway-eye-lid gateway-eye-lid-top" />
         <div className="gateway-eye-lid gateway-eye-lid-bottom" />
       </div>
+      <p className="mt-2 text-center text-xs tracking-[0.18em] text-sage uppercase">Gateway Process</p>
+      <a
+        href={GATEWAY_HREF}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-1 block text-center text-xs leading-relaxed text-muted"
+      >
+        {GATEWAY_TITLE}, {GATEWAY_YEAR}. CIA FOIA.
+      </a>
     </div>
   );
 }
@@ -66,8 +75,7 @@ export function PillGate() {
       className="pointer-events-auto absolute inset-0 z-50 overflow-y-auto bg-background/95 px-4 py-8 text-foreground"
     >
       <div className="mx-auto w-full max-w-lg">
-        <GatewayEye />
-        <p className="mt-4 text-xs font-medium tracking-[0.22em] text-sage uppercase">{MOTTO}</p>
+        <p className="text-xs font-medium tracking-[0.22em] text-sage uppercase">{MOTTO}</p>
         <h1 className="font-display mt-2 text-3xl font-semibold tracking-tight">Choose your lens</h1>
         <p className="mt-2 text-sm leading-relaxed text-muted">
           Same facts. Two deliveries. Red is the raw wire. Blue is the briefing. Glimpse the other side before you
@@ -90,7 +98,11 @@ export function PillGate() {
           ))}
         </div>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <div className="mt-5">
+          <GatewayEye />
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <button
             type="button"
             className={cn("pill-red min-h-28 rounded-xl p-4 text-left shadow-[var(--shadow-border)]")}

@@ -404,7 +404,7 @@
   position: relative;
   overflow: hidden;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 2.15 / 1;
   border-radius: 1rem;
   background:
     radial-gradient(ellipse 46% 38% at 50% 52%, #6b3a28 0%, #3a1d16 42%, #12090c 78%),
