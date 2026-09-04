@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, lazy, Suspense, type ReactNode } from "react";
 import {
   Activity,
   Box,
@@ -54,7 +54,8 @@ import { startWire, useRepairLive } from "@/lib/wire";
 import { listBoard, postStanding } from "@/lib/board";
 import { useInstall } from "@/lib/install";
 import { regionLabel, rowsFor, useLiveLead, useLivePulseFeed, useSnapPressure } from "@/lib/live";
-import { hasWebGL } from "@/lib/platform";
+import { hasWebGL, useFieldQuality } from "@/lib/platform";
+import { physicsLine, physicsProfile } from "@/lib/physics";
 import { useNativeProbe } from "@/lib/native";
 import { usePulse, usePulseClock } from "@/lib/pulse";
 import {
@@ -71,7 +72,6 @@ import {
   sigKey,
   useProgress,
 } from "@/lib/progress";
-import { PlaygroundCanvas } from "./scene";
 import { BoardDashboard, InstallStrip } from "./board";
 import { RepairPanel } from "./repair";
 import { AffairsChip, AffairsPanel } from "./affairs";
@@ -91,6 +91,8 @@ import {
   usePlayground,
   type ShapeKind,
 } from "./store";
+
+const PlaygroundCanvas = lazy(() => import("./scene").then((m) => ({ default: m.PlaygroundCanvas })));
 
 const SHAPE_ICONS: Record<ShapeKind, typeof Circle> = {
   sphere: Circle,
@@ -269,7 +271,8 @@ function PhysicsLegend() {
             <p className="text-xs font-medium tracking-widest text-sage uppercase">Field physics</p>
             <p className="mt-1 font-display text-lg text-foreground">{title}</p>
             <p className="mt-1 text-sm leading-relaxed text-muted">
-              Discovery logged. Tune {orbit ? "pull" : "gravity"} and bounce.
+              Discovery logged. Tune {orbit ? "pull" : "gravity"} and bounce. Rapier stays on this device and follows the
+              screen.
             </p>
           </div>
           <Button variant="ghost" size="icon" aria-label="Dismiss hologram" onClick={dismissLegend} className="size-11">
@@ -499,6 +502,7 @@ function WireStrip() {
   const repair = useRepairLive((s) => s.open);
   const repairSnap = useRepairLive((s) => s.snap);
   const pressure = useSnapPressure();
+  const phys = physicsProfile(useFieldQuality());
   return (
     <div className="mt-3 rounded-lg bg-card-2 p-3 shadow-[var(--shadow-border)]" data-wire="1">
       <div className="flex items-start justify-between gap-3">
@@ -519,6 +523,12 @@ function WireStrip() {
         <li className="flex justify-between gap-2">
           <span>Native</span>
           <span className="text-sage">{native.score}/26</span>
+        </li>
+        <li className="flex justify-between gap-2">
+          <span>Rapier</span>
+          <span className="text-sage" data-physics-band={phys.band}>
+            {physicsLine(phys).replace("Rapier ", "")}
+          </span>
         </li>
         <li className="flex justify-between gap-2">
           <span>OS</span>
@@ -1150,6 +1160,7 @@ export function Playground() {
   const pill = usePill((s) => s.lens);
   const glimpse = usePill((s) => s.glimpse);
   const viewing = viewingLens({ lens: pill, glimpse });
+  const phys = physicsProfile(useFieldQuality());
 
   useEffect(() => {
     bindPlaygroundTest();
@@ -1273,6 +1284,14 @@ export function Playground() {
     return () => window.removeEventListener("keydown", onKey);
   }, [claimWatch, clear, dismissLegend, scatter, seed, setSelected, setTheater, spawn, seizeNow, pressure.lock]);
 
+  if (!pill) {
+    return (
+      <main className="relative h-dvh w-full overflow-hidden bg-background text-foreground" data-gateway="1">
+        <PillGate />
+      </main>
+    );
+  }
+
   return (
     <main
       className="relative h-dvh w-full overflow-hidden bg-background text-foreground select-none"
@@ -1297,11 +1316,15 @@ export function Playground() {
       data-pill={viewing ?? ""}
       data-glimpse={glimpse ? "1" : "0"}
       data-wait={wait ? "1" : "0"}
+      data-physics={phys.band}
+      data-physics-solver={phys.solver}
     >
       <div className="absolute inset-0">
-        <FieldGate>
-          <PlaygroundCanvas />
-        </FieldGate>
+        <Suspense fallback={<div className="h-full w-full bg-background" aria-hidden />}>
+          <FieldGate>
+            <PlaygroundCanvas />
+          </FieldGate>
+        </Suspense>
       </div>
       <Visor />
       <Header panel={panel} setPanel={setPanel} />
@@ -1320,8 +1343,7 @@ export function Playground() {
         />
       ) : null}
       {panel === "shop" ? <ShopPanel onClose={() => setPanel(null)} /> : null}
-      <PillGate />
-      {panel === null && pill ? <GuestGate onPlay={() => undefined} /> : null}
+      {panel === null ? <GuestGate onPlay={() => undefined} /> : null}
       <Toolbar />
       <SocialDock
         panel={panel}
