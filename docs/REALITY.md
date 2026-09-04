@@ -58,7 +58,7 @@ This hub uses accounts (Better Auth + Postgres). That does not make it a recover
 
 | Item | State |
 |------|--------|
-| Token Gateway (AR / GPS seize) | **IN SOURCE** — [`docs/security/TOKEN-GATEWAY.md`](security/TOKEN-GATEWAY.md) · migration `0018_gateway.sql`. SIM teaching ledger. Not AR camera. Not LIVE on grok.me until republish + device proof. |
+| Token Gateway (AR / GPS seize) | **IN SOURCE** — `/hub/token-gateway` drill · `token-gateway-server.ts` uses `getSql()` (Neon if `DATABASE_URL`, else PGLite). Migration `0018_gateway.sql` applies on next Hub `npm run build`. Not AR camera. Not LIVE until republish + a real seize on that Neon. |
 | Token Gateway protocols | Local ACID pivot + saga outbox. **Not 2PC.** Devices are not XA RMs. Paxos/Raft only if Hub is multi-replica. |
 | `trv_governance` on chain | Scaffold · CI blocked (**A**) |
 | Full mapTier + Keystore instrumentation | Needs Android shell |
