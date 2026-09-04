@@ -21,6 +21,22 @@ function signInWithX() {
   void signIn(X_PROVIDER.providerId, { callbackURL: "/" });
 }
 
+function GatewayEye() {
+  return (
+    <div className="gateway-eye" data-gateway-eye="1" aria-hidden="true">
+      <div className="gateway-eye-well">
+        <div className="gateway-eye-iris">
+          <span className="gateway-eye-paper" />
+          <span className="gateway-eye-paper gateway-eye-paper-2" />
+          <span className="gateway-eye-pupil" />
+        </div>
+        <div className="gateway-eye-lid gateway-eye-lid-top" />
+        <div className="gateway-eye-lid gateway-eye-lid-bottom" />
+      </div>
+    </div>
+  );
+}
+
 export function useHydratePill() {
   useEffect(() => {
     usePill.getState().hydrate();
@@ -47,10 +63,11 @@ export function PillGate() {
       role="dialog"
       aria-label="Choose red or blue lens"
       data-pill-gate="1"
-      className="pointer-events-auto absolute inset-0 z-50 overflow-y-auto bg-background/95 px-4 py-10 text-foreground"
+      className="pointer-events-auto absolute inset-0 z-50 overflow-y-auto bg-background/95 px-4 py-8 text-foreground"
     >
       <div className="mx-auto w-full max-w-lg">
-        <p className="text-xs font-medium tracking-[0.22em] text-sage uppercase">{MOTTO}</p>
+        <GatewayEye />
+        <p className="mt-4 text-xs font-medium tracking-[0.22em] text-sage uppercase">{MOTTO}</p>
         <h1 className="font-display mt-2 text-3xl font-semibold tracking-tight">Choose your lens</h1>
         <p className="mt-2 text-sm leading-relaxed text-muted">
           Same facts. Two deliveries. Red is the raw wire. Blue is the briefing. Glimpse the other side before you
