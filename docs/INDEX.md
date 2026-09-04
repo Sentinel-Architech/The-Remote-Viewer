@@ -23,7 +23,8 @@
 
 | File | Role |
 |------|------|
-| [VALUE.md](VALUE.md) | $96, splits, parity rules |
+| [VALUE.md](VALUE.md) | $10/mo · $96/yr · $1,200 org · splits · parity |
+| [public/PRICING.md](public/PRICING.md) | Public price sheet |
 | [CREATOR-LIVING.md](CREATOR-LIVING.md) | Living-wage intent |
 | [VIEWER-MAIL.md](VIEWER-MAIL.md) | Mail under TRV domain |
 

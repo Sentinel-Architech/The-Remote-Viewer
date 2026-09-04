@@ -11,7 +11,8 @@
 | **Creator keep (digital)** | Patreon/Substack ~85–90% after platform+processing | **80%** creator, **10%** pool, **10%** platform | VALUE.md |
 | **Creator keep (NFT primary)** | Marketplaces 2.5–10%+ | **80%** creator, **10%** pool, **10%** platform | VALUE.md |
 | **Secondary royalty** | Often 0–5% messy | **5%** original creator, 0% pool/platform | VALUE.md |
-| **User sub price** | Discord Nitro ~$100/yr, Farcaster Pro ~$120/yr | **$96/yr** unlimited comms | VALUE.md |
+| **User sub price** | Discord Nitro ~$100/yr, Farcaster Pro ~$120/yr | **$96/yr** or **$10/mo** unlimited comms | VALUE.md |
+| **Company use** | Seat-priced SaaS | **$1,200/yr** per org grant | VALUE.md + LICENSE |
 | **Free path** | Ad-supported or crippled | Free **live** with **weaker signal** only | VALUE.md |
 | **Work-for-access** | Rare | **Active node → unlimited comms** (no $96) | VALUE.md |
 | **Platform cut on creators** | 10% typical | **10%** (funds hub ops; do not dilute) | VALUE.md |
@@ -22,12 +23,13 @@
 | **Audience portability** | Lock-in | Export / leave with keys | VALUE.md |
 | **Distribution / DAU** | Peers win today | **Not claimed** until real | Honest gap |
 
-## How $96 competes
+## How $96 / $10 competes
 
 | vs | TRV angle |
 |----|----------|
-| Discord Nitro ~$100 | Similar price; TRV buys **unlimited human comms + sovereign stack**, not cosmetics |
-| Farcaster Pro ~$120 | Slightly lower; TRV adds **node alternative** and **creator store splits** |
+| Discord Nitro ~$100/yr or $9.99/mo | Same consumer band; TRV buys **unlimited human comms + sovereign stack**, not cosmetics |
+| Farcaster Pro ~$120/yr | Slightly lower yearly; TRV adds **monthly**, **node alternative**, and **creator store splits** |
+| Proton Mail Plus ~$48/yr | They sell commodity encrypted mail at scale. TRV is a smaller membership; do not race them to $4/mo |
 | Substack (reader pays creator) | Different product; TRV is network + store + Sentinel, not one newsletter |
 | Free messengers | TRV free tier exists; full comms = sub or node |
 
@@ -46,6 +48,7 @@ Platform take is **comparable**, not a fee-sheet win. TRV competes on **custody*
 ## Non-negotiables (do not “compete away”)
 
 - Platform fee on creator sales stays **10%** — do not cut to 0% and do not raise it in this file
+- Human list price stays **$96/year** until daily watch retention is real
 - No SMS/email as root identity
 - No CSAM soft-touch
 - No claiming PROVEN scale before REALITY.md says so
@@ -56,5 +59,6 @@ Platform take is **comparable**, not a fee-sheet win. TRV competes on **custody*
 2. Settlement ≤7 days
 3. Discovery that is fair under signal tiers
 4. Client that works on Graphene without Expo-Go dependency
+5. Stripe SKUs that match VALUE.md ($10 / $96 / $1,200)
 
-*Splits live in VALUE.md. Product must catch up.*
+*Splits and prices live in VALUE.md. Product must catch up.*
