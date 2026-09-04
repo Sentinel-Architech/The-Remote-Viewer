@@ -71,6 +71,13 @@ export const usePill = create<PillState>((set) => ({
   glimpse: false,
   factId: FACTS[0]?.id ?? "hsv",
   hydrate: () => {
+    if (typeof window !== "undefined") {
+      const q = new URLSearchParams(window.location.search);
+      if (q.get("gate") === "1" || window.location.hash === "#gateway") {
+        set({ ready: true, lens: null });
+        return;
+      }
+    }
     set({ ready: true, lens: readStored() });
   },
   choose: (pill) => {
