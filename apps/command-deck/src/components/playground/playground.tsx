@@ -20,8 +20,10 @@ import {
   ScrollText,
   Shield,
   ShieldCheck,
+  Scan,
   Timer,
   Trash2,
+  Video,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -54,8 +56,9 @@ import { startWire, useRepairLive } from "@/lib/wire";
 import { listBoard, postStanding } from "@/lib/board";
 import { useInstall } from "@/lib/install";
 import { regionLabel, rowsFor, useLiveLead, useLivePulseFeed, useSnapPressure } from "@/lib/live";
-import { hasWebGL, useFieldQuality } from "@/lib/platform";
+import { hasWebGL, useFieldQuality, useQualityPref } from "@/lib/platform";
 import { physicsLine, physicsProfile } from "@/lib/physics";
+import { toggleFieldCapture } from "@/lib/capture";
 import { useNativeProbe } from "@/lib/native";
 import { usePulse, usePulseClock } from "@/lib/pulse";
 import {
@@ -147,6 +150,9 @@ function Toolbar() {
   const theater = usePlayground((s) => s.theater);
   const lookMode = usePlayground((s) => s.lookMode);
   const toggleLook = usePlayground((s) => s.toggleLook);
+  const q = useFieldQuality();
+  const toggleUhd = useQualityPref((s) => s.toggleUhd);
+  const [recording, setRecording] = useState(false);
   const learned = useProgress((s) => s.learned);
   const labels = KIND_LABEL[theater];
   const orbit = theater === "orbit";
@@ -221,6 +227,37 @@ function Toolbar() {
           >
             <Orbit className="size-4" strokeWidth={1.75} />
             <span className="hidden sm:inline">Look</span>
+          </Button>
+          <Button
+            variant={q.uhd ? "selected" : "ghost"}
+            aria-label={
+              q.uhd
+                ? "4K on. 3840 by 2160 field, UHD maps, high-rate animation."
+                : "4K off. Tap for 3840 by 2160 on this deck. Phones stay native pixels."
+            }
+            aria-pressed={q.uhd}
+            onClick={() => toggleUhd()}
+            data-uhd={q.uhd ? "1" : "0"}
+          >
+            <Scan className="size-4" strokeWidth={1.75} />
+            <span className="hidden sm:inline">4K</span>
+          </Button>
+          <Button
+            variant={recording ? "primary" : "ghost"}
+            aria-label={recording ? "Stop recording the field video." : "Record the field as video. 4K when 4K is on."}
+            aria-pressed={recording}
+            onClick={() => {
+              void toggleFieldCapture({ theater, uhd: q.uhd })
+                .then((out) => setRecording(out.recording))
+                .catch(() => {
+                  setRecording(false);
+                  usePlayground.getState().pushBrief("This device cannot record the field.");
+                });
+            }}
+            data-record={recording ? "1" : "0"}
+          >
+            <Video className="size-4" strokeWidth={1.75} />
+            <span className="hidden sm:inline">{recording ? "Stop" : "Record"}</span>
           </Button>
           <Button variant="ghost" aria-label="Reset the field" onClick={seed} className="ml-auto">
             <RotateCcw className="size-4" strokeWidth={1.75} />
@@ -528,6 +565,12 @@ function WireStrip() {
           <span>Rapier</span>
           <span className="text-sage" data-physics-band={phys.band}>
             {physicsLine(phys).replace("Rapier ", "")}
+          </span>
+        </li>
+        <li className="flex justify-between gap-2">
+          <span>4K</span>
+          <span className={phys.band === "uhd" ? "text-sage" : "text-muted"} data-uhd-wire={phys.band === "uhd" ? "1" : "0"}>
+            {phys.band === "uhd" ? "3840×2160" : "native"}
           </span>
         </li>
         <li className="flex justify-between gap-2">
@@ -1318,6 +1361,7 @@ export function Playground() {
       data-wait={wait ? "1" : "0"}
       data-physics={phys.band}
       data-physics-solver={phys.solver}
+      data-uhd={phys.band === "uhd" ? "1" : "0"}
     >
       <div className="absolute inset-0">
         <Suspense fallback={<div className="h-full w-full bg-background" aria-hidden />}>
