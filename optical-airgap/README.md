@@ -2,9 +2,9 @@
 
 Local-first, zero-trust optical transfer for The Remote Viewer.
 
-**Branch:** `TheRemoteViewer` · **License:** MIT  
+**Branch:** `TheRemoteViewer` · **License:** root [LICENSE](../LICENSE) (source-available; humans free, corporations paid — **not MIT**)  
 **Standard:** [SENTINEL-STANDARD.md](./SENTINEL-STANDARD.md)  
-**Open source:** [OPEN-SOURCE.md](./OPEN-SOURCE.md)  
+**Open source inventory (deps):** [OPEN-SOURCE.md](./OPEN-SOURCE.md)  
 **Install:** [INSTALL.md](./INSTALL.md) · **Devices:** [COMPATIBILITY.md](./COMPATIBILITY.md)  
 **Status:** [STATUS.md](./STATUS.md) · **Phase 2:** [PHASE2.md](./PHASE2.md)
 

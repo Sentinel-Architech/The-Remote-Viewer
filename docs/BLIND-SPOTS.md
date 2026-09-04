@@ -74,7 +74,7 @@ Legend: **O** open · **M** mitigated (doc/process) · **A** accepted risk · **
 |------|------|-------|------------|
 | No public security contact | Bad disclosure path | **O** | Add SECURITY.md contact |
 | Incident response | Chaos under attack | **O** | One-page IR when social goes public |
-| LICENSE vs contributor expectations | Custom source-available is strict | **A** | LICENSE is intentional; don’t imply MIT |
+| LICENSE vs “100% open source” talk | People hear OSI/MIT | **M** | Root LICENSE is source-available: humans copy free, corporations need a paid grant. Do not say MIT. |
 
 ---
 
