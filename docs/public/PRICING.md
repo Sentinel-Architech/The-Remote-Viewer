@@ -1,6 +1,7 @@
 # TRV pricing (public)
 
 **Policy.** Live checkout only with payment rails + entitlement.
+**Owner:** [`VALUE.md`](../VALUE.md). Do not invent percentages here.
 
 Any capable phone ([CLIENT-SURFACE](../locked/CLIENT-SURFACE.md)). Wearables optional. Learning on-device by default ([CONTINUOUS-LEARNING](../locked/CONTINUOUS-LEARNING.md)).
 
@@ -9,17 +10,21 @@ Any capable phone ([CLIENT-SURFACE](../locked/CLIENT-SURFACE.md)). Wearables opt
 | Path | Price | Unlimited human comms |
 |------|------:|------------------------|
 | Free | $0 | No — weaker signal |
-| Yearly network | **$96 / year** | Yes |
+| Monthly | **$10 / month** | Yes |
+| Yearly | **$96 / year** | Yes — default |
 | Permanent node (active) | Hardware/time | Yes while active |
+| Company grant | **$1,200 / year** per org | Written grant; not the human SKU |
 
-Vending **packs ≠** the $96 network sub.
+Vending **packs ≠** the network sub. Packs stay 11 / 25 USDC etc. on the catalog.
 
-## Creators (platform **0%**)
+## Creators (platform **10%**)
 
 | Sale | You keep | Pool | Platform |
 |------|----------|------|----------|
-| Digital | **95%** | 5% | **0%** |
-| NFT primary (TRV mint) | **90%** | 10% | **0%** |
-| NFT secondary royalty | **5%** to creator | — | **0%** |
+| Digital | **80%** | 10% | **10%** |
+| NFT primary (TRV mint) | **80%** | 10% | **10%** |
+| NFT secondary royalty | **5%** to creator | 0% | **0%** |
 
-[SYSTEM-ENDS](../SYSTEM-ENDS.md) · [LOCKED-INDEX](../LOCKED-INDEX.md)
+Do not quote 95/5, 90/10, or 0% platform cut.
+
+[VALUE.md](../VALUE.md) · [SYSTEM-ENDS](../SYSTEM-ENDS.md) · [LOCKED-INDEX](../LOCKED-INDEX.md)

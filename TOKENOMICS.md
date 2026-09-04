@@ -1,23 +1,26 @@
 # The Remote Viewer — Tokenomics & Financial Design
 **Sovereign • Corporate-Free • Legally Cautious Edition**  
-Version 0.5 — aligned with `docs/VALUE.md` (2026-08-17)
+Version 0.6 — aligned with `docs/VALUE.md` (2026-09-03)
 
 > Not legal advice. Design intent only. Counsel before any token launch.
 
 ## Core Principles
 
-1. **Corporate-Free** — no VC pre-mine, no company admin mint, no unilateral freeze  
+1. **Corporate-Free mint** — no VC pre-mine, no company admin mint, no unilateral freeze  
 2. **Local-First** — value starts on user device  
 3. **Legally Cautious** — no investment promises, no FDIC-on-crypto claims, no yield marketing  
 4. **Creator-first commerce** — platform fee **10%** on creator sales (`docs/VALUE.md`, `docs/CREATOR-LIVING.md`)
+5. **Humans free to copy source; corporations pay for company use** — root LICENSE
 
 ## Network access (not a token)
 
 | Path | Price | Unlimited human comms |
 |------|------:|------------------------|
 | Free | $0 | Weaker signal |
-| Yearly sub | **$96 USD / year** | Yes |
+| Monthly sub | **$10 USD / month** | Yes |
+| Yearly sub | **$96 USD / year** | Yes (default) |
 | Active permanent node | Ops cost | Yes while active |
+| Company grant | **$1,200 USD / year** / org | Written grant |
 
 Sub is **entitlement**, not $AR. See `docs/PAYMENTS.md` → `grant_subscription`.
 
@@ -52,7 +55,7 @@ Tooling: `modules/integrity-verifier/` (PROVEN on-device per REALITY)
 
 - USDC memo + age/TRVL delivery — `digital-vending/`  
 - Packs stay **paid per item**; Path B does not waive prices  
-- Network **$96** sub is a **separate** product from catalog packs  
+- Network sub is a **separate** product from catalog packs  
 
 ## Governance
 

@@ -2,12 +2,19 @@
 
 ## Product rule
 
-**Unlimited human comms** if yearly sub **or** active permanent node (`refresh_entitlement`).
+**Unlimited human comms** if a paid Viewer plan **or** an active permanent node (`refresh_entitlement`).
+
+Prices live only in [`VALUE.md`](VALUE.md):
+
+- Human monthly: **$10**
+- Human yearly: **$96** (default)
+- Company grant: **$1,200 / year** per org
+- Node: no sub fee while `node.active`
 
 ## Flow (phase 1 — honest minimal)
 
 ```text
-Viewer pays (off-chain)
+Viewer pays (off-chain: Stripe rail or invoice)
     → merchant/ops verifies settlement
     → authority wallet calls grant_subscription(expires_at)
     → Viewer calls refresh_entitlement
@@ -15,8 +22,10 @@ Viewer pays (off-chain)
 ```
 
 - **On-chain does not collect card/SOL in v1.** Payment is off-chain; chain records **entitlement**.
-- `expires_at` = unix seconds; must be **> now** at grant time.
-- Platform fee on sub: product choice (VALUE.md focuses creator store splits; sub price is separate).
+- Yearly `expires_at` = now + 365 days.
+- Monthly `expires_at` = now + 31 days.
+- Company grant `expires_at` = now + 365 days, tied to the org tenant, not a personal $96 SKU.
+- `expires_at` must be **> now** at grant time.
 
 ## Phase 2 (later)
 
@@ -33,10 +42,11 @@ Viewer pays (off-chain)
 - Per-message billing
 - Automatic card charge on-chain
 - Mixing pool inflows with sub treasury without separate accounts
+- Giving a Commercial Entity the $96 human SKU (LICENSE + VALUE.md)
 
 ## Ops checklist
 
-1. Publish yearly price (VALUE band $48–96 — pick one)
+1. Publish the VALUE.md sheet (picked: $10 / $96 / $1,200)
 2. Payment receipt log (off-chain)
 3. Authority grant with correct `expires_at`
 4. Viewer verifies via `refresh_entitlement` / account read
