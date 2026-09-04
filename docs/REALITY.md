@@ -1,6 +1,6 @@
 # Reality — authority for PROVEN / LIVE claims
 
-**Updated 2026-08-22.**  
+**Updated 2026-09-04.**  
 **Rule:** PROVEN = ran under operator control on a real device. Scripts in git alone are not PROVEN.  
 **LIVE** = a hosted product surface that is running now. LIVE is not PROVEN-on-device, and it is not mainnet.
 
@@ -58,6 +58,8 @@ This hub uses accounts (Better Auth + Postgres). That does not make it a recover
 
 | Item | State |
 |------|--------|
+| Token Gateway (AR / GPS seize) | **IN SOURCE** — [`docs/security/TOKEN-GATEWAY.md`](security/TOKEN-GATEWAY.md) · migration `0018_gateway.sql`. SIM teaching ledger. Not AR camera. Not LIVE on grok.me until republish + device proof. |
+| Token Gateway protocols | Local ACID pivot + saga outbox. **Not 2PC.** Devices are not XA RMs. Paxos/Raft only if Hub is multi-replica. |
 | `trv_governance` on chain | Scaffold · CI blocked (**A**) |
 | Full mapTier + Keystore instrumentation | Needs Android shell |
 | Wear companion | Scaffold (**D**) |
@@ -67,6 +69,8 @@ This hub uses accounts (Better Auth + Postgres). That does not make it a recover
 | Path B external founders | **0** |
 | Expo / app-store mobile | PARKED (`apps/mobile`) |
 | `apps/web` Vite shell | Old scaffold — superseded by `apps/hub` |
+
+Neural Mesh, God’s Eye, and Token Gateway are fictional, pattern-based teaching sims. They train Viewers to defend the TRV decentralized network. They do not diagnose, name, or treat real people, and they are not Neuralink or live intelligence feeds.
 
 ## Track A
 
