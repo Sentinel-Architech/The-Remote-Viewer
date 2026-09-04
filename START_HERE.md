@@ -55,7 +55,7 @@ Source for the hub: [`apps/hub`](apps/hub).
 2. Open a terminal and run these commands one by one:
 
 ```bash
-git clone -b TheRemoteViewer https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
+git clone -b TheRemoteViewer https://github.com/Sentinel-Architech/The-Remote-Viewer.git
 cd The-Remote-Viewer
 bash modules/defense/integrity-pulse.sh
 ```
@@ -69,7 +69,7 @@ If the last command prints something about “PASS” or “RESULT”, the basic
 
 ```bash
 pkg update && pkg install git python nodejs age -y
-git clone -b TheRemoteViewer https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
+git clone -b TheRemoteViewer https://github.com/Sentinel-Architech/The-Remote-Viewer.git
 cd The-Remote-Viewer
 bash modules/defense/integrity-pulse.sh
 ```
