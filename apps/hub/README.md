@@ -1,10 +1,10 @@
 # TRV Viewer Hub
 
-Hosted Remote Viewer command surface for **The Sentinel**.
+Hosted Remote Viewer command surface.
 
-**Live:** [sentinelsecurityprotocol.grok.me](https://sentinelsecurityprotocol.grok.me)  
+**Live:** [the-remote-viewer.grok.me](https://the-remote-viewer.grok.me)  
 **Branch:** [`TheRemoteViewer`](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/tree/TheRemoteViewer)  
-**Status (2026-08-22):** **LIVE** hosted DApp — not a scaffold. SENTINEL OS jack-in is in this folder; grok.me picks it up on republish.
+**Status (2026-08-22):** **LIVE** hosted DApp — not a scaffold. OS jack-in is in this folder; grok.me picks it up on republish.
 
 This folder is the product UI Remote Viewers use today. It is a **separate surface** from the local-first optical air-gap / Path B node. Those paths are unchanged and still live under `optical-airgap/`, `digital-vending/`, and `modules/`.
 
