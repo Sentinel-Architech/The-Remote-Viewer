@@ -2,11 +2,11 @@
 
 **Truth:** [docs/REALITY.md](docs/REALITY.md) · **Queues:** [docs/PROVEN-NEEDED.md](docs/PROVEN-NEEDED.md)  
 **Economics owner:** [docs/VALUE.md](docs/VALUE.md)  
-**Updated:** 2026-09-03
+**Updated:** 2026-09-04
 
 | | |
 |--|--|
-| **LIVE** | Hosted Viewer Hub — [`apps/hub`](apps/hub) · [sentinelsecurityprotocol.grok.me](https://sentinelsecurityprotocol.grok.me) · briefing · daily watch · profile vault · public card `/v/$handle` · skill audit · Ed25519 native wallet (chain-ready keys, **not** mainnet) |
+| **LIVE** | Hosted Viewer Hub — [`apps/hub`](apps/hub) · [the-remote-viewer.grok.me](https://the-remote-viewer.grok.me) · briefing · daily watch · profile vault · public card `/v/$handle` · skill audit · Ed25519 native wallet (chain-ready keys, **not** mainnet) |
 | IN SOURCE | **SENTINEL OS jack-in** — 3D neuron flight on Defend / OS (`apps/hub/src/os-sim`). Watch intercept via `logDefense`. LIVE on grok.me after host republish. |
 | IN SOURCE | **Unified sovereign node runtime** — desktop sled identity + nonce replay (`desktop/src/runtime`, default feature). Optional ollama-rs / tract-onnx / Tauri IPC. Hub station `/hub/node`. LIVE on grok.me after host republish. |
 | PROVEN | Optical · Path B · verifier · local operator |
