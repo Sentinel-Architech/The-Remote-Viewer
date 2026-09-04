@@ -1,48 +1,66 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Eye, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { MOTTO, GATEWAY_HREF, GATEWAY_TITLE, GATEWAY_YEAR } from "@/lib/trv";
-import {
-  FACTS,
-  PILL_TAG,
-  currentFact,
-  speakFact,
-  usePill,
-  viewingLens,
-  type Pill,
-} from "@/lib/pill";
+import { MOTTO, NETWORK_NAME, GATEWAY_HREF, GATEWAY_TITLE, GATEWAY_YEAR } from "@/lib/trv";
+import { PILL_TAG, usePill, viewingLens } from "@/lib/pill";
 import { GROK_PROVIDERS, authEnabled, signIn } from "@/lib/auth/client";
 
 const X_PROVIDER = GROK_PROVIDERS.find((p) => p.idp === "twitter");
+const WIDE_MQ = "(min-width: 880px) and (min-aspect-ratio: 4/3)";
 
 function signInWithX() {
   if (!authEnabled || !X_PROVIDER) return;
   void signIn(X_PROVIDER.providerId, { callbackURL: "/" });
 }
 
-function GatewayEye() {
+function GatewayFilm() {
+  const ref = useRef<HTMLVideoElement>(null);
+  const [wide, setWide] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia(WIDE_MQ);
+    const apply = () => setWide(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => {
+      if (reduce.matches) {
+        video.pause();
+        return;
+      }
+      void video.play().catch(() => undefined);
+    };
+    sync();
+    reduce.addEventListener("change", sync);
+    return () => reduce.removeEventListener("change", sync);
+  }, [wide]);
+
+  const src = wide ? "/gateway/eye-wide.mp4" : "/gateway/eye.mp4";
+  const poster = wide ? "/gateway/eye-wide.jpg" : "/gateway/eye.jpg";
+
   return (
-    <div className="gateway-eye" data-gateway-eye="1">
-      <div className="gateway-eye-well" aria-hidden="true">
-        <div className="gateway-eye-iris">
-          <span className="gateway-eye-paper" />
-          <span className="gateway-eye-paper gateway-eye-paper-2" />
-          <span className="gateway-eye-pupil" />
-        </div>
-        <div className="gateway-eye-lid gateway-eye-lid-top" />
-        <div className="gateway-eye-lid gateway-eye-lid-bottom" />
-      </div>
-      <p className="mt-2 text-center text-xs tracking-[0.18em] text-sage uppercase">Gateway Process</p>
-      <a
-        href={GATEWAY_HREF}
-        target="_blank"
-        rel="noreferrer"
-        className="mt-1 block text-center text-xs leading-relaxed text-muted"
-      >
-        {GATEWAY_TITLE}, {GATEWAY_YEAR}. CIA FOIA.
-      </a>
-    </div>
+    <video
+      key={src}
+      ref={ref}
+      className="gateway-film"
+      data-gateway-eye="1"
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="auto"
+      poster={poster}
+      aria-hidden="true"
+    >
+      <source src={src} type="video/mp4" />
+    </video>
   );
 }
 
@@ -53,56 +71,34 @@ export function useHydratePill() {
 }
 
 export function PillGate() {
-  const ready = usePill((s) => s.ready);
   const lens = usePill((s) => s.lens);
-  const factId = usePill((s) => s.factId);
   const choose = usePill((s) => s.choose);
-  const setFact = usePill((s) => s.setFact);
-  const [preview, setPreview] = useState<Pill | null>(null);
-  const fact = currentFact(factId);
-  const shown = preview;
 
-  if (!ready) {
-    return <div className="pointer-events-auto absolute inset-0 z-50 bg-background" aria-hidden />;
-  }
   if (lens) return null;
 
   return (
     <div
       role="dialog"
-      aria-label="Choose red or blue lens"
+      aria-label="Gateway. Choose red or blue lens"
       data-pill-gate="1"
-      className="pointer-events-auto absolute inset-0 z-50 overflow-y-auto bg-background/95 px-4 py-8 text-foreground"
+      className="gateway-gate pointer-events-auto absolute inset-0 z-50 overflow-hidden text-foreground"
     >
-      <div className="mx-auto w-full max-w-lg">
-        <p className="text-xs font-medium tracking-[0.22em] text-sage uppercase">{MOTTO}</p>
-        <h1 className="font-display mt-2 text-3xl font-semibold tracking-tight">Choose your lens</h1>
-        <p className="mt-2 text-sm leading-relaxed text-muted">
-          Same facts. Two deliveries. Red is the raw wire. Blue is the briefing. Glimpse the other side before you
-          sign in.
-        </p>
-
-        <p className="mt-5 text-xs tracking-wide text-muted uppercase">The fact</p>
-        <p className="mt-1 text-sm leading-relaxed text-foreground">{fact.fact}</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {FACTS.map((f) => (
-            <Button
-              key={f.id}
-              size="sm"
-              variant={f.id === factId ? "selected" : "ghost"}
-              aria-pressed={f.id === factId}
-              onClick={() => setFact(f.id)}
-            >
-              {f.id}
-            </Button>
-          ))}
-        </div>
-
-        <div className="mt-5">
-          <GatewayEye />
-        </div>
-
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <GatewayFilm />
+      <div className="gateway-veil" aria-hidden="true" />
+      <div className="gateway-copy">
+        <p className="gateway-rise text-center text-xs font-medium tracking-[0.28em] text-sage uppercase">{MOTTO}</p>
+        <p className="gateway-rise mt-5 text-center text-xs tracking-[0.32em] text-muted uppercase">Remote viewing simulation</p>
+        <h1 className="gateway-rise font-display mt-2 text-center text-4xl font-semibold tracking-tight sm:text-5xl">{NETWORK_NAME}</h1>
+        <p className="gateway-rise font-display mt-2 text-center text-lg italic text-sage">Gateway Process</p>
+        <a
+          href={GATEWAY_HREF}
+          target="_blank"
+          rel="noreferrer"
+          className="gateway-rise mt-3 block text-center text-xs leading-relaxed text-muted"
+        >
+          {GATEWAY_TITLE}, {GATEWAY_YEAR}. CIA FOIA.
+        </a>
+        <div className="gateway-rise mt-6 grid gap-3 sm:grid-cols-2">
           <button
             type="button"
             className={cn("pill-red min-h-28 rounded-xl p-4 text-left shadow-[var(--shadow-border)]")}
@@ -112,7 +108,7 @@ export function PillGate() {
           >
             <p className="text-xs font-medium tracking-[0.18em] uppercase">Red pill</p>
             <p className="font-display mt-2 text-xl">Raw wire</p>
-            <p className="mt-2 text-sm leading-relaxed">{speakFact(fact, "red")}</p>
+            <p className="mt-2 text-sm leading-relaxed">Same facts. No frame.</p>
           </button>
           <button
             type="button"
@@ -123,37 +119,9 @@ export function PillGate() {
           >
             <p className="text-xs font-medium tracking-[0.18em] uppercase">Blue pill</p>
             <p className="font-display mt-2 text-xl">Briefing</p>
-            <p className="mt-2 text-sm leading-relaxed">{speakFact(fact, "blue")}</p>
+            <p className="mt-2 text-sm leading-relaxed">Same facts. Framed.</p>
           </button>
         </div>
-
-        <div className="mt-4 rounded-xl bg-card p-4 shadow-[var(--shadow-border)]">
-          <p className="text-xs tracking-wide text-muted uppercase">Glimpse</p>
-          <p className="mt-1 text-sm leading-relaxed text-foreground">
-            {shown ? speakFact(fact, shown) : "Tap a pill to preview. Both sides speak the same fact."}
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button
-              variant={preview === "red" ? "selected" : "ghost"}
-              aria-label="Glimpse the red lens"
-              onClick={() => setPreview(preview === "red" ? null : "red")}
-            >
-              <Eye className="size-4" strokeWidth={1.75} />
-              Glimpse red
-            </Button>
-            <Button
-              variant={preview === "blue" ? "selected" : "ghost"}
-              aria-label="Glimpse the blue lens"
-              onClick={() => setPreview(preview === "blue" ? null : "blue")}
-            >
-              <Eye className="size-4" strokeWidth={1.75} />
-              Glimpse blue
-            </Button>
-          </div>
-        </div>
-        <p className="mt-4 text-xs leading-relaxed text-subtle">
-          Neither lens invents. Sign-in waits until you choose. In God We Trust.
-        </p>
       </div>
     </div>
   );
