@@ -5,8 +5,9 @@ import { clearForcePulse, forceHotSnap, forceMiss, forceSnap, isRepairLock, race
 import { broadcastPulse, broadcastStanding, rowsFor, useLiveLead } from "@/lib/live";
 import { assertMeshAllowed, assertOsAllowed, assertRepairAllowed, assertSeizeAllowed, assertSpawnAllowed, assertTheaterAllowed, boundRepairText, deckVerdict, isTopicHeld, useAffairs } from "@/lib/affairs";
 import { probeNative, sanitizeIceServers } from "@/lib/native";
-import { readFieldQuality } from "@/lib/platform";
+import { readFieldQuality, useQualityPref } from "@/lib/platform";
 import { physicsLine, physicsProfile } from "@/lib/physics";
+import { bufferIsUhd, fieldCanvas, isRecording, toggleFieldCapture } from "@/lib/capture";
 import { armRepair, dispatchRepair, listIssues } from "@/lib/repair";
 import { hydrateRepair, readWire, reportRepair, resetRepairLive, seizeRepair, useRepairLive } from "@/lib/wire";
 
@@ -686,8 +687,28 @@ export function bindPlaygroundTest() {
     current.native = () => probeNative();
     current.physics = () => {
       const p = physicsProfile(readFieldQuality());
-      return { band: p.band, solver: p.solver, pgs: p.pgs, ccdNeural: p.ccdNeural, ccdOrbit: p.ccdOrbit, forceEvery: p.forceEvery, line: physicsLine(p) };
+      const q = readFieldQuality();
+      const canvas = fieldCanvas();
+      return {
+        band: p.band,
+        solver: p.solver,
+        pgs: p.pgs,
+        ccdNeural: p.ccdNeural,
+        ccdOrbit: p.ccdOrbit,
+        forceEvery: p.forceEvery,
+        line: physicsLine(p),
+        uhd: q.uhd,
+        pixels: q.pixels,
+        pixelRatio: q.pixelRatio,
+        texDir: q.texDir,
+        buffer: canvas ? { width: canvas.width, height: canvas.height } : null,
+        bufferUhd: bufferIsUhd(canvas),
+        recording: isRecording(),
+      };
     };
+    current.toggleUhd = () => useQualityPref.getState().toggleUhd();
+    current.recordField = () =>
+      toggleFieldCapture({ theater: usePlayground.getState().theater, uhd: readFieldQuality().uhd });
     current.sanitizeIce = sanitizeIceServers;
     current.boundRepair = (...parts: string[]) => boundRepairText(...parts);
     current.auditAffairs = () => useAffairs.getState().audit();

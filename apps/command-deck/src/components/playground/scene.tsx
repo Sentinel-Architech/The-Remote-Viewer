@@ -32,6 +32,7 @@ import {
   physicsProfile,
   type PhysicsProfile,
 } from "@/lib/physics";
+import { bindFieldCanvas } from "@/lib/capture";
 
 const NEURAL_FOG = "#140a0c";
 const ORBIT_FOG = "#020308";
@@ -111,21 +112,32 @@ function usePhys() {
 }
 
 function TextureGate({ children }: { children: ReactNode }) {
+  const q = useFieldQuality();
+  return (
+    <TextureSet key={q.texDir} dir={q.texDir} aniso={q.uhd ? 16 : q.power === "low-power" ? 4 : 8}>
+      {children}
+    </TextureSet>
+  );
+}
+
+function TextureSet({ dir, aniso, children }: { dir: string; aniso: number; children: ReactNode }) {
   const tex = useTexture({
-    cortex: "/textures/cortex.jpg",
-    lesion: "/textures/lesion.jpg",
-    skull: "/textures/skull.jpg",
-    virus: "/textures/virus.jpg",
-    helix: "/textures/helix.jpg",
-    earth: "/textures/earth.jpg",
+    cortex: `${dir}/cortex.jpg`,
+    lesion: `${dir}/lesion.jpg`,
+    skull: `${dir}/skull.jpg`,
+    virus: `${dir}/virus.jpg`,
+    helix: `${dir}/helix.jpg`,
+    earth: `${dir}/earth.jpg`,
   });
-  const aniso = useFieldQuality().power === "low-power" ? 4 : 8;
 
   useEffect(() => {
     const list = [tex.cortex, tex.lesion, tex.skull, tex.virus, tex.helix, tex.earth];
     for (const t of list) {
       t.colorSpace = THREE.SRGBColorSpace;
       t.anisotropy = aniso;
+      t.generateMipmaps = true;
+      t.minFilter = THREE.LinearMipmapLinearFilter;
+      t.magFilter = THREE.LinearFilter;
       t.needsUpdate = true;
     }
     tex.cortex.wrapS = tex.cortex.wrapT = THREE.RepeatWrapping;
@@ -584,6 +596,7 @@ function NeuralArena() {
 }
 
 function NeuralLights() {
+  const map = useFieldQuality().shadowMap;
   return (
     <>
       <hemisphereLight args={["#f0c4b0", "#2a1214", 0.72]} />
@@ -593,7 +606,7 @@ function NeuralLights() {
         intensity={1.45}
         color="#ffd8c8"
         castShadow
-        shadow-mapSize={[1024, 1024]}
+        shadow-mapSize={[map, map]}
         shadow-camera-near={1}
         shadow-camera-far={36}
         shadow-camera-left={-10}
@@ -634,6 +647,7 @@ function Earth() {
 }
 
 function OrbitLights() {
+  const map = useFieldQuality().shadowMap;
   return (
     <>
       <hemisphereLight args={["#c5d2e6", "#020308", 0.32]} />
@@ -643,7 +657,7 @@ function OrbitLights() {
         intensity={2.35}
         color="#fff4e4"
         castShadow
-        shadow-mapSize={[1024, 1024]}
+        shadow-mapSize={[map, map]}
         shadow-camera-near={1}
         shadow-camera-far={40}
         shadow-camera-left={-8}
@@ -806,15 +820,17 @@ export function PlaygroundCanvas() {
     return () => {
       window.removeEventListener("error", onErr);
       window.removeEventListener("unhandledrejection", onRej);
+      bindFieldCanvas(null);
     };
   }, []);
   return (
     <Canvas
       shadows={q.shadows}
-      dpr={q.dpr}
+      dpr={q.pixelRatio}
       camera={{ position: [4.1, 3.35, 5.15], fov: 46, near: 0.08, far: 90 }}
       gl={{ antialias: q.antialias, alpha: false, powerPreference: q.power }}
       onCreated={({ gl, scene }) => {
+        bindFieldCanvas(gl.domElement);
         gl.setClearColor(NEURAL_FOG, 1);
         gl.toneMapping = THREE.ACESFilmicToneMapping;
         gl.toneMappingExposure = 1.08;

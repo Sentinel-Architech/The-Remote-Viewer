@@ -4,7 +4,7 @@ export const PHYSICS_STEP = 1 / 60;
 export const NOW_FORCE = 1.85;
 export const CSF_WAKE = 0.85;
 
-export type PhysicsBand = "field" | "deck";
+export type PhysicsBand = "field" | "deck" | "uhd";
 
 export type PhysicsProfile = {
   band: PhysicsBand;
@@ -72,12 +72,37 @@ const FIELD: PhysicsProfile = {
   ring: [6, 16],
 };
 
-export function physicsBand(q: Pick<FieldQuality, "power" | "coarse">): PhysicsBand {
+const UHD: PhysicsProfile = {
+  band: "uhd",
+  timeStep: PHYSICS_STEP,
+  solver: 6,
+  pgs: 1,
+  interpolate: true,
+  ccdNeural: false,
+  ccdOrbit: true,
+  maxCcdSubsteps: 1,
+  forceEvery: 1,
+  lengthUnit: 0.5,
+  aniso: 16,
+  ornament: true,
+  sphere: [48, 32],
+  gyri: [48, 32],
+  skull: [72, 48],
+  csf: [64, 40],
+  earth: [96, 64],
+  atmo: [48, 32],
+  ring: [12, 48],
+};
+
+export function physicsBand(q: Pick<FieldQuality, "power" | "coarse"> & { uhd?: boolean }): PhysicsBand {
+  if (q.uhd) return "uhd";
   return q.power === "low-power" || q.coarse ? "field" : "deck";
 }
 
-export function physicsProfile(q: Pick<FieldQuality, "power" | "coarse">): PhysicsProfile {
-  return physicsBand(q) === "field" ? FIELD : DECK;
+export function physicsProfile(q: Pick<FieldQuality, "power" | "coarse"> & { uhd?: boolean }): PhysicsProfile {
+  const band = physicsBand(q);
+  if (band === "uhd") return UHD;
+  return band === "field" ? FIELD : DECK;
 }
 
 export function ccdFor(theater: "neural" | "orbit", profile: PhysicsProfile) {
@@ -173,5 +198,7 @@ export function applyMobileForce(
 }
 
 export function physicsLine(profile: PhysicsProfile) {
-  return `Rapier ${profile.band} ${profile.solver}/${profile.pgs} · 1/60 · CCD ${profile.ccdOrbit ? "orbit" : "off"}`;
+  const ccd = profile.ccdOrbit ? "orbit" : "off";
+  if (profile.band === "uhd") return `Rapier uhd ${profile.solver}/${profile.pgs} · 4K · CCD ${ccd}`;
+  return `Rapier ${profile.band} ${profile.solver}/${profile.pgs} · 1/60 · CCD ${ccd}`;
 }
