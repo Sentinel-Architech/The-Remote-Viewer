@@ -1,4 +1,4 @@
-# The Remote Viewer (TRV) / The Sentinel
+# The Remote Viewer (TRV)
 
 **New here or not technical?** → Start with **[START_HERE.md](START_HERE.md)**  
 It is written for complete beginners (college freshman level).
@@ -6,8 +6,7 @@ It is written for complete beginners (college freshman level).
 **Status authority:** [`docs/REALITY.md`](docs/REALITY.md).  
 **Working branch:** [`TheRemoteViewer`](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/tree/TheRemoteViewer)
 
-**Brand:** Sentinel = protector of the core ([`branding/BRAND.md`](branding/BRAND.md)).  
-Logo: `branding/sentinel-logo.png` · Hero: `branding/remote-viewer-hero.png` (upload masters if missing).
+**Brand:** The Remote Viewer is the product. Its security service runs behind it.
 
 **Historical note:** Unrelated to Technical Remote Viewing / PSI TECH / Ed Dames methodology.  
 This project is a local-first software system for digital sovereignty **plus** a hosted Viewer Hub.
@@ -22,7 +21,7 @@ This project is a local-first software system for digital sovereignty **plus** a
 
 | | |
 |--|--|
-| **Live** | [sentinelsecurityprotocol.grok.me](https://sentinelsecurityprotocol.grok.me) |
+| **Live** | [the-remote-viewer.grok.me](https://the-remote-viewer.grok.me) |
 | **Source** | [`apps/hub`](apps/hub) |
 | **Status** | **LIVE** as of 2026-08-20 |
 
@@ -31,11 +30,11 @@ Shipped on the hub:
 - Sign-in (Google / X / email)
 - Age + OFAC gate
 - **First win** — intercept on Command, then claim TRV. Briefing is optional after that.
-- Daily Watch — Viewers intercept hostile packets to defend The Sentinel, then claim TRV
+- Daily Watch — Viewers intercept hostile packets to defend the network, then claim TRV
 - Dedicated profile vault (`/hub/profile`) — portrait, identity extras, finances, docs, live icon
 - Public Viewer card (`/v/$handle`)
 - Command, OS, live, people, make, rails, Citizen lock (on-device hash)
-- **SENTINEL OS jack-in** — 3D neuron flight on Defend / OS. Scan, name, pulse. Catalog writes OS memory. A landed pulse counts as daily watch.
+- **OS jack-in** — 3D neuron flight on Defend / OS. Scan, name, pulse. Catalog writes OS memory. A landed pulse counts as daily watch.
 - **Sovereign node runtime** — `/hub/node`: local Ed25519 identity, nonce attestation, button-press orchestrator, SHA-256 zkML receipt. Desktop twin is `desktop/src/runtime`.
 
 `apps/web` is the **old Vite scaffold**. Do not treat it as the product UI.
@@ -132,7 +131,7 @@ Prefer [`docs/REALITY.md`](docs/REALITY.md) and [`STATUS.md`](STATUS.md) over an
 
 | Capability | Notes |
 |------------|-------|
-| **Viewer Hub DApp** | **LIVE** — [`apps/hub`](apps/hub) · briefing · daily watch · SENTINEL OS jack-in (source; live after republish) · `/hub/node` sovereign runtime (source; live after republish) · profile vault |
+| **Viewer Hub DApp** | **LIVE** — [`apps/hub`](apps/hub) · briefing · daily watch · OS jack-in (source; live after republish) · `/hub/node` sovereign runtime (source; live after republish) · profile vault |
 | Optical air-gap | PROVEN (see REALITY) |
 | Digital vending Path B | PROVEN |
 | Solana `trv_governance` | **SCAFFOLD** — CI build gate |
@@ -152,7 +151,7 @@ npm run dev
 # http://127.0.0.1:8080/
 ```
 
-Hosted: [sentinelsecurityprotocol.grok.me](https://sentinelsecurityprotocol.grok.me)
+Hosted: [the-remote-viewer.grok.me](https://the-remote-viewer.grok.me)
 
 ### Path B
 
