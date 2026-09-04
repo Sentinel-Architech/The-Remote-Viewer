@@ -5,6 +5,8 @@ import { clearForcePulse, forceHotSnap, forceMiss, forceSnap, isRepairLock, race
 import { broadcastPulse, broadcastStanding, rowsFor, useLiveLead } from "@/lib/live";
 import { assertMeshAllowed, assertOsAllowed, assertRepairAllowed, assertSeizeAllowed, assertSpawnAllowed, assertTheaterAllowed, boundRepairText, deckVerdict, isTopicHeld, useAffairs } from "@/lib/affairs";
 import { probeNative, sanitizeIceServers } from "@/lib/native";
+import { readFieldQuality } from "@/lib/platform";
+import { physicsLine, physicsProfile } from "@/lib/physics";
 import { armRepair, dispatchRepair, listIssues } from "@/lib/repair";
 import { hydrateRepair, readWire, reportRepair, resetRepairLive, seizeRepair, useRepairLive } from "@/lib/wire";
 
@@ -242,7 +244,7 @@ export const usePlayground = create<PlaygroundState>((set, get) => ({
   gravity: 3.2,
   restitution: 0.14,
   grabbing: false,
-  lookMode: false,
+  lookMode: true,
   briefing: [OPENING],
   watchDay: null,
   discovered: false,
@@ -682,6 +684,10 @@ export function bindPlaygroundTest() {
   const current = (window as Window & { __playground?: typeof api & Record<string, unknown> }).__playground;
   if (current) {
     current.native = () => probeNative();
+    current.physics = () => {
+      const p = physicsProfile(readFieldQuality());
+      return { band: p.band, solver: p.solver, pgs: p.pgs, ccdNeural: p.ccdNeural, ccdOrbit: p.ccdOrbit, forceEvery: p.forceEvery, line: physicsLine(p) };
+    };
     current.sanitizeIce = sanitizeIceServers;
     current.boundRepair = (...parts: string[]) => boundRepairText(...parts);
     current.auditAffairs = () => useAffairs.getState().audit();

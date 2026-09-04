@@ -1,15 +1,15 @@
-import { createContext, Suspense, useContext, useEffect, useRef, type ReactNode } from "react";
+import { createContext, Suspense, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { ContactShadows, OrbitControls, Stars, useTexture } from "@react-three/drei";
 import {
+  BallCollider,
+  CuboidCollider,
   CylinderCollider,
   Physics,
   RigidBody,
   useBeforePhysicsStep,
-  useRapier,
   type RapierRigidBody,
 } from "@react-three/rapier";
-import { RigidBodyType } from "@dimforge/rapier3d-compat";
 import * as THREE from "three";
 import {
   BOX_SIZE,
@@ -24,6 +24,14 @@ import {
 import { healTier, isLearned, learnedCount, sightTier, rankFor, sigKey, useProgress } from "@/lib/progress";
 import { usePulse } from "@/lib/pulse";
 import { useFieldQuality } from "@/lib/platform";
+import {
+  applyMobileForce,
+  ccdFor,
+  fieldForcesActive,
+  forceScaleFor,
+  physicsProfile,
+  type PhysicsProfile,
+} from "@/lib/physics";
 
 const NEURAL_FOG = "#140a0c";
 const ORBIT_FOG = "#020308";
@@ -88,11 +96,18 @@ type DeckTex = {
 };
 
 const TexCtx = createContext<DeckTex | null>(null);
+const PhysCtx = createContext<PhysicsProfile | null>(null);
 
 function useDeckTex() {
   const t = useContext(TexCtx);
   if (!t) throw new Error("textures");
   return t;
+}
+
+function usePhys() {
+  const p = useContext(PhysCtx);
+  if (!p) throw new Error("physics");
+  return p;
 }
 
 function TextureGate({ children }: { children: ReactNode }) {
@@ -104,12 +119,13 @@ function TextureGate({ children }: { children: ReactNode }) {
     helix: "/textures/helix.jpg",
     earth: "/textures/earth.jpg",
   });
+  const aniso = useFieldQuality().power === "low-power" ? 4 : 8;
 
   useEffect(() => {
     const list = [tex.cortex, tex.lesion, tex.skull, tex.virus, tex.helix, tex.earth];
     for (const t of list) {
       t.colorSpace = THREE.SRGBColorSpace;
-      t.anisotropy = 8;
+      t.anisotropy = aniso;
       t.needsUpdate = true;
     }
     tex.cortex.wrapS = tex.cortex.wrapT = THREE.RepeatWrapping;
@@ -120,49 +136,46 @@ function TextureGate({ children }: { children: ReactNode }) {
     tex.skull.repeat.set(2.4, 1.6);
     tex.earth.wrapS = THREE.RepeatWrapping;
     tex.earth.wrapT = THREE.ClampToEdgeWrapping;
-  }, [tex]);
+  }, [tex, aniso]);
 
   return <TexCtx.Provider value={tex}>{children}</TexCtx.Provider>;
 }
 
-function CentralPull() {
-  const g = usePlayground((s) => s.gravity);
-  const { world } = useRapier();
-  useBeforePhysicsStep(() => {
-    world.forEachRigidBody((body) => {
-      if (!body.isValid() || body.isFixed()) return;
-      if (body.bodyType() === RigidBodyType.KinematicPositionBased) return;
-      const t = body.translation();
-      const len = Math.hypot(t.x, t.y, t.z);
-      if (len < 0.05) return;
-      const mag = g * Math.max(body.mass(), 0.2);
-      body.addForce({ x: (-t.x / len) * mag, y: (-t.y / len) * mag, z: (-t.z / len) * mag }, true);
-    });
-  });
-  return null;
+function noteAlias(err: unknown) {
+  const msg = err instanceof Error ? err.message : String(err);
+  if (typeof window === "undefined") return;
+  if (!/unsafe aliasing|recursive use of an object/i.test(msg)) return;
+  (window as Window & { __trvAlias?: string }).__trvAlias = msg;
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener("error", (e) => noteAlias(e.error ?? e.message));
+  window.addEventListener("unhandledrejection", (e) => noteAlias(e.reason));
 }
 
 let csfPhase = 0;
 
-function CsfFlow() {
-  const { world } = useRapier();
-  useBeforePhysicsStep(() => {
+function FieldForces() {
+  const theater = usePlayground((s) => s.theater);
+  const gravity = usePlayground((s) => s.gravity);
+  const wait = useWaitLock();
+  const now = useNowLock();
+  const forceEvery = usePhys().forceEvery;
+  const step = useRef(0);
+
+  useBeforePhysicsStep((world) => {
     csfPhase += 1 / 60;
-    const pulse = 0.62 + 0.38 * Math.sin(csfPhase * 1.15);
-    world.forEachRigidBody((body) => {
-      if (!body.isValid() || body.isFixed()) return;
-      if (body.bodyType() === RigidBodyType.KinematicPositionBased) return;
-      const p = body.translation();
-      const m = Math.max(body.mass(), 0.12) * pulse;
-      body.addForce(
-        {
-          x: -p.z * 0.28 * m,
-          y: Math.sin(p.x * 0.65 + csfPhase) * 0.16 * m,
-          z: p.x * 0.28 * m,
-        },
-        true,
-      );
-    });
+    step.current += 1;
+    if (!fieldForcesActive(wait)) return;
+    const scale = forceScaleFor(step.current, forceEvery, now);
+    if (scale === 0) return;
+    try {
+      world.forEachRigidBody((body) => {
+        applyMobileForce(body, theater, gravity, now, csfPhase, scale);
+      });
+    } catch (err) {
+      noteAlias(err);
+    }
   });
   return null;
 }
@@ -195,13 +208,14 @@ function FlaviKnobs({ radius, color }: { radius: number; color: string }) {
 
 function KnownRing({ radius }: { radius: number }) {
   const ref = useRef<THREE.Group>(null);
+  const ring = usePhys().ring;
   useFrame((_, dt) => {
     if (ref.current) ref.current.rotation.y += Math.min(dt, 0.1) * 0.85;
   });
   return (
     <group ref={ref}>
       <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[radius * 1.42, radius * 0.04, 8, 28]} />
+        <torusGeometry args={[radius * 1.42, radius * 0.04, ring[0], ring[1]]} />
         <meshBasicMaterial color="#7d9a7e" transparent opacity={0.62} />
       </mesh>
     </group>
@@ -231,17 +245,20 @@ function ShapeVisual({ body }: { body: SpawnedBody }) {
   const learned = useProgress((s) => s.learned);
   const now = useNowLock();
   const wait = useWaitLock();
+  const phys = usePhys();
   const { kind, color, scale, role } = body;
   const sentinel = role === "sentinel";
   const r = SPHERE_RADIUS * scale;
   const orbit = theater === "orbit";
   const known = role === "threat" && isLearned(learned, sigKey(theater, kind));
+  const segs = phys.sphere;
+  const ornament = phys.ornament && !orbit;
 
   if (kind === "sphere") {
     return (
       <group>
         <mesh castShadow receiveShadow>
-          {orbit ? <octahedronGeometry args={[r, 0]} /> : <sphereGeometry args={[r, 28, 20]} />}
+          {orbit ? <octahedronGeometry args={[r, 0]} /> : <sphereGeometry args={[r, segs[0], segs[1]]} />}
           <meshPhysicalMaterial
             color={color}
             roughness={sentinel ? 0.22 : orbit ? 0.18 : 0.28}
@@ -256,7 +273,7 @@ function ShapeVisual({ body }: { body: SpawnedBody }) {
             sheenColor={color}
           />
         </mesh>
-        {sentinel || orbit ? null : <Spikes radius={r} color={color} />}
+        {sentinel || !ornament ? null : <Spikes radius={r} color={color} />}
         {known ? <KnownRing radius={r} /> : null}
       </group>
     );
@@ -286,7 +303,7 @@ function ShapeVisual({ body }: { body: SpawnedBody }) {
     return (
       <group>
         <mesh castShadow receiveShadow>
-          <sphereGeometry args={[capsid, 28, 20]} />
+          <sphereGeometry args={[capsid, segs[0], segs[1]]} />
           <meshPhysicalMaterial
             color={color}
             roughness={0.26}
@@ -300,19 +317,21 @@ function ShapeVisual({ body }: { body: SpawnedBody }) {
             sheenColor={color}
           />
         </mesh>
-        <mesh>
-          <sphereGeometry args={[capsid * 1.32, 28, 20]} />
-          <meshPhysicalMaterial
-            color={color}
-            transparent
-            opacity={0.2}
-            roughness={0.06}
-            metalness={0}
-            clearcoat={0.85}
-            depthWrite={false}
-          />
-        </mesh>
-        <FlaviKnobs radius={capsid} color={color} />
+        {ornament ? (
+          <mesh>
+            <sphereGeometry args={[capsid * 1.32, segs[0], segs[1]]} />
+            <meshPhysicalMaterial
+              color={color}
+              transparent
+              opacity={0.2}
+              roughness={0.06}
+              metalness={0}
+              clearcoat={0.85}
+              depthWrite={false}
+            />
+          </mesh>
+        ) : null}
+        {ornament ? <FlaviKnobs radius={capsid} color={color} /> : null}
         {known ? <KnownRing radius={capsid * 1.2} /> : null}
       </group>
     );
@@ -322,7 +341,7 @@ function ShapeVisual({ body }: { body: SpawnedBody }) {
     return (
       <group>
         <mesh castShadow receiveShadow>
-          <cylinderGeometry args={[CYL_RADIUS * scale, CYL_RADIUS * scale * 0.86, CYL_HEIGHT * scale, 28]} />
+          <cylinderGeometry args={[CYL_RADIUS * scale, CYL_RADIUS * scale * 0.86, CYL_HEIGHT * scale, segs[0]]} />
           <meshPhysicalMaterial
             color={color}
             roughness={0.28}
@@ -342,7 +361,7 @@ function ShapeVisual({ body }: { body: SpawnedBody }) {
   return (
     <group>
       <mesh castShadow receiveShadow>
-        <cylinderGeometry args={[br * 0.22, br, h * 0.78, 22]} />
+        <cylinderGeometry args={[br * 0.22, br, h * 0.78, Math.max(12, segs[0] - 6)]} />
         <meshPhysicalMaterial
           color={color}
           map={helix}
@@ -354,7 +373,7 @@ function ShapeVisual({ body }: { body: SpawnedBody }) {
         />
       </mesh>
       <mesh castShadow receiveShadow position={[0, -h * 0.32, 0]}>
-        <sphereGeometry args={[br, 22, 16]} />
+        <sphereGeometry args={[br, Math.max(12, segs[0] - 6), segs[1]]} />
         <meshPhysicalMaterial
           color={color}
           roughness={0.3}
@@ -387,15 +406,34 @@ function NowPulse({ active, children }: { active: boolean; children: ReactNode }
   return <group ref={ref}>{children}</group>;
 }
 
+function BodyCollider({ body, restitution, neural }: { body: SpawnedBody; restitution: number; neural: boolean }) {
+  const friction = neural ? 0.1 : 0.72;
+  const bounce = neural ? Math.min(restitution, 0.2) : restitution;
+  const kind = body.kind;
+  const r = SPHERE_RADIUS * body.scale;
+  if (kind === "sphere") return <BallCollider args={[r]} restitution={bounce} friction={friction} />;
+  if (kind === "box") {
+    if (neural) return <BallCollider args={[r * 0.88]} restitution={bounce} friction={friction} />;
+    const s = BOX_SIZE * body.scale;
+    return <CuboidCollider args={[s / 2, (s * 0.55) / 2, s / 2]} restitution={bounce} friction={friction} />;
+  }
+  return (
+    <CylinderCollider
+      args={[(CYL_HEIGHT * body.scale) / 2, CYL_RADIUS * body.scale]}
+      restitution={bounce}
+      friction={friction}
+    />
+  );
+}
+
 function Body({ body, restitution }: { body: SpawnedBody; restitution: number }) {
   const ref = useRef<RapierRigidBody>(null);
+  const tap = useRef({ x: 0, y: 0 });
   const gl = useThree((s) => s.gl);
   const theater = usePlayground((s) => s.theater);
-  const lookMode = usePlayground((s) => s.lookMode);
   const now = useNowLock();
-  const kind = body.kind;
+  const phys = usePhys();
   const neural = theater === "neural";
-  const auto = kind === "sphere" ? "ball" : kind === "box" ? (neural ? "ball" : "cuboid") : false;
   const threat = body.role === "threat";
 
   return (
@@ -403,30 +441,30 @@ function Body({ body, restitution }: { body: SpawnedBody; restitution: number })
       ref={ref}
       position={body.position}
       rotation={body.rotation}
-      colliders={auto}
+      colliders={false}
       restitution={neural ? Math.min(restitution, 0.2) : restitution}
       friction={neural ? 0.1 : 0.72}
       linearDamping={neural ? 1.65 : 0.14}
       angularDamping={neural ? 1.35 : 0.2}
       gravityScale={neural ? 0.42 : 1}
-      ccd
+      ccd={ccdFor(theater, phys)}
+      canSleep={neural}
     >
-      {kind === "cylinder" && (
-        <CylinderCollider
-          args={[(CYL_HEIGHT * body.scale) / 2, CYL_RADIUS * body.scale]}
-          restitution={neural ? Math.min(restitution, 0.2) : restitution}
-          friction={neural ? 0.1 : 0.72}
-        />
-      )}
+      <BodyCollider body={body} restitution={restitution} neural={neural} />
       <group
         onPointerOver={() => {
-          if (!lookMode || now) gl.domElement.style.cursor = "pointer";
+          gl.domElement.style.cursor = "pointer";
         }}
         onPointerOut={() => {
           gl.domElement.style.cursor = "auto";
         }}
         onPointerDown={(e: ThreeEvent<PointerEvent>) => {
-          if (usePlayground.getState().lookMode && !isTheaterNow()) return;
+          tap.current = { x: e.clientX, y: e.clientY };
+        }}
+        onPointerUp={(e: ThreeEvent<PointerEvent>) => {
+          const dx = e.clientX - tap.current.x;
+          const dy = e.clientY - tap.current.y;
+          if (dx * dx + dy * dy > 144) return;
           e.stopPropagation();
           if (body.role !== "threat") return;
           usePlayground.getState().markSeize(body.id);
@@ -457,9 +495,18 @@ function NeuralArena() {
   const healed = useProgress((s) => s.healed);
   const tier = healTier(healed);
   const shadows = useFieldQuality().shadows;
+  const phys = usePhys();
   return (
     <>
-      <RigidBody type="fixed" colliders="cuboid" friction={0.18} restitution={0.04}>
+      <RigidBody type="fixed" colliders={false} friction={0.18} restitution={0.04}>
+        <CuboidCollider args={[6, 0.25, 6]} position={[0, 0.22, 0]} />
+        {GYRI.map((g, i) => (
+          <BallCollider key={`g${i}`} args={[g.r]} position={g.p} friction={0.16} restitution={0.04} />
+        ))}
+        <CuboidCollider args={[11, 4, 0.2]} position={[0, 2.6, -11.1]} />
+        <CuboidCollider args={[11, 4, 0.2]} position={[0, 2.6, 11.1]} />
+        <CuboidCollider args={[0.2, 4, 11]} position={[-11.1, 2.6, 0]} />
+        <CuboidCollider args={[0.2, 4, 11]} position={[11.1, 2.6, 0]} />
         <mesh position={[0, 0.22, 0]} receiveShadow>
           <boxGeometry args={[12, 0.5, 12]} />
           <meshPhysicalMaterial
@@ -470,30 +517,43 @@ function NeuralArena() {
             clearcoatRoughness={0.38}
           />
         </mesh>
+        {GYRI.map((g, i) => {
+          const sick = g.lesion > tier;
+          return (
+            <mesh key={i} position={g.p} castShadow receiveShadow>
+              <sphereGeometry args={[g.r, phys.gyri[0], phys.gyri[1]]} />
+              <meshPhysicalMaterial
+                map={sick ? lesion : cortex}
+                roughness={sick ? 0.5 : 0.32}
+                metalness={0.03}
+                clearcoat={sick ? 0.22 : 0.58}
+                clearcoatRoughness={0.32}
+                emissive={sick ? "#4a1814" : "#000000"}
+                emissiveIntensity={sick ? 0.12 : 0}
+              />
+            </mesh>
+          );
+        })}
+        <mesh position={[0, 2.6, -11.1]}>
+          <boxGeometry args={[22, 8, 0.4]} />
+          <meshBasicMaterial color={NEURAL_FOG} />
+        </mesh>
+        <mesh position={[0, 2.6, 11.1]}>
+          <boxGeometry args={[22, 8, 0.4]} />
+          <meshBasicMaterial color={NEURAL_FOG} />
+        </mesh>
+        <mesh position={[-11.1, 2.6, 0]}>
+          <boxGeometry args={[0.4, 8, 22]} />
+          <meshBasicMaterial color={NEURAL_FOG} />
+        </mesh>
+        <mesh position={[11.1, 2.6, 0]}>
+          <boxGeometry args={[0.4, 8, 22]} />
+          <meshBasicMaterial color={NEURAL_FOG} />
+        </mesh>
       </RigidBody>
 
-      {GYRI.map((g, i) => {
-        const sick = g.lesion > tier;
-        return (
-        <RigidBody key={i} type="fixed" colliders="ball" friction={0.16} restitution={0.04} position={g.p}>
-          <mesh castShadow receiveShadow>
-            <sphereGeometry args={[g.r, 28, 20]} />
-            <meshPhysicalMaterial
-              map={sick ? lesion : cortex}
-              roughness={sick ? 0.5 : 0.32}
-              metalness={0.03}
-              clearcoat={sick ? 0.22 : 0.58}
-              clearcoatRoughness={0.32}
-              emissive={sick ? "#4a1814" : "#000000"}
-              emissiveIntensity={sick ? 0.12 : 0}
-            />
-          </mesh>
-        </RigidBody>
-        );
-      })}
-
       <mesh position={[0, 2.55, 0]} scale={[1, 0.8, 1]} renderOrder={2}>
-        <sphereGeometry args={[8.7, 40, 28]} />
+        <sphereGeometry args={[8.7, phys.csf[0], phys.csf[1]]} />
         <meshPhysicalMaterial
           color="#8ebbb4"
           transparent
@@ -506,7 +566,7 @@ function NeuralArena() {
       </mesh>
 
       <mesh position={[0, 3.1, 0]} scale={[1, 0.84, 1]}>
-        <sphereGeometry args={[9.6, 48, 32]} />
+        <sphereGeometry args={[9.6, phys.skull[0], phys.skull[1]]} />
         <meshStandardMaterial
           map={skull}
           side={THREE.BackSide}
@@ -515,31 +575,6 @@ function NeuralArena() {
           color="#e6d4c4"
         />
       </mesh>
-
-      <RigidBody type="fixed" colliders="cuboid" position={[0, 2.6, -11.1]}>
-        <mesh>
-          <boxGeometry args={[22, 8, 0.4]} />
-          <meshBasicMaterial color={NEURAL_FOG} />
-        </mesh>
-      </RigidBody>
-      <RigidBody type="fixed" colliders="cuboid" position={[0, 2.6, 11.1]}>
-        <mesh>
-          <boxGeometry args={[22, 8, 0.4]} />
-          <meshBasicMaterial color={NEURAL_FOG} />
-        </mesh>
-      </RigidBody>
-      <RigidBody type="fixed" colliders="cuboid" position={[-11.1, 2.6, 0]}>
-        <mesh>
-          <boxGeometry args={[0.4, 8, 22]} />
-          <meshBasicMaterial color={NEURAL_FOG} />
-        </mesh>
-      </RigidBody>
-      <RigidBody type="fixed" colliders="cuboid" position={[11.1, 2.6, 0]}>
-        <mesh>
-          <boxGeometry args={[0.4, 8, 22]} />
-          <meshBasicMaterial color={NEURAL_FOG} />
-        </mesh>
-      </RigidBody>
 
       {shadows ? (
         <ContactShadows position={[0, 0.48, 0]} opacity={0.5} scale={14} blur={2.6} far={8} />
@@ -577,19 +612,21 @@ function NeuralLights() {
 function Earth() {
   const { earth } = useDeckTex();
   const mesh = useRef<THREE.Mesh>(null);
+  const phys = usePhys();
   useFrame((_, dt) => {
     if (mesh.current) mesh.current.rotation.y += Math.min(dt, 0.1) * 0.035;
   });
   return (
     <group>
-      <RigidBody type="fixed" colliders="ball" friction={0.8} restitution={0.08}>
+      <RigidBody type="fixed" colliders={false}>
+        <BallCollider args={[EARTH_RADIUS]} friction={0.8} restitution={0.08} />
         <mesh ref={mesh} castShadow receiveShadow>
-          <sphereGeometry args={[EARTH_RADIUS, 64, 48]} />
+          <sphereGeometry args={[EARTH_RADIUS, phys.earth[0], phys.earth[1]]} />
           <meshStandardMaterial map={earth} roughness={0.58} metalness={0.06} />
         </mesh>
       </RigidBody>
       <mesh scale={1.046}>
-        <sphereGeometry args={[EARTH_RADIUS, 32, 24]} />
+        <sphereGeometry args={[EARTH_RADIUS, phys.atmo[0], phys.atmo[1]]} />
         <meshBasicMaterial color="#6aa0d8" transparent opacity={0.16} side={THREE.BackSide} />
       </mesh>
     </group>
@@ -666,7 +703,13 @@ function SentinelOs() {
     acc.current += Math.min(dt, 0.1);
     if (acc.current < interval) return;
     acc.current = 0;
-    usePlayground.getState().osStrike();
+    queueMicrotask(() => {
+      try {
+        usePlayground.getState().osStrike();
+      } catch (err) {
+        noteAlias(err);
+      }
+    });
   });
   return null;
 }
@@ -684,6 +727,17 @@ function GlGuard() {
   return null;
 }
 
+function useTabHidden() {
+  const [hidden, setHidden] = useState(false);
+  useEffect(() => {
+    const on = () => setHidden(document.hidden);
+    on();
+    document.addEventListener("visibilitychange", on);
+    return () => document.removeEventListener("visibilitychange", on);
+  }, []);
+  return hidden;
+}
+
 function World() {
   const gravity = usePlayground((s) => s.gravity);
   const theater = usePlayground((s) => s.theater);
@@ -691,51 +745,69 @@ function World() {
   const now = useNowLock();
   const neural = theater === "neural";
   const q = useFieldQuality();
+  const phys = physicsProfile(q);
+  const hidden = useTabHidden();
 
   return (
-    <Physics
-      key={theater}
-      gravity={neural ? [0, -gravity, 0] : [0, 0, 0]}
-      timeStep={1 / 60}
-      interpolate
-      numSolverIterations={8}
-      numInternalPgsIterations={2}
-    >
-      <GlGuard />
-      <SceneTint />
-      <CameraRig />
-      {neural ? <NeuralLights /> : <OrbitLights />}
-      {neural ? <NeuralArena /> : <Earth />}
-      {neural ? null : <Stars radius={48} depth={24} count={q.stars} factor={3.2} saturation={0} fade speed={0.35} />}
-      {neural ? <CsfFlow /> : <CentralPull />}
-      <SentinelOs />
-      <Bodies />
-      <OrbitControls
+    <PhysCtx.Provider value={phys}>
+      <Physics
         key={theater}
-        makeDefault
-        enableDamping
-        dampingFactor={0.08}
-        enableRotate={lookMode && !now}
-        enablePan={lookMode && !q.coarse && !now}
-        enableZoom
-        target={neural ? [0, 1.15, 0] : [0, 0, 0]}
-        minPolarAngle={neural ? 0.28 : 0.12}
-        maxPolarAngle={neural ? Math.PI / 2 - 0.08 : Math.PI - 0.18}
-        minDistance={neural ? 2.0 : 4.8}
-        maxDistance={neural ? 10 : 22}
-        rotateSpeed={q.coarse ? 0.72 : 1}
-        touches={{
-          ONE: THREE.TOUCH.ROTATE,
-          TWO: THREE.TOUCH.DOLLY_PAN,
-        }}
-      />
-    </Physics>
+        gravity={neural ? [0, -gravity, 0] : [0, 0, 0]}
+        timeStep={phys.timeStep}
+        interpolate={phys.interpolate}
+        numSolverIterations={phys.solver}
+        numInternalPgsIterations={phys.pgs}
+        maxCcdSubsteps={phys.maxCcdSubsteps}
+        lengthUnit={phys.lengthUnit}
+        paused={hidden}
+        colliders={false}
+      >
+        <GlGuard />
+        <SceneTint />
+        <CameraRig />
+        {neural ? <NeuralLights /> : <OrbitLights />}
+        {neural ? <NeuralArena /> : <Earth />}
+        {neural ? null : <Stars radius={48} depth={24} count={q.stars} factor={3.2} saturation={0} fade speed={0.35} />}
+        <FieldForces />
+        <SentinelOs />
+        <Bodies />
+        <OrbitControls
+          key={theater}
+          makeDefault
+          enableDamping
+          dampingFactor={0.08}
+          enableRotate={(neural || lookMode) && !now}
+          enablePan={lookMode && !q.coarse && !now}
+          enableZoom
+          target={neural ? [0, 1.15, 0] : [0, 0, 0]}
+          minPolarAngle={neural ? 0.28 : 0.12}
+          maxPolarAngle={neural ? Math.PI / 2 - 0.08 : Math.PI - 0.18}
+          minDistance={neural ? 2.0 : 4.8}
+          maxDistance={neural ? 10 : 22}
+          rotateSpeed={q.coarse ? 0.72 : 1}
+          touches={{
+            ONE: THREE.TOUCH.ROTATE,
+            TWO: THREE.TOUCH.DOLLY_PAN,
+          }}
+        />
+      </Physics>
+    </PhysCtx.Provider>
   );
 }
 
 export function PlaygroundCanvas() {
   const q = useFieldQuality();
   const tap = useRef({ x: 0, y: 0, t: 0 });
+  useEffect(() => {
+    const onErr = (e: ErrorEvent) => noteAlias(e.error ?? e.message);
+    const onRej = (e: PromiseRejectionEvent) => noteAlias(e.reason);
+    window.addEventListener("error", onErr);
+    window.addEventListener("unhandledrejection", onRej);
+    return () => {
+      window.removeEventListener("error", onErr);
+      window.removeEventListener("unhandledrejection", onRej);
+    };
+  }, []);
   return (
     <Canvas
       shadows={q.shadows}
@@ -753,14 +825,11 @@ export function PlaygroundCanvas() {
         tap.current = { x: e.clientX, y: e.clientY, t: performance.now() };
       }}
       onPointerMissed={(e) => {
-        const look = usePlayground.getState().lookMode;
-        const now = isTheaterNow();
-        if (look && !now) return;
         const dx = e.clientX - tap.current.x;
         const dy = e.clientY - tap.current.y;
         if (dx * dx + dy * dy > 144) return;
         if (performance.now() - tap.current.t > 500) return;
-        if (now) usePlayground.getState().seizeNow();
+        if (isTheaterNow()) usePlayground.getState().seizeNow();
         else usePlayground.getState().spawn();
       }}
       style={{ touchAction: "none", height: "100%", width: "100%" }}
