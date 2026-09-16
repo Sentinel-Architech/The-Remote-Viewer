@@ -11,7 +11,7 @@
 
 | Product | Source | Status |
 |---------|--------|--------|
-| **Viewer Hub** | `apps/hub` | ✅ **LIVE** — [sentinelsecurityprotocol.grok.me](https://sentinelsecurityprotocol.grok.me) |
+| **Viewer Hub** | `apps/hub` | ⚠️ **HOST PARTIAL** — canon [the-remote-viewer.grok.me](https://the-remote-viewer.grok.me) (`/` `/login` up; `/hub*` 404 until Re-Publish). Old host is not canonical. |
 | **Command Deck** | `apps/command-deck` | ✅ **LIVE** — Synapse, God's Eye, Mesh Board, HUB |
 | **Optical Air-Gap** | `optical-airgap/` | ✅ **PROVEN** — Path B, GrapheneOS verified |
 | **Local Operator UI** | `apps/ui/` | ✅ **PROVEN** — `bash apps/ui/serve-ui.sh` |
@@ -123,7 +123,7 @@ bash apps/ui/serve-ui.sh
 
 ## Links
 
-- **Live:** [sentinelsecurityprotocol.grok.me](https://sentinelsecurityprotocol.grok.me)
+- **Live:** [the-remote-viewer.grok.me](https://the-remote-viewer.grok.me)
 - **Docs:** [`docs/REALITY.md`](docs/REALITY.md)
 - **Holdings:** [`docs/SCAFFOLD-HOLD.md`](docs/SCAFFOLD-HOLD.md)
 - **License:** [LICENSE](LICENSE) — Open Source

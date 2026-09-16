@@ -4,7 +4,7 @@
 
 | | |
 |--|--|
-| **Live Product** | [sentinelsecurityprotocol.grok.me](https://sentinelsecurityprotocol.grok.me) |
+| **Live Product** | [the-remote-viewer.grok.me](https://the-remote-viewer.grok.me) |
 | **Technology** | TypeScript (TanStack Start) + PostgreSQL + Better Auth + age |
 | **License** | Open Source (MIT) |
 | **Status** | ✅ LIVE (Viewer Hub + Command Deck) |
