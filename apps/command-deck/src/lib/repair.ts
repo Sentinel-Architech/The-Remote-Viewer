@@ -43,7 +43,7 @@ const LAST_KNOWN: Record<RepairRepoId, GhIssue[]> = {
     {
       number: 55,
       title: "Live hub verification 2026-08-27 — first-win path + dark /hub/node",
-      body: "/hub/node is dark on sentinelsecurityprotocol.grok.me. apps/hub route exists in git. Host publish is behind git. Track A stays in #49. Do not invent LIVE. First-win not independently proven.",
+      body: "/hub* is dark on canon the-remote-viewer.grok.me (HOST PARTIAL). apps/hub route exists in git. Host Re-Publish behind. Track A stays in #49. Do not invent LIVE.",
       url: "https://github.com/Sentinel-Architech/The-Remote-Viewer/issues/55",
       labels: [],
       updated: "2026-08-27T17:54:13Z",

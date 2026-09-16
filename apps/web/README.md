@@ -3,7 +3,7 @@
 Vite + React + TypeScript **shell**. This is **not** the product UI.
 
 **The live Viewer Hub is [`apps/hub`](../hub/).**  
-Hosted at [sentinelsecurityprotocol.grok.me](https://sentinelsecurityprotocol.grok.me).
+Hosted at [the-remote-viewer.grok.me](https://the-remote-viewer.grok.me).
 
 This folder is kept so old links and scripts do not break. If you `npm run dev` here you will see an explicit scaffold notice. That is expected. Do not file issues against this shell as if it were the hub.
 

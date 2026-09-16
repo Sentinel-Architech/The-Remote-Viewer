@@ -5,7 +5,7 @@
 Sovereign Command Deck for [The Remote Viewer](https://github.com/Sentinel-Architech/The-Remote-Viewer). Keys stay on the device. Sign-in with X is social, not the key. Native web A–Z. No wallet. No Google identity.
 
 Field: [the-remote-viewer.grok.me](https://the-remote-viewer.grok.me)  
-Network Hub: [sentinelsecurityprotocol.grok.me](https://sentinelsecurityprotocol.grok.me)  
+Network Hub: [the-remote-viewer.grok.me](https://the-remote-viewer.grok.me)  
 Canonical repo: [Sentinel-Architech/The-Remote-Viewer](https://github.com/Sentinel-Architech/The-Remote-Viewer)
 
 ## Clone on any Wi-Fi device
