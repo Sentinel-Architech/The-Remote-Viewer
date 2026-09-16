@@ -78,7 +78,7 @@ build_lite() {
   cat > "$stage/00-START-HERE.md" << 'EOF'
 # TRV Posture Lite
 
-Impulse pack — core posture only. Price: 11 USDC or 11 USD on X Money (@Archtecht).
+Impulse pack — core posture only. Price: 11 USDC or 11 USD on X Money (@TRV_Architech).
 
 ## Reading order
 
@@ -88,7 +88,7 @@ Impulse pack — core posture only. Price: 11 USDC or 11 USD on X Money (@Archte
 Upgrade: **TRV Posture Pack** (25 USDC / 25 USD X Money) for full install + security + Obtainium notes.
 
 Repo: https://github.com/Sentinel-Architech/The-Remote-Viewer
-X Money: https://x.com/Archtecht
+X Money: https://x.com/TRV_Architech
 EOF
 
   copy_req "docs/public/POSTURE.md" "$stage/01-posture/POSTURE.md"
@@ -96,7 +96,7 @@ EOF
 
   {
     echo "pack: TRV Posture Lite"
-    echo "price: 11 USDC or 11 USD X Money @Archtecht"
+    echo "price: 11 USDC or 11 USD X Money @TRV_Architech"
     echo "built_utc: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
     echo "git_commit: $(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
   } > "$stage/BUILD.txt"
@@ -116,7 +116,7 @@ build_full() {
   cat > "$stage/00-START-HERE.md" << 'EOF'
 # TRV Posture Pack
 
-Full ordered map for builders. Price: 25 USDC or 25 USD on X Money (@Archtecht).
+Full ordered map for builders. Price: 25 USDC or 25 USD on X Money (@TRV_Architech).
 
 ## Reading order
 
@@ -131,7 +131,7 @@ Full ordered map for builders. Price: 25 USDC or 25 USD on X Money (@Archtecht).
 Lite (11) is posture-only. This pack is the full bridge.
 
 Repo: https://github.com/Sentinel-Architech/The-Remote-Viewer
-X Money: https://x.com/Archtecht
+X Money: https://x.com/TRV_Architech
 EOF
 
   copy_req "docs/public/POSTURE.md" "$stage/01-posture/POSTURE.md"
@@ -145,7 +145,7 @@ EOF
 
   {
     echo "pack: TRV Posture Pack"
-    echo "price: 25 USDC or 25 USD X Money @Archtecht"
+    echo "price: 25 USDC or 25 USD X Money @TRV_Architech"
     echo "built_utc: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
     echo "git_commit: $(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
   } > "$stage/BUILD.txt"

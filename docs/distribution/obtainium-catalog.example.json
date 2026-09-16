@@ -3,8 +3,8 @@
   "configs": [
     {
       "id": "com.sentinelarchetecht.theremoteviewer",
-      "url": "https://github.com/Sentinel-Archetecht/The-Remote-Viewer",
-      "author": "Sentinel-Archetecht",
+      "url": "https://github.com/Sentinel-Architech/The-Remote-Viewer",
+      "author": "Sentinel-Architech",
       "name": "The Remote Viewer",
       "preferredApkIndex": 0,
       "altLabel": null,

@@ -6,9 +6,9 @@
 
 ## Storefront
 
-- [buy.html on GitHub](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/blob/TheRemoteViewer/digital-vending/buy.html)
-- [Browser preview](https://htmlpreview.github.io/?https://github.com/Sentinel-Archetecht/The-Remote-Viewer/blob/TheRemoteViewer/digital-vending/buy.html)
-- [jsDelivr](https://cdn.jsdelivr.net/gh/Sentinel-Archetecht/The-Remote-Viewer@TheRemoteViewer/digital-vending/buy.html)
+- [buy.html on GitHub](https://github.com/Sentinel-Architech/The-Remote-Viewer/blob/TheRemoteViewer/digital-vending/buy.html)
+- [Browser preview](https://htmlpreview.github.io/?https://github.com/Sentinel-Architech/The-Remote-Viewer/blob/TheRemoteViewer/digital-vending/buy.html)
+- [jsDelivr](https://cdn.jsdelivr.net/gh/Sentinel-Architech/The-Remote-Viewer@TheRemoteViewer/digital-vending/buy.html)
 
 ## Pack prices
 

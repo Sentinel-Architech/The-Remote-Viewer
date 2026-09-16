@@ -1,6 +1,6 @@
 /**
  * Shop near top of Viewer Profile.
- * Public TRV_POOL = X Money @Archtecht (human rail).
+ * Public TRV_POOL = X Money @TRV_Architech (human rail).
  * Solana dual-transfer remains the sovereign on-chain path.
  * X Money is not decentralized (Cross River / Visa). Do not delete SOL.
  * 50/50 split, zero simulation, deliberate re-selection (originator 2026-08-16).
@@ -24,8 +24,8 @@ import {
 
 const WALLET_KEY = 'rv-wallet-pubkey';
 const CREATOR = '9XhGDthCvcDz3tLfTgXRLXx1W48fM5oQtrFTRot3yLYG';
-const TRV_POOL = '@Archtecht';
-const TRV_POOL_URL = 'https://x.com/Archtecht';
+const TRV_POOL = '@TRV_Architech';
+const TRV_POOL_URL = 'https://x.com/TRV_Architech';
 // Sovereign Solana sink for PublicKey splits only — not the public TRV_POOL name.
 const COMMUNITY_POOL = '555y97LMoygGAWUWFngbprr5oMHFJsQqoFAbrHi5e8nt';
 const RPC = 'https://solana-rpc.publicnode.com';
@@ -235,7 +235,7 @@ function ensureShopUI() {
     sec.innerHTML = `
       <div class="card">
         <h2>Shop</h2>
-        <p class="soft">TRV credits · TRV_POOL @Archtecht · Aurora · NFT mint.</p>
+        <p class="soft">TRV credits · TRV_POOL @TRV_Architech · Aurora · NFT mint.</p>
         <p>Your TRV credits: <strong id="trv-balance">0</strong></p>
         <p class="soft" id="validated-status">Not yet a Validated Viewer</p>
         <div class="actions">

@@ -6,7 +6,7 @@
 ## 0. Clone
 
 ```bash
-git clone -b TheRemoteViewer https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
+git clone -b TheRemoteViewer https://github.com/Sentinel-Architech/The-Remote-Viewer.git
 cd The-Remote-Viewer
 bash scripts/install-hooks.sh   # chmod hooks + scripts
 ```

@@ -17,8 +17,8 @@ export const NATIVE_TAG =
 export const BOARD_NAME = "Mesh Board";
 export const BOARD_TAG =
   "A record of the watch — local, national, globe. Not a leaderboard for sport.";
-export const ORIGIN_X = "https://x.com/Archtecht";
-export const ORIGIN_X_HANDLE = "@Archtecht";
+export const ORIGIN_X = "https://x.com/TRV_Architech";
+export const ORIGIN_X_HANDLE = "@TRV_Architech";
 export const ORIGIN_GITHUB = "https://github.com/Sentinel-Architech/The-Remote-Viewer";
 export const ORIGIN_DF = "https://github.com/Sentinel-Architech/TheSentinel";
 export const ORIGIN_DECK = "https://the-remote-viewer.grok.me";

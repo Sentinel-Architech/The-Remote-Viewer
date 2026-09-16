@@ -57,7 +57,7 @@ plaintext → age → Soliton LT (TRVL) → peel → age decrypt
 ## Quick start
 
 ```bash
-git clone https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
+git clone https://github.com/Sentinel-Architech/The-Remote-Viewer.git
 cd The-Remote-Viewer && git checkout TheRemoteViewer
 cd optical-airgap && npm install && npm run test:golden
 cd rust && cargo test

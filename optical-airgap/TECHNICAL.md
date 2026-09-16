@@ -5,11 +5,11 @@ Public. Forkable. No NDAs. No proprietary SDKs in the core path.
 
 | | |
 |--|--|
-| **Repo** | [Sentinel-Archetecht/The-Remote-Viewer](https://github.com/Sentinel-Archetecht/The-Remote-Viewer) |
+| **Repo** | [Sentinel-Architech/The-Remote-Viewer](https://github.com/Sentinel-Architech/The-Remote-Viewer) |
 | **Branch** | `TheRemoteViewer` |
 | **Module** | `optical-airgap/` |
 | **License** | MIT (`optical-airgap/LICENSE`) |
-| **Issue** | [#38](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/issues/38) |
+| **Issue** | [#38](https://github.com/Sentinel-Architech/The-Remote-Viewer/issues/38) |
 | **High-level README** | [README.md](./README.md) |
 
 This document is the secondary readme: full public design so others can follow, run, extend, and share.
@@ -231,7 +231,7 @@ Stego does **not** hide the fact that *something* unusual may be on screen from 
 ## 10. How to start (public path)
 
 ```bash
-git clone https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
+git clone https://github.com/Sentinel-Architech/The-Remote-Viewer.git
 cd The-Remote-Viewer
 git checkout TheRemoteViewer
 

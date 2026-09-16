@@ -3,7 +3,7 @@
 **Project:** The Remote Viewer / Sentinel direction  
 **Updated:** 2026-07-27  
 **Status:** Public policy (scaffold clients may lag this intent)  
-**Repo:** https://github.com/Sentinel-Archetecht/The-Remote-Viewer
+**Repo:** https://github.com/Sentinel-Architech/The-Remote-Viewer
 
 ---
 
@@ -79,7 +79,7 @@ When official APKs are published on GitHub Releases:
 
 1. Open Obtainium → **Add app**.  
 2. **App source URL:**  
-   `https://github.com/Sentinel-Archetecht/The-Remote-Viewer`  
+   `https://github.com/Sentinel-Architech/The-Remote-Viewer`  
 3. Source should auto-detect as **GitHub**.  
 4. Recommended settings for stable users:
    - **Include prereleases:** off  
@@ -107,7 +107,7 @@ Users tracking many GitHub apps may need a **Personal Access Token** in Obtainiu
 
 ## Manual sideload
 
-1. Open the latest [GitHub Release](https://github.com/Sentinel-Archetecht/The-Remote-Viewer/releases) (when APKs are attached).  
+1. Open the latest [GitHub Release](https://github.com/Sentinel-Architech/The-Remote-Viewer/releases) (when APKs are attached).  
 2. Download the APK asset matching your ABI (or universal).  
 3. Verify **SHA-256** against the sum published in the release notes (when published).  
 4. Install via the system installer (GrapheneOS: allow the install source for that session as required).  

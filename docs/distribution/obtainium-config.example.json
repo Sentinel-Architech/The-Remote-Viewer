@@ -1,8 +1,8 @@
 {
   "_comment": "Maintainer-oriented Obtainium notes. Catalog file shape: obtainium-catalog.example.json. Package identity frozen in ANDROID-IDENTITY.md.",
   "appName": "The Remote Viewer",
-  "author": "Sentinel-Archetecht",
-  "appSourceUrl": "https://github.com/Sentinel-Archetecht/The-Remote-Viewer",
+  "author": "Sentinel-Architech",
+  "appSourceUrl": "https://github.com/Sentinel-Architech/The-Remote-Viewer",
   "overrideSource": "GitHub",
   "recommendedSettings": {
     "includePrereleases": false,
@@ -17,7 +17,7 @@
   "categories": ["security", "privacy"],
   "userInstructions": [
     "Install Obtainium from F-Droid or GitHub.",
-    "Add app with URL https://github.com/Sentinel-Archetecht/The-Remote-Viewer",
+    "Add app with URL https://github.com/Sentinel-Architech/The-Remote-Viewer",
     "Leave Include prereleases off unless testing betas.",
     "Use APK filter if multiple ABI assets are present.",
     "Verify SHA-256 from the GitHub Release notes when provided."

@@ -3,7 +3,7 @@
 name = "sentinel-node"
 version = "1.0.0"
 edition = "2021"
-authors = ["The Sentinel Archetecht"]
+authors = ["The Sentinel Architech"]
 description = "Sovereign node orchestrator for The Sentinel Security Protocol."
 
 [dependencies]

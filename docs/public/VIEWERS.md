@@ -16,7 +16,7 @@ Packs stay paid. Destroy = Restart still applies to **node** secrets — do not 
 
 | Alias | Path | Roles | Contact | Proof | Since |
 |-------|------|-------|---------|-------|-------|
-| Sentinel-Archetecht | A | Originator · Integrity Verifier | X: [@The_Archetecht](https://x.com/The_Archetecht) · GitHub: [Sentinel-Archetecht](https://github.com/Sentinel-Archetecht) | [persona](personas/sentinel-archetecht.md) | 2026-04 |
+| Sentinel-Architech | A | Originator · Integrity Verifier | X: [@TRV_Architech](https://x.com/TRV_Architech) · GitHub: [Sentinel-Architech](https://github.com/Sentinel-Architech) | [persona](personas/sentinel-architech.md) | 2026-04 |
 
 <!-- Add new rows above this line. One row per persona. -->
 

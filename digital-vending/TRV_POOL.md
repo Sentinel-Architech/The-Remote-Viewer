@@ -1,14 +1,14 @@
 # TRV_POOL
 
-**Public pool identity:** [@Archtecht](https://x.com/Archtecht) on X Money  
-**QR:** X “My code” for Sentinel Architech · @Archtecht  
+**Public pool identity:** [@TRV_Architech](https://x.com/TRV_Architech) on X Money  
+**QR:** X “My code” for Sentinel Architech · @TRV_Architech  
 **Locked docs:** `docs/locked/14-Community-Pool.md`, `docs/locked/15-TRV-Shop-Token-Converter-Treasury.md`
 
 ## Decentralization gate (2026-09-01)
 
 X Money **cannot** replace an on-chain pool while remaining decentralized.
 
-| Property | X Money `@Archtecht` | Solana sink |
+| Property | X Money `@TRV_Architech` | Solana sink |
 |----------|----------------------|-------------|
 | Custody | Bank claim at Cross River (FDIC). X Payments LLC is not a bank. | User-signed `SystemProgram.transfer` |
 | Rails | Visa Direct + partner banks | Solana mainnet |
@@ -19,12 +19,12 @@ Therefore option “disable SOL, X Money only” is **rejected** under the proje
 
 Policy:
 
-1. **Public identity / human checkout** = `@Archtecht` (X Money).
+1. **Public identity / human checkout** = `@TRV_Architech` (X Money).
 2. **Sovereign settlement** = Solana creator + sink dual-transfer. Not deleted.
-3. Do not paste `@Archtecht` into `new PublicKey(...)`.
+3. Do not paste `@TRV_Architech` into `new PublicKey(...)`.
 
 | Rail | Value | Use |
 |------|-------|-----|
-| **TRV_POOL** | `@Archtecht` | Public receive, tips, pack notes, Sponsor menu |
+| **TRV_POOL** | `@TRV_Architech` | Public receive, tips, pack notes, Sponsor menu |
 | Sovereign SOL sink | `555y97LMoygGAWUWFngbprr5oMHFJsQqoFAbrHi5e8nt` | `PublicKey()` splits in shop code |
 | Sovereign creator | `9XhGDthCvcDz3tLfTgXRLXx1W48fM5oQtrFTRot3yLYG` | 50% of SOL path |

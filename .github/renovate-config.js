@@ -13,7 +13,7 @@ module.exports = {
   // gitAuthor: 'renovate[bot] <123456+your-app[bot]@users.noreply.github.com>',
   onboarding: false,
   requireConfig: 'required',
-  repositories: ['Sentinel-Archetecht/The-Remote-Viewer'],
+  repositories: ['Sentinel-Architech/The-Remote-Viewer'],
   logLevel: 'info',
   persistRepoData: true,
 };

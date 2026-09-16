@@ -2,7 +2,7 @@
 # TRV desktop convenience installer — local only, no cloud account
 set -euo pipefail
 
-REPO_URL="${TRV_REPO_URL:-https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git}"
+REPO_URL="${TRV_REPO_URL:-https://github.com/Sentinel-Architech/The-Remote-Viewer.git}"
 BRANCH="${TRV_BRANCH:-TheRemoteViewer}"
 DEST="${TRV_ROOT:-$HOME/The-Remote-Viewer}"
 

@@ -117,8 +117,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     hasher.update(dummy_state);
     InternalAffairsAuditor::verify_state_accumulator(dummy_state, &hasher.finalize())?;
 
-    let mesh_node = Arc::new(P2PMeshNode::new("Sentinel-Archetecht-Node-01".to_string()));
-    P2PMeshNode::spawn_heartbeat("Sentinel-Archetecht-Node-01".to_string());
+    let mesh_node = Arc::new(P2PMeshNode::new("Sentinel-Architech-Node-01".to_string()));
+    P2PMeshNode::spawn_heartbeat("Sentinel-Architech-Node-01".to_string());
 
     let comms = TtvCommsEngine::new(CommsTier::FreeFreemium);
     println!("Watermark Icon: {}", comms.watermark());

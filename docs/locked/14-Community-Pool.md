@@ -2,7 +2,7 @@
 
 **Status:** Locked — July 25, 2026  
 **Public pool identity revised:** 2026-08-31  
-**Public TRV_POOL:** X Money [@Archtecht](https://x.com/Archtecht)  
+**Public TRV_POOL:** X Money [@TRV_Architech](https://x.com/TRV_Architech)  
 **Chain (legacy on-chain sink):** Solana  
 **Control model:** Single admin (originator-controlled) for this generation  
 **Depends on:** Membership / NFT product rules; does **not** alter Identity Layer, Vault, or Destroy = Restart  
@@ -34,13 +34,13 @@ Identity burn never moves or empties this pool.
 ## 2. Public TRV_POOL (X Money)
 
 ```
-@Archtecht
-https://x.com/Archtecht
+@TRV_Architech
+https://x.com/TRV_Architech
 ```
 
 - **Rail:** X Money on X (handle is the address)
 - **Display:** Safe to show in-app, docs, QR (X “My code”), and Sponsor / FUNDING.yml
-- **QR:** Originator X profile QR for Sentinel Architech · @Archtecht
+- **QR:** Originator X profile QR for Sentinel Architech · @TRV_Architech
 - **Secrets:** Seed phrase / private keys are **never** committed to the repository, logs, or client bundles
 - **Fulfillment:** Operator confirms payment in the X app, then Path B / pack delivery as in `digital-vending/XMONEY.md`
 
@@ -63,7 +63,7 @@ Do **not** label this string TRV_POOL in UI. Label it “legacy Solana sink” i
 | Item | Rule |
 |------|------|
 | Authority | Single admin (project originator) controls spending and key material for this generation |
-| Public identity | X Money @Archtecht |
+| Public identity | X Money @TRV_Architech |
 | Future multi-sig / DAO | Allowed as a later locked revision |
 | User burn | Has **no** effect on pool keys or balances |
 | Support claims | Users cannot demand pool funds via identity recovery or burn |
@@ -74,9 +74,9 @@ Do **not** label this string TRV_POOL in UI. Label it “legacy Solana sink” i
 
 ### 4.1 Inflows
 
-1. **Public / human rail:** X Money to `@Archtecht` (preferred TRV_POOL).  
+1. **Public / human rail:** X Money to `@TRV_Architech` (preferred TRV_POOL).  
 2. **Legacy SOL shop split:** remaining on-chain 50% still lands on the Solana sink until that path is retired.  
-3. Voluntary “support the pool” items → **100%** TRV_POOL (`@Archtecht`).  
+3. Voluntary “support the pool” items → **100%** TRV_POOL (`@TRV_Architech`).  
 4. Failed transfers must not fall back to storing user funds on TRV servers.
 
 ### 4.2 Outflows
@@ -97,16 +97,16 @@ Enforced via Identity Layer before the creator/pool split. Not implemented by re
 ## 5. Disclosure (User-Facing)
 
 **Short:**  
-“TRV_POOL is X Money @Archtecht. Separate from your identity wallet. Destroy = Restart does not move these funds.”
+“TRV_POOL is X Money @TRV_Architech. Separate from your identity wallet. Destroy = Restart does not move these funds.”
 
 **Checkout:**  
-“Pay @Archtecht on X Money for pack / pool support. Any leftover SOL shop path is a legacy sink, not the public pool name.”
+“Pay @TRV_Architech on X Money for pack / pool support. Any leftover SOL shop path is a legacy sink, not the public pool name.”
 
 **Donate:**  
-Use only `@Archtecht` on X. Support will never ask for your seed phrase.
+Use only `@TRV_Architech` on X. Support will never ask for your seed phrase.
 
 **Pool:**  
-`@Archtecht` · https://x.com/Archtecht
+`@TRV_Architech` · https://x.com/TRV_Architech
 
 ---
 
@@ -124,9 +124,9 @@ Use only `@Archtecht` on X. Support will never ask for your seed phrase.
 ```json
 {
   "communityPool": {
-    "publicIdentity": "@Archtecht",
+    "publicIdentity": "@TRV_Architech",
     "rail": "x_money",
-    "url": "https://x.com/Archtecht",
+    "url": "https://x.com/TRV_Architech",
     "legacySolanaSink": "555y97LMoygGAWUWFngbprr5oMHFJsQqoFAbrHi5e8nt",
     "controlModel": "single_admin",
     "identityBurnAffectsPool": false
@@ -138,6 +138,6 @@ Use only `@Archtecht` on X. Support will never ask for your seed phrase.
 
 ## 8. Final Statement
 
-**Public TRV_POOL is @Archtecht on X Money.**  
+**Public TRV_POOL is @TRV_Architech on X Money.**  
 **The Solana string is a leftover on-chain sink, not the pool name.**  
 **Treasury is not identity. Burn the path, not the pool.**

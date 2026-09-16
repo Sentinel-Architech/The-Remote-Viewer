@@ -534,4 +534,4 @@ You've got this. 🚀
 ---
 
 *Last updated: 2026-08-02*  
-*For: Sentinel-Archetecht (solo dev)*
+*For: Sentinel-Architech (solo dev)*

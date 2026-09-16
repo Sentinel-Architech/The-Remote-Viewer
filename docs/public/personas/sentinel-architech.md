@@ -1,13 +1,13 @@
-# Persona: Sentinel-Archetecht
+# Persona: Sentinel-Architech
 
 > **The Remote Viewer uses the network. The Sentinel (core) does not require this.**
 
 | Field | Value |
 |-------|-------|
-| **Alias** | Sentinel-Archetecht |
+| **Alias** | Sentinel-Architech |
 | **Path** | A |
 | **Roles** | Originator · Integrity Verifier |
-| **Contact** | X: [@The_Archetecht](https://x.com/The_Archetecht) · GitHub: [Sentinel-Archetecht](https://github.com/Sentinel-Archetecht) |
+| **Contact** | X: [@TRV_Architech](https://x.com/TRV_Architech) · GitHub: [Sentinel-Architech](https://github.com/Sentinel-Architech) |
 | **npub** | _add when published — never commit nsec_ |
 | **Since** | 2026-04 |
 | **Node** | Runs The Sentinel: yes |

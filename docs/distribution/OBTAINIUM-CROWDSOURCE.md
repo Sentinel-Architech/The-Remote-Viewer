@@ -20,7 +20,7 @@ From [APP_CRITERIA.md](https://github.com/ImranR98/apps.obtainium.imranr.dev/blo
 
 | Rule | TRV implication |
 |------|-----------------|
-| Official source only | `url` = `https://github.com/Sentinel-Archetecht/The-Remote-Viewer` |
+| Official source only | `url` = `https://github.com/Sentinel-Architech/The-Remote-Viewer` |
 | No reupload sites | Never point config at APKMirror/APKPure as primary |
 | Forks need distinct package + display name | We ship our own applicationId and name |
 | Minimize non-default settings | Only set filters that are required |
@@ -85,7 +85,7 @@ Change only what is needed:
 ## Deep links (after config exists)
 
 ```text
-obtainium://add/https://github.com/Sentinel-Archetecht/The-Remote-Viewer
+obtainium://add/https://github.com/Sentinel-Architech/The-Remote-Viewer
 
 obtainium://app/<url-encoded-app-config-json>
 
