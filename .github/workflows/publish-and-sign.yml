@@ -3,6 +3,12 @@ name: Publish, Verify, and Sign Secure Node
 on:
   push:
     branches: [ main, master, TheRemoteViewer ]
+    paths:
+      - 'Dockerfile'
+      - 'Dockerfile.*'
+      - '.dockerignore'
+      - '.github/workflows/publish-and-sign.yml'
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io

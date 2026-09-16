@@ -199,7 +199,7 @@ jobs:
             exit 1
           fi
 
-          git add docs/public/COMMAND-LOG.md
+          git add -f docs/public/COMMAND-LOG.md
 
           # Nothing staged → nothing to do
           if git diff --staged --quiet; then

@@ -165,6 +165,9 @@ desktop
 digital-vending
 dist/
 docs
+!docs/
+!docs/public/
+!docs/public/**
 downloads
 edge-esp32
 edge_detect.py
