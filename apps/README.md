@@ -4,7 +4,7 @@
 
 | Client | Path | Status |
 |--------|------|--------|
-| **Viewer Hub** | [`hub/`](hub/) | **LIVE** hosted DApp — briefing, daily watch, profile vault, Command |
+| **Viewer Hub** | [`hub/`](hub/) | **HOST PARTIAL** — canon the-remote-viewer.grok.me (`/` `/login` up; `/hub*` 404 until Re-Publish) |
 | Local operator UI | [`ui/`](ui/) | PROVEN local static UI (`serve-ui.sh`) |
 | Vanilla remote-viewer | [`remote-viewer/`](remote-viewer/) | Legacy local HTML |
 | Web Vite shell | [`web/`](web/) | **Old scaffold** — not the product UI. Use `hub/` |
@@ -15,7 +15,7 @@
 ## Viewer Hub (the real DApp)
 
 Source: [`apps/hub`](hub/).  
-Live: [sentinelsecurityprotocol.grok.me](https://sentinelsecurityprotocol.grok.me)
+Canon (HOST PARTIAL): [the-remote-viewer.grok.me](https://the-remote-viewer.grok.me) — `/hub*` dark until Re-Publish
 
 This is a production Viewer surface (TanStack Start, Better Auth, PGLite/Neon). It is **not** a claim that locked Phase 2 crypto (SD-JWT, OpenID4VCI, hardware Keystore, burn) is implemented. Those remain in [`docs/locked/`](../docs/locked/).
 
@@ -29,7 +29,7 @@ Citizen lock on the hub is an **on-device hash**. Destroy = Restart still applie
 
 ```
 apps/
-├── hub/            # LIVE Viewer Hub DApp
+├── hub/            # Viewer Hub DApp (HOST PARTIAL until Re-Publish)
 ├── ui/             # Local operator UI (PROVEN)
 ├── remote-viewer/  # Legacy vanilla
 ├── web/            # Old Vite scaffold (superseded by hub/)
