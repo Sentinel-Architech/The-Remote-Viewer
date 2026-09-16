@@ -21,7 +21,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     InternalAffairsAuditor::verify_state_accumulator(state_payload, &expected_root)?;
 
     // Initialize decentralized mesh and heartbeat daemon
-    let node_id = "Sentinel-Archetecht-Node-01".to_string();
+    let node_id = "Sentinel-Architech-Node-01".to_string();
     let mesh = Arc::new(P2PMeshNode::new(node_id.clone()));
     mesh.register_peer("Peer-Node-02".to_string(), "127.0.0.1:9001".to_string())?;
     P2PMeshNode::spawn_heartbeat(node_id);

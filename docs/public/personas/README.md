@@ -10,7 +10,7 @@ Each opt-in Viewer may publish a **persona** file. Personas are social identity 
 docs/public/personas/
   README.md                 ← this file
   _TEMPLATE.md              ← copy to <alias>.md
-  sentinel-archetecht.md    ← example / originator
+  sentinel-architech.md    ← example / originator
   <your-alias>.md           ← one file per persona
 ```
 

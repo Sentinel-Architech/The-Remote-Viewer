@@ -1,5 +1,5 @@
 // crates/sentinel-node/src/main.rs
-// Master Creator Node Orchestrator: Binding The Sentinel-Archetecht Identity to the Network
+// Master Creator Node Orchestrator: Binding The Sentinel-Architech Identity to the Network
 
 mod identity;
 use identity::SovereignIdentity;
@@ -94,7 +94,7 @@ impl SovereignNodeDaemon {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let handle = "Sentinel-Archetecht".to_string();
+    let handle = "Sentinel-Architech".to_string();
     let node_id = 0x53454E54494E454C; // "SENTINEL" creator address root
     let bind_addr = "127.0.0.1:9050".to_string();
     let storage_path = "/var/lib/sentinel/sovereign_store.db".to_string();

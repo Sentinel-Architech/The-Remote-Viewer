@@ -14,7 +14,7 @@ This is the practical path for anyone who wants to become a **Founding Member** 
 - Willingness to keep private keys on-device only (Destroy = Restart)
 
 ```bash
-git clone -b TheRemoteViewer https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
+git clone -b TheRemoteViewer https://github.com/Sentinel-Architech/The-Remote-Viewer.git
 cd The-Remote-Viewer
 ```
 

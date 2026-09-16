@@ -68,7 +68,7 @@ ADDRESS=HKGFrp9Sn9m1DDKDm3F6gfWGbLThmhfRWxg5rR8Kugfv
 Lite:  11 USDC   memo: TRV-Posture-Lite
 Pack:  25 USDC   memo: TRV-Posture-Pack
 
-CONTACT=X DM @_Archetecht  (send tx signature after payment)
+CONTACT=X DM @TRV_Architech  (send tx signature after payment)
 ```
 
 **Buyer flow:** Phantom → Send USDC → memo → DM tx sig → you verify → send matching ZIP.

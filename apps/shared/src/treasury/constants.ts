@@ -1,13 +1,13 @@
 /**
  * Treasury constants aligned with docs/locked/14 and 15.
  * Creator address published by originator decision 2026-08-16.
- * Public TRV_POOL identity revised 2026-08-31: X Money @Archtecht.
+ * Public TRV_POOL identity revised 2026-08-31: X Money @TRV_Architech.
  * Split locked at exact 50/50. Zero simulation.
  */
 
 /** Public TRV_POOL — X Money handle. This is the human receive rail. */
-export const TRV_POOL_HANDLE = "@Archtecht" as const;
-export const TRV_POOL_X_URL = "https://x.com/Archtecht" as const;
+export const TRV_POOL_HANDLE = "@TRV_Architech" as const;
+export const TRV_POOL_X_URL = "https://x.com/TRV_Architech" as const;
 export const TRV_POOL = TRV_POOL_HANDLE;
 
 /**

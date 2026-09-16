@@ -4,18 +4,18 @@
     "title": "TRV Posture Lite",
     "price": "11 USDC or 11 USD X Money",
     "memo": "TRV-Posture-Lite",
-    "x_money": "@Archtecht",
+    "x_money": "@TRV_Architech",
     "description": "Core zero-trust posture pack. Local-first, Destroy=Restart rules, optical air-gap basics.",
     "payload_path": "payloads/trv-posture-lite.txt",
     "recipient_required": true,
-    "notes": "Rails: Solana USDC memo, X Money @Archtecht, or manual. Delivery age+TRVL or ZIP."
+    "notes": "Rails: Solana USDC memo, X Money @TRV_Architech, or manual. Delivery age+TRVL or ZIP."
   },
   {
     "id": "trv-posture-pack",
     "title": "TRV Posture Pack",
     "price": "25 USDC or 25 USD X Money",
     "memo": "TRV-Posture-Pack",
-    "x_money": "@Archtecht",
+    "x_money": "@TRV_Architech",
     "description": "Full posture pack including install, security, Obtainium, and threat model.",
     "payload_path": "payloads/trv-posture-pack.txt",
     "recipient_required": true,

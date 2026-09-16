@@ -11,7 +11,7 @@ Any independent builder should be able to verify the PROVEN surfaces without pri
 
 ```bash
 # 1. Clone
-git clone -b TheRemoteViewer https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
+git clone -b TheRemoteViewer https://github.com/Sentinel-Architech/The-Remote-Viewer.git
 cd The-Remote-Viewer
 
 # 2. Core tools

@@ -1,6 +1,6 @@
 # X Money → pack fulfill
 
-**Receive handle:** [@Archtecht](https://x.com/Archtecht)  
+**Receive handle:** [@TRV_Architech](https://x.com/TRV_Architech)  
 **Repo:** [Sentinel-Architech/The-Remote-Viewer](https://github.com/Sentinel-Architech/The-Remote-Viewer) only.
 
 X Money has no public merchant webhook in this repo. Payment is on X. Fulfill uses the same chute as Path B: `auto-deliver.sh` → age + TRVL frames (or the built ZIP for DM).

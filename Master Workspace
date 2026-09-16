@@ -104,7 +104,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     InternalAffairsAuditor::verify_state_accumulator(dummy_state, &root)?;
 
-    MeshHeartbeat::spawn_loop("Sentinel-Archetecht-Node-01".to_string());
+    MeshHeartbeat::spawn_loop("Sentinel-Architech-Node-01".to_string());
 
     let comms = TtvCommsEngine::new(CommsTier::FreeFreemium);
     println!("Watermark Icon: {}", comms.watermark());

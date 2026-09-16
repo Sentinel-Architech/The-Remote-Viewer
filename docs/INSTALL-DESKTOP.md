@@ -9,7 +9,7 @@
 For people who want the stack plain.
 
 ```bash
-git clone https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
+git clone https://github.com/Sentinel-Architech/The-Remote-Viewer.git
 cd The-Remote-Viewer
 git checkout TheRemoteViewer
 
@@ -45,7 +45,7 @@ Still **local**. The installer only:
 4. Starts the localhost UI
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Sentinel-Archetecht/The-Remote-Viewer/TheRemoteViewer/scripts/desktop-install.sh -o /tmp/trv-desktop-install.sh
+curl -fsSL https://raw.githubusercontent.com/Sentinel-Architech/The-Remote-Viewer/TheRemoteViewer/scripts/desktop-install.sh -o /tmp/trv-desktop-install.sh
 bash /tmp/trv-desktop-install.sh
 ```
 

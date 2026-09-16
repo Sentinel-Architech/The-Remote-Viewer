@@ -72,7 +72,7 @@ Outputs below match a typical local/Termux session. SHAs and dates will differ o
 
 ```text
 $ git fetch origin
-From github.com:Sentinel-Archetecht/The-Remote-Viewer
+From github.com:Sentinel-Architech/The-Remote-Viewer
  * [new branch]      feature/cleanup-structure -> origin/feature/cleanup-structure
    1e897c1..2af5b57  TheRemoteViewer          -> origin/TheRemoteViewer
 
@@ -82,7 +82,7 @@ Your branch is behind 'origin/TheRemoteViewer' by 1 commit, and can be fast-forw
   (use "git pull" to update your local branch)
 
 $ git pull origin TheRemoteViewer
-From github.com:Sentinel-Archetecht/The-Remote-Viewer
+From github.com:Sentinel-Architech/The-Remote-Viewer
  * branch            TheRemoteViewer -> FETCH_HEAD
 Updating 1e897c1..2af5b57
 Fast-forward
@@ -152,7 +152,7 @@ Delta compression using up to 8 threads
 Compressing objects: 100% (14/14), done.
 Writing objects: 100% (14/14), 12.40 KiB | 12.40 MiB/s, done.
 Total 14 (delta 3), reused 0 (delta 0), pack-reused 0
-to github.com:Sentinel-Archetecht/The-Remote-Viewer.git
+to github.com:Sentinel-Architech/The-Remote-Viewer.git
  * [new branch]      docs/install-anywhere-identity -> docs/install-anywhere-identity
 branch 'docs/install-anywhere-identity' set up to track 'origin/docs/install-anywhere-identity'.
 ```
@@ -163,7 +163,7 @@ branch 'docs/install-anywhere-identity' set up to track 'origin/docs/install-any
 $ gh pr create --base TheRemoteViewer --head docs/install-anywhere-identity \
     --title "docs: install-anywhere, Obtainium path, Android identity freeze" \
     --body "Conflict-free replacement for PR #4. Install-anywhere + Obtainium + frozen applicationId only."
-https://github.com/Sentinel-Archetecht/The-Remote-Viewer/pull/5
+https://github.com/Sentinel-Architech/The-Remote-Viewer/pull/5
 
 $ gh pr merge 5 --squash \
     --subject "docs: install-anywhere, Obtainium path, Android identity freeze" \
@@ -171,7 +171,7 @@ $ gh pr merge 5 --squash \
 ✓ Squashed and merged pull request #5 (docs: install-anywhere, Obtainium path, Android identity freeze)
 
 $ gh pr close 4 --comment "Closed in favor of slim conflict-free PR."
-✓ Closed pull request Sentinel-Archetecht/The-Remote-Viewer#4 (docs: install-anywhere, Obtainium path, Android identity freeze)
+✓ Closed pull request Sentinel-Architech/The-Remote-Viewer#4 (docs: install-anywhere, Obtainium path, Android identity freeze)
 ```
 
 ---
@@ -211,7 +211,7 @@ Unmerged paths:
 	...
 
 $ gh pr merge 4
-X Pull request Sentinel-Archetecht/The-Remote-Viewer#4 is not mergeable: the merge commit cannot be cleanly created.
+X Pull request Sentinel-Architech/The-Remote-Viewer#4 is not mergeable: the merge commit cannot be cleanly created.
 ```
 
 GitHub API equivalent when calling update-branch on a dirty PR:
@@ -237,7 +237,7 @@ Switched to branch 'TheRemoteViewer'
 Your branch is behind 'origin/TheRemoteViewer' by 2 commits, and can be fast-forwarded.
 
 $ git pull origin TheRemoteViewer
-From github.com:Sentinel-Archetecht/The-Remote-Viewer
+From github.com:Sentinel-Architech/The-Remote-Viewer
  * branch            TheRemoteViewer -> FETCH_HEAD
 Updating 1e897c1..ba8b283
 Fast-forward

@@ -13,7 +13,7 @@ This guide is written so a complete beginner can follow it.
 | **INSTALL.md** | This file |
 | [STATUS.md](./STATUS.md) | Verification + checklist |
 
-**Repo:** https://github.com/Sentinel-Archetecht/The-Remote-Viewer · **Branch:** `TheRemoteViewer` · **License:** MIT
+**Repo:** https://github.com/Sentinel-Architech/The-Remote-Viewer · **Branch:** `TheRemoteViewer` · **License:** MIT
 
 ---
 
@@ -71,7 +71,7 @@ Play Services · Meta/Microsoft SDKs · CDN scripts · public DNS for `@sentinel
 ## 1. Clone the repository
 
 ```bash
-git clone https://github.com/Sentinel-Archetecht/The-Remote-Viewer.git
+git clone https://github.com/Sentinel-Architech/The-Remote-Viewer.git
 cd The-Remote-Viewer
 git checkout TheRemoteViewer
 ```

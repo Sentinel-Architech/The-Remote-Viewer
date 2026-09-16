@@ -20,7 +20,7 @@ const DRAFTS = 'rv-n4-drafts';
 const PROFILE = 'rv-profile';
 const SOCIAL_KEY = 'rv-social-links';
 const DEFAULT_PATHS = ['wss://relay.damus.io', 'wss://nos.lol', 'wss://relay.nostr.band'];
-const APP_URL = 'https://sentinel-archetecht.github.io/The-Remote-Viewer/';
+const APP_URL = 'https://sentinel-architech.github.io/The-Remote-Viewer/';
 
 const SOCIAL_META = {
   x: { label: 'X', base: 'https://x.com/' },

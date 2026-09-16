@@ -80,7 +80,7 @@ HTML-only sites are fragile; do not rely on them as primary.
 User-facing URL:
 
 ```text
-https://github.com/Sentinel-Archetecht/The-Remote-Viewer
+https://github.com/Sentinel-Architech/The-Remote-Viewer
 ```
 
 Package id in configs: `com.sentinelarchetecht.theremoteviewer`  

@@ -62,7 +62,7 @@ This repository itself is distributed under the **Source-Available Master Licens
 
 If you use code or patterns from The Remote Viewer in your own projects (where permitted by the LICENSE):
 
-1. Link back to this repository: https://github.com/Sentinel-Archetecht/The-Remote-Viewer
+1. Link back to this repository: https://github.com/Sentinel-Architech/The-Remote-Viewer
 2. Respect the root LICENSE terms
 3. Note any specific components you adapted
 4. Include this file or a summary in your project's credits

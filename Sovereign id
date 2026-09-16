@@ -1,5 +1,5 @@
 // crates/sentinel-node/src/identity.rs
-// Sovereign Identity & Cryptographic Address Generator for The Sentinel Archetecht
+// Sovereign Identity & Cryptographic Address Generator for The Sentinel Architech
 
 use std::fs::{self, OpenOptions};
 use std::io::Write;
@@ -13,7 +13,7 @@ pub struct SovereignIdentity {
 
 impl SovereignIdentity {
     pub fn provision_creator_identity() -> Result<Self, &'static str> {
-        let handle = "Sentinel-Archetecht".to_string();
+        let handle = "Sentinel-Architech".to_string();
         // Derive unique cryptographic node ID from creator state root
         let node_id = 0x53454E54494E454C; // "SENTINEL" hex base
         let public_key_hash = format!("0x{:016X}72656D6F74657669", node_id);

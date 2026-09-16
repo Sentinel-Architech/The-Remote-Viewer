@@ -18,7 +18,7 @@ mod tests {
             let mut response = Vec::new();
             if stream.read_to_end(&mut response).is_ok() && !response.is_empty() {
                 let response_str = String::from_utf8_lossy(&response);
-                assert!(response_str.contains("Sentinel-Archetecht") || response_str.contains("sovereign_primary"));
+                assert!(response_str.contains("Sentinel-Architech") || response_str.contains("sovereign_primary"));
                 println!("[+] Creator Node Identity Verified Successfully.");
             }
         } else {

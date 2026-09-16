@@ -1,7 +1,7 @@
 # Public posture — transparency without secrets
 
 **Project:** The Remote Viewer / Sentinel direction  
-**Repo:** https://github.com/Sentinel-Archetecht/The-Remote-Viewer  
+**Repo:** https://github.com/Sentinel-Architech/The-Remote-Viewer  
 **Audience:** Decentralized, crypto, encrypted, and zero-trust builders  
 **Updated:** 2026-08-13
 
@@ -51,7 +51,7 @@ If it lands in git by mistake: **rotate**, remove, treat history as burned for t
 4. **Auth honesty** — biometrics unlock local keys; they do not resurrect burned identity  
 5. **Install honesty** — no Play Integrity hostage for core use; no OEM-only club; Obtainium first-class  
 6. **Community invite is specific** — local-key builders, not generic hype  
-7. **Repo link is stable** — https://github.com/Sentinel-Archetecht/The-Remote-Viewer  
+7. **Repo link is stable** — https://github.com/Sentinel-Architech/The-Remote-Viewer  
 
 ---
 
@@ -104,4 +104,4 @@ When in doubt: publish the **constraint**, not the **key**.
 
 - Security: `SECURITY.md`  
 - Social (build-in-public): project operator’s X handle as published by the operator  
-- Code: https://github.com/Sentinel-Archetecht/The-Remote-Viewer  
+- Code: https://github.com/Sentinel-Architech/The-Remote-Viewer  

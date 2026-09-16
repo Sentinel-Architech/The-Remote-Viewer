@@ -18,7 +18,7 @@ const DEFAULT_PATHS = [
   'wss://nos.lol',
   'wss://relay.nostr.band',
 ];
-const APP_URL = 'https://sentinel-archetecht.github.io/The-Remote-Viewer/';
+const APP_URL = 'https://sentinel-architech.github.io/The-Remote-Viewer/';
 
 function toast(msg) {
   const t = document.getElementById('toast');
