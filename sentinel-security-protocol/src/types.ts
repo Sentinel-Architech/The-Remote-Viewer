@@ -12,6 +12,8 @@ export type ExpertName =
 
 export type SecurityLevel = "secure" | "elevated" | "critical" | "unknown";
 
+export type OperatingMode = "individual" | "enhanced" | "whole-network";
+
 export interface ExpertInput {
   /** Optional context from Hub, Command Deck, or node */
   nodeId?: string;
