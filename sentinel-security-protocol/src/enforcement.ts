@@ -4,8 +4,7 @@
  * 100% native. No external dependencies.
  */
 
-import type { SecurityDecision } from "./types.js";
-import type { OperatingMode } from "./index.js";
+import type { SecurityDecision, OperatingMode } from "./types.js";
 
 export interface EnforcementResult {
   allowed: boolean;
