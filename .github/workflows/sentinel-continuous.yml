@@ -1,0 +1,59 @@
+name: Sentinel Continuous Open-Source Advancement
+
+on:
+  push:
+    branches: [TheRemoteViewer, feature/parallel-solana-wallet-mcp]
+  pull_request:
+    branches: [TheRemoteViewer]
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-stack-guard:
+    name: Native Stack & Security Guard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Sentinel – install & typecheck
+        working-directory: sentinel-security-protocol
+        run: |
+          npm install
+          npx tsc --noEmit
+
+      - name: Sentinel – full smoke
+        working-directory: sentinel-security-protocol
+        run: npm run smoke
+
+      - name: Continuity statement
+        run: |
+          echo "The Sentinel is designed to auto-update GitHub and The Remote Viewer in open source at all times to stay ahead."
+
+  open-source-health:
+    name: Open Source Health
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Required paths present
+        run: |
+          test -f LICENSE
+          test -f AGENTS.md
+          test -f BUILD-AND-DEPLOY.md
+          test -f docs/DUAL-MODE-SOVEREIGNTY.md
+          test -d sentinel-security-protocol/src
+          test -f apps/hub/src/routes/hub/native.tsx
+          test -f apps/hub/src/providers/NativeIdentityProvider.tsx
+          test -f apps/hub/src/lib/sentinel.ts
+          test -f apps/hub/src/lib/native-stack.ts
+          test -d mcp-servers/trv-context
+          echo "Open-source continuity checks passed"
