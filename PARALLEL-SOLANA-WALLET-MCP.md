@@ -1,50 +1,63 @@
 # Parallel Solana + Wallet + MCP Track
 
 **Branch:** `feature/parallel-solana-wallet-mcp`  
-**Status:** Skeleton landed – ready for full-force parallel development
+**PR:** https://github.com/Sentinel-Architech/The-Remote-Viewer/pull/102  
+**Status:** Expanded skeletons – full-force parallel development active
 
-## Tracks
+## Tracks (Current State)
 
 ### Track A – Solana / Rust (Anchor)
 - Location: `programs/trv_governance/`
-- Program ID placeholder: `TRVg0v3rnance11111111111111111111111111111`
-- Instructions: `create_proposal`, `cast_vote`, `submit_posture_proof`
+- Root `Anchor.toml` configured for localnet + devnet
+- Instructions: `init_governance`, `create_proposal`, `cast_vote`, `submit_posture_proof`
 - State: `GovernanceState`, `Proposal`, `PostureRecord`
-- Next: `anchor build`, keygen, real program ID, signature verification for posture proofs
+- Program ID still placeholder – run `anchor keys list` then update `declare_id!` and `Anchor.toml`
+- Next concrete steps:
+  1. `anchor build`
+  2. Generate real keypair and replace program ID
+  3. Implement Ed25519 / SIWS signature verification inside `submit_posture`
+  4. Add vote tracking account to prevent double-voting
 
 ### Track B – Zero-Friction Wallet + SSO
 - Location: `apps/hub/src/providers/SolanaProvider.tsx`
-- Wallet Adapter + SIWS skeleton
-- `useSiwsAuth` hook ready for Better Auth / Ed25519 binding
-- Next: install packages (`@solana/wallet-adapter-*`), wire into root layout, persist SIWS session
+- See also: `apps/hub/SOLANA-WALLET-SETUP.md`
+- Wallet Adapter (Phantom + Solflare) + SIWS helper
+- `useSiwsAuth` ready for binding to Better Auth / on-device Ed25519
+- Next concrete steps:
+  1. Install the listed packages
+  2. Wrap root layout with `<SolanaProvider>`
+  3. Wire SIWS success into existing citizen identity flow
+  4. Persist session so users are not re-prompted
 
 ### Track C – Auto Context (MCP)
 - Location: `mcp-servers/trv-context/`
 - Tools: `get_hub_profile`, `get_optical_airgap_status`, `get_wallet_context`
-- Next: `npm install && npm run dev`, register in local Copilot / Cursor MCP config, wire real data sources
+- TypeScript + stdio transport ready
+- Next concrete steps:
+  1. `npm install && npm run dev`
+  2. Register in local Copilot / Cursor MCP config
+  3. Replace placeholder responses with real Hub / optical / wallet state
 
-## Parallel Rules
-1. All three tracks are independent.
+## Parallel Rules (Rule of Law)
+1. All three tracks remain independent.
 2. Solana is never required for the Viewer Hub to function.
 3. Ed25519 citizen identity + optical air-gap remain the highest-trust path.
-4. SIWS is the bridge between local identity and on-chain actions.
+4. SIWS is the only bridge between local identity and on-chain actions.
+5. No new mandatory centralized services.
 
-## Immediate Next Commands
+## Immediate Commands (run in parallel)
 
 ```bash
 # Track A
-cd programs/trv_governance
-anchor build   # after installing Anchor
+cd programs/trv_governance && anchor build
 
 # Track B
 cd apps/hub
-npm install @solana/wallet-adapter-react @solana/wallet-adapter-react-ui \
-  @solana/wallet-adapter-wallets @solana/web3.js
+npm install @solana/wallet-adapter-base @solana/wallet-adapter-react \
+  @solana/wallet-adapter-react-ui @solana/wallet-adapter-wallets @solana/web3.js bs58
 
 # Track C
-cd mcp-servers/trv-context
-npm install
-npm run dev
+cd mcp-servers/trv-context && npm install && npm run dev
 ```
 
-Ship in parallel. No blockers.
+Continue shipping. No blockers.
