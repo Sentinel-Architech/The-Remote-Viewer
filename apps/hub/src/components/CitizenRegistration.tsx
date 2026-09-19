@@ -1,13 +1,12 @@
 "use client";
 
 /**
- * CitizenRegistration
- * Native Ed25519 registration flow for individual sovereignty.
+ * CitizenRegistration – native Ed25519 registration UI.
  * Fully operational without Solana or external services.
  */
 
-import React, { useState } from "react";
-import { useNativeIdentity } from "../providers/NativeIdentityProvider";
+import { useState } from "react";
+import { useNativeIdentity } from "@/providers/NativeIdentityProvider";
 
 export function CitizenRegistration() {
   const { identity, registerCitizen, clearIdentity, isReady } = useNativeIdentity();
@@ -16,23 +15,29 @@ export function CitizenRegistration() {
   const [error, setError] = useState<string | null>(null);
 
   if (!isReady) {
-    return <div className="text-sm text-zinc-400">Loading native identity…</div>;
+    return <div className="text-sm text-muted-foreground">Loading native identity…</div>;
   }
 
   if (identity.isRegistered) {
     return (
-      <div className="rounded border border-zinc-700 bg-zinc-900/60 p-4">
-        <div className="mb-2 text-sm font-medium text-zinc-200">Citizen Registered</div>
-        <div className="space-y-1 text-sm text-zinc-400">
-          <div>Handle: <span className="text-zinc-200">{identity.handle}</span></div>
+      <div className="rounded border border-border bg-card p-4">
+        <div className="mb-2 text-sm font-medium">Citizen Registered</div>
+        <div className="space-y-1 text-sm text-muted-foreground">
+          <div>
+            Handle: <span className="text-foreground">{identity.handle}</span>
+          </div>
           <div className="truncate">Ed25519: {identity.ed25519PublicKey?.slice(0, 24)}…</div>
-          <div className="text-xs text-zinc-500">
-            Registered {identity.lastVerifiedAt ? new Date(identity.lastVerifiedAt).toLocaleString() : "—"}
+          <div className="text-xs">
+            Registered{" "}
+            {identity.lastVerifiedAt
+              ? new Date(identity.lastVerifiedAt).toLocaleString()
+              : "—"}
           </div>
         </div>
         <button
+          type="button"
           onClick={() => clearIdentity()}
-          className="mt-3 text-xs text-zinc-500 hover:text-zinc-300"
+          className="mt-3 text-xs text-muted-foreground hover:text-foreground"
         >
           Clear local identity
         </button>
@@ -58,25 +63,25 @@ export function CitizenRegistration() {
   };
 
   return (
-    <form onSubmit={onSubmit} className="rounded border border-zinc-700 bg-zinc-900/60 p-4">
-      <div className="mb-3 text-sm font-medium text-zinc-200">Register Citizen (Native Ed25519)</div>
+    <form onSubmit={onSubmit} className="rounded border border-border bg-card p-4">
+      <div className="mb-3 text-sm font-medium">Register Citizen (Native Ed25519)</div>
       <input
         type="text"
         value={handle}
         onChange={(e) => setHandle(e.target.value)}
         placeholder="choose a handle"
-        className="mb-2 w-full rounded border border-zinc-600 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-600"
+        className="mb-2 h-10 w-full rounded border border-input bg-background px-3 text-sm"
         disabled={busy}
       />
-      {error && <div className="mb-2 text-xs text-red-400">{error}</div>}
+      {error && <div className="mb-2 text-xs text-destructive">{error}</div>}
       <button
         type="submit"
         disabled={busy}
-        className="rounded bg-zinc-100 px-3 py-1.5 text-sm font-medium text-zinc-900 hover:bg-white disabled:opacity-50"
+        className="rounded bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
       >
         {busy ? "Generating key…" : "Register on-device"}
       </button>
-      <p className="mt-2 text-xs text-zinc-500">
+      <p className="mt-2 text-xs text-muted-foreground">
         Keys stay on-device. No chain required. Fully sovereign.
       </p>
     </form>
