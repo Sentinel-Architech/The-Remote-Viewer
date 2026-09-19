@@ -31,9 +31,9 @@ jobs:
           npm install
           npx tsc --noEmit
 
-      - name: Sentinel – smoke
+      - name: Sentinel – full smoke
         working-directory: sentinel-security-protocol
-        run: npx tsx src/__tests__/moe.smoke.ts
+        run: npm run smoke
 
       - name: Continuity statement
         run: |
@@ -54,5 +54,6 @@ jobs:
           test -f apps/hub/src/routes/hub/native.tsx
           test -f apps/hub/src/providers/NativeIdentityProvider.tsx
           test -f apps/hub/src/lib/sentinel.ts
+          test -f apps/hub/src/lib/native-stack.ts
           test -d mcp-servers/trv-context
           echo "Open-source continuity checks passed"
