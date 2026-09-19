@@ -1,9 +1,8 @@
 "use client";
 
 /**
- * SecurityStatus – displays the current Sentinel Security Protocol decision.
- * Works in both individual and enhanced modes.
- * 100% native. No external dependencies beyond the Hub itself.
+ * SecurityStatus – live view of the native MoE Sentinel decision.
+ * Dual-mode aware. Fully native.
  */
 
 import React, { useEffect, useState } from "react";
@@ -18,12 +17,14 @@ interface Props {
   handle?: string | null;
   opticalStatus?: string | null;
   mode?: OperatingMode;
+  localEventCount?: number;
 }
 
 export function SecurityStatus({
   handle = null,
   opticalStatus = null,
   mode = "individual",
+  localEventCount = 0,
 }: Props) {
   const [decision, setDecision] = useState<SecurityDecision | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,7 +33,12 @@ export function SecurityStatus({
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const d = await evaluateHubSecurity({ handle, opticalStatus, mode });
+      const d = await evaluateHubSecurity({
+        handle,
+        opticalStatus,
+        mode,
+        localEventCount,
+      });
       if (!cancelled) {
         setDecision(d);
         setLoading(false);
@@ -41,7 +47,7 @@ export function SecurityStatus({
     return () => {
       cancelled = true;
     };
-  }, [handle, opticalStatus, mode]);
+  }, [handle, opticalStatus, mode, localEventCount]);
 
   if (loading) {
     return (
@@ -72,6 +78,11 @@ export function SecurityStatus({
         <div>Mode: {mode}</div>
         <div>Recommendation: {decision.recommendation}</div>
         <div>Action: {enforcement.action}</div>
+        {decision.expertSummary && (
+          <div className="mt-2 rounded bg-zinc-950/60 p-2 font-mono text-xs text-zinc-500">
+            {decision.expertSummary.join(" · ")}
+          </div>
+        )}
         <div className="text-xs text-zinc-500">
           Local override available · Native MoE · Systemwide backbone
         </div>
