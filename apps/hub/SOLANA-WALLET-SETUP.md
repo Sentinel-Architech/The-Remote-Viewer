@@ -1,6 +1,12 @@
-# Solana Wallet + SIWS Integration Notes
+# Solana Wallet Setup (OPTIONAL TRACK ONLY)
 
-## Install dependencies (run once)
+**Rule of Law**: The Viewer Hub is 100% native stack and fully operational without any Solana packages or blockchain dependency.
+
+Primary identity = `NativeIdentityProvider` (Ed25519 + Better Auth + optical air-gap).
+
+Solana / SIWS is a parallel, additive bridge. It must never become a requirement.
+
+## When you want the optional Solana track
 
 ```bash
 cd apps/hub
@@ -13,15 +19,32 @@ npm install \
   bs58
 ```
 
-## Wire into the Hub
+Then wrap only the parts of the tree that need it:
 
-1. Import and wrap the root layout / app with `<SolanaProvider>`.
-2. Place `<SolanaConnectButton />` or a custom button that calls `useSiwsAuth().signIn()` where the citizen registration / login UI lives.
-3. After successful SIWS, bind the Solana public key to the existing Ed25519 citizen identity (Better Auth session or local vault).
+```tsx
+import { NativeIdentityProvider } from "./providers/NativeIdentityProvider";
+import { SolanaProvider } from "./providers/SolanaProvider"; // optional
 
-## Design constraints preserved
+export function App({ children }) {
+  return (
+    <NativeIdentityProvider>
+      <SolanaProvider>   {/* can be omitted entirely */}
+        {children}
+      </SolanaProvider>
+    </NativeIdentityProvider>
+  );
+}
+```
 
-- Local-first Ed25519 remains the primary identity.
-- SIWS is the bridge to on-chain actions.
-- Optical air-gap verification stays the highest-trust path.
-- Wallet connection is optional; the Hub functions without it.
+## Native path (always on)
+
+- Use `useNativeIdentity()` for citizen registration and local signing.
+- Optical air-gap remains the highest-trust verification method.
+- No external wallet, no RPC, no chain required for Hub features.
+
+## Design constraints (non-negotiable)
+
+- Local-first
+- No mandatory external services
+- Fully operational offline
+- Solana is never required for the Viewer Hub to function
