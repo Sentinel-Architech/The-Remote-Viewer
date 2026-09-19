@@ -4,14 +4,14 @@
  * NativeIdentityProvider – 100% native stack
  *
  * Primary identity path for The Remote Viewer Hub.
- * Uses on-device Ed25519 (Web Crypto / age-compatible) and Better Auth.
- * Solana / SIWS is strictly optional and never required for Hub operation.
+ * On-device Ed25519 via Web Crypto. Optical-air-gap compatible.
+ * Solana is never required.
  *
- * Design rules (Rule of Law):
+ * Rule of Law:
  * - Local-first
  * - No mandatory external services
- * - Optical air-gap compatible
  * - Fully operational offline
+ * - Individual sovereignty preserved
  */
 
 import React, {
@@ -25,7 +25,7 @@ import React, {
 
 export interface NativeIdentity {
   handle: string | null;
-  ed25519PublicKey: string | null; // base64 or hex
+  ed25519PublicKey: string | null;
   isRegistered: boolean;
   lastVerifiedAt: string | null;
 }
@@ -75,8 +75,14 @@ export function NativeIdentityProvider({ children }: { children: ReactNode }) {
 
   const registerCitizen = useCallback(
     async (handle: string) => {
-      // Native path: generate or unlock on-device Ed25519 keypair via Web Crypto.
-      // In production this should integrate with the existing age / optical-air-gap vault.
+      const trimmed = handle.trim().toLowerCase();
+      if (trimmed.length < 2) {
+        throw new Error("Handle must be at least 2 characters");
+      }
+
+      // Native path: generate on-device Ed25519 keypair via Web Crypto.
+      // Production: private key material must live in the age / optical-air-gap vault,
+      // never in localStorage.
       const keyPair = await crypto.subtle.generateKey(
         { name: "Ed25519" },
         true,
@@ -87,14 +93,11 @@ export function NativeIdentityProvider({ children }: { children: ReactNode }) {
       const publicKeyB64 = btoa(String.fromCharCode(...new Uint8Array(rawPub)));
 
       const next: NativeIdentity = {
-        handle: handle.trim().toLowerCase(),
+        handle: trimmed,
         ed25519PublicKey: publicKeyB64,
         isRegistered: true,
         lastVerifiedAt: new Date().toISOString(),
       };
-
-      // TODO: store private key material in the existing secure vault / age-encrypted store.
-      // Never persist raw private key in localStorage in production.
 
       persist(next);
     },
@@ -104,8 +107,8 @@ export function NativeIdentityProvider({ children }: { children: ReactNode }) {
   const signLocalMessage = useCallback(
     async (message: string): Promise<string | null> => {
       if (!identity.isRegistered) return null;
-      // Placeholder: real implementation must load the private key from the secure vault
-      // and produce an Ed25519 signature. Optical-air-gap path remains preferred for high-trust.
+      // Placeholder: production loads private key from secure vault and signs.
+      // Optical-air-gap path remains the preferred high-trust channel.
       return `native-sig-placeholder:${btoa(message)}`;
     },
     [identity.isRegistered]
