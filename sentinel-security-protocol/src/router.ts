@@ -26,10 +26,7 @@ function recommendationFromLevel(level: SecurityLevel): SecurityDecision["recomm
   }
 }
 
-/**
- * Simple weighted average router.
- * Weights can later be learned or policy-driven while remaining native.
- */
+/** Default weights – integrity & identity carry highest trust */
 const DEFAULT_WEIGHTS: Record<string, number> = {
   integrity: 0.25,
   identity: 0.25,
