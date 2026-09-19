@@ -1,63 +1,57 @@
-# Parallel Solana + Wallet + MCP Track
+# Parallel Tracks – 100% Native Stack Rule of Law
 
 **Branch:** `feature/parallel-solana-wallet-mcp`  
 **PR:** https://github.com/Sentinel-Architech/The-Remote-Viewer/pull/102  
-**Status:** Expanded skeletons – full-force parallel development active
+**Status:** Native-first, fully operational core + optional parallel tracks
 
-## Tracks (Current State)
+## Non-Negotiable Rules
 
-### Track A – Solana / Rust (Anchor)
-- Location: `programs/trv_governance/`
-- Root `Anchor.toml` configured for localnet + devnet
-- Instructions: `init_governance`, `create_proposal`, `cast_vote`, `submit_posture_proof`
-- State: `GovernanceState`, `Proposal`, `PostureRecord`
-- Program ID still placeholder – run `anchor keys list` then update `declare_id!` and `Anchor.toml`
-- Next concrete steps:
-  1. `anchor build`
-  2. Generate real keypair and replace program ID
-  3. Implement Ed25519 / SIWS signature verification inside `submit_posture`
-  4. Add vote tracking account to prevent double-voting
+1. The Viewer Hub is **100% native stack** and fully operational without Solana, without any external wallet, and without any blockchain dependency.
+2. Primary identity = on-device Ed25519 + Better Auth + optical air-gap.
+3. Solana is an **optional parallel track only**. It must never become required.
+4. MCP context server is fully operational with native defaults and works offline.
+5. No mandatory centralized services. Local-first is the law.
 
-### Track B – Zero-Friction Wallet + SSO
-- Location: `apps/hub/src/providers/SolanaProvider.tsx`
-- See also: `apps/hub/SOLANA-WALLET-SETUP.md`
-- Wallet Adapter (Phantom + Solflare) + SIWS helper
-- `useSiwsAuth` ready for binding to Better Auth / on-device Ed25519
-- Next concrete steps:
-  1. Install the listed packages
-  2. Wrap root layout with `<SolanaProvider>`
-  3. Wire SIWS success into existing citizen identity flow
-  4. Persist session so users are not re-prompted
+## Current Implementation
 
-### Track C – Auto Context (MCP)
-- Location: `mcp-servers/trv-context/`
-- Tools: `get_hub_profile`, `get_optical_airgap_status`, `get_wallet_context`
-- TypeScript + stdio transport ready
-- Next concrete steps:
-  1. `npm install && npm run dev`
-  2. Register in local Copilot / Cursor MCP config
-  3. Replace placeholder responses with real Hub / optical / wallet state
+### Native Core (always on, fully operational)
+- `apps/hub/src/providers/NativeIdentityProvider.tsx`
+  - Citizen registration via Web Crypto Ed25519
+  - Local persistence
+  - Sign helper for local messages
+  - Zero external dependencies beyond the browser
 
-## Parallel Rules (Rule of Law)
-1. All three tracks remain independent.
-2. Solana is never required for the Viewer Hub to function.
-3. Ed25519 citizen identity + optical air-gap remain the highest-trust path.
-4. SIWS is the only bridge between local identity and on-chain actions.
-5. No new mandatory centralized services.
+### Track A – Solana / Rust (optional)
+- `programs/trv_governance/` + root `Anchor.toml`
+- Instructions: init_governance, create_proposal, cast_vote, submit_posture_proof
+- Remains scaffold until deliberately promoted
 
-## Immediate Commands (run in parallel)
+### Track B – Solana Wallet Bridge (optional)
+- `apps/hub/src/providers/SolanaProvider.tsx`
+- Gracefully degrades if packages are not installed
+- SIWS is a bridge only – never the primary identity
+
+### Track C – MCP Context (native, fully operational)
+- `mcp-servers/trv-context/`
+- Tools now include `get_native_stack_status`
+- Reads local files when present; safe native defaults otherwise
+- Works with zero Solana packages installed
+
+## Immediate Commands
 
 ```bash
-# Track A
-cd programs/trv_governance && anchor build
+# Native identity is already present – no install required for core Hub
 
-# Track B
+# Optional Solana track (only if desired)
 cd apps/hub
 npm install @solana/wallet-adapter-base @solana/wallet-adapter-react \
   @solana/wallet-adapter-react-ui @solana/wallet-adapter-wallets @solana/web3.js bs58
 
-# Track C
+# MCP (native)
 cd mcp-servers/trv-context && npm install && npm run dev
+
+# Anchor (optional)
+cd programs/trv_governance && anchor build
 ```
 
-Continue shipping. No blockers.
+The Hub remains fully operational under the native stack at every step.
