@@ -1,31 +1,22 @@
 /**
  * Sentinel Auto-Update Module
  *
- * Design intent: The Sentinel keeps GitHub and The Remote Viewer
- * continuously updated in open source so the system stays ahead.
+ * The Sentinel keeps GitHub and The Remote Viewer continuously updated
+ * in open source so the system stays ahead.
  *
- * 100% native principles:
  * - No closed-source update servers
  * - Updates are open, auditable, and reversible
- * - Individual nodes retain the right to stay on a pinned version
- * - Enhanced / whole-network mode can coordinate update signals
- *
- * This module defines the policy and hooks. Actual GitHub Actions /
- * release automation lives in .github/workflows and can call into these rules.
+ * - Individual nodes may always pin and refuse
+ * - Enhanced / whole-network may coordinate signals only
  */
 
 export type UpdateChannel = "stable" | "enhanced" | "edge";
 
 export interface UpdatePolicy {
-  /** Whether automatic open-source updates are enabled */
   autoUpdateEnabled: boolean;
-  /** Preferred channel */
   channel: UpdateChannel;
-  /** Individual nodes may always pin and refuse automatic application */
   individualOverrideAllowed: true;
-  /** Updates must remain fully open source and auditable */
   openSourceOnly: true;
-  /** Sentinel Security Protocol itself is included in the update surface */
   includeSecurityProtocol: true;
 }
 
@@ -37,11 +28,19 @@ export const DEFAULT_UPDATE_POLICY: UpdatePolicy = {
   includeSecurityProtocol: true,
 };
 
-/**
- * Evaluate whether an update should be applied under the current mode.
- * Individual mode prioritizes local sovereignty; enhanced mode may
- * surface stronger recommendations while still respecting local override.
- */
+/** Simple semver-ish compare: returns positive if a > b */
+export function compareVersions(a: string, b: string): number {
+  const pa = a.replace(/^v/, "").split(".").map((x) => parseInt(x, 10) || 0);
+  const pb = b.replace(/^v/, "").split(".").map((x) => parseInt(x, 10) || 0);
+  const len = Math.max(pa.length, pb.length);
+  for (let i = 0; i < len; i++) {
+    const da = pa[i] ?? 0;
+    const db = pb[i] ?? 0;
+    if (da !== db) return da - db;
+  }
+  return 0;
+}
+
 export function shouldApplyUpdate(params: {
   policy: UpdatePolicy;
   mode: "individual" | "enhanced" | "whole-network";
@@ -49,7 +48,8 @@ export function shouldApplyUpdate(params: {
   candidateVersion: string;
   securityDecisionLevel: "secure" | "elevated" | "critical" | "unknown";
 }): { apply: boolean; reason: string } {
-  const { policy, mode, securityDecisionLevel } = params;
+  const { policy, mode, securityDecisionLevel, currentVersion, candidateVersion } =
+    params;
 
   if (!policy.autoUpdateEnabled) {
     return { apply: false, reason: "Auto-update disabled by policy" };
@@ -62,7 +62,10 @@ export function shouldApplyUpdate(params: {
     };
   }
 
-  // Individual mode always allows the citizen to refuse
+  if (compareVersions(candidateVersion, currentVersion) <= 0) {
+    return { apply: false, reason: "Candidate is not newer than current" };
+  }
+
   if (mode === "individual") {
     return {
       apply: true,
@@ -70,16 +73,13 @@ export function shouldApplyUpdate(params: {
     };
   }
 
-  // Enhanced / whole-network: stronger recommendation but still non-coercive
   return {
     apply: true,
-    reason: "Update recommended for enhanced/whole-network posture – local override remains available",
+    reason:
+      "Update recommended for enhanced/whole-network posture – local override remains available",
   };
 }
 
-/**
- * Describe the open-source continuity guarantee.
- */
 export function getContinuityStatement(): string {
   return (
     "The Sentinel is designed to auto-update GitHub and The Remote Viewer " +
