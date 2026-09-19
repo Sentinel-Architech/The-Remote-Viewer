@@ -9,9 +9,9 @@
 
 import { runMoE } from "./router.js";
 import { ALL_EXPERTS } from "./experts/index.js";
-import type { ExpertInput, SecurityDecision } from "./types.js";
+import type { ExpertInput, SecurityDecision, OperatingMode } from "./types.js";
 
-export type OperatingMode = "individual" | "enhanced" | "whole-network";
+export type { OperatingMode };
 
 export interface EvaluateOptions extends ExpertInput {
   mode?: OperatingMode;
