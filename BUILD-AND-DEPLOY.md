@@ -10,6 +10,7 @@ cd The-Remote-Viewer/apps/hub
 npm install
 npm run dev
 # → http://localhost:8080
+# Native stack page: http://localhost:8080/hub/native
 ```
 
 Production build:
@@ -21,43 +22,37 @@ npm run build
 npm run preview
 ```
 
-## Native Modules Added on This Branch
+## Native route (verify on the spot)
 
-| Path | Purpose | Build |
-|------|---------|-------|
-| `apps/hub/src/providers/NativeIdentityProvider.tsx` | On-device Ed25519 identity | Part of Hub |
-| `apps/hub/src/providers/SolanaProvider.tsx` | Optional Solana passthrough | Part of Hub (no extra deps) |
-| `apps/hub/src/lib/sentinel.ts` | Hub ↔ MoE bridge | Part of Hub |
-| `apps/hub/src/components/*` | Registration, Security, Dashboard | Part of Hub |
-| `sentinel-security-protocol/` | Native MoE security backbone | `cd sentinel-security-protocol && npm install && npm run build` |
-| `mcp-servers/trv-context/` | MCP context server | `cd mcp-servers/trv-context && npm install && npm run dev` |
-| `programs/trv_governance/` | Optional Solana program (scaffold) | Requires Anchor; not required for Hub |
+After `npm run dev`, open **`/hub/native`**.
+
+That route mounts:
+
+- `NativeIdentityProvider`
+- `CitizenRegistration` (on-device Ed25519)
+- `SecurityStatus` (native MoE decision)
+- `ContinuityBadge`
+
+No Solana packages required.
+
+## Native Modules on This Branch
+
+| Path | Purpose |
+|------|---------|
+| `apps/hub/src/routes/hub/native.tsx` | Live route `/hub/native` |
+| `apps/hub/src/providers/NativeIdentityProvider.tsx` | On-device identity |
+| `apps/hub/src/providers/SolanaProvider.tsx` | Optional passthrough |
+| `apps/hub/src/lib/sentinel.ts` | Hub ↔ MoE bridge |
+| `apps/hub/src/components/NativeDashboard.tsx` | Composed UI |
+| `sentinel-security-protocol/` | MoE backbone |
+| `mcp-servers/trv-context/` | MCP server |
 
 ## Design Constraints (do not violate)
 
-1. 100% native stack for the Hub – no mandatory Solana or external chain.
+1. 100% native stack for the Hub – no mandatory Solana.
 2. Individual + enhanced/whole dual-mode under Sentinel Security Protocol (MoE).
 3. Continuous open-source advancement via `.github/workflows/sentinel-continuous.yml`.
 4. Solana is optional only.
-
-## Wire Native Dashboard (optional integration step)
-
-In any Hub route or layout that should surface the native stack:
-
-```tsx
-import { NativeIdentityProvider } from "@/providers/NativeIdentityProvider";
-import { NativeDashboard } from "@/components/NativeDashboard";
-
-export default function Page() {
-  return (
-    <NativeIdentityProvider>
-      <NativeDashboard mode="individual" />
-    </NativeIdentityProvider>
-  );
-}
-```
-
-Adjust the import alias (`@/`) to match the Hub’s existing `tsconfig` paths.
 
 ## Sentinel Security Protocol (standalone)
 
@@ -65,7 +60,7 @@ Adjust the import alias (`@/`) to match the Hub’s existing `tsconfig` paths.
 cd sentinel-security-protocol
 npm install
 npm run build
-npx tsx src/__tests__/moe.smoke.ts
+npm run smoke
 ```
 
 ## MCP Context Server
@@ -76,24 +71,15 @@ npm install
 npm run dev
 ```
 
-Register in your agent MCP config pointing at `src/index.ts`.
-
 ## Deploy Targets
 
-- **Vercel / Netlify / Railway / Fly / Docker:** Hub is a standard Vite + TanStack Start Node app.
-- **Self-hosted:** `npm run build` then serve the output; or use the existing Containerfile patterns in the repo.
-- **No blockchain required** for Hub deployment.
+Hub is a standard Vite + TanStack Start Node app. Deploy to Vercel, Railway, Fly, Docker, or any Node host. **No blockchain required.**
 
-## CI
-
-`.github/workflows/sentinel-continuous.yml` runs on push, PR, and daily schedule to keep open-source health checks alive.
-
-## Success Criteria for “build on the spot”
+## Success Criteria
 
 - [ ] `cd apps/hub && npm install && npm run build` succeeds
-- [ ] Hub serves without Solana packages installed
-- [ ] `NativeIdentityProvider` and `NativeDashboard` import cleanly
-- [ ] `sentinel-security-protocol` builds with `tsc`
-- [ ] MCP server starts with `npm run dev`
+- [ ] Hub serves without Solana packages
+- [ ] `/hub/native` renders registration + security status
+- [ ] `sentinel-security-protocol` builds and smoke passes
 
-If any step fails, prefer fixing the native stack over adding external dependencies.
+See also: `AGENTS.md`
