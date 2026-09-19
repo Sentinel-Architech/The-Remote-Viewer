@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { NativeIdentityProvider } from "@/providers/NativeIdentityProvider";
-import { NativeDashboard } from "@/components/NativeDashboard";
+import { NativeIdentityProvider } from "@/providers";
+import { NativeDashboard } from "@/components/native-stack";
 
 export const Route = createFileRoute("/hub/native")({
   component: NativePage,
