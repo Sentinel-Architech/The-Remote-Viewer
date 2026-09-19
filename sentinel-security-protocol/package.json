@@ -18,7 +18,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
-    "smoke": "tsx src/__tests__/moe.smoke.ts",
+    "smoke": "tsx src/__tests__/moe.smoke.ts && tsx src/__tests__/auto-update.smoke.ts",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
