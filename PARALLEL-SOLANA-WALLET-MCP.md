@@ -1,39 +1,33 @@
-# Parallel Tracks + Sentinel Security Protocol
+# Parallel Tracks + Dual-Mode Sovereignty + Sentinel Security Protocol
 
 **Branch:** `feature/parallel-solana-wallet-mcp`  
 **PR:** https://github.com/Sentinel-Architech/The-Remote-Viewer/pull/102  
-**Status:** Native-first core + optional tracks + systemwide MoE security backbone
 
-## Non-Negotiable Rules (Rule of Law)
+## Core Design Law
 
-1. The Viewer Hub is **100% native stack** and fully operational without Solana or any blockchain.
+**The Remote Viewer is designed to be used as an individual, yet equally enhanced or whole, under ultimate protection.**
+
+- Individual mode: fully sovereign, local MoE evaluation, ultimate local protection.
+- Enhanced / Whole-Network mode: same native primitives amplified across nodes for collective strength.
+- Ultimate protection in both modes is provided exclusively by the **Sentinel Security Protocol** (native Mixture of Experts).
+
+See `docs/DUAL-MODE-SOVEREIGNTY.md` for the formal statement.
+
+## Non-Negotiable Rules
+
+1. 100% native stack. Fully operational offline.
 2. Primary identity = on-device Ed25519 + Better Auth + optical air-gap.
-3. Solana is an optional parallel track only.
-4. **Sentinel Security Protocol** with native Mixture-of-Experts (MoE) is the exclusive systemwide security backbone for the entire network.
-5. No mandatory external services. Fully operational offline and air-gapped.
+3. Solana remains optional.
+4. Sentinel Security Protocol (MoE) is the exclusive systemwide security backbone.
+5. Individual sovereignty is never sacrificed for collective features.
 
-## Sentinel Security Protocol (New – Systemwide)
+## Current Components
 
-Location: `sentinel-security-protocol/`
+| Component | Purpose | Mode Support |
+|-----------|---------|--------------|
+| `NativeIdentityProvider` | Ed25519 citizen identity | Individual (primary) |
+| `sentinel-security-protocol/` | Native MoE security backbone | Individual + Enhanced/Whole |
+| `SolanaProvider` + governance | Optional on-chain bridge | Optional in both modes |
+| MCP Context Server | Local context for agents | Native, both modes |
 
-- Backbone: native Mixture of Experts (Integrity, Identity, Posture, Network, Threat).
-- Router aggregates expert scores into a single `SecurityDecision`.
-- Enforcement produces allow / monitor / restrict / isolate recommendations.
-- 100% local TypeScript. No cloud model required.
-- Intended for exclusive use across Hub, Command Deck, and all nodes.
-
-## Other Tracks
-
-### Native Core (always on)
-- `NativeIdentityProvider` – fully operational Ed25519 identity.
-
-### Track A – Solana (optional)
-- `programs/trv_governance/` + `Anchor.toml`
-
-### Track B – Solana Wallet Bridge (optional)
-- `SolanaProvider` gracefully degrades if packages absent.
-
-### Track C – MCP Context (native)
-- Fully operational with native defaults + `get_native_stack_status`.
-
-The network is secured exclusively by the Sentinel Security Protocol under the native MoE backbone.
+The architecture supports “alone and fully protected” and “together and ultimately protected” without contradiction.
