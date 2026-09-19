@@ -2,19 +2,14 @@
 
 /**
  * NativeDashboard
- * Composes the core native experience:
- *   - Citizen registration (Ed25519)
- *   - Sentinel Security status (MoE)
- *   - Open-source continuity signal
- *
- * Fully operational without Solana. Dual-mode ready.
+ * Composes identity, Sentinel security status, and continuity signal.
+ * Fully operational without Solana.
  */
 
-import React from "react";
-import { CitizenRegistration } from "./CitizenRegistration";
-import { SecurityStatus } from "./SecurityStatus";
-import { ContinuityBadge } from "./ContinuityBadge";
-import { useNativeIdentity } from "../providers/NativeIdentityProvider";
+import { CitizenRegistration } from "@/components/CitizenRegistration";
+import { SecurityStatus } from "@/components/SecurityStatus";
+import { ContinuityBadge } from "@/components/ContinuityBadge";
+import { useNativeIdentity } from "@/providers/NativeIdentityProvider";
 
 interface Props {
   opticalStatus?: string | null;
@@ -30,7 +25,7 @@ export function NativeDashboard({
   return (
     <div className="mx-auto flex max-w-lg flex-col gap-4 p-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-zinc-100">Viewer Hub</h1>
+        <h1 className="text-lg font-semibold">Viewer Hub · Native</h1>
         <ContinuityBadge />
       </div>
 
@@ -42,7 +37,7 @@ export function NativeDashboard({
         mode={mode}
       />
 
-      <p className="text-center text-xs text-zinc-500">
+      <p className="text-center text-xs text-muted-foreground">
         Individual sovereignty · Enhanced when connected · Ultimate protection via native MoE
       </p>
     </div>
