@@ -1,6 +1,12 @@
-# Parallel Tracks – Layered Enhancement + Corrections
+# Parallel Tracks – Build-Ready
 
 **PR:** https://github.com/Sentinel-Architech/The-Remote-Viewer/pull/102  
+
+## For any AI or CI
+
+1. Read `AGENTS.md`
+2. Read `BUILD-AND-DEPLOY.md`
+3. Primary deploy target: `apps/hub` → `npm install && npm run build`
 
 ## Design Laws
 
@@ -8,14 +14,21 @@
 2. Sentinel continuously advances GitHub and The Remote Viewer in open source.
 3. 100% native stack. Offline-capable. Solana optional. Override always available.
 
-## Proactive Corrections Applied
+## Corrections already applied
 
-| Issue | Fix |
-|-------|-----|
-| Circular import (enforcement ↔ index) | `OperatingMode` moved to `types.ts`; enforcement imports from types only |
-| `require()` in client SolanaProvider | Replaced with pure optional passthrough – Hub builds without Solana packages |
-| Ed25519 subtle unsupported in some runtimes | NativeIdentity now falls back to secure random local key material |
+- Circular import eliminated
+- SolanaProvider has zero hard dependencies
+- NativeIdentity resilient key generation
+- Package exports and scripts fixed for drop-in builds
 
-## Layered State
+## Modules on this branch
 
-All prior enhancements remain. Corrections keep the native stack coherent and buildable.
+| Module | Ready |
+|--------|--------|
+| Hub native identity + dashboard + security UI | Yes |
+| Sentinel Security Protocol (MoE) | Yes – build + smoke |
+| MCP context server | Yes |
+| Continuous CI workflow | Yes |
+| Optional Solana scaffold | Present, not required |
+
+Clone → follow AGENTS.md → build Hub → deploy.
