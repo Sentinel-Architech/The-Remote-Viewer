@@ -27,13 +27,20 @@ cd apps/hub && npm install && npm run build  # production
 |------|------|
 | `apps/hub` | Live product – build and deploy this |
 | `apps/hub/src/routes/hub/native.tsx` | **`/hub/native`** – identity + MoE security UI |
-| `apps/hub/src/providers/NativeIdentityProvider.tsx` | On-device Ed25519 |
-| `apps/hub/src/components/NativeDashboard.tsx` | Composed native UI |
-| `apps/hub/src/lib/sentinel.ts` | Hub bridge to MoE |
+| `apps/hub/src/lib/native-stack.ts` | **Facade** – identity + security in one import |
+| `apps/hub/src/providers/` | NativeIdentity + optional Solana |
+| `apps/hub/src/components/native-stack/` | UI barrel |
 | `sentinel-security-protocol/` | Systemwide native MoE backbone |
 | `mcp-servers/trv-context/` | MCP tools |
 | `BUILD-AND-DEPLOY.md` | One-shot steps |
-| `docs/DUAL-MODE-SOVEREIGNTY.md` | Dual-mode law |
+
+## Preferred imports
+
+```ts
+import { evaluateHubSecurity, useNativeIdentity } from "@/lib/native-stack";
+import { NativeDashboard } from "@/components/native-stack";
+import { NativeIdentityProvider } from "@/providers";
+```
 
 ## When Adding Features
 
