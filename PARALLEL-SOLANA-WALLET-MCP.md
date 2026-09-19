@@ -3,35 +3,29 @@
 **Branch:** `feature/parallel-solana-wallet-mcp`  
 **PR:** https://github.com/Sentinel-Architech/The-Remote-Viewer/pull/102  
 
-## Design Law
+## Design Laws
 
-The Remote Viewer is designed to be used as an **individual**, yet equally **enhanced or whole**, under **ultimate protection** provided exclusively by the native Sentinel Security Protocol (Mixture of Experts).
+1. The Remote Viewer is designed to be used as an **individual**, yet equally **enhanced or whole**, under **ultimate protection** (native MoE Sentinel Security Protocol).
+2. **The Sentinel is designed to auto-update GitHub and The Remote Viewer in open source at all times to stay ahead.**
+3. 100% native stack. Fully operational offline. Solana remains optional. Individual override always preserved.
 
-100% native stack. Fully operational offline. Solana remains optional.
+## Continuous Open-Source Advancement
 
-## Parallel Tracks – Current State
+- Policy: `sentinel-security-protocol/src/auto-update.ts`
+- Workflow: `.github/workflows/sentinel-continuous.yml` (daily + push/PR)
+- Documentation: `docs/SENTINEL-CONTINUOUS-OPEN-SOURCE.md`
 
-### Native Core (always on)
-- `NativeIdentityProvider` – Ed25519 citizen identity
-- `docs/DUAL-MODE-SOVEREIGNTY.md` – formal dual-mode statement
+Updates are open, auditable, security-gated, and never coercive.
 
-### Sentinel Security Protocol (exclusive systemwide backbone)
-- Full MoE: Integrity, Identity, Posture, Network, Threat experts
-- Router + dual-mode evaluation (`individual` | `enhanced` | `whole-network`)
-- Enforcement layer with local-override guarantee
-- Hub integration (`apps/hub/src/lib/sentinel.ts`)
-- UI component (`SecurityStatus.tsx`)
-- Smoke test (`src/__tests__/moe.smoke.ts`)
-- MCP tool: `evaluate_sentinel_security`
+## Parallel Tracks
 
-### Track A – Solana (optional)
-- `programs/trv_governance/` with init, proposal, vote, posture instructions
-- Posture proof clearly marked as optional parallel signal only
+| Track | Status |
+|-------|--------|
+| Native Identity | Operational |
+| Sentinel Security Protocol (MoE) | Operational – dual-mode + enforcement + smoke test |
+| Hub integration + SecurityStatus UI | Present |
+| MCP Context (v0.3) | Operational – includes security evaluation |
+| Solana governance (optional) | Scaffold – clearly marked optional |
+| Continuous open-source automation | Present |
 
-### Track B – Wallet Bridge (optional)
-- `SolanaProvider` gracefully degrades when packages are absent
-
-### Track C – MCP Context
-- v0.3 with native stack status + Sentinel evaluation tool
-
-All tracks continue to advance in parallel without blockers.
+All tracks advance in parallel. The system is structured to stay ahead through continuous open-source motion.
