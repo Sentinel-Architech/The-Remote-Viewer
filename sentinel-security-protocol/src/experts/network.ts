@@ -16,16 +16,16 @@ export const networkExpert: Expert = {
     const count = events.length;
 
     if (count === 0) {
-      reasons.push("No local network events – quiet baseline");
+      reasons.push("No local network events - quiet baseline");
       score = 0.82;
     } else if (count <= 5) {
-      reasons.push(`Low event volume (${count}) – normal");
+      reasons.push(`Low event volume (${count}) - normal`);
       score = 0.8;
     } else if (count <= 20) {
-      reasons.push(`Moderate event volume (${count}) – elevated observation");
+      reasons.push(`Moderate event volume (${count}) - elevated observation`);
       score = 0.62;
     } else {
-      reasons.push(`High event volume (${count}) – potential anomaly");
+      reasons.push(`High event volume (${count}) - potential anomaly`);
       score = 0.38;
     }
 
