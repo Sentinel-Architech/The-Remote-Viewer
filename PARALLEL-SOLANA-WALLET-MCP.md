@@ -1,57 +1,39 @@
-# Parallel Tracks – 100% Native Stack Rule of Law
+# Parallel Tracks + Sentinel Security Protocol
 
 **Branch:** `feature/parallel-solana-wallet-mcp`  
 **PR:** https://github.com/Sentinel-Architech/The-Remote-Viewer/pull/102  
-**Status:** Native-first, fully operational core + optional parallel tracks
+**Status:** Native-first core + optional tracks + systemwide MoE security backbone
 
-## Non-Negotiable Rules
+## Non-Negotiable Rules (Rule of Law)
 
-1. The Viewer Hub is **100% native stack** and fully operational without Solana, without any external wallet, and without any blockchain dependency.
+1. The Viewer Hub is **100% native stack** and fully operational without Solana or any blockchain.
 2. Primary identity = on-device Ed25519 + Better Auth + optical air-gap.
-3. Solana is an **optional parallel track only**. It must never become required.
-4. MCP context server is fully operational with native defaults and works offline.
-5. No mandatory centralized services. Local-first is the law.
+3. Solana is an optional parallel track only.
+4. **Sentinel Security Protocol** with native Mixture-of-Experts (MoE) is the exclusive systemwide security backbone for the entire network.
+5. No mandatory external services. Fully operational offline and air-gapped.
 
-## Current Implementation
+## Sentinel Security Protocol (New – Systemwide)
 
-### Native Core (always on, fully operational)
-- `apps/hub/src/providers/NativeIdentityProvider.tsx`
-  - Citizen registration via Web Crypto Ed25519
-  - Local persistence
-  - Sign helper for local messages
-  - Zero external dependencies beyond the browser
+Location: `sentinel-security-protocol/`
 
-### Track A – Solana / Rust (optional)
-- `programs/trv_governance/` + root `Anchor.toml`
-- Instructions: init_governance, create_proposal, cast_vote, submit_posture_proof
-- Remains scaffold until deliberately promoted
+- Backbone: native Mixture of Experts (Integrity, Identity, Posture, Network, Threat).
+- Router aggregates expert scores into a single `SecurityDecision`.
+- Enforcement produces allow / monitor / restrict / isolate recommendations.
+- 100% local TypeScript. No cloud model required.
+- Intended for exclusive use across Hub, Command Deck, and all nodes.
+
+## Other Tracks
+
+### Native Core (always on)
+- `NativeIdentityProvider` – fully operational Ed25519 identity.
+
+### Track A – Solana (optional)
+- `programs/trv_governance/` + `Anchor.toml`
 
 ### Track B – Solana Wallet Bridge (optional)
-- `apps/hub/src/providers/SolanaProvider.tsx`
-- Gracefully degrades if packages are not installed
-- SIWS is a bridge only – never the primary identity
+- `SolanaProvider` gracefully degrades if packages absent.
 
-### Track C – MCP Context (native, fully operational)
-- `mcp-servers/trv-context/`
-- Tools now include `get_native_stack_status`
-- Reads local files when present; safe native defaults otherwise
-- Works with zero Solana packages installed
+### Track C – MCP Context (native)
+- Fully operational with native defaults + `get_native_stack_status`.
 
-## Immediate Commands
-
-```bash
-# Native identity is already present – no install required for core Hub
-
-# Optional Solana track (only if desired)
-cd apps/hub
-npm install @solana/wallet-adapter-base @solana/wallet-adapter-react \
-  @solana/wallet-adapter-react-ui @solana/wallet-adapter-wallets @solana/web3.js bs58
-
-# MCP (native)
-cd mcp-servers/trv-context && npm install && npm run dev
-
-# Anchor (optional)
-cd programs/trv_governance && anchor build
-```
-
-The Hub remains fully operational under the native stack at every step.
+The network is secured exclusively by the Sentinel Security Protocol under the native MoE backbone.
