@@ -22,6 +22,10 @@ export interface EnforcementResult {
   localOverrideAvailable: boolean;
 }
 
+function clamp(n: number): number {
+  return Math.max(0, Math.min(1, n));
+}
+
 function levelFromScore(score: number): SecurityDecision["overallLevel"] {
   if (score >= 0.85) return "secure";
   if (score >= 0.6) return "elevated";
@@ -46,7 +50,6 @@ function recommendationFromLevel(
 
 /**
  * Evaluate security using the same signals the MoE experts consume.
- * When the real protocol package is linked this becomes a thin re-export.
  */
 export async function evaluateHubSecurity(params: {
   handle?: string | null;
@@ -55,40 +58,55 @@ export async function evaluateHubSecurity(params: {
   localEventCount?: number;
 }): Promise<SecurityDecision> {
   const mode = params.mode ?? "individual";
-  const handle = params.handle ?? null;
+  const handle = (params.handle ?? "").trim();
   const optical = (params.opticalStatus || "").toLowerCase();
-  const eventCount = params.localEventCount ?? 0;
+  const eventCount = Math.max(0, params.localEventCount ?? 0);
 
-  // Lightweight parallel of the five experts for Hub-side immediacy
   let integrity = 0.65;
-  if (optical === "verified" || optical === "secure") integrity = 0.96;
-  else if (optical === "failed" || optical === "critical") integrity = 0.12;
+  if (optical === "verified" || optical === "secure" || optical === "passed") {
+    integrity = 0.96;
+  } else if (
+    optical === "failed" ||
+    optical === "critical" ||
+    optical === "compromised"
+  ) {
+    integrity = 0.12;
+  }
 
-  let identity = handle && handle.length >= 2 ? 0.91 : 0.3;
+  const identity = handle.length >= 2 ? 0.91 : 0.3;
 
   let posture = 0.7;
-  if (handle && handle.length >= 2) posture += 0.12;
+  if (handle.length >= 2) posture += 0.12;
   if (optical === "verified" || optical === "secure") posture += 0.1;
   if (optical === "failed" || optical === "critical") posture -= 0.25;
-  posture = Math.max(0, Math.min(1, posture));
+  posture = clamp(posture);
 
   let network = 0.78;
   if (eventCount > 20) network = 0.38;
   else if (eventCount > 5) network = 0.62;
+  else if (eventCount === 0) network = 0.82;
 
   let threat = 0.84;
   if (optical === "failed" || optical === "critical") threat -= 0.35;
-  if (!handle || handle.length < 2) threat -= 0.12;
+  if (handle.length < 2) threat -= 0.12;
   if (eventCount > 25) threat -= 0.15;
-  threat = Math.max(0, Math.min(1, threat));
+  threat = clamp(threat);
 
-  const weights = { integrity: 0.25, identity: 0.25, posture: 0.2, network: 0.15, threat: 0.15 };
-  const overallScore =
+  const weights = {
+    integrity: 0.25,
+    identity: 0.25,
+    posture: 0.2,
+    network: 0.15,
+    threat: 0.15,
+  };
+
+  const overallScore = clamp(
     integrity * weights.integrity +
-    identity * weights.identity +
-    posture * weights.posture +
-    network * weights.network +
-    threat * weights.threat;
+      identity * weights.identity +
+      posture * weights.posture +
+      network * weights.network +
+      threat * weights.threat
+  );
 
   const overallLevel = levelFromScore(overallScore);
 
