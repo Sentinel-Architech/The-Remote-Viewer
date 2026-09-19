@@ -1,32 +1,77 @@
 "use client";
 
-import React, { useMemo, useCallback, useState, useEffect } from "react";
-import {
-  ConnectionProvider,
-  WalletProvider,
-  useWallet,
-} from "@solana/wallet-adapter-react";
-import { WalletModalProvider, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { PhantomWalletAdapter, SolflareWalletAdapter } from "@solana/wallet-adapter-wallets";
-import { clusterApiUrl } from "@solana/web3.js";
-import "@solana/wallet-adapter-react-ui/styles.css";
+/**
+ * SolanaProvider – OPTIONAL parallel track only
+ *
+ * This module is never required for the Viewer Hub to function.
+ * Primary identity is NativeIdentityProvider (Ed25519 + Better Auth).
+ * Solana / SIWS is an additive bridge for on-chain actions when desired.
+ *
+ * To disable completely: do not import or wrap with this provider.
+ */
 
-// SIWS (Sign-In With Solana) helpers will be expanded here.
-// For now we expose a basic connect flow that can later be
-// bound to Better Auth / Ed25519 citizen identity.
+import React, { useMemo, useCallback, useState, ReactNode } from "react";
 
-const network = "devnet"; // change to mainnet-beta when ready
-const endpoint = useMemo(() => clusterApiUrl(network), []);
+// Dynamic imports keep the native stack free of Solana packages when unused.
+// Consumers must install the packages only if they enable this track.
 
-export function SolanaProvider({ children }: { children: React.ReactNode }) {
-  const wallets = useMemo(
-    () => [
-      new PhantomWalletAdapter(),
-      new SolflareWalletAdapter(),
-      // Add more adapters as needed
-    ],
-    []
-  );
+let ConnectionProvider: any = ({ children }: { children: ReactNode }) => <>{children}</>;
+let WalletProvider: any = ({ children }: { children: ReactNode }) => <>{children}</>;
+let WalletModalProvider: any = ({ children }: { children: ReactNode }) => <>{children}</>;
+let WalletMultiButton: any = () => null;
+let useWallet: any = () => ({ publicKey: null, signMessage: null, connected: false });
+let clusterApiUrl: any = () => "";
+let PhantomWalletAdapter: any = class {};
+let SolflareWalletAdapter: any = class {};
+
+try {
+  // These will resolve only when the packages are installed.
+  // If not installed, the native path continues to work.
+  const reactAdapter = require("@solana/wallet-adapter-react");
+  const reactUi = require("@solana/wallet-adapter-react-ui");
+  const wallets = require("@solana/wallet-adapter-wallets");
+  const web3 = require("@solana/web3.js");
+
+  ConnectionProvider = reactAdapter.ConnectionProvider;
+  WalletProvider = reactAdapter.WalletProvider;
+  useWallet = reactAdapter.useWallet;
+  WalletModalProvider = reactUi.WalletModalProvider;
+  WalletMultiButton = reactUi.WalletMultiButton;
+  PhantomWalletAdapter = wallets.PhantomWalletAdapter;
+  SolflareWalletAdapter = wallets.SolflareWalletAdapter;
+  clusterApiUrl = web3.clusterApiUrl;
+
+  // CSS is optional; ignore if missing
+  try {
+    require("@solana/wallet-adapter-react-ui/styles.css");
+  } catch {}
+} catch {
+  // Packages not installed – Solana track is dormant. Native stack remains fully operational.
+}
+
+const network = "devnet";
+
+export function SolanaProvider({ children }: { children: ReactNode }) {
+  const endpoint = useMemo(() => {
+    try {
+      return clusterApiUrl(network);
+    } catch {
+      return "";
+    }
+  }, []);
+
+  const wallets = useMemo(() => {
+    try {
+      return [new PhantomWalletAdapter(), new SolflareWalletAdapter()];
+    } catch {
+      return [];
+    }
+  }, []);
+
+  // If no endpoint or wallets, render children without Solana context.
+  if (!endpoint || wallets.length === 0) {
+    return <>{children}</>;
+  }
 
   return (
     <ConnectionProvider endpoint={endpoint}>
@@ -37,21 +82,21 @@ export function SolanaProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Simple connect button for testing. Replace with SIWS-aware component later. */
 export function SolanaConnectButton() {
   return <WalletMultiButton />;
 }
 
-/** Hook placeholder for SIWS authentication flow */
 export function useSiwsAuth() {
-  const { publicKey, signMessage, connected } = useWallet();
+  const wallet = useWallet();
+  const { publicKey, signMessage, connected } = wallet || {};
   const [siwsSession, setSiwsSession] = useState<string | null>(null);
 
   const signIn = useCallback(async () => {
     if (!publicKey || !signMessage) return;
 
-    const domain = typeof window !== "undefined" ? window.location.host : "the-remote-viewer.grok.me";
-    const statement = "Sign in to The Remote Viewer Hub";
+    const domain =
+      typeof window !== "undefined" ? window.location.host : "the-remote-viewer.grok.me";
+    const statement = "Sign in to The Remote Viewer Hub (optional Solana bridge)";
     const nonce = crypto.randomUUID();
     const issuedAt = new Date().toISOString();
 
@@ -60,10 +105,13 @@ export function useSiwsAuth() {
     const encoded = new TextEncoder().encode(message);
     const signature = await signMessage(encoded);
 
-    // TODO: send { message, signature, publicKey } to Better Auth / backend for verification
-    // and bind to existing Ed25519 citizen identity.
-    setSiwsSession(Buffer.from(signature).toString("base64"));
+    // Bridge only: bind to native Ed25519 identity in the application layer.
+    setSiwsSession(
+      typeof Buffer !== "undefined"
+        ? Buffer.from(signature).toString("base64")
+        : btoa(String.fromCharCode(...new Uint8Array(signature)))
+    );
   }, [publicKey, signMessage]);
 
-  return { connected, publicKey, siwsSession, signIn };
+  return { connected: !!connected, publicKey, siwsSession, signIn };
 }
