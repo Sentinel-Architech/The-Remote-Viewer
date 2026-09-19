@@ -1,4 +1,4 @@
-# Parallel Tracks – Layered Enhancement Complete
+# Parallel Tracks – Layered Enhancement + Corrections
 
 **PR:** https://github.com/Sentinel-Architech/The-Remote-Viewer/pull/102  
 
@@ -8,18 +8,14 @@
 2. Sentinel continuously advances GitHub and The Remote Viewer in open source.
 3. 100% native stack. Offline-capable. Solana optional. Override always available.
 
-## Layered Cake (Observed & Enhanced)
+## Proactive Corrections Applied
 
-| Layer | Enhancement |
-|-------|-------------|
-| **Identity** | NativeIdentityProvider + CitizenRegistration – safer handle rules, vault notes |
-| **Security MoE** | All five experts enriched (Integrity, Identity, Posture, Network, Threat) |
-| **Router** | Clear weighting, deterministic decisions |
-| **Enforcement** | Dual-mode with local-override guarantee |
-| **Hub Bridge** | Multi-signal evaluation + expert summary |
-| **Hub UI** | NativeDashboard, SecurityStatus (expert detail), ContinuityBadge |
-| **MCP** | Security evaluation tool + native status |
-| **Continuous OS** | Auto-update policy + daily CI workflow |
-| **Solana** | Optional only; posture proof marked as parallel signal |
+| Issue | Fix |
+|-------|-----|
+| Circular import (enforcement ↔ index) | `OperatingMode` moved to `types.ts`; enforcement imports from types only |
+| `require()` in client SolanaProvider | Replaced with pure optional passthrough – Hub builds without Solana packages |
+| Ed25519 subtle unsupported in some runtimes | NativeIdentity now falls back to secure random local key material |
 
-All layers advanced in parallel. The system remains coherent under the native-stack rule of law.
+## Layered State
+
+All prior enhancements remain. Corrections keep the native stack coherent and buildable.
