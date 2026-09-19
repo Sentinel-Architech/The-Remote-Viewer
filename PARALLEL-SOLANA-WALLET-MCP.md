@@ -6,7 +6,8 @@
 
 1. Read `AGENTS.md`
 2. Read `BUILD-AND-DEPLOY.md`
-3. Primary deploy target: `apps/hub` → `npm install && npm run build`
+3. `cd apps/hub && npm install && npm run dev`
+4. Open **`/hub/native`**
 
 ## Design Laws
 
@@ -14,21 +15,11 @@
 2. Sentinel continuously advances GitHub and The Remote Viewer in open source.
 3. 100% native stack. Offline-capable. Solana optional. Override always available.
 
-## Corrections already applied
+## Latest
 
-- Circular import eliminated
-- SolanaProvider has zero hard dependencies
-- NativeIdentity resilient key generation
-- Package exports and scripts fixed for drop-in builds
+- `/hub/native` route live
+- Barrel exports: `@/providers`, `@/components/native-stack`
+- Sentinel bridge scores clamped; edge cases hardened
+- Package exports + AGENTS + BUILD-AND-DEPLOY for drop-in AI builds
 
-## Modules on this branch
-
-| Module | Ready |
-|--------|--------|
-| Hub native identity + dashboard + security UI | Yes |
-| Sentinel Security Protocol (MoE) | Yes – build + smoke |
-| MCP context server | Yes |
-| Continuous CI workflow | Yes |
-| Optional Solana scaffold | Present, not required |
-
-Clone → follow AGENTS.md → build Hub → deploy.
+Clone → AGENTS.md → build Hub → `/hub/native` → deploy.
