@@ -4,7 +4,7 @@
 
 | | |
 |--|--|
-| **Starting-tech fund** | [gofund.me/1ffd2c150](https://gofund.me/1ffd2c150) |
+| **Starting-tech fund** | [gofund.me/1ffd2c150](https://gofund.me/1ffd2c150) — NEW Framework kit (buy new only; no Apple / Microsoft / Google) |
 | **Live X** | [@TRV_Architech](https://x.com/TRV_Architech) |
 | **Canon (glass)** | [the-remote-viewer.grok.me](https://the-remote-viewer.grok.me) — glass until payday Build + Re-Publish prove LIVE |
 | **Technology** | TypeScript (TanStack Start) + PostgreSQL + Better Auth + age |
@@ -36,9 +36,9 @@ npm install && npm run dev
 - ✅ SENTINEL OS jack-in (Command Deck integration)
 - ✅ Red/Blue lens (bias detection)
 
-### Optical Air-Gap (PROVEN)
+### Optical Air-Gap (verified local)
 
-**Defend-grade encryption. Works offline.**
+**Defend-grade encryption. Works offline. Local GrapheneOS / Termux verified — not a hosted LIVE claim.**
 
 ```bash
 bash modules/defense/integrity-pulse.sh
@@ -52,9 +52,9 @@ bash apps/ui/serve-ui.sh
 - ✅ Termux (Pixel-class Android)
 - ✅ Local macOS/Linux
 
-### Command Deck (LIVE)
+### Command Deck (local / glass)
 
-**Synapse + God's Eye + Mesh Board + HUB**
+**Synapse + God's Eye + Mesh Board + HUB** — runs locally; not claimed LIVE on canon until payday Build + Re-Publish.
 
 Located in `apps/command-deck/`. Control briefing, watch intercepts, manage posture.
 
