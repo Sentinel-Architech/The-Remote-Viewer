@@ -236,16 +236,16 @@ jobs:
             gh pr comment "${EXISTING}" -R "${{ github.repository }}" --body "Refreshed COMMAND-LOG auto entry for ${DATE}."
           else
             gh pr create -R "${{ github.repository }}"               --base TheRemoteViewer               --head "${BRANCH}"               --title "Auto-update command log ${DATE}"               --body "$(cat <<EOF
-## Summary
-- Automated COMMAND-LOG append for ${DATE}
-- Lands via PR because direct push to \`TheRemoteViewer\` is blocked by GH006 (required status check \`build-solana\`)
+          ## Summary
+          - Automated COMMAND-LOG append for ${DATE}
+          - Lands via PR because direct push to \`TheRemoteViewer\` is blocked by GH006 (required status check \`build-solana\`)
 
-## Rails
-- No branch-protection weakening
-- Architect merge when \`build-solana\` is green
+          ## Rails
+          - No branch-protection weakening
+          - Architect merge when \`build-solana\` is green
 
-EOF
-)"
+          EOF
+            )"
           fi
 
           echo "Command log PR path complete for ${BRANCH}"
