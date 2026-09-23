@@ -4,11 +4,14 @@
 
 | | |
 |--|--|
-| **Live Product** | [the-remote-viewer.grok.me](https://the-remote-viewer.grok.me) |
+| **Starting-tech fund** | [gofund.me/1ffd2c150](https://gofund.me/1ffd2c150) |
+| **Live X** | [@TRV_Architech](https://x.com/TRV_Architech) |
+| **Canon (glass)** | [the-remote-viewer.grok.me](https://the-remote-viewer.grok.me) — glass until payday Build + Re-Publish prove LIVE |
 | **Technology** | TypeScript (TanStack Start) + PostgreSQL + Better Auth + age |
 | **License** | Open Source (MIT) |
-| **Status** | ✅ LIVE (Viewer Hub + Command Deck) |
 | **Working Branch** | `TheRemoteViewer` |
+
+> Honest glass: do **not** treat the DApp as LIVE/PROVEN until payday Build + Re-Publish prove it on the canon host. Optical air-gap and local Hub remain the defend-grade path.
 
 ---
 
