@@ -3,7 +3,9 @@ name: Update Command Log
 # ---------------------------------------------------------------------------
 # Automatically appends a dated, non-secret commit table to
 # docs/public/COMMAND-LOG.md when security / CI / docs paths change.
-# Manual narrative entries can still be written by hand above auto sections.
+# Lands via short-lived branch + PR (GH006: required build-solana blocks
+# github-actions direct push to TheRemoteViewer). Do not weaken protection
+# without Architect. Manual narrative entries still go above auto sections.
 # ---------------------------------------------------------------------------
 
 on:
@@ -23,7 +25,8 @@ on:
   workflow_dispatch:   # Allow manual runs from the Actions tab
 
 permissions:
-  contents: write      # Needed to commit the updated log back to the branch
+  contents: write      # Commit to short-lived auto/command-log-* branch
+  pull-requests: write # Open/update PR into TheRemoteViewer (GH006: no direct push)
 
 jobs:
   append-log:
@@ -185,9 +188,13 @@ jobs:
           echo "Appended new auto entry for ${DATE}"
           echo "skip=false" >> "$GITHUB_OUTPUT"
 
-      - name: Commit updated log
-        # Only runs when the previous step actually appended something
+      - name: Open PR with updated log (GH006-safe)
+        # Direct push to TheRemoteViewer fails GH006: required check "build-solana".
+        # Land COMMAND-LOG updates via short-lived branch + PR instead. Do NOT weaken
+        # branch protection without Architect.
         if: steps.entry.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
 
@@ -201,21 +208,44 @@ jobs:
 
           git add -f docs/public/COMMAND-LOG.md
 
-          # Nothing staged → nothing to do
           if git diff --staged --quiet; then
             echo "No changes to commit"
             exit 0
           fi
 
-          # [skip ci] prevents this commit from re-triggering CI / this workflow
-          git commit -m "Auto-update command log [skip ci]" || {
+          DATE=$(date -u +%Y-%m-%d)
+          BRANCH="auto/command-log-${DATE}"
+
+          # Detach from protected tip onto a short-lived branch
+          git checkout -B "${BRANCH}"
+
+          git commit -m "Auto-update command log ${DATE}" || {
             echo "ERROR: git commit failed" >&2
             exit 1
           }
 
-          git push || {
-            echo "ERROR: git push failed" >&2
+          git push -u origin "${BRANCH}" --force-with-lease || {
+            echo "ERROR: git push to ${BRANCH} failed" >&2
             exit 1
           }
 
-          echo "Command log committed and pushed successfully"
+          # Reuse open PR for this branch if present; else create
+          EXISTING=$(gh pr list -R "${{ github.repository }}" --head "${BRANCH}" --base TheRemoteViewer --json number --jq '.[0].number // empty')
+          if [ -n "${EXISTING}" ]; then
+            echo "PR #${EXISTING} already open for ${BRANCH}"
+            gh pr comment "${EXISTING}" -R "${{ github.repository }}" --body "Refreshed COMMAND-LOG auto entry for ${DATE}."
+          else
+            gh pr create -R "${{ github.repository }}"               --base TheRemoteViewer               --head "${BRANCH}"               --title "Auto-update command log ${DATE}"               --body "$(cat <<EOF
+## Summary
+- Automated COMMAND-LOG append for ${DATE}
+- Lands via PR because direct push to \`TheRemoteViewer\` is blocked by GH006 (required status check \`build-solana\`)
+
+## Rails
+- No branch-protection weakening
+- Architect merge when \`build-solana\` is green
+
+EOF
+)"
+          fi
+
+          echo "Command log PR path complete for ${BRANCH}"
