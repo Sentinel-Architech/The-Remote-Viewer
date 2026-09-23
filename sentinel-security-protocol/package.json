@@ -1,0 +1,37 @@
+{
+  "name": "@trv/sentinel-security-protocol",
+  "version": "0.1.0",
+  "description": "Native Mixture-of-Experts backbone for systemwide network security – The Remote Viewer",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "smoke": "tsx src/__tests__/moe.smoke.ts && tsx src/__tests__/auto-update.smoke.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "security",
+    "moe",
+    "mixture-of-experts",
+    "native",
+    "zero-trust"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}
