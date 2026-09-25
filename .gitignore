@@ -153,6 +153,13 @@ Thumbs.db
 __pycache__/
 agave
 apps
+!apps/
+!apps/web/
+!apps/web/**
+!apps/mobile/
+!apps/mobile/**
+!apps/shared/
+!apps/shared/**
 branding
 build/
 ci
