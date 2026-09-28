@@ -2,6 +2,10 @@
 
 export const USD_TO_TRV = 10;
 
+/** Human comms unlock — VALUE.md / issue #67. Do not quote $96. */
+export const HUMAN_COMMS_MONTH_USD = 10;
+export const HUMAN_COMMS_YEAR_USD = 50;
+
 export type Edition = "people" | "company";
 export type BillingInterval = "month" | "year";
 
@@ -37,12 +41,13 @@ export const PEOPLE_PLANS: SaasPlan[] = [
     id: "verified",
     edition: "people",
     name: "Verified",
-    tagline: "Paid access after handshake. Outside Viewers try it for 2 days, self-serve.",
-    usdMonth: 9,
+    tagline: "Unlimited human comms after handshake. $10/mo or $50/year.",
+    usdMonth: HUMAN_COMMS_MONTH_USD,
     seats: 1,
     feeRate: 0.05,
     features: [
       "Everything in Initiate",
+      "Unlimited human comms",
       "Gateway methods (handshake still required)",
       "QR profile share",
       "48-hour outside trial (once)",
@@ -53,14 +58,14 @@ export const PEOPLE_PLANS: SaasPlan[] = [
     id: "node",
     edition: "people",
     name: "Remote Node",
-    tagline: "Localized galaxy. Reduced fee. Sentinel learns faster.",
-    usdMonth: 29,
+    tagline: "Active node unlocks comms with no $10/$50 sub.",
+    usdMonth: 0,
     seats: 1,
     feeRate: 0.03,
     features: [
       "Everything in Verified",
+      "Comms via active node — no duplicate sub",
       "God's-eye mesh + R&D",
-      "Live camera / mic duration you choose",
       "3% native mint fee",
     ],
   },
@@ -118,7 +123,7 @@ export const COMPANY_PLANS: SaasPlan[] = [
     id: "sovereign",
     edition: "company",
     name: "Sovereign",
-    tagline: "Air-gapped contract. Unlimited seats. 0% mint. We The People terms, company scale.",
+    tagline: "Air-gapped contract. Company grant scale — not the $50 human SKU.",
     usdMonth: 2400,
     seats: 100,
     feeRate: 0,
@@ -141,11 +146,12 @@ export function planById(id: string | null | undefined): SaasPlan {
 }
 
 export function usdToCredits(usd: number, interval: BillingInterval = "month"): number {
-  const months = interval === "year" ? 10 : 1;
-  return Math.round(usd * months * USD_TO_TRV);
+  const bill = interval === "year" && usd === HUMAN_COMMS_MONTH_USD ? HUMAN_COMMS_YEAR_USD : interval === "year" ? usd * 10 : usd;
+  return Math.round(bill * USD_TO_TRV);
 }
 
 export function planPriceUsd(plan: SaasPlan, interval: BillingInterval): number {
+  if (interval === "year" && plan.id === "verified") return HUMAN_COMMS_YEAR_USD;
   return interval === "year" ? plan.usdMonth * 10 : plan.usdMonth;
 }
 
@@ -153,7 +159,6 @@ export function planFeeRate(planId: string): number {
   return planById(planId).feeRate;
 }
 
-/** SaaS plan can only *lower* the fee. Game rank never raises it above a paid plan. Citizen lock knocks 2 points off remaining fees. */
 export function effectiveFeeRate(planId: string, gameTier: string, citizen = false): number {
   const fromPlan = planFeeRate(planId);
   const fromGame =
