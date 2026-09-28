@@ -8,6 +8,8 @@ export type ShopItem = {
   tag: string;
 };
 
+export const HOLO_CHROME_ID = "chrome-holographic";
+
 /** Native TRV shop — TRV credits only. Convert USD-backed funds in Billing first. */
 export const SHOP_ITEMS: ShopItem[] = [
   { id: "frame-abyss", slot: "frame", name: "Abyss ring", price: 80, tag: "Deep rim on the public node" },
@@ -19,8 +21,19 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: "chrome-stone", slot: "chrome", name: "Stone chrome", price: 90, tag: "Quiet profile surface" },
   { id: "chrome-knight", slot: "chrome", name: "Knight chrome", price: 180, tag: "Armor grain on the card" },
   { id: "chrome-mesh", slot: "chrome", name: "Mesh chrome", price: 240, tag: "Globe-wire overlay" },
+  {
+    id: HOLO_CHROME_ID,
+    slot: "chrome",
+    name: "Holographic UI",
+    price: 420,
+    tag: "Extra-cost prism skin on every Hub station. Equip to turn it on.",
+  },
 ];
 
 export function shopById(id: string): ShopItem | undefined {
   return SHOP_ITEMS.find((i) => i.id === id);
+}
+
+export function holographicEquipped(shopChrome: string | null | undefined): boolean {
+  return shopChrome === HOLO_CHROME_ID;
 }
