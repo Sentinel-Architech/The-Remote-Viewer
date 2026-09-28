@@ -9,16 +9,32 @@ import { useState } from "react";
 import { useNativeIdentity } from "@/providers/NativeIdentityProvider";
 
 export function CitizenRegistration() {
-  const { identity, registerCitizen, clearIdentity, isReady } = useNativeIdentity();
+  const { identity, registerCitizen, signLocalMessage, clearIdentity, isReady } =
+    useNativeIdentity();
   const [handle, setHandle] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [proof, setProof] = useState<string | null>(null);
 
   if (!isReady) {
     return <div className="text-sm text-muted-foreground">Loading native identity…</div>;
   }
 
   if (identity.isRegistered) {
+    const onProve = async () => {
+      setError(null);
+      setBusy(true);
+      try {
+        const payload = `trv.native.prove:${identity.handle}:${Date.now()}`;
+        const sig = await signLocalMessage(payload);
+        setProof(sig);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Sign failed");
+      } finally {
+        setBusy(false);
+      }
+    };
+
     return (
       <div className="rounded border border-border bg-card p-4">
         <div className="mb-2 text-sm font-medium">Citizen Registered</div>
@@ -26,21 +42,44 @@ export function CitizenRegistration() {
           <div>
             Handle: <span className="text-foreground">{identity.handle}</span>
           </div>
-          <div className="truncate">Ed25519: {identity.ed25519PublicKey?.slice(0, 24)}…</div>
+          <div className="truncate">
+            Public: {identity.ed25519PublicKey?.slice(0, 24)}…
+          </div>
           <div className="text-xs">
-            Registered{" "}
+            Signing:{" "}
+            <span className="text-foreground">{identity.signing ?? "unknown"}</span>
+            {" · "}
             {identity.lastVerifiedAt
               ? new Date(identity.lastVerifiedAt).toLocaleString()
               : "—"}
           </div>
         </div>
-        <button
-          type="button"
-          onClick={() => clearIdentity()}
-          className="mt-3 text-xs text-muted-foreground hover:text-foreground"
-        >
-          Clear local identity
-        </button>
+        {proof ? (
+          <p className="mt-3 break-all font-mono text-[11px] text-muted-foreground">
+            {identity.signing === "ed25519" ? "ed25519 sig" : "local-id mark"}: {proof}
+          </p>
+        ) : null}
+        {error ? <div className="mt-2 text-xs text-destructive">{error}</div> : null}
+        <div className="mt-3 flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => void onProve()}
+            disabled={busy}
+            className="rounded bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50"
+          >
+            {busy ? "Signing…" : "Prove local signature"}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setProof(null);
+              void clearIdentity();
+            }}
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            Clear local identity
+          </button>
+        </div>
       </div>
     );
   }
@@ -48,6 +87,7 @@ export function CitizenRegistration() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setProof(null);
     if (!handle.trim()) {
       setError("Handle required");
       return;
@@ -82,7 +122,7 @@ export function CitizenRegistration() {
         {busy ? "Generating key…" : "Register on-device"}
       </button>
       <p className="mt-2 text-xs text-muted-foreground">
-        Keys stay on-device. No chain required. Fully sovereign.
+        Keys stay on-device. No chain required. Source is public. Fully sovereign.
       </p>
     </form>
   );
