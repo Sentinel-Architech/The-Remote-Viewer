@@ -38,7 +38,7 @@ export function NativeDashboard({
       />
 
       <p className="text-center text-xs text-muted-foreground">
-        Individual sovereignty · Enhanced when connected · Ultimate protection via native MoE
+        On-device identity · Open source · No chain required · MoE protection stays local
       </p>
     </div>
   );
