@@ -1,12 +1,11 @@
 "use client";
 
 /**
- * NativeIdentityProvider – 100% native stack
+ * NativeIdentityProvider – 100% native stack. Zero back doors.
  *
- * Primary identity path for The Remote Viewer Hub.
- * Prefers Web Crypto Ed25519 with a non-extractable private key in IndexedDB.
- * Falls back to a local identifier when the runtime does not expose Ed25519.
- * Optical-air-gap compatible. Solana never required.
+ * No master key. No Architect override. No remote recovery.
+ * Private key is non-extractable IndexedDB CryptoKey when Ed25519 exists.
+ * Only public metadata is written to localStorage.
  */
 
 import React, {
@@ -17,6 +16,7 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
+import { assertNonExtractablePrivate, publicIdentityOnly } from "@/lib/native-custody";
 
 export interface NativeIdentity {
   handle: string | null;
@@ -57,10 +57,10 @@ function loadStoredIdentity(): NativeIdentity {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return emptyIdentity();
     const parsed = JSON.parse(raw) as NativeIdentity;
-    return {
+    return publicIdentityOnly({
       ...emptyIdentity(),
       ...parsed,
-    };
+    }) as NativeIdentity;
   } catch {
     return emptyIdentity();
   }
@@ -87,6 +87,7 @@ function openKeyDb(): Promise<IDBDatabase> {
 }
 
 async function idbPut(value: CryptoKeyPair): Promise<void> {
+  assertNonExtractablePrivate(value);
   const db = await openKeyDb();
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction(IDB_STORE, "readwrite");
@@ -134,6 +135,7 @@ async function generateEd25519Pair(): Promise<{
       false,
       ["sign", "verify"]
     )) as CryptoKeyPair;
+    assertNonExtractablePrivate(pair);
     const rawPub = await crypto.subtle.exportKey("raw", pair.publicKey);
     return { pair, publicKeyB64: bytesToB64(new Uint8Array(rawPub)) };
   } catch {
@@ -157,9 +159,10 @@ export function NativeIdentityProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const persist = useCallback((next: NativeIdentity) => {
-    setIdentity(next);
+    const publicOnly = publicIdentityOnly({ ...next }) as NativeIdentity;
+    setIdentity(publicOnly);
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(publicOnly));
     }
   }, []);
 
@@ -202,13 +205,15 @@ export function NativeIdentityProvider({ children }: { children: ReactNode }) {
       if (identity.signing === "ed25519") {
         const pair = await idbGet();
         if (pair?.privateKey) {
+          if (pair.privateKey.extractable) {
+            throw new Error("Refusing to sign with an extractable key");
+          }
           const data = new TextEncoder().encode(message);
           const sig = await crypto.subtle.sign({ name: "Ed25519" }, pair.privateKey, data);
           return bytesToB64(new Uint8Array(sig));
         }
       }
 
-      // Honest fallback: not a cryptographic signature.
       return `local-id:${identity.ed25519PublicKey}:${bytesToB64(new TextEncoder().encode(message))}`;
     },
     [identity.isRegistered, identity.signing, identity.ed25519PublicKey]
