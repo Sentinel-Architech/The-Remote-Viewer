@@ -14,11 +14,17 @@ export const FEDERAL_ID_TYPES = [
   { id: "military", label: "US military / CAC" },
 ] as const;
 
-/** @deprecated single-document list — discounts now require both classes */
 export const ID_TYPES = [...STATE_ID_TYPES, ...FEDERAL_ID_TYPES] as const;
 
 export const CITIZEN_SHOP_RATE = 0.85;
 export const CITIZEN_PLAN_RATE = 0.9;
+
+/** Dual-document seal: id_type must be "state_*+federal_*". */
+export function isDualCitizenSeal(idType: string | null | undefined): boolean {
+  if (!idType || !idType.includes("+")) return false;
+  const [statePart, fedPart] = idType.split("+");
+  return Boolean(statePart?.startsWith("state_")) && (fedPart === "us_passport" || fedPart === "military");
+}
 
 export function shopPrice(credits: number, citizen: boolean): number {
   return citizen ? Math.max(1, Math.round(credits * CITIZEN_SHOP_RATE)) : credits;
@@ -46,6 +52,7 @@ export async function citizenHash(parts: {
     throw new Error("Both documents and birth year are required");
   }
   const raw = [
+    "v2",
     parts.stateType,
     parts.state,
     parts.stateLast4.toUpperCase(),
