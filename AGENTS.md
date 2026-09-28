@@ -20,6 +20,9 @@ cd apps/hub && npm install && npm run build  # production
 3. **Ultimate protection** = `sentinel-security-protocol/` (Mixture of Experts).
 4. **Continuous open source** – see `.github/workflows/sentinel-continuous.yml`.
 5. Solana is **optional only**.
+6. **We the People.** This DApp is public infrastructure, not a private control plane.
+7. **Zero back doors** — including for the Architect. No master key, no remote recovery, no operator override of Viewer keys.
+8. **After it is live, the only allowed change is to do better.** Do not add custody, do not add a kill switch over the public, do not quietly take capability away. Fix, harden, and open more — that is the only path.
 
 ## Key Paths
 
@@ -28,6 +31,7 @@ cd apps/hub && npm install && npm run build  # production
 | `apps/hub` | Live product – build and deploy this |
 | `apps/hub/src/routes/hub/native.tsx` | **`/hub/native`** – identity + MoE security UI |
 | `apps/hub/src/lib/native-stack.ts` | **Facade** – identity + security in one import |
+| `apps/hub/src/lib/native-custody.ts` | Zero-custody guards |
 | `apps/hub/src/providers/` | NativeIdentity + optional Solana |
 | `apps/hub/src/components/native-stack/` | UI barrel |
 | `sentinel-security-protocol/` | Systemwide native MoE backbone |
@@ -46,8 +50,9 @@ import { NativeIdentityProvider } from "@/providers";
 
 - Prefer native modules over external SaaS.
 - Keep Hub buildable with zero Solana packages.
-- Preserve individual override in enforcement paths.
+- Preserve individual override in enforcement paths (Viewer over bot — never the reverse).
 - Use `@/` path alias (maps to `apps/hub/src/*`).
+- Do not introduce a privilege that the public cannot audit in this repository.
 
 ## Deploy
 
