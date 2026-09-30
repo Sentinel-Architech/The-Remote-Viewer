@@ -151,9 +151,9 @@ export function faqJsonLd(items: { q: string; a: string }[]) {
 
 export function xmlEscape(value: string): string {
   return value
-    .replaceAll("&", "&")
-    .replaceAll("<", "<")
-    .replaceAll(">", ">")
-    .replaceAll('"', """)
-    .replaceAll("'", "'");
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
 }
