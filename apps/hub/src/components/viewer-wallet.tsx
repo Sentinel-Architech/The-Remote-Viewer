@@ -199,34 +199,6 @@ export function WalletDock() {
   }
 
   return (
-) : (
-            <div className="mt-4 space-y-2">
-              <Button
-                className="w-full"
-                disabled={busy}
-                onClick={() => void unlockWithBiometric()}
-              >
-                Unlock with biometrics
-              </Button>
-              <p className="text-center text-xs text-muted-foreground">or use PIN</p>
-              <Label htmlFor="upin">Unlock PIN</Label>
-              <Input
-                id="upin"
-                type="password"
-                value={pin}
-                onChange={(e) => setPin(e.target.value)}
-                autoComplete="current-password"
-              />
-              <Button
-                className="w-full"
-                variant="secondary"
-                disabled={busy}
-                onClick={() => void unlock()}
-              >
-                Unlock with PIN
-              </Button>
-            </div>
-          )}
     <>
       <div className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] left-3 z-30 hidden md:bottom-auto md:top-1/2 md:block md:-translate-y-1/2">
         <button
