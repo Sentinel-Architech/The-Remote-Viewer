@@ -556,7 +556,7 @@ function WireStrip() {
       <ul className="mt-3 space-y-1 font-mono text-xs text-foreground tabular-nums">
         <li className="flex justify-between gap-2">
           <span>HUB</span>
-          <span className="text-sage">{hub} live</span>
+          <span className="text-sage">{hub > 1 ? `${hub} live` : "glass"}</span>
         </li>
         <li className="flex justify-between gap-2">
           <span>Native</span>
@@ -935,13 +935,15 @@ function HubChip({ onOpen }: { onOpen: () => void }) {
       aria-label={
         linking
           ? `HUB pair code ${formatPin(pin)}. Native stack ${probe.score} of 26.`
-          : `HUB ${live} live. Native stack ${probe.score} of 26. Open vault to link devices.`
+          : live > 1
+            ? `HUB ${live} live. Native stack ${probe.score} of 26. Open vault to link devices.`
+            : `HUB glass. Native stack ${probe.score} of 26. Open vault to link devices.`
       }
       data-hub-chip={live}
       data-native-score={probe.score}
     >
       <p className="font-mono text-xs text-sage tabular-nums">
-        {linking ? `HUB ${formatPin(pin)}` : `HUB · ${live} live`}
+        {linking ? `HUB ${formatPin(pin)}` : live > 1 ? `HUB · ${live} live` : "HUB · glass"}
       </p>
       <p className="font-mono text-xs text-subtle tabular-nums">
         {probe.score === 26 ? "A–Z native" : `native ${probe.score}/26`}
