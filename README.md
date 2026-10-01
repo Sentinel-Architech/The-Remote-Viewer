@@ -4,7 +4,7 @@
 
 | | |
 |--|--|
-| **Starting-tech fund** | [gofund.me/1ffd2c150](https://gofund.me/1ffd2c150) — NEW Framework kit (buy new only; no Apple / Microsoft / Google) |
+| **Starting-tech fund** | https://x.com/TRV_Architech  — NEW Framework kit (buy new only; no Apple / Microsoft / Google) |
 | **Live X** | [@TRV_Architech](https://x.com/TRV_Architech) |
 | **Canon (glass)** | [the-remote-viewer.grok.me](https://the-remote-viewer.grok.me) — glass until payday Build + Re-Publish prove LIVE |
 | **Technology** | TypeScript (TanStack Start) + PostgreSQL + Better Auth + age |
