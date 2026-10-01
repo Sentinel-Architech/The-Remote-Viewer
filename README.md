@@ -1,4 +1,5 @@
 # The Remote Viewer — 100% Native Stack, Open Source
+Bot roster: [BOTS.md](BOTS.md)
 
 **Local-first. Defense-grade. No blockchain required.**
 
