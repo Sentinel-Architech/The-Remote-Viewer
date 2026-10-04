@@ -7,3 +7,4 @@ export { NativeDashboard } from "../NativeDashboard";
 export { CitizenRegistration } from "../CitizenRegistration";
 export { SecurityStatus } from "../SecurityStatus";
 export { ContinuityBadge } from "../ContinuityBadge";
+export { NodeNativeShell } from "../NodeNativeShell";

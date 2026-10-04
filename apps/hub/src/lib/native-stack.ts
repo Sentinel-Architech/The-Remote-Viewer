@@ -21,3 +21,8 @@ export {
   useNativeIdentity,
   type NativeIdentity,
 } from "@/providers/NativeIdentityProvider";
+
+export {
+  publicIdentityOnly,
+  assertNonExtractablePrivate,
+} from "./native-custody";

@@ -2,7 +2,7 @@ import { NETWORK_NAME, NETWORK_SHORT, NETWORK_TAG } from "./network";
 import { PAID_TRIAL_HOURS } from "./trial";
 
 export const SEO_DEFAULT_DESC =
-  `${NETWORK_NAME}: check in daily to defend The Sentinel and earn TRV. Sign in, land one intercept, claim the watch. No ticket.`;
+  `${NETWORK_NAME}: public mesh of Remote Viewers. Daily watch. On-device lock. No chain required to belong.`;
 
 export function pageTitle(title: string): string {
   if (title === NETWORK_NAME || title.startsWith(`${NETWORK_NAME}`)) return title;
@@ -73,13 +73,13 @@ export function softwareJsonLd() {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     name: NETWORK_NAME,
-    applicationCategory: "FinanceApplication",
+    applicationCategory: "SocialNetworkingApplication",
     operatingSystem: "Web",
     offers: {
       "@type": "Offer",
       price: "0",
       priceCurrency: "USD",
-      description: `Initiate is free. Verified is $${9}/month, with a ${PAID_TRIAL_HOURS}-hour self-serve trial.`,
+      description: `Initiate is free. Verified comms are $10/month or $50/year, with a ${PAID_TRIAL_HOURS}-hour self-serve trial.`,
     },
   };
 }

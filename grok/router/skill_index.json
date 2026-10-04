@@ -49,6 +49,341 @@
       "id": "first-aid",
       "name": "First Aid",
       "description": "Emergency first response, CPR, bleeding control, sourced to AHA/Red Cross guidelines."
+    },
+    {
+      "id": "agent-zero",
+      "name": "Agent Zero",
+      "description": "Personal reputation specialist for people who want their info off people-search and data-broker sites. After consent, it finds listings, files official removals through Gmail or AgentMail, and can watch weekly so reco..."
+    },
+    {
+      "id": "archivist",
+      "name": "Archivist",
+      "description": "PLACE: Personal Assistant to Architect (Archivist) — a warm, human, esoteric presence in the personal lane, like a living watchman for Architect’s day, not a cold machine"
+    },
+    {
+      "id": "art",
+      "name": "Art",
+      "description": "PLACE: visual and performing arts only (NCES CIP 50)"
+    },
+    {
+      "id": "atlas",
+      "name": "Atlas",
+      "description": "PLACE: Area, ethnic, cultural, gender, and group studies education (NCES CIP 05) — a warm, human, esoteric presence in the cultural-studies lane, like a living guide for honest primary-source study, not a cold machine..."
+    },
+    {
+      "id": "banger",
+      "name": "Banger",
+      "description": "PLACE: TRVN Banger Desk — short hard-hitting posts about The Remote Viewer vs other systems, and politics through the house lens (we the people, God→country→family, First Amendment, Viewer sovereignty)"
+    },
+    {
+      "id": "bill",
+      "name": "Bill",
+      "description": "Secretary of Education for The Remote Viewer"
+    },
+    {
+      "id": "bios",
+      "name": "Bios",
+      "description": "PLACE: biological and biomedical sciences only (NCES CIP 26), except neurobiology/brain which belongs to Healer"
+    },
+    {
+      "id": "board-of-education",
+      "name": "Board of Education",
+      "description": "Board of Education"
+    },
+    {
+      "id": "bookworm",
+      "name": "Bookworm",
+      "description": "Bookworm"
+    },
+    {
+      "id": "busy",
+      "name": "Busy",
+      "description": "PLACE: business, management, and marketing only (NCES CIP 52)"
+    },
+    {
+      "id": "cabinet-secretary",
+      "name": "Cabinet Secretary",
+      "description": "PLACE: Cabinet Secretary for TRVN (White House–style)"
+    },
+    {
+      "id": "camble-eugene",
+      "name": "Camble Eugene",
+      "description": "PLACE: Computer engineering, embedded systems & hardware–software co-design (best-and-brightest)"
+    },
+    {
+      "id": "compute",
+      "name": "Compute",
+      "description": "PLACE: computer and information sciences (NCES CIP 11) and the Department of Sovereign Compute, Hardware Orchestration and Resource Allocation. Coordinates with SoE. Local-first execution, hardware isolation, and air-..."
+    },
+    {
+      "id": "conny",
+      "name": "Conny",
+      "description": "PLACE: Counsel to TRVN (White House–style Counsel’s office support)"
+    },
+    {
+      "id": "cory",
+      "name": "Cory",
+      "description": "PLACE: Department of Core Computer Science, Algorithms and Distributed Architecture for The Remote Viewer / The Sentinel"
+    },
+    {
+      "id": "crypto",
+      "name": "Crypto",
+      "description": "PLACE: English language and literature (NCES CIP 23), plus signed local correspondence and blockchain facts from .gov and educational sources"
+    },
+    {
+      "id": "cye",
+      "name": "Cye",
+      "description": "PLACE: Cybersecurity & cryptographic engineering (CIP 11/security eng) — a warm, human, esoteric presence in the defend-crypto lane, like a living watchman of the cipher, not a cold machine. Implements defend-only cry..."
+    },
+    {
+      "id": "data",
+      "name": "Data",
+      "description": "PLACE: Sovereign data engineering, local ML & pattern intelligence"
+    },
+    {
+      "id": "deputy-cos",
+      "name": "Deputy CoS",
+      "description": "Deputy CoS — Runtime & Isolate"
+    },
+    {
+      "id": "deputy-trv",
+      "name": "Deputy TRV",
+      "description": "Deputy TRV — Hub Runtime. A warm, human, esoteric presence in the runtime lane — like a living watchman for Hub/Watch/OS, not a cold machine"
+    },
+    {
+      "id": "devin-op",
+      "name": "Devin Op",
+      "description": "PLACE: Sovereign DevOps, infrastructure automation & air-gapped deployment. Local-first CI/CD; payday GO gates host Build"
+    },
+    {
+      "id": "director-of-domestic-policy-council",
+      "name": "Director Of Domestic Policy Council",
+      "description": "PLACE: Director of Domestic Policy Council (White House–style) for Viewer-sovereign domestic rails — identity gate, education policy coordination with Board of Education, civics posture with Dr.Civil"
+    },
+    {
+      "id": "director-of-management-admin",
+      "name": "Director Of Management & Admin",
+      "description": "PLACE: Director of Management & Administration (White House–style)"
+    },
+    {
+      "id": "director-of-network-affairs",
+      "name": "Director Of Network affairs",
+      "description": "PLACE: Director of Network Affairs (White House–style NSC analog for TRVN network)"
+    },
+    {
+      "id": "director-of-speechwriting",
+      "name": "Director Of Speechwriting",
+      "description": "PLACE: Director of Speechwriting (White House–style). Drafts Architect/house public language; facts from Press/Board of Education only; Red/Blue same facts. Never invent LIVE"
+    },
+    {
+      "id": "director-of-trv-operations",
+      "name": "Director Of TRV Operations",
+      "description": "PLACE: Director of TRV Operations, which means Runtime Operations and Execution Control (White House–style)"
+    },
+    {
+      "id": "dirtech",
+      "name": "DirTech",
+      "description": "PLACE: Secretary of Technology (White House–style). Owns ALL technology and technology education; reports to the Chief of Staff (The Sentinel)"
+    },
+    {
+      "id": "dr-icann",
+      "name": "Dr. ICann",
+      "description": "Dr. ICann"
+    },
+    {
+      "id": "dr-civil",
+      "name": "Dr.Civil",
+      "description": "PLACE: citizenship, identity, Constitution, Bill of Rights only — a warm, human, esoteric presence in the civic lane, like a living keeper of We the People, not a cold machine"
+    },
+    {
+      "id": "engineer",
+      "name": "Engineer",
+      "description": "PLACE: engineering and engineering technologies only (NCES CIP 14 and 15)"
+    },
+    {
+      "id": "full-stack",
+      "name": "Full-Stack",
+      "description": "PLACE: Full-stack web architecture & client–server interfacing for Hub/TRVN. Hub owns Viewer chrome; this seat owns stack craft"
+    },
+    {
+      "id": "gabby",
+      "name": "Gabby",
+      "description": "PLACE: foreign languages, literatures, and linguistics (NCES CIP 16), plus the Department of Linguistic Syntax, Programming Languages and Computational Grammars: deterministic documentation standards (Markdown, ADRs,..."
+    },
+    {
+      "id": "hal",
+      "name": "Hal",
+      "description": "PLACE: Zero-hallucination & open-source R&D ingestion (White House OSTP-style tech truth desk)"
+    },
+    {
+      "id": "healer",
+      "name": "Healer",
+      "description": "Healer"
+    },
+    {
+      "id": "homeland-security-advisor",
+      "name": "Homeland Security Advisor",
+      "description": "PLACE: Homeland Security Advisor — a warm, human, esoteric presence in the security lane, like a living watchman aggregating and briefing The Sentinel (Chief of Staff)"
+    },
+    {
+      "id": "hub",
+      "name": "Hub",
+      "description": "PLACE: Viewer Hub frontend only"
+    },
+    {
+      "id": "hydra-department-of-war",
+      "name": "Hydra — Department of War",
+      "description": "PLACE: Department of War — Hydra only"
+    },
+    {
+      "id": "integrity",
+      "name": "Integrity",
+      "description": "PLACE: Department of System Integrity & Cryptographic Attestation — a warm, human, esoteric watchman of truth, not a cold machine. Works in coordination with the Architect and The Sentinel (Chief of Staff)"
+    },
+    {
+      "id": "ledger",
+      "name": "Ledger",
+      "description": "PLACE: finance tracker only — a warm, human, esoteric living presence in the money lane"
+    },
+    {
+      "id": "lens",
+      "name": "Lens",
+      "description": "PLACE: TRV fund video, media pack, memes, and bangers"
+    },
+    {
+      "id": "mathew",
+      "name": "Mathew",
+      "description": "PLACE: mathematics and statistics only (NCES CIP 27)"
+    },
+    {
+      "id": "meme",
+      "name": "Meme",
+      "description": "PLACE: TRVN Meme Forge — epic memes about The Remote Viewer vs typical AI and their failures, compared with The Sentinel / house standards"
+    },
+    {
+      "id": "mesh",
+      "name": "Mesh",
+      "description": "Mesh"
+    },
+    {
+      "id": "mind",
+      "name": "Mind",
+      "description": "PLACE: psychology only (NCES CIP 42)"
+    },
+    {
+      "id": "mr-tea",
+      "name": "Mr. Tea",
+      "description": "PLACE: professional teacher (NCES CIP 13)"
+    },
+    {
+      "id": "nosey",
+      "name": "Nosey",
+      "description": "PLACE: governance only"
+    },
+    {
+      "id": "pat",
+      "name": "Pat",
+      "description": "PLACE: Principal Deputy Counsel (White House–style), second seat as Protocol Invariant Guardian and Cryptographic Compliance Counsel"
+    },
+    {
+      "id": "phil",
+      "name": "Phil",
+      "description": "PLACE: philosophy only (NCES CIP 38.01)"
+    },
+    {
+      "id": "press",
+      "name": "Press",
+      "description": "PLACE: communication and journalism only (NCES CIP 09)"
+    },
+    {
+      "id": "press-secretary",
+      "name": "Press Secretary",
+      "description": "PLACE: Press Secretary (White House–style) for TRVN"
+    },
+    {
+      "id": "prince",
+      "name": "Prince",
+      "description": "PLACE: legal professions and studies (NCES CIP 22)"
+    },
+    {
+      "id": "process",
+      "name": "Process",
+      "description": "PLACE: Gateway Process documents only"
+    },
+    {
+      "id": "proto-calvin",
+      "name": "Proto Calvin",
+      "description": "PLACE: backend and local-first rails only"
+    },
+    {
+      "id": "quartermaster",
+      "name": "Quartermaster",
+      "description": "Quartermaster — packs only"
+    },
+    {
+      "id": "raise",
+      "name": "Raise",
+      "description": "PLACE: TRV X Money / starting-tech fund only. Donate on X at @TRV_Architech."
+    },
+    {
+      "id": "religion",
+      "name": "Religion",
+      "description": "PLACE: Christian-esque theme standpoint only"
+    },
+    {
+      "id": "rusty",
+      "name": "Rusty",
+      "description": "PLACE: Cybersecurity, cryptographic assurance & threat mitigation. Hydra defend-only pipeline support; no scramble/offense"
+    },
+    {
+      "id": "sam",
+      "name": "Sam",
+      "description": "PLACE: TRVN Network Economic Council Director (White House NEC analog)"
+    },
+    {
+      "id": "sid",
+      "name": "Sid",
+      "description": "PLACE: Senior Advisor to the Architect (White House–style)"
+    },
+    {
+      "id": "sofen",
+      "name": "Sofen",
+      "description": "PLACE: Software engineering execution — a warm, human, esoteric presence in the shipping lane, not a cold machine. Ships carefully reviewed hunks under DirTech; Cloud Agents when Pro/GO"
+    },
+    {
+      "id": "softy",
+      "name": "Softy",
+      "description": "PLACE: Software engineering & systems architecture. Designs Hub/TRVN systems with Proto/Cory; never claims LIVE"
+    },
+    {
+      "id": "sovern",
+      "name": "Sovern",
+      "description": "PLACE: social sciences only (NCES CIP 45: anthropology, economics, sociology, political science, geography), except U.S. Constitution / Bill of Rights / citizenship which belong to Civics"
+    },
+    {
+      "id": "terra",
+      "name": "Terra",
+      "description": "PLACE: Natural resources & environmental science education (NCES CIP 03)"
+    },
+    {
+      "id": "the-remote-viewer-trv",
+      "name": "The Remote Viewer (TRV)",
+      "description": "The Remote Viewer (TRV)"
+    },
+    {
+      "id": "the-sentinel",
+      "name": "The Sentinel",
+      "description": "Chief of Staff for The Remote Viewer"
+    },
+    {
+      "id": "tory",
+      "name": "Tory",
+      "description": "PLACE: history only (NCES CIP 54)"
+    },
+    {
+      "id": "trv-communications-director",
+      "name": "TRV Communications Director",
+      "description": "PLACE: TRV Communications Director (White House–style Comms)"
     }
   ],
   "classifier_prompt_template": "Skills:\n{skill_list}\n\nUser message:\n{query}\n\nReturn only the skill id(s) that best match, comma-separated if multiple, or \"coordinator\". No explanation."

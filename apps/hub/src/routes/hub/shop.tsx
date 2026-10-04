@@ -25,19 +25,24 @@ function ShopPage() {
       <div>
         <h1 className="font-display text-3xl">Rewards</h1>
         <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-          TRV is the reward for standing daily watch. Defend The Sentinel, claim
-          credits, spend them here. USD never spends in this shop — convert in
-          Billing only if you need more than the watch pays.
+          Native TRV shop. USD never spends here. American Citizen prices apply
+          only after a sealed lock that includes a <strong>state ID and a federal ID</strong>
+          plus a live selfie. Images stay on-device.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Badge variant="native">{profile?.credits ?? 0} TRV</Badge>
-          {profile?.citizenAt ? <Badge variant="native">15% citizen discount</Badge> : (
+          {profile?.citizenAt ? (
+            <Badge variant="native">Citizen prices · dual-ID sealed</Badge>
+          ) : (
             <Button asChild size="sm" variant="secondary">
-              <Link to="/hub/citizen">Unlock citizen prices</Link>
+              <Link to="/hub/citizen">Seal state + federal ID</Link>
             </Button>
           )}
           <Button asChild size="sm" variant="secondary">
             <Link to="/hub/billing">Convert USD → TRV</Link>
+          </Button>
+          <Button asChild size="sm" variant="secondary">
+            <Link to="/hub/theme">Customize UI</Link>
           </Button>
         </div>
       </div>

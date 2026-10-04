@@ -4,15 +4,27 @@ export const US_STATES = [
   "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC",
 ] as const;
 
-export const ID_TYPES = [
+export const STATE_ID_TYPES = [
   { id: "state_dl", label: "State driver's license" },
   { id: "state_id", label: "State ID card" },
+] as const;
+
+export const FEDERAL_ID_TYPES = [
   { id: "us_passport", label: "US passport" },
   { id: "military", label: "US military / CAC" },
 ] as const;
 
+export const ID_TYPES = [...STATE_ID_TYPES, ...FEDERAL_ID_TYPES] as const;
+
 export const CITIZEN_SHOP_RATE = 0.85;
 export const CITIZEN_PLAN_RATE = 0.9;
+
+/** Dual-document seal: id_type must be "state_*+federal_*". */
+export function isDualCitizenSeal(idType: string | null | undefined): boolean {
+  if (!idType || !idType.includes("+")) return false;
+  const [statePart, fedPart] = idType.split("+");
+  return Boolean(statePart?.startsWith("state_")) && (fedPart === "us_passport" || fedPart === "military");
+}
 
 export function shopPrice(credits: number, citizen: boolean): number {
   return citizen ? Math.max(1, Math.round(credits * CITIZEN_SHOP_RATE)) : credits;
@@ -23,12 +35,31 @@ export function planCredits(credits: number, citizen: boolean): number {
 }
 
 export async function citizenHash(parts: {
-  idType: string;
+  stateType: string;
   state: string;
-  last4: string;
+  stateLast4: string;
+  fedType: string;
+  fedLast4: string;
   yob: string;
 }): Promise<string> {
-  const raw = `${parts.idType}|${parts.state}|${parts.last4.toUpperCase()}|${parts.yob}`;
+  if (!parts.stateType.startsWith("state_")) {
+    throw new Error("State driver's license or state ID is required");
+  }
+  if (parts.fedType !== "us_passport" && parts.fedType !== "military") {
+    throw new Error("US passport or military / CAC is required");
+  }
+  if (parts.stateLast4.length < 4 || parts.fedLast4.length < 4 || parts.yob.length !== 4) {
+    throw new Error("Both documents and birth year are required");
+  }
+  const raw = [
+    "v2",
+    parts.stateType,
+    parts.state,
+    parts.stateLast4.toUpperCase(),
+    parts.fedType,
+    parts.fedLast4.toUpperCase(),
+    parts.yob,
+  ].join("|");
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(raw));
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }

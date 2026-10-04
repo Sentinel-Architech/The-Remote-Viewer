@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Cpu, Fingerprint, Lock, Play, Radio, Send, Shield, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useViewer } from "@/components/viewer-context";
+import { NodeNativeShell } from "@/components/NodeNativeShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,7 +31,15 @@ import {
   type NodeIdentity,
 } from "@/lib/trv/node-runtime";
 
-export const Route = createFileRoute("/hub/node")({ component: NodePage });
+export const Route = createFileRoute("/hub/node")({ component: NodeRoute });
+
+function NodeRoute() {
+  return (
+    <NodeNativeShell>
+      <NodePage />
+    </NodeNativeShell>
+  );
+}
 
 type LogKind = "ok" | "warn" | "threat" | "info";
 type LogEntry = { id: number; at: string; kind: LogKind; line: string };
@@ -67,7 +76,7 @@ function NodePage() {
   }
 
   useEffect(() => {
-    push("info", "Unified sovereign node runtime ready · IndexedDB identity · xAI on press · linear zkML twin");
+    push("info", "Sovereign node runtime ready · IndexedDB identity · optional orchestrator · linear zkML twin");
     const off = onNodeChange(() => setIdentity(peekIdentity()));
     void restoreIdentity().then(async (id) => {
       setIdentity(id);
@@ -143,7 +152,7 @@ function NodePage() {
         return;
       }
       setGeneration(res.text);
-      push("ok", `Orchestrator grok-4.5 · ${res.text.length} chars`);
+      push("ok", `Optional generate · ${res.text.length} chars`);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Generate failed";
       push("threat", msg);
@@ -177,7 +186,7 @@ function NodePage() {
     () => [
       { id: "sled", label: "Identity store", on: Boolean(identity), note: "IndexedDB · desktop uses sled" },
       { id: "attestation", label: "Attestation", on: Boolean(receipt?.verified), note: "Ed25519 challenge + nonce" },
-      { id: "ollama", label: "Orchestrator", on: Boolean(generation), note: "hub: grok-4.5 · node: ollama-rs" },
+      { id: "ollama", label: "Orchestrator", on: Boolean(generation), note: "hub generate optional · not custody" },
       { id: "zkml", label: "zkML", on: Boolean(inference), note: MODEL_ID },
     ],
     [identity, receipt, generation, inference],
@@ -193,7 +202,7 @@ function NodePage() {
         <p className="text-[11px] tracking-[0.2em] uppercase text-accent">Sovereign node</p>
         <h1 className="mt-1 font-display text-3xl">Unified runtime</h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          Local-first identity, attestation, model orchestration, verifiable inference.
+          Local-first identity, attestation, optional generate, verifiable inference.
           The seed stays in this browser (IndexedDB). Desktop sled / ollama-rs / tract-onnx
           is the proving twin — not a cloud custody path. Destroy = Restart.
           {live ? " Bound." : ""}
@@ -281,7 +290,7 @@ function NodePage() {
               Model orchestrator
             </CardTitle>
             <CardDescription>
-              Desktop binds ollama-rs at 127.0.0.1:11434. This hub station generates only when you press the button.
+              Desktop binds ollama-rs at 127.0.0.1:11434. Generate is optional and is not key custody.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -304,7 +313,7 @@ function NodePage() {
               {generation ? (
                 <>
                   <p className="mb-2 font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
-                    grok-4.5 · hub fallback
+                    optional hub generate · not custody
                   </p>
                   <p className="whitespace-pre-wrap text-sm leading-relaxed">{generation}</p>
                 </>
