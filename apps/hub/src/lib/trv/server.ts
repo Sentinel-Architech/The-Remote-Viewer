@@ -18,6 +18,7 @@ import { classifyLure, lessonFor } from "./honeypot";
 import { assertImageData, parseLinks, sanitizeHttps } from "./profile";
 import { shopById } from "./shop";
 import { PAID_TRIAL_CREDITS, PAID_TRIAL_PLAN, paidTrialUntilIso } from "./trial";
+import { humanCommsNeedsStripe, shouldExpireVerified } from "./human-comms-checkout";
 import type {
   ForumPost,
   InvoiceRow,
@@ -137,7 +138,20 @@ export async function loadProfile(sql: Awaited<ReturnType<typeof getSql>>, userI
     limit 1
   `;
   if (!rows[0]) return null;
-  return expirePaidTrial(sql, mapProfile(rows[0]));
+  return expireLapsedVerified(sql, await expirePaidTrial(sql, mapProfile(rows[0])));
+}
+
+async function expireLapsedVerified(
+  sql: Awaited<ReturnType<typeof getSql>>,
+  profile: ViewerProfile,
+): Promise<ViewerProfile> {
+  if (!shouldExpireVerified(profile)) return profile;
+  await sql`
+    update viewer_profiles
+    set plan_id = 'initiate', plan_renews_at = null
+    where user_id = ${profile.userId} and plan_id = 'verified'
+  `;
+  return { ...profile, planId: "initiate", planRenewsAt: null };
 }
 
 async function expirePaidTrial(
@@ -1080,6 +1094,9 @@ export const subscribePlan = createServerFn({ method: "POST" })
     const me = await loadProfile(sql, context.userId);
     if (!me) throw new Error("Node missing");
     const usd = planPriceUsd(plan, data.interval);
+    if (humanCommsNeedsStripe(plan.id) && usd > 0) {
+      throw new Error("Verified human comms is granted only after Stripe Checkout and a verified webhook.");
+    }
     const credits = planCredits(usdToCredits(plan.usdMonth, data.interval), Boolean(me.citizenAt));
     if (plan.usdMonth > 0 && me.credits < credits) throw new Error("Insufficient TRV credits");
     if (plan.usdMonth > 0) {

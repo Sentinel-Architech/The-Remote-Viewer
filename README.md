@@ -136,7 +136,7 @@ When a maintainer publishes a signed Android build, the GitHub Release asset is 
 ## Economics (Locked)
 
 **Viewer Hub Subscription:**
-- $10/month or $96/year (20% savings)
+- $10/month or $50/year
 - Organization tier: $1,200/year
 - 80/10/10 revenue split
 - Self-hosted version: Run your own, no licensing fees
