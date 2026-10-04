@@ -14,8 +14,8 @@ No single model or service is trusted. Consensus and specialization provide resi
 ## Design Rules (Non-Negotiable)
 
 1. 100% native stack – TypeScript / Rust / on-device inference only.
-2. Fully operational offline and on air-gapped nodes.
-3. Optical air-gap and Ed25519 identity remain first-class inputs.
+2. Runs in-process with no required cloud call. This package does not create an air gap.
+3. A caller may pass an optical status string. Ed25519 identity remains a local input. This package does not perform an optical transfer.
 4. No mandatory external API, cloud model, or chain.
 5. Systemwide: every node, Command Deck, and Hub instance participates under the same protocol.
 
@@ -23,7 +23,7 @@ No single model or service is trusted. Consensus and specialization provide resi
 
 | Expert | Responsibility | Native Implementation |
 |--------|----------------|-----------------------|
-| IntegrityExpert | Optical air-gap & file integrity | Calls integrity-pulse + local hashes |
+| IntegrityExpert | Scores a supplied optical status | Does not call integrity-pulse and does not open an air gap |
 | IdentityExpert | Ed25519 / citizen registration validity | NativeIdentityProvider + local vault |
 | PostureExpert | Node posture & configuration drift | Local policy evaluation |
 | NetworkExpert | Mesh / traffic anomaly signals | Local event stream analysis |

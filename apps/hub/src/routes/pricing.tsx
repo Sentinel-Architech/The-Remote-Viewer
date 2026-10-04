@@ -4,6 +4,7 @@ import { Building2, Check, Shield, Users } from "lucide-react";
 import { FluidRipple } from "@/components/fluid-ripple";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { isClanPlan } from "@/lib/trv/clan-checkout";
 import { COMPANY_PLANS, PEOPLE_PLANS, USD_TO_TRV, type Edition, type SaasPlan } from "@/lib/trv/saas";
 import { cn } from "@/lib/utils";
 import { pageHead } from "@/lib/trv/seo";
@@ -116,7 +117,7 @@ function PricingPage() {
 
         <p className="mt-8 flex flex-wrap items-center justify-center gap-3 text-xs text-muted-foreground">
           <Shield className="size-3.5" />
-          Verified human comms is $10 a month or $50 a year.
+          Verified human comms is $10 a month or $50 a year. Sentinel, Squad, Command, and Sovereign are paid in TRV.
           <Link to="/covenant" className="text-accent underline-offset-4 hover:underline">
             Read the covenant
           </Link>
@@ -172,7 +173,7 @@ function PlanCard({ plan, featured }: { plan: SaasPlan; featured?: boolean }) {
       ) : (
         <Button asChild className="mt-5 w-full" variant={featured ? "default" : "secondary"}>
           <Link to="/hub/billing" search={{ plan: plan.id, edition: plan.edition }}>
-            {plan.usdMonth === 0 ? "Start free" : "Subscribe"}
+            {plan.usdMonth === 0 ? "Start free" : isClanPlan(plan.id) ? "Pay in TRV" : "Subscribe"}
           </Link>
         </Button>
       )}

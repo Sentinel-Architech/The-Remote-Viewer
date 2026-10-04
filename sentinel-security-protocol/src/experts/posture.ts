@@ -24,7 +24,7 @@ export const postureExpert: Expert = {
     const optical = (input.opticalStatus || "").toLowerCase();
     if (optical === "verified" || optical === "secure") {
       score += 0.1;
-      reasons.push("Optical air-gap contributes positively to posture");
+      reasons.push("Caller-supplied optical status is present. This is not an air-gap check.");
     } else if (optical === "failed" || optical === "critical") {
       score -= 0.25;
       reasons.push("Optical failure degrades posture");

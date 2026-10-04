@@ -22,7 +22,7 @@ export const FREE_SECURITY =
   "Free: this device's own lock (screen lock, biometric, or keystore) plus the bare TRV layer. That does not require a purchase.";
 
 export const PAID_SECURITY =
-  "Paid, existing tiers only: Verified human comms is $10/month or $50/year on the Stripe card. Clan tiers are digital TRV, in person: Sentinel 790, Squad 1490, Command 4900, Sovereign 24000. No new price.";
+  "Paid, existing tiers only: Verified human comms is $10/month or $50/year on the Stripe card. Clan tiers settle on signed native TRV: Sentinel 790, Squad 1490, Command 4900, Sovereign 24000. The on-device wallet and the on-device node both sign. No new price.";
 
 /** In-app simulation reward. Not money, not crypto, not cash, not an SPL mint, not on Solana. */
 export const IN_APP_TOKEN_NAME = "TRV Token🍃";
@@ -236,7 +236,7 @@ export function subscribedReward(planId: string): SubscribedReward {
 export function publicPriceLine(planId: string, usdMonth: number): string {
   if (planId === "verified") return "$10/month or $50/year";
   const clan = clanTrvAmount(planId);
-  if (clan != null) return `${clan} TRV · in person`;
+  if (clan != null) return `${clan} TRV · signed native`;
   if (usdMonth === 0) return "Free";
   return "Free";
 }

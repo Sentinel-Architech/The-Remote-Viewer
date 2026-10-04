@@ -40,8 +40,8 @@ import {
 test("clan TRV amounts stay the published figures", () => {
   assert.deepEqual(CLAN_TRV, { sentinel: 790, squad: 1490, command: 4900, sovereign: 24000 });
   assert.equal(publicPriceLine("verified", 10), "$10/month or $50/year");
-  assert.equal(publicPriceLine("sentinel", 79), "790 TRV · in person");
-  assert.equal(publicPriceLine("sovereign", 2400), "24000 TRV · in person");
+  assert.equal(publicPriceLine("sentinel", 79), "790 TRV · signed native");
+  assert.equal(publicPriceLine("sovereign", 2400), "24000 TRV · signed native");
   assert.equal(publicPriceLine("initiate", 0), "Free");
 });
 

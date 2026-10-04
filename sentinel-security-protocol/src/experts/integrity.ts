@@ -2,9 +2,8 @@ import type { Expert, ExpertInput, ExpertOutput } from "../types.js";
 
 /**
  * IntegrityExpert
- * Evaluates optical air-gap status and local integrity signals.
- * Highest-trust path remains the native optical air-gap.
- * Fully offline-capable.
+ * Scores a caller-supplied optical status string.
+ * This function does not open an optical channel, call integrity-pulse, or create an air gap.
  */
 export const integrityExpert: Expert = {
   name: "integrity",
@@ -17,10 +16,10 @@ export const integrityExpert: Expert = {
 
     if (status === "verified" || status === "secure" || status === "passed") {
       score = 0.96;
-      reasons.push("Optical air-gap verification passed – highest trust path");
+      reasons.push("Caller supplied a passing optical status. This expert did not open an air gap.");
     } else if (status === "failed" || status === "critical" || status === "compromised") {
       score = 0.12;
-      reasons.push("Optical air-gap verification failed – integrity critical");
+      reasons.push("Caller supplied a failed optical status. This expert did not open an air gap.");
     } else if (status === "pending" || status === "running") {
       score = 0.55;
       reasons.push("Optical verification in progress");
@@ -38,7 +37,7 @@ export const integrityExpert: Expert = {
       reasons,
       evidence: {
         opticalStatus: input.opticalStatus ?? null,
-        trustPath: "native-optical-airgap",
+        airGap: false,
       },
       timestamp: new Date().toISOString(),
     };
