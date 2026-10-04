@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Cpu, Globe, IdCard, Landmark, MessageSquare, Palette, QrCode, ScrollText, Shield, ShieldAlert } from "lucide-react";
 import { setFederated } from "@/lib/trv/sentinel-ai";
+import { ViewerUiSettings } from "@/components/viewer-ui-settings";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/hub/settings")({ component: SettingsPage });
@@ -24,6 +25,14 @@ function SettingsPage() {
           here phones home a corporate identity unless you chose a bridge.
         </p>
       </div>
+
+      <ViewerUiSettings
+        planId={profile?.planId ?? "initiate"}
+        saved={profile?.uiTheme}
+        onSaved={(raw) => {
+          if (profile) setProfile({ ...profile, uiTheme: raw });
+        }}
+      />
 
       <section className="rounded-[var(--radius-xl)] border border-border bg-card p-5">
         <h2 className="font-display text-xl">Identity lock</h2>

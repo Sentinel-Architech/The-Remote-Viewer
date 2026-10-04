@@ -20,6 +20,8 @@ import { shopById } from "./shop";
 import { PAID_TRIAL_CREDITS, PAID_TRIAL_PLAN, paidTrialUntilIso } from "./trial";
 import { humanCommsNeedsStripe, shouldExpireVerified } from "./human-comms-checkout";
 import { assertNativeTrvDebit } from "./viewer-locks";
+import { clampThemeToPlan } from "./grok-ui";
+import { parseTheme } from "./themes";
 import type {
   ForumPost,
   InvoiceRow,
@@ -572,7 +574,10 @@ export const saveUiTheme = createServerFn({ method: "POST" })
   .validator((raw: string) => raw.slice(0, 2000))
   .handler(async ({ context, data: raw }) => {
     const sql = await getSql();
-    await sql`update viewer_profiles set ui_theme = ${raw} where user_id = ${context.userId}`;
+    const me = await loadProfile(sql, context.userId);
+    if (!me) throw new Error("Node missing");
+    const clamped = JSON.stringify(clampThemeToPlan(parseTheme(raw), me.planId));
+    await sql`update viewer_profiles set ui_theme = ${clamped} where user_id = ${context.userId}`;
     return loadProfile(sql, context.userId);
   });
 

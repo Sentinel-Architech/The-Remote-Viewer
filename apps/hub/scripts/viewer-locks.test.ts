@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { customizationRank, grokUiControls, UI_EXPERT, assertGrokExpert, clampThemeToPlan } from "../src/lib/trv/grok-ui.ts";
+import { DEFAULT_THEME } from "../src/lib/trv/themes.ts";
 import {
   CLAN_TRV,
   acceptanceCopy,
@@ -150,6 +152,31 @@ test("outside purchase rails stay, and TRV debits stay on the hub", () => {
   assert.throws(() => assertNativeTrvDebit({ signature: "ada", handle: "ada", rail: "phantom" }));
   assert.throws(() => assertNativeTrvDebit({ signature: "ada", handle: "ada", rail: "x-money" }));
   assert.throws(() => assertNativeTrvDebit({ signature: "ada", handle: "ada", rail: "google" }));
+});
+
+test("Grok opens more UI controls as the paid tier rises", () => {
+  assert.equal(UI_EXPERT, "Grok");
+  assert.doesNotThrow(() => assertGrokExpert("Grok"));
+  assert.throws(() => assertGrokExpert("gemini"));
+  assert.throws(() => assertGrokExpert("google"));
+  const free = grokUiControls("initiate");
+  const verified = grokUiControls("verified");
+  const sentinel = grokUiControls("sentinel");
+  const squad = grokUiControls("squad");
+  const command = grokUiControls("command");
+  const sovereign = grokUiControls("sovereign");
+  assert.deepEqual(free, ["preset", "accent", "radius", "density"]);
+  assert.equal(customizationRank("node"), 0);
+  assert.ok(verified.length > free.length);
+  assert.ok(sentinel.length > verified.length);
+  assert.ok(squad.length > sentinel.length);
+  assert.ok(command.length > squad.length);
+  assert.ok(sovereign.length > command.length);
+  assert.equal(grokUiControls("verified").includes("exclusive"), false);
+  const clamped = clampThemeToPlan({ ...DEFAULT_THEME, typeScale: 110, exclusiveLook: "prism", crest: true }, "initiate");
+  assert.equal(clamped.typeScale, undefined);
+  assert.equal(clamped.exclusiveLook, null);
+  assert.equal(clamped.crest, false);
 });
 
 test("rough interests come from what the viewer already wrote", () => {
