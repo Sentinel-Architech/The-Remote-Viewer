@@ -1,6 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { customizationRank, grokUiControls, UI_EXPERT, assertGrokExpert, clampThemeToPlan } from "../src/lib/trv/grok-ui.ts";
+import {
+  customizationRank,
+  uiControls,
+  UI_MODEL_NAME,
+  MIMO_LICENSE,
+  MIMO_WEIGHTS_REPO,
+  XIAOMI_PAID,
+  assertClosedModelRefused,
+  assertMimoLocal,
+  resolveUiExpert,
+  clampThemeToPlan,
+} from "../src/lib/trv/ui-experts.ts";
 import { DEFAULT_THEME } from "../src/lib/trv/themes.ts";
 import {
   CLAN_TRV,
@@ -154,17 +165,35 @@ test("outside purchase rails stay, and TRV debits stay on the hub", () => {
   assert.throws(() => assertNativeTrvDebit({ signature: "ada", handle: "ada", rail: "google" }));
 });
 
-test("Grok opens more UI controls as the paid tier rises", () => {
-  assert.equal(UI_EXPERT, "Grok");
-  assert.doesNotThrow(() => assertGrokExpert("Grok"));
-  assert.throws(() => assertGrokExpert("gemini"));
-  assert.throws(() => assertGrokExpert("google"));
-  const free = grokUiControls("initiate");
-  const verified = grokUiControls("verified");
-  const sentinel = grokUiControls("sentinel");
-  const squad = grokUiControls("squad");
-  const command = grokUiControls("command");
-  const sovereign = grokUiControls("sovereign");
+test("MiMo-V2.6-Pro is the local MIT copy and opens more controls as the paid tier rises", () => {
+  assert.equal(UI_MODEL_NAME, "MiMo-V2.6-Pro");
+  assert.equal(MIMO_WEIGHTS_REPO, "XiaomiMiMo/MiMo-V2.6-Pro-RL");
+  assert.equal(MIMO_LICENSE, "MIT");
+  assert.equal(XIAOMI_PAID, false);
+  assert.doesNotThrow(() => assertClosedModelRefused("MiMo-V2.6-Pro"));
+  assert.throws(() => assertClosedModelRefused("Grok"), /closed model/);
+  assert.throws(() => assertClosedModelRefused("gemini"), /closed model/);
+  assert.doesNotThrow(() => assertMimoLocal("/var/trv/mimo"));
+  assert.throws(() => assertMimoLocal("https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Pro-RL"), /TRV-owned copy/);
+  assert.throws(() => assertMimoLocal("https://api.xiaomi.com/infer"), /TRV-owned copy/);
+  const local = resolveUiExpert([]);
+  assert.equal(local.trvModel, "MiMo-V2.6-Pro");
+  assert.equal(local.paidModel, null);
+  assert.equal(local.xiaomiPaid, false);
+  assert.equal(local.sendsViewerData, false);
+  const onX = resolveUiExpert(["x"]);
+  assert.equal(onX.paidModel, "Grok");
+  assert.equal(onX.paidModelApp, "x");
+  assert.equal(onX.trvModel, "MiMo-V2.6-Pro");
+  assert.equal(onX.sendsViewerData, false);
+  assert.equal(resolveUiExpert(["google"]).paidModel, null);
+  assert.equal(resolveUiExpert(["facebook"]).paidModel, null);
+  const free = uiControls("initiate");
+  const verified = uiControls("verified");
+  const sentinel = uiControls("sentinel");
+  const squad = uiControls("squad");
+  const command = uiControls("command");
+  const sovereign = uiControls("sovereign");
   assert.deepEqual(free, ["preset", "accent", "radius", "density"]);
   assert.equal(customizationRank("node"), 0);
   assert.ok(verified.length > free.length);
@@ -172,7 +201,7 @@ test("Grok opens more UI controls as the paid tier rises", () => {
   assert.ok(squad.length > sentinel.length);
   assert.ok(command.length > squad.length);
   assert.ok(sovereign.length > command.length);
-  assert.equal(grokUiControls("verified").includes("exclusive"), false);
+  assert.equal(uiControls("verified").includes("exclusive"), false);
   const clamped = clampThemeToPlan({ ...DEFAULT_THEME, typeScale: 110, exclusiveLook: "prism", crest: true }, "initiate");
   assert.equal(clamped.typeScale, undefined);
   assert.equal(clamped.exclusiveLook, null);

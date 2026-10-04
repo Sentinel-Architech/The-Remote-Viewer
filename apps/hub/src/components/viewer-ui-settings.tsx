@@ -15,11 +15,11 @@ import {
 } from "@/lib/trv/themes";
 import {
   EXCLUSIVE_LOOK_NOTE,
-  UI_EXPERT,
+  UI_EXPERT_RULE,
   clampThemeToPlan,
   exclusiveLookOpen,
-  grokUiControls,
-} from "@/lib/trv/grok-ui";
+  uiControls,
+} from "@/lib/trv/ui-experts";
 import { IN_APP_TOKEN_NAME } from "@/lib/trv/viewer-locks";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
@@ -33,7 +33,7 @@ export function ViewerUiSettings({
   saved: string | null | undefined;
   onSaved: (raw: string) => void;
 }) {
-  const open = new Set(grokUiControls(planId));
+  const open = new Set(uiControls(planId));
   const [theme, setTheme] = useState<ViewerTheme>(() => clampThemeToPlan(parseTheme(saved), planId));
 
   function preview(next: ViewerTheme) {
@@ -47,7 +47,7 @@ export function ViewerUiSettings({
     <section className="rounded-[var(--radius-xl)] border border-border bg-card p-5">
       <h2 className="font-display text-xl">Your UI</h2>
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-        {UI_EXPERT} is the mix of experts for this UI. Free stays the plain settings: field, accent, corners, and density. Higher paid tiers open more through {UI_EXPERT}. No other model is called. No price is added here.
+        {UI_EXPERT_RULE} Free stays the plain settings: field, accent, corners, and density. Higher paid tiers open more. No price is added here.
       </p>
       <div className="mt-4 grid gap-2 sm:grid-cols-5">
         {(Object.keys(THEME_PRESETS) as ThemePresetId[]).map((id) => (
@@ -102,7 +102,7 @@ export function ViewerUiSettings({
           <input id="type" type="range" min={90} max={120} className="mt-3 w-full" value={theme.typeScale ?? 100} onChange={(e) => preview({ ...theme, typeScale: Number(e.target.value) })} />
         </div>
       ) : (
-        <p className="mt-4 text-xs text-muted-foreground">Type scale opens on Verified and above, through {UI_EXPERT}.</p>
+        <p className="mt-4 text-xs text-muted-foreground">Type scale opens on Verified and above.</p>
       )}
       {open.has("motion") ? (
         <div className="mt-4">

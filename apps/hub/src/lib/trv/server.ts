@@ -20,7 +20,7 @@ import { shopById } from "./shop";
 import { PAID_TRIAL_CREDITS, PAID_TRIAL_PLAN, paidTrialUntilIso } from "./trial";
 import { humanCommsNeedsStripe, shouldExpireVerified } from "./human-comms-checkout";
 import { assertNativeTrvDebit } from "./viewer-locks";
-import { clampThemeToPlan } from "./grok-ui";
+import { clampThemeToPlan } from "./ui-experts";
 import { parseTheme } from "./themes";
 import type {
   ForumPost,
