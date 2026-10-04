@@ -1,3 +1,4 @@
+import { DECLASSIFIED_TITLES } from "./declassified-titles";
 import { docsForTier, type GatewayDoc } from "./gateway";
 
 /**
@@ -14,9 +15,11 @@ export type LocalFile = {
 export type LocalHit = {
   id: string;
   title: string;
-  kind: GatewayDoc["kind"] | "local-file";
+  kind: GatewayDoc["kind"] | "local-file" | "title";
   excerpt: string;
   locked: boolean;
+  agency?: string;
+  years?: string;
 };
 
 export type LocalSearchResult = {
@@ -40,10 +43,12 @@ function terms(query: string): { phrase: string | null; words: string[] } {
   return { phrase, words };
 }
 
-function matches(haystack: string, phrase: string | null, words: string[]): boolean {
+function matches(haystack: string, phrase: string | null, words: string[], raw: string): boolean {
   const text = haystack.toLowerCase();
-  if (phrase && !text.includes(phrase)) return false;
-  if (!phrase && words.length === 0) return false;
+  const query = raw.toLowerCase().replace(/\s+/g, " ").trim();
+  if (phrase) return text.includes(phrase) && words.every((word) => text.includes(word));
+  if (/[\d-]/.test(query) && query.length > 2) return text.includes(query);
+  if (words.length === 0) return false;
   return words.every((word) => text.includes(word));
 }
 
@@ -82,13 +87,27 @@ export function localDeclassifiedSearch(input: {
   for (const doc of docsForTier(input.verified)) {
     const locked = doc.kind === "method" && !input.verified;
     const haystack = locked ? `${doc.title}\n${doc.summary}` : `${doc.title}\n${doc.summary}\n${doc.body}`;
-    if (!matches(haystack, phrase, words)) continue;
+    if (!matches(haystack, phrase, words, query)) continue;
     hits.push({
       id: doc.id,
       title: doc.title,
       kind: doc.kind,
       excerpt: locked ? "This method stays sealed. The steps were not opened." : excerpt(doc.body, phrase, words),
       locked,
+    });
+  }
+
+  for (const named of DECLASSIFIED_TITLES) {
+    const line = `${named.agency} ${named.title} ${named.years}`;
+    if (!matches(line, phrase, words, query)) continue;
+    hits.push({
+      id: `${named.agency}:${named.title}`,
+      title: named.title,
+      kind: "title",
+      excerpt: "",
+      locked: false,
+      agency: named.agency,
+      years: named.years,
     });
   }
 
@@ -100,7 +119,7 @@ export function localDeclassifiedSearch(input: {
       continue;
     }
     if (!file.text.trim()) continue;
-    if (!matches(`${name}\n${file.text}`, phrase, words)) continue;
+    if (!matches(`${name}\n${file.text}`, phrase, words, query)) continue;
     hits.push({
       id: name,
       title: name,

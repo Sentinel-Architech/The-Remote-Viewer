@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { DECLASSIFIED_TITLES } from "../src/lib/trv/declassified-titles.ts";
 import { GATEWAY_DOCS } from "../src/lib/trv/gateway.ts";
 import { localDeclassifiedSearch } from "../src/lib/trv/local-search.ts";
 import { tierTokenExtra, quoteConverter } from "../src/lib/trv/rail-convert.ts";
@@ -16,7 +17,10 @@ test("local search stays on the device and uses only existing gateway titles", (
   assert.equal(result.archiveOpened, false);
   assert.equal(result.pdfEngine, "not-included");
   assert.ok(result.hits.some((hit) => hit.title === "Hemi-Sync — what the document claims"));
-  const titles = new Set(GATEWAY_DOCS.map((doc) => doc.title));
+  const titles = new Set([
+    ...GATEWAY_DOCS.map((doc) => doc.title),
+    ...DECLASSIFIED_TITLES.map((doc) => doc.title),
+  ]);
   for (const hit of result.hits) {
     if (hit.kind !== "local-file") assert.equal(titles.has(hit.title), true);
   }
@@ -46,6 +50,24 @@ test("an empty local pdf is not given a title and is not parsed", () => {
   assert.ok(result.hits.some((hit) => hit.title === "notes.txt"));
   assert.equal(result.hits.some((hit) => hit.title === "scan.pdf"), false);
   assert.match(result.reason, /were not read/);
+});
+
+test("named programs are titles only and stay on the device", () => {
+  assert.equal(DECLASSIFIED_TITLES.length, 30);
+  const mk = localDeclassifiedSearch({ query: "MKUltra", verified: false });
+  const hit = mk.hits.find((item) => item.kind === "title");
+  assert.equal(hit?.title, "MKUltra (MKDELTA, MKNAOMI, CHATTER, BLUEBIRD, ARTICHOKE)");
+  assert.equal(hit?.agency, "CIA");
+  assert.equal(hit?.years, "1953–1973");
+  assert.equal(hit?.excerpt, "");
+  const kh9 = localDeclassifiedSearch({ query: "KH-9", verified: false });
+  assert.deepEqual(
+    kh9.hits.filter((item) => item.kind === "title").map((item) => item.title),
+    ["HEXAGON (KH-9, Big Bird)"],
+  );
+  const source = readFileSync(new URL("../src/lib/trv/declassified-titles.ts", import.meta.url), "utf8");
+  assert.equal(/body:|summary:|fetch\(|https?:/i.test(source), false);
+  assert.equal(source.includes("The program"), false);
 });
 
 test("the search module does not call the network", () => {

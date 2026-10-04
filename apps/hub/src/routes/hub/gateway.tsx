@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { DECLASSIFIED_TITLES, type DeclassifiedAgency } from "@/lib/trv/declassified-titles";
 import { GATEWAY_DOCS } from "@/lib/trv/gateway";
 import { localDeclassifiedSearch } from "@/lib/trv/local-search";
 import { useViewer } from "@/components/viewer-context";
@@ -48,8 +49,8 @@ function GatewayPage() {
           Documents and sources are free. Methods — the how of each activity —
           stay sealed until a Viewer passes the robot handshake and leaves
           Initiate. Search runs on this device over the texts already here. It
-          does not send the query off the device, and it does not add a title
-          this install does not already hold.
+          does not send the query off the device. Named programs below are titles
+          only. This install does not store a document body for them.
         </p>
         <label className="mt-4 block text-sm">
           Local search
@@ -66,9 +67,12 @@ function GatewayPage() {
             <ul className="mt-2 space-y-2">
               {found.hits.map((hit) => (
                 <li key={hit.id}>
-                  <span className="text-fg">{hit.title}</span>
+                  <span className="text-fg">
+                    {hit.kind === "title" ? `${hit.agency}: ${hit.title} ${hit.years}` : hit.title}
+                  </span>
                   {hit.locked ? " · sealed" : ""}
-                  <span className="block text-xs">{hit.excerpt}</span>
+                  {hit.kind === "title" ? <span className="block text-xs">Title only.</span> : null}
+                  {hit.excerpt ? <span className="block text-xs">{hit.excerpt}</span> : null}
                 </li>
               ))}
             </ul>
@@ -122,6 +126,23 @@ function GatewayPage() {
           )}
         </div>
       )}
+
+      <section className="rounded-[var(--radius-xl)] border border-border bg-card p-5">
+        <h2 className="font-display text-xl">Declassified programs</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Titles only. No document body is stored. Search stays on this device.</p>
+        {(["CIA", "NSA", "FBI", "NRO", "DIA and DOD"] as DeclassifiedAgency[]).map((agency) => (
+          <div key={agency} className="mt-4">
+            <h3 className="text-sm font-medium">{agency}</h3>
+            <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
+              {DECLASSIFIED_TITLES.filter((item) => item.agency === agency).map((item) => (
+                <li key={item.title}>
+                  {item.title} {item.years}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </section>
 
       <div className="grid gap-3 sm:grid-cols-2">
         {docs.map((d) => {
