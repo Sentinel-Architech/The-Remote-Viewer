@@ -37,6 +37,18 @@ patterns = [
 ]
 skill = "mathematics"
 
+[priority.declassified_ops]
+# Architect intake 2026-10-04. Historical catalog only. Not a product claim.
+patterns = [
+  "mkultra", "mk-ultra", "corona satellite", "project corona", "oxcart",
+  "project azorian", "glomar", "stargate project", "grill flame", "sun streak",
+  "remote viewing program", "venona", "minaret", "shamrock", "cointelpro",
+  "operation solo", "ghost stories", "gambit", "hexagon", "kh-9", "thinthread",
+  "trailblazer", "xkeyscore", "paperclip", "project iceworm", "project horizon",
+  "aatip", "aawsap", "declassified operations", "declassified index"
+]
+skill = "declassified-ops"
+
 [priority.political]
 patterns = [
   "congress", "statute", "constitution", "incentive", "legislation",

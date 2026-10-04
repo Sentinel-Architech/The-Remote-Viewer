@@ -11,6 +11,11 @@
       "description": "Project identity, zero-trust posture, local-first rules, Destroy = Restart, optical air-gap."
     },
     {
+      "id": "declassified-ops",
+      "name": "Declassified Operations Index",
+      "description": "Architect-supplied historical catalog of declassified U.S. intelligence programs. Secondary source. Not a TRV product claim. Hal verifies before citation."
+    },
+    {
       "id": "zk",
       "name": "Zero Knowledge",
       "description": "ZK circuits, membership proofs, nullifiers, Circom, Poseidon, local-first proving."
