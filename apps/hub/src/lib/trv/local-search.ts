@@ -1,4 +1,6 @@
 import { DECLASSIFIED_TITLES } from "./declassified-titles";
+import { ELECTION_INDEX } from "./election-index";
+import { EPSTEIN_INDEX } from "./epstein-index";
 import { docsForTier, type GatewayDoc } from "./gateway";
 
 /**
@@ -15,11 +17,13 @@ export type LocalFile = {
 export type LocalHit = {
   id: string;
   title: string;
-  kind: GatewayDoc["kind"] | "local-file" | "title";
+  kind: GatewayDoc["kind"] | "local-file" | "title" | "index";
   excerpt: string;
   locked: boolean;
   agency?: string;
   years?: string;
+  group?: string;
+  indexMark?: "third-party" | "unverified";
 };
 
 export type LocalSearchResult = {
@@ -108,6 +112,34 @@ export function localDeclassifiedSearch(input: {
       locked: false,
       agency: named.agency,
       years: named.years,
+    });
+  }
+
+  for (const named of EPSTEIN_INDEX) {
+    const line = `${named.group} ${named.title}`;
+    if (!matches(line, phrase, words, query)) continue;
+    hits.push({
+      id: `epstein:${named.title}`,
+      title: named.title,
+      kind: "index",
+      excerpt: "",
+      locked: false,
+      group: named.group,
+      indexMark: "third-party",
+    });
+  }
+
+  for (const named of ELECTION_INDEX) {
+    const line = `${named.group} ${named.title}`;
+    if (!matches(line, phrase, words, query)) continue;
+    hits.push({
+      id: `election:${named.title}`,
+      title: named.title,
+      kind: "index",
+      excerpt: "",
+      locked: false,
+      group: named.group,
+      indexMark: "unverified",
     });
   }
 

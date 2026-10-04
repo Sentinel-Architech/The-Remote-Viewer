@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { DECLASSIFIED_TITLES, type DeclassifiedAgency } from "@/lib/trv/declassified-titles";
+import { ELECTION_INDEX, type ElectionIndexGroup } from "@/lib/trv/election-index";
+import { EPSTEIN_INDEX, type EpsteinIndexGroup } from "@/lib/trv/epstein-index";
 import { GATEWAY_DOCS } from "@/lib/trv/gateway";
 import { localDeclassifiedSearch } from "@/lib/trv/local-search";
 import { useViewer } from "@/components/viewer-context";
@@ -13,6 +15,19 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 export const Route = createFileRoute("/hub/gateway")({ component: GatewayPage });
 
 const FLASH = [0, 2, 3, 1];
+
+function indexNote(mark: "third-party" | "unverified"): string {
+  switch (mark) {
+    case "third-party":
+      return "Third-party index. Not verified government text. Title only.";
+    case "unverified":
+      return "Not verified. Title only.";
+    default: {
+      const unseen: never = mark;
+      return unseen;
+    }
+  }
+}
 
 function GatewayPage() {
   const { profile, setProfile } = useViewer();
@@ -68,10 +83,17 @@ function GatewayPage() {
               {found.hits.map((hit) => (
                 <li key={hit.id}>
                   <span className="text-fg">
-                    {hit.kind === "title" ? `${hit.agency}: ${hit.title} ${hit.years}` : hit.title}
+                    {hit.kind === "title"
+                      ? `${hit.agency}: ${hit.title} ${hit.years}`
+                      : hit.kind === "index"
+                        ? `${hit.group}: ${hit.title}`
+                        : hit.title}
                   </span>
                   {hit.locked ? " · sealed" : ""}
                   {hit.kind === "title" ? <span className="block text-xs">Title only.</span> : null}
+                  {hit.kind === "index" && hit.indexMark ? (
+                    <span className="block text-xs">{indexNote(hit.indexMark)}</span>
+                  ) : null}
                   {hit.excerpt ? <span className="block text-xs">{hit.excerpt}</span> : null}
                 </li>
               ))}
@@ -138,6 +160,40 @@ function GatewayPage() {
                 <li key={item.title}>
                   {item.title} {item.years}
                 </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </section>
+
+      <section className="rounded-[var(--radius-xl)] border border-border bg-card p-5">
+        <h2 className="font-display text-xl">Epstein files index</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Third-party index. Not verified government text. Titles only. No document body is stored. Search stays on this device.
+        </p>
+        {(["DOJ data sets", "Media", "Dockets", "Official doors"] as EpsteinIndexGroup[]).map((group) => (
+          <div key={group} className="mt-4">
+            <h3 className="text-sm font-medium">{group}</h3>
+            <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
+              {EPSTEIN_INDEX.filter((item) => item.group === group).map((item) => (
+                <li key={item.title}>{item.title}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </section>
+
+      <section className="rounded-[var(--radius-xl)] border border-border bg-card p-5">
+        <h2 className="font-display text-xl">Election index</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Titles only. Not verified. No document body is stored. Search stays on this device.
+        </p>
+        {(["Election index", "Door"] as ElectionIndexGroup[]).map((group) => (
+          <div key={group} className="mt-4">
+            <h3 className="text-sm font-medium">{group}</h3>
+            <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
+              {ELECTION_INDEX.filter((item) => item.group === group).map((item) => (
+                <li key={item.title}>{item.title}</li>
               ))}
             </ul>
           </div>
