@@ -13,8 +13,11 @@ jobs:
         run: |
           set -euo pipefail
           python3 - << 'PY'
-          import json, os, urllib.parse, urllib.request
-          key = os.environ["STRIPE_SECRET_KEY"]
+          import json, os, urllib.error, urllib.parse, urllib.request
+          key = os.environ.get("STRIPE_SECRET_KEY", "").strip()
+          if not key:
+              print("secret missing")
+              raise SystemExit(1)
           products = [
             ("trv_monthly", "TRV Monthly", "month", "1000", "Unlimited human comms. $10 per month."),
             ("trv_yearly", "TRV Yearly", "year", "5000", "Unlimited human comms. $50 per year."),
@@ -29,27 +32,37 @@ jobs:
               )
               try:
                   with urllib.request.urlopen(req) as res:
-                      return res.status, json.load(res)
+                      raw = res.read().decode()
+                      return res.status, json.loads(raw) if raw else {}
               except urllib.error.HTTPError as err:
-                  return err.code, json.load(err)
-          for pid, name, interval, amount, desc in products:
-              status, payload = call("POST", "/v1/products", {
-                  "id": pid,
-                  "name": name,
-                  "description": desc,
-                  "url": "https://the-remote-viewer.grok.me",
-                  "default_price_data[currency]": "usd",
-                  "default_price_data[unit_amount]": amount,
-                  "default_price_data[recurring][interval]": interval,
-              })
-              if status == 200:
-                  print(payload["id"], payload.get("default_price"))
-                  continue
-              err = payload.get("error", {})
-              if err.get("code") == "resource_already_exists":
-                  status, payload = call("GET", "/v1/products/" + pid)
-                  print(payload.get("id"), payload.get("default_price"), "exists")
-                  continue
-              print(err.get("code"), (err.get("message") or "")[:180])
+                  raw = err.read().decode(errors="replace")
+                  try:
+                      payload = json.loads(raw) if raw else {}
+                  except json.JSONDecodeError:
+                      payload = {"error": {"message": "non-json response", "code": str(err.code)}}
+                  return err.code, payload
+          try:
+              for pid, name, interval, amount, desc in products:
+                  status, payload = call("POST", "/v1/products", {
+                      "id": pid,
+                      "name": name,
+                      "description": desc,
+                      "url": "https://the-remote-viewer.grok.me",
+                      "default_price_data[currency]": "usd",
+                      "default_price_data[unit_amount]": amount,
+                      "default_price_data[recurring][interval]": interval,
+                  })
+                  err = payload.get("error", {}) if isinstance(payload, dict) else {}
+                  if status == 200 and isinstance(payload, dict):
+                      print(payload.get("id"), payload.get("default_price"))
+                      continue
+                  if err.get("code") == "resource_already_exists":
+                      status, payload = call("GET", "/v1/products/" + pid)
+                      print(payload.get("id"), payload.get("default_price"), "exists")
+                      continue
+                  print(status, err.get("code") or "error", (err.get("message") or "no message")[:180])
+                  raise SystemExit(1)
+          except Exception as exc:
+              print(type(exc).__name__)
               raise SystemExit(1)
           PY
