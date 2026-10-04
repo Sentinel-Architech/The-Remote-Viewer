@@ -1,9 +1,39 @@
 # Declassified Operations Index — bot intake
 
 Architect intake. 2026-10-04.
+Free tier on GitHub sees titles only. Read `titles/` filenames. Do not wait for file bodies.
 Source file: `Declassified Intelligence Projects Index.pdf` (5 pages; page 5 blank).
 Status: secondary catalog supplied by the Architect. Not a primary-source release.
 Hal verifies before any seat cites a row as fact. Tory owns the history. Press does not post a row as a house claim without a primary citation.
+
+## Free-tier title list
+
+- 00 Free tier sees titles only — secondary catalog not a primary release
+- 01 CIA MKUltra 1953-1973 behavioral research LSD interrogation
+- 02 CIA Project CORONA 1958-1972 film-return reconnaissance satellite
+- 03 CIA ARGON and LANYARD 1961-1963 KH-5 map KH-6 target
+- 04 CIA Project OXCART 1957-1968 A-12 predecessor of SR-71
+- 05 CIA Project Azorian 1968-1974 Glomar raise of K-129
+- 06 CIA Mockingbird label only c1950-1976 not a confirmed single codename
+- 07 CIA Operation Paperclip 1945-1959 Overcast German specialists
+- 08 CIA Stargate 1978-1995 remote viewing research not TRV product
+- 09 CIA Rainbow and Gusto 1957-1959 stealth precursors confirm pairing
+- 10 NSA Venona 1943-1980 one-time-pad break Soviet espionage
+- 11 NSA MINARET and SHAMROCK 1945-1975 watch list and cable intercept
+- 12 NSA Trailblazer and ThinThread 1998-2006 traffic analysis prototypes
+- 13 NSA XKeyscore disclosure window 2008-2013 not a confirmed end
+- 14 FBI COINTELPRO 1956-1971 domestic disruption later found illegal
+- 15 FBI Operation Solo 1952-1980 Morris Childs CPUSA infiltration
+- 16 FBI Operation Ghost Stories 2000-2010 Russian illegals
+- 17 NRO GAMBIT 1963-1984 KH-7 KH-8 film-return imagery
+- 18 NRO HEXAGON 1971-1986 KH-9 Big Bird wide-area film return
+- 19 NRO Manned Orbiting Laboratory 1963-1969 cancelled KH-10
+- 20 NRO POPPY and PARCAE 1962-1987 ocean electronic intelligence
+- 21 NRO FARRAH and JUMPSEAT 1971-1983 SIGINT confirm pairing
+- 22 DIA Sun Streak Grill Flame 1977-1995 later Stargate
+- 23 DIA AATIP 2007-2012 UAP tasking not an extraterrestrial finding
+- 24 DOD Project Sunshine 1953-1959 strontium-90 tissue study
+- 25 DOD Iceworm and Horizon 1959-1966 Greenland concept lunar study
 
 ## Hard bounds
 
@@ -40,6 +70,7 @@ Hal verifies before any seat cites a row as fact. Tory owns the history. Press d
 
 Agencies covered: CIA, NSA, FBI, NRO, DIA/DOD.
 Fields kept from the source: primary codename, alternate designations, timeline, mission line.
+Full rows remain below for seats that can read file bodies. Free tier uses the title list above.
 
 ### CIA — HUMINT / TECHINT
 
@@ -57,7 +88,7 @@ Fields kept from the source: primary codename, alternate designations, timeline,
 
 - Venona Project (1943–1980). Alt: BRIDE, DRUG, LACE. Decryption of Soviet one-time-pad traffic reused in error. Exposed Soviet espionage networks in North America.
 - Project MINARET and Project SHAMROCK (1945–1975). Alt in source: Industry Intercept Program, Domestic Security Watch List. Watch-list monitoring of international communications of U.S. persons, and bulk telegraphic interception with carrier cooperation. Church Committee record.
-- Trailblazer and ThinThread (1998​–2006). Alt in source: NSA Digital Network Intelligence Modernization / Project P-238. Mass-traffic analysis prototypes. ThinThread included privacy controls that were not carried into the deployed path. Trailblazer was the failed modernization.
+- Trailblazer and ThinThread (1998–2006). Alt in source: NSA Digital Network Intelligence Modernization / Project P-238. Mass-traffic analysis prototypes. ThinThread included privacy controls that were not carried into the deployed path. Trailblazer was the failed modernization.
 - XKeyscore (2008–2013 in source). Alt: DNI Exploitation System. Query system over collected signals intelligence. See correction 2.
 
 ### FBI — counterintelligence / law enforcement
