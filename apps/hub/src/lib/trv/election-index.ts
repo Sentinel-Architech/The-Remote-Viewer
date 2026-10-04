@@ -1,14 +1,14 @@
-/** Named Gemini Canvas text. Unverified. Not a government record. */
+/** Named election catalog text. Unverified. Not a government record. */
 
 export const ELECTION_CATALOG_MARK =
-  "Unverified third-party Gemini Canvas text. Not a government record. The DECLASSIFIED wording is source text, not a verification." as const;
+  "Unverified third-party text. Not a government record. The DECLASSIFIED wording is source text, not a verification." as const;
 
 export const ELECTION_INDEX_POSTURE = {
   verified: false,
   governmentRecord: false,
   verifiedGovernmentText: false,
   declassifiedBadgeVerified: false,
-  source: "unverified third-party Gemini Canvas text",
+  source: "unverified third-party text",
 } as const;
 
 export type ElectionCatalogEntry = {
@@ -19,7 +19,6 @@ export type ElectionCatalogEntry = {
 };
 
 export const ELECTION_CATALOG = {
-  sourcePage: "https://gemini.google.com/share/384f4c158d9d",
   documentTitle: "U.S. ELECTIONS DECLASSIFIED INDEX",
   subtitle: "Historical & Intelligence Records Reference Guide",
   archiveScope:
@@ -93,7 +92,6 @@ export const ELECTION_CATALOG = {
   ],
   doors: ["cisa.gov/topics/election-security", "nass.org/can-i-vote"],
 } as const satisfies {
-  sourcePage: string;
   documentTitle: string;
   subtitle: string;
   archiveScope: string;

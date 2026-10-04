@@ -87,7 +87,7 @@ export function carryModelPlan(seat: ViewerSeat, localBytes: number | null): Car
 
   const auto =
     seat === "android-auto"
-      ? " This install does not attach a Google car service. "
+      ? " This install does not attach an outside car host. "
       : " ";
   if (localBytes == null || localBytes < 1) {
     return {

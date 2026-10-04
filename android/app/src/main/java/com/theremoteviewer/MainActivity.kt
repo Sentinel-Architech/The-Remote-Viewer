@@ -10,6 +10,7 @@ import android.location.LocationManager
 import android.os.Bundle
 import android.os.Looper
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 
 /**
@@ -18,6 +19,7 @@ import android.widget.TextView
  */
 class MainActivity : Activity() {
     private lateinit var lockStatus: TextView
+    private lateinit var lockProgress: ProgressBar
     private lateinit var gpsStatus: TextView
     private var gpsListener: LocationListener? = null
 
@@ -25,6 +27,7 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         lockStatus = findViewById(R.id.lock_status)
+        lockProgress = findViewById(R.id.lock_progress)
         gpsStatus = findViewById(R.id.gps_status)
         findViewById<Button>(R.id.check_lock).setOnClickListener { showDeviceLock() }
         findViewById<Button>(R.id.read_gps).setOnClickListener { askForNativeGps() }
@@ -43,6 +46,7 @@ class MainActivity : Activity() {
         } else {
             getString(R.string.lock_off)
         }
+        lockProgress.progress = 1
     }
 
     private fun askForNativeGps() {

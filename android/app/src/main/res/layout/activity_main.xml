@@ -34,6 +34,24 @@
             android:textColor="@color/fg"
             android:textSize="16sp" />
 
+        <ProgressBar
+            android:id="@+id/lock_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:max="1"
+            android:progress="0" />
+
+        <TextView
+            android:id="@+id/weight_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/weight_waiting"
+            android:textColor="@color/muted"
+            android:textSize="15sp" />
+
         <Button
             android:id="@+id/check_lock"
             android:layout_width="match_parent"

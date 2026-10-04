@@ -22,6 +22,9 @@ export type MimoOnBoxResult = {
   inferenceRan: false;
   status: MimoOnBoxStatus;
   bytes: number;
+  headerBytes: number | null;
+  filesFound: number;
+  filesRequired: number;
   weightsDir: string;
   reason: string;
 };
@@ -59,17 +62,24 @@ export function resolveMimoWeightsDir(env: NodeJS.ProcessEnv = process.env): str
   return resolve(raw);
 }
 
+export function countWeightFiles(dir: string): { found: number; required: number } {
+  let found = 0;
+  for (const name of WEIGHT_FILES) {
+    try {
+      const file = join(dir, name);
+      if (existsSync(file) && statSync(file).isFile() && statSync(file).size > 0) found += 1;
+    } catch {
+      /* This file was not measured as present. */
+    }
+  }
+  return { found, required: WEIGHT_FILES.length };
+}
+
 export function mimoWeightsPresent(dir: string): boolean {
   if (!dir) return false;
   assertMimoLocal(dir);
-  return WEIGHT_FILES.every((name) => {
-    const file = join(dir, name);
-    try {
-      return existsSync(file) && statSync(file).isFile() && statSync(file).size > 0;
-    } catch {
-      return false;
-    }
-  });
+  const counted = countWeightFiles(dir);
+  return counted.required > 0 && counted.found === counted.required;
 }
 
 /**
@@ -79,6 +89,7 @@ export function mimoWeightsPresent(dir: string): boolean {
 export function runMimoOnBox(env: NodeJS.ProcessEnv = process.env): MimoOnBoxResult {
   const weightsDir = resolveMimoWeightsDir(env);
   const common = base(weightsDir);
+  const files = countWeightFiles(weightsDir);
   if (!mimoWeightsPresent(weightsDir)) {
     return {
       ...common,
@@ -86,6 +97,9 @@ export function runMimoOnBox(env: NodeJS.ProcessEnv = process.env): MimoOnBoxRes
       processRan: false,
       status: "missing-weights",
       bytes: 0,
+      headerBytes: null,
+      filesFound: files.found,
+      filesRequired: files.required,
       reason: "MiMo-V2.6-Pro weights are not in this repo. Nothing was fetched. The model did not load and did not run.",
     };
   }
@@ -105,13 +119,17 @@ export function runMimoOnBox(env: NodeJS.ProcessEnv = process.env): MimoOnBoxRes
       processRan: false,
       status: "refused",
       bytes: 0,
+      headerBytes: null,
+      filesFound: files.found,
+      filesRequired: files.required,
       reason: detail,
     };
   }
 
   let bytes = 0;
+  let headerBytes: number | null = null;
   try {
-    const parsed = JSON.parse(child.stdout) as { bytes?: number; inferenceRan?: boolean; loaded?: boolean };
+    const parsed = JSON.parse(child.stdout) as { bytes?: number; headerBytes?: number; inferenceRan?: boolean; loaded?: boolean };
     if (parsed.inferenceRan === true || parsed.loaded !== true) {
       return {
         ...common,
@@ -119,10 +137,15 @@ export function runMimoOnBox(env: NodeJS.ProcessEnv = process.env): MimoOnBoxRes
         processRan: false,
         status: "refused",
         bytes: 0,
+        headerBytes: null,
+        filesFound: files.found,
+        filesRequired: files.required,
         reason: "The local loader reported a result this hub will not accept.",
       };
     }
     bytes = Number(parsed.bytes) || 0;
+    const read = Number(parsed.headerBytes);
+    headerBytes = Number.isFinite(read) && read >= 0 ? read : null;
   } catch {
     return {
       ...common,
@@ -130,6 +153,9 @@ export function runMimoOnBox(env: NodeJS.ProcessEnv = process.env): MimoOnBoxRes
       processRan: false,
       status: "refused",
       bytes: 0,
+      headerBytes: null,
+      filesFound: files.found,
+      filesRequired: files.required,
       reason: "The local loader did not return a weight read.",
     };
   }
@@ -140,6 +166,9 @@ export function runMimoOnBox(env: NodeJS.ProcessEnv = process.env): MimoOnBoxRes
     processRan: true,
     status: "loaded",
     bytes,
+    headerBytes,
+    filesFound: files.found,
+    filesRequired: files.required,
     reason: `Read ${bytes} weight bytes from this box. The MiMo network was not executed. Nothing was sent to Xiaomi.`,
   };
 }

@@ -10,6 +10,9 @@ test("missing repo weights are not fetched and the model does not run", () => {
   assert.equal(result.processRan, false);
   assert.equal(result.inferenceRan, false);
   assert.equal(result.fetched, false);
+  assert.equal(result.filesRequired, 2);
+  assert.equal(result.filesFound, 0);
+  assert.equal(result.headerBytes, null);
   assert.equal(result.remote, false);
   assert.equal(result.xiaomiPaid, false);
   assert.equal(result.sendsViewerData, false);

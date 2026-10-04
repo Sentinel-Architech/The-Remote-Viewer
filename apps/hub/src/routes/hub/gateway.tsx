@@ -16,17 +16,21 @@ export const Route = createFileRoute("/hub/gateway")({ component: GatewayPage })
 
 const FLASH = [0, 2, 3, 1];
 
-function indexNote(mark: "third-party" | "gemini-canvas"): string {
+function indexNote(mark: "third-party" | "unverified-catalog"): string {
   switch (mark) {
     case "third-party":
       return "Third-party index. Not verified government text. Title only.";
-    case "gemini-canvas":
+    case "unverified-catalog":
       return ELECTION_CATALOG_MARK;
     default: {
       const unseen: never = mark;
       return unseen;
     }
   }
+}
+
+function officialHref(named: string): string {
+  return /^https:\/\//i.test(named) ? named : `https://${named}`;
 }
 
 function GatewayPage() {
@@ -176,7 +180,15 @@ function GatewayPage() {
             <h3 className="text-sm font-medium">{group}</h3>
             <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
               {EPSTEIN_INDEX.filter((item) => item.group === group).map((item) => (
-                <li key={item.title}>{item.title}</li>
+                <li key={item.title}>
+                  {item.group === "Official doors" ? (
+                    <a href={officialHref(item.title)} rel="noreferrer">
+                      {item.title}
+                    </a>
+                  ) : (
+                    item.title
+                  )}
+                </li>
               ))}
             </ul>
           </div>
@@ -186,7 +198,6 @@ function GatewayPage() {
       <section className="rounded-[var(--radius-xl)] border border-border bg-card p-5">
         <h2 className="font-display text-xl">{ELECTION_CATALOG.documentTitle}</h2>
         <p className="mt-2 text-sm text-muted-foreground">{ELECTION_CATALOG_MARK} Search stays on this device.</p>
-        <p className="mt-2 text-sm text-muted-foreground">Source page, plain text: {ELECTION_CATALOG.sourcePage}</p>
         <p className="mt-2 text-sm">{ELECTION_CATALOG.subtitle}</p>
         <p className="mt-2 text-sm text-muted-foreground">{ELECTION_CATALOG.archiveScope}</p>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -204,10 +215,14 @@ function GatewayPage() {
           ))}
         </ol>
         <div className="mt-4">
-          <h3 className="text-sm font-medium">Doors, plain text</h3>
+          <h3 className="text-sm font-medium">Official doors</h3>
           <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
             {ELECTION_CATALOG.doors.map((door) => (
-              <li key={door}>{door}</li>
+              <li key={door}>
+                <a href={officialHref(door)} rel="noreferrer">
+                  {door}
+                </a>
+              </li>
             ))}
           </ul>
         </div>

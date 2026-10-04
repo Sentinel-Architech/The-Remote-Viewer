@@ -23,7 +23,7 @@ export type LocalHit = {
   agency?: string;
   years?: string;
   group?: string;
-  indexMark?: "third-party" | "gemini-canvas";
+  indexMark?: "third-party" | "unverified-catalog";
 };
 
 export type LocalSearchResult = {
@@ -134,7 +134,6 @@ export function localDeclassifiedSearch(input: {
     ELECTION_CATALOG.subtitle,
     ELECTION_CATALOG.archiveScope,
     ELECTION_CATALOG.footer,
-    ELECTION_CATALOG.sourcePage,
     ...ELECTION_CATALOG.pageMarkers,
   ].join("\n");
   if (matches(electionHeader, phrase, words, query)) {
@@ -145,7 +144,7 @@ export function localDeclassifiedSearch(input: {
       excerpt: ELECTION_CATALOG.archiveScope,
       locked: false,
       group: "Election catalog",
-      indexMark: "gemini-canvas",
+      indexMark: "unverified-catalog",
     });
   }
 
@@ -161,7 +160,7 @@ export function localDeclassifiedSearch(input: {
       agency: named.agency,
       years: named.when,
       group: "Election catalog",
-      indexMark: "gemini-canvas",
+      indexMark: "unverified-catalog",
     });
   }
 
@@ -174,7 +173,7 @@ export function localDeclassifiedSearch(input: {
       excerpt: "",
       locked: false,
       group: "Door",
-      indexMark: "gemini-canvas",
+      indexMark: "unverified-catalog",
     });
   }
 

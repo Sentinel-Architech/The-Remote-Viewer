@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { buildProgress } from "../src/lib/trv/build-progress.ts";
 import { DECLASSIFIED_TITLES } from "../src/lib/trv/declassified-titles.ts";
 import { ELECTION_CATALOG, ELECTION_INDEX_POSTURE } from "../src/lib/trv/election-index.ts";
 import { EPSTEIN_INDEX, EPSTEIN_INDEX_POSTURE } from "../src/lib/trv/epstein-index.ts";
@@ -90,12 +91,12 @@ test("the Epstein index is third-party titles and stays on the device", () => {
   assert.equal(source.includes("https://oversight.house.gov"), true);
 });
 
-test("the election catalog stores the named Gemini text and stays on the device", () => {
+test("the election catalog stores the named text and stays on the device", () => {
   assert.equal(ELECTION_CATALOG.entries.length, 9);
   assert.equal(ELECTION_INDEX_POSTURE.verified, false);
   assert.equal(ELECTION_INDEX_POSTURE.governmentRecord, false);
   assert.equal(ELECTION_INDEX_POSTURE.declassifiedBadgeVerified, false);
-  assert.equal(ELECTION_INDEX_POSTURE.source, "unverified third-party Gemini Canvas text");
+  assert.equal(ELECTION_INDEX_POSTURE.source, "unverified third-party text");
   const fubar = localDeclassifiedSearch({ query: "Project FUBAR", verified: false });
   const hit = fubar.hits.find((item) => item.kind === "index");
   assert.equal(hit?.title, "Project FUBAR / Italian Election Covert Action");
@@ -105,7 +106,7 @@ test("the election catalog stores the named Gemini text and stays on the device"
     hit?.excerpt,
     "Declassified CIA records detailing the agency's first major covert electoral intervention. Included million-dollar funding allocations to anti-communist parties, forged letters, and media propaganda to sway Italy's general election away from the PCI coalition.",
   );
-  assert.equal(hit?.indexMark, "gemini-canvas");
+  assert.equal(hit?.indexMark, "unverified-catalog");
   assert.equal(fubar.networkRequests, 0);
   assert.equal(fubar.sentOffDevice, false);
   const door = localDeclassifiedSearch({ query: "cisa.gov/topics/election-security", verified: false });
@@ -116,8 +117,7 @@ test("the election catalog stores the named Gemini text and stays on the device"
   assert.equal(door.hits[0]?.excerpt, "");
   assert.equal(door.networkRequests, 0);
   const source = readFileSync(new URL("../src/lib/trv/election-index.ts", import.meta.url), "utf8");
-  assert.equal(/fetch\(|<a |href=/i.test(source), false);
-  assert.equal(source.includes("https://gemini.google.com/share/384f4c158d9d"), true);
+  assert.equal(/gemini|google|fetch\(/i.test(source), false);
   assert.equal(source.includes("nass.org/can-i-vote"), true);
   assert.equal(source.includes("PAGE 1 OF 2"), true);
   assert.equal(source.includes("PAGE 2 OF 2"), true);
@@ -126,6 +126,38 @@ test("the election catalog stores the named Gemini text and stays on the device"
 test("the search module does not call the network", () => {
   const source = readFileSync(new URL("../src/lib/trv/local-search.ts", import.meta.url), "utf8");
   assert.equal(/fetch\(|https?:|cia\.gov|xmlhttprequest/i.test(source), false);
+});
+
+test("build progress counts only measured work", () => {
+  const waiting = buildProgress({
+    fitChecked: false,
+    fits: null,
+    filesFound: null,
+    filesRequired: null,
+    headerBytes: null,
+    fileBytes: null,
+  });
+  assert.equal(waiting.every((step) => step.state === "waiting" && step.completed == null), true);
+  const checked = buildProgress({
+    fitChecked: true,
+    fits: false,
+    filesFound: 0,
+    filesRequired: 2,
+    headerBytes: null,
+    fileBytes: null,
+  });
+  const fit = checked.find((step) => step.id === "fit");
+  const files = checked.find((step) => step.id === "weight-files");
+  const copy = checked.find((step) => step.id === "weight-copy");
+  const network = checked.find((step) => step.id === "network");
+  assert.equal(fit?.completed, 1);
+  assert.equal(fit?.total, 1);
+  assert.equal(files?.completed, 0);
+  assert.equal(files?.total, 2);
+  assert.equal(copy?.state, "waiting");
+  assert.equal(copy?.completed, null);
+  assert.equal(network?.state, "waiting");
+  assert.match(network?.note ?? "", /not executed/);
 });
 
 test("carry seats do not run the full weights and a wearable does not fit MiniMind", () => {

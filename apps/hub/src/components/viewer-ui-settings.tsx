@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { carryModelPlan } from "@/lib/trv/carry-model";
+import { carryModelPlan, type CarryModelPlan } from "@/lib/trv/carry-model";
+import { buildProgress, type BuildStep } from "@/lib/trv/build-progress";
 import { mimoLocalStatus } from "@/lib/trv/mimo-server";
 import { viewerSeatFromUserAgent } from "@/lib/trv/viewer-seat";
 import { saveUiTheme } from "@/lib/trv/server";
@@ -38,25 +39,80 @@ export function ViewerUiSettings({
 }) {
   const open = new Set(uiControls(planId));
   const [theme, setTheme] = useState<ViewerTheme>(() => clampThemeToPlan(parseTheme(saved), planId));
-  const [mimo, setMimo] = useState("Checking the on-box MiMo copy.");
+  const [mimo, setMimo] = useState("Checking the on-box copy.");
+  const [steps, setSteps] = useState<BuildStep[]>(() =>
+    buildProgress({
+      fitChecked: false,
+      fits: null,
+      filesFound: null,
+      filesRequired: null,
+      headerBytes: null,
+      fileBytes: null,
+    }),
+  );
 
   useEffect(() => {
     const seat = viewerSeatFromUserAgent(typeof navigator === "undefined" ? "" : navigator.userAgent);
+    let plan: CarryModelPlan;
+    try {
+      plan = carryModelPlan(seat, null);
+      setMimo(plan.reason);
+    } catch {
+      setMimo("The model check stopped. The app did not crash. The full weights were not loaded.");
+      setSteps(
+        buildProgress({
+          fitChecked: false,
+          fits: null,
+          filesFound: null,
+          filesRequired: null,
+          headerBytes: null,
+          fileBytes: null,
+        }),
+      );
+      return;
+    }
     if (seat !== "stationary") {
-      try {
-        setMimo(carryModelPlan(seat, null).reason);
-      } catch {
-        setMimo("The model check stopped. The app did not crash. The full weights were not loaded.");
-      }
+      setSteps(
+        buildProgress({
+          fitChecked: true,
+          fits: plan.fits,
+          filesFound: null,
+          filesRequired: null,
+          headerBytes: null,
+          fileBytes: null,
+        }),
+      );
       return;
     }
     let live = true;
     void mimoLocalStatus()
       .then((result) => {
-        if (live) setMimo(result.reason);
+        if (!live) return;
+        setMimo(result.reason);
+        setSteps(
+          buildProgress({
+            fitChecked: true,
+            fits: plan.fits,
+            filesFound: result.filesFound,
+            filesRequired: result.filesRequired,
+            headerBytes: result.headerBytes,
+            fileBytes: result.processRan ? result.bytes : null,
+          }),
+        );
       })
       .catch(() => {
-        if (live) setMimo("The on-box MiMo check did not finish. The model did not run.");
+        if (!live) return;
+        setMimo("The on-box check did not finish. The model did not run.");
+        setSteps(
+          buildProgress({
+            fitChecked: true,
+            fits: plan.fits,
+            filesFound: null,
+            filesRequired: null,
+            headerBytes: null,
+            fileBytes: null,
+          }),
+        );
       });
     return () => {
       live = false;
@@ -76,6 +132,24 @@ export function ViewerUiSettings({
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
         {UI_EXPERT_RULE} Free stays the plain settings: field, accent, corners, and density. Higher paid tiers open more. No price is added here. {mimo}
       </p>
+      <ul className="mt-4 space-y-3 text-sm">
+        {steps.map((step) => {
+          const measured = step.state === "done" && step.completed != null && step.total != null && step.total > 0;
+          return (
+            <li key={step.id}>
+              <div className="flex items-center justify-between gap-3">
+                <span>{step.label}</span>
+                {measured ? (
+                  <progress value={step.completed ?? 0} max={step.total ?? 1} />
+                ) : (
+                  <span>Waiting</span>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">{step.note}</p>
+            </li>
+          );
+        })}
+      </ul>
       <div className="mt-4 grid gap-2 sm:grid-cols-5">
         {(Object.keys(THEME_PRESETS) as ThemePresetId[]).map((id) => (
           <button

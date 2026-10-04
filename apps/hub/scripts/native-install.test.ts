@@ -23,6 +23,10 @@ test("the Android install is a native screen, not a website shell", () => {
   assert.match(strings, /not a website/);
   assert.match(strings, /do not run on this phone/);
   assert.match(read("res/layout/activity_main.xml"), /mimo_phone/);
+  assert.match(read("res/layout/activity_main.xml"), /lock_progress/);
+  assert.match(strings, /Waiting\. Weight files were not measured/);
+  assert.match(activity, /lockProgress\.progress = 1/);
+  assert.equal(/gemini/i.test(`${activity}\n${strings}`), false);
   assert.equal(/huggingface|xiaomi\.com|loadUrl/i.test(activity), false);
 });
 

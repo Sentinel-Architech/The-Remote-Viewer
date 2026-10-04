@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">The Remote Viewer</string>
     <string name="install_title">The Remote Viewer</string>
-    <string name="install_lead">This install is the phone itself. It is not a website in a window. Nothing here is a Google, Meta, or Alphabet service.</string>
+    <string name="install_lead">This install is the phone itself. It is not a website in a window. It does not use an outside identity service.</string>
     <string name="seed_off_phone">Keep the passphrase and the seed off this phone. This phone unlocks with its own screen lock. It does not hold a seed or a passphrase. There is no backup location in this install.</string>
     <string name="free_tier">Free: this device\'s own lock plus the bare TRV layer. That does not require a purchase.</string>
     <string name="token_sim">TRV Token🍃 is a simulation only. It buys exclusive in-app customizations only. It is not money, not crypto, and not redeemable for cash. The amount is not set.</string>
@@ -18,4 +18,5 @@
     <string name="gps_off">This phone\'s GPS is off. Turn it on in system settings. No other provider is used.</string>
     <string name="gps_none">No native GPS fix yet. The reading stays on this phone.</string>
     <string name="gps_fix">Native GPS %1$.3f, %2$.3f. Exclusive to this install. Not sent anywhere.</string>
+    <string name="weight_waiting">Waiting. Weight files were not measured on this phone. The model did not run.</string>
 </resources>
