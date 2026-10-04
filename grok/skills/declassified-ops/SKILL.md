@@ -1,7 +1,15 @@
 # Declassified Operations Index — bot intake
 
 Architect intake. 2026-10-04.
-Free tier on GitHub sees titles only. Read `titles/` filenames. Do not wait for file bodies.
+Access rule: `ACCESS.md`. Price authority: `docs/VALUE.md`.
+
+## Access
+
+- Free Viewer ($0): titles only. Serve the title list. Do not serve bodies, alternate names, or corrections beyond the filename.
+- Viewer monthly ($10), Viewer yearly ($50), and active node: not granted this catalog.
+- Highest paid tier: company grant, $1,200 USD per year, one hub tenant, written grant required. Full access to this file.
+- Public GitHub can open any file. Seats still enforce the tier. Do not paste the full catalog into a free-tier reply.
+
 Source file: `Declassified Intelligence Projects Index.pdf` (5 pages; page 5 blank).
 Status: secondary catalog supplied by the Architect. Not a primary-source release.
 Hal verifies before any seat cites a row as fact. Tory owns the history. Press does not post a row as a house claim without a primary citation.
@@ -34,6 +42,7 @@ Hal verifies before any seat cites a row as fact. Tory owns the history. Press d
 - 23 DIA AATIP 2007-2012 UAP tasking not an extraterrestrial finding
 - 24 DOD Project Sunshine 1953-1959 strontium-90 tissue study
 - 25 DOD Iceworm and Horizon 1959-1966 Greenland concept lunar study
+- 26 Highest paid tier company grant 1200 per year gets full catalog
 
 ## Hard bounds
 
@@ -46,6 +55,8 @@ Hal verifies before any seat cites a row as fact. Tory owns the history. Press d
 - Do not invent codenames, dates, or outcomes that are not in this file or in a cited primary release.
 
 ## Corrections before citation
+
+Highest paid tier only.
 
 1. Operation Mockingbird. The Church Committee documented CIA relationships with journalists and media organizations. A single formal program under the name Operation Mockingbird is not established in the declassified record the way CORONA, Venona, or COINTELPRO are. Treat the name as a secondary label.
 2. XKeyscore. Public disclosure was 2013. The 2008–2013 window in the source catalog is a disclosure window, not a confirmed end date.
@@ -68,9 +79,9 @@ Hal verifies before any seat cites a row as fact. Tory owns the history. Press d
 
 ## Catalog as supplied
 
+Highest paid tier only. Free tier uses the title list above.
 Agencies covered: CIA, NSA, FBI, NRO, DIA/DOD.
 Fields kept from the source: primary codename, alternate designations, timeline, mission line.
-Full rows remain below for seats that can read file bodies. Free tier uses the title list above.
 
 ### CIA — HUMINT / TECHINT
 
@@ -114,6 +125,7 @@ Full rows remain below for seats that can read file bodies. Free tier uses the t
 
 ## What a seat may say
 
-A seat may summarize a row, name the agency, and state the correction if one applies.
+A free-tier reply may name a title already in the title list.
+A highest-paid reply may summarize a row, name the agency, and state the correction if one applies.
 A seat may not claim the catalog is a declassified primary document.
 A seat may not use any row to justify surveillance of a Viewer, a back door, key custody, or an exception to defend-only.
