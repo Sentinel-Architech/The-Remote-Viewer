@@ -19,6 +19,7 @@ import { assertImageData, parseLinks, sanitizeHttps } from "./profile";
 import { shopById } from "./shop";
 import { PAID_TRIAL_CREDITS, PAID_TRIAL_PLAN, paidTrialUntilIso } from "./trial";
 import { humanCommsNeedsStripe, shouldExpireVerified } from "./human-comms-checkout";
+import { assertNativeTrvDebit } from "./viewer-locks";
 import type {
   ForumPost,
   InvoiceRow,
@@ -662,8 +663,10 @@ export const listMarket = createServerFn({ method: "GET" }).handler(async () => 
 
 export const buyNft = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator((input: number | { id: number; bundle?: boolean }) =>
-    typeof input === "number" ? { id: input, bundle: false } : { id: Number(input.id), bundle: Boolean(input.bundle) },
+  .validator((input: number | { id: number; bundle?: boolean; signature?: string }) =>
+    typeof input === "number"
+      ? { id: input, bundle: false, signature: "" }
+      : { id: Number(input.id), bundle: Boolean(input.bundle), signature: String(input.signature ?? "").slice(0, 32) },
   )
   .handler(async ({ context, data }) => {
     const sql = await getSql();
@@ -678,6 +681,7 @@ export const buyNft = createServerFn({ method: "POST" })
     if (!buyer || !seller) throw new Error("Profile missing");
     const extra = data.bundle ? Number(nft.bundle_price || 0) : 0;
     const price = Number(nft.price_credits) + extra;
+    assertNativeTrvDebit({ signature: data.signature, handle: buyer.handle, rail: "trv-native" });
     if (buyer.credits < price) throw new Error("Insufficient TRV credits");
     const fee = Math.round(price * effectiveFeeRate(seller.planId, seller.tier, Boolean(seller.citizenAt)));
     const net = price - fee;
@@ -1087,7 +1091,12 @@ export const convertToTrv = createServerFn({ method: "POST" })
 
 export const subscribePlan = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator((input: { planId: string; interval: BillingInterval; orgName?: string }) => input)
+  .validator((input: { planId: string; interval: BillingInterval; orgName?: string; signature?: string }) => ({
+    planId: input.planId,
+    interval: input.interval,
+    orgName: input.orgName,
+    signature: String(input.signature ?? "").slice(0, 32),
+  }))
   .handler(async ({ context, data }) => {
     const sql = await getSql();
     const plan = planById(data.planId);
@@ -1098,6 +1107,9 @@ export const subscribePlan = createServerFn({ method: "POST" })
       throw new Error("Verified human comms is granted only after Stripe Checkout and a verified webhook.");
     }
     const credits = planCredits(usdToCredits(plan.usdMonth, data.interval), Boolean(me.citizenAt));
+    if (plan.usdMonth > 0) {
+      assertNativeTrvDebit({ signature: data.signature, handle: me.handle, rail: "trv-native" });
+    }
     if (plan.usdMonth > 0 && me.credits < credits) throw new Error("Insufficient TRV credits");
     if (plan.usdMonth > 0) {
       await sql`update viewer_profiles set credits = credits - ${credits} where user_id = ${context.userId}`;

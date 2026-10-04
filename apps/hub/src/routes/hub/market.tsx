@@ -112,7 +112,7 @@ function MarketPage() {
                 size="sm"
                 onClick={async () => {
                   try {
-                    const r = await buyNft({ data: n.id });
+                    const r = await buyNft({ data: { id: n.id, signature: profile?.handle ?? "" } });
                     toast.success(`Acquired · fee ${r.fee}`);
                     await reload();
                     await refresh();
@@ -130,7 +130,7 @@ function MarketPage() {
                   variant="secondary"
                   onClick={async () => {
                     try {
-                      const r = await buyNft({ data: { id: n.id, bundle: true } });
+                      const r = await buyNft({ data: { id: n.id, bundle: true, signature: profile?.handle ?? "" } });
                       toast.success(`Bundle · ${r.price} TRV. Inspiration: ${r.inspiration || "sealed"}`);
                       await reload();
                       await refresh();

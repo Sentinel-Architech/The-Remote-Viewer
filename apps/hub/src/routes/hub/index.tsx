@@ -13,6 +13,8 @@ import { retentionTasks } from "@/lib/trv/retention";
 import { isPaidTrialActive, formatTrialClock, msUntil } from "@/lib/trv/trial";
 import { SKILL_PAR } from "@/lib/trv/skill-audit";
 import { openBriefing } from "@/lib/trv/briefing";
+import { ShareBroadcast } from "@/components/share-broadcast";
+import { isMonthlySubscriber, subscribedReward } from "@/lib/trv/viewer-locks";
 
 export const Route = createFileRoute("/hub/")({ component: Command });
 
@@ -66,6 +68,8 @@ function Command() {
       </div>
 
       <WatchClaim />
+      <p className="text-sm leading-relaxed text-muted-foreground">{subscribedReward(profile.planId).note}</p>
+      <ShareBroadcast monthly={isMonthlySubscriber(profile.planId, profile.billingInterval)} />
 
       {watch?.claimed && !profile.tutorialAt ? (
         <Card>

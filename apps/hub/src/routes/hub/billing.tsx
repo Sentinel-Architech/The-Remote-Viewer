@@ -147,7 +147,7 @@ function BillingPage() {
     setBusy(true);
     try {
       const r = await subscribePlan({
-        data: { planId: selected.id, interval, orgName },
+        data: { planId: selected.id, interval, orgName, signature: profile?.handle ?? "" },
       });
       if (r.profile) setProfile(r.profile as ViewerProfile);
       toast.success(

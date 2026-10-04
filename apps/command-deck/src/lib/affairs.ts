@@ -69,7 +69,7 @@ export const AFFAIR_AGENTS: AffairAgent[] = [
     id: "native",
     name: "Native",
     line: "A–Z native web. WebCrypto, WebRTC, WebGL, PWA. Zero COI.",
-    bounds: ["26/26 native letters", "Host ICE default", "No Google Fonts, no wallet path", "Rapier 1/60, solver follows the device, CCD only on God's Eye", "4K is a tap on a capable deck — phones stay playable"],
+    bounds: ["Native stack. No Google, Meta, or Alphabet.", "Host ICE default", "No Google Fonts", "Rapier 1/60, solver follows the device, CCD only on God's Eye", "4K is a tap on a capable deck — phones stay playable"],
     meta: false,
   },
   {

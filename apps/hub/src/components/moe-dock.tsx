@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Camera, Mic, Radio, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { logMoe } from "@/lib/trv/server";
+import { readNativeGps } from "@/lib/trv/native-gps";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent } from "./ui/sheet";
 import { Link } from "@tanstack/react-router";
@@ -114,21 +115,17 @@ export function MoeDock() {
   }
 
   async function sealTelemetry() {
-    const nav = navigator as Navigator & { connection?: { effectiveType?: string } };
-    const payload = JSON.stringify({
-      at: new Date().toISOString(),
-      online,
-      lang: navigator.language,
-      ua: navigator.userAgent.slice(0, 80),
-      net: nav.connection?.effectiveType ?? "unknown",
-      tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    });
-    const sealed = await encryptNote(payload);
-    const seals = loadSeals();
-    seals.unshift({ id: crypto.randomUUID(), kind: "telemetry", at: new Date().toISOString(), payload: sealed });
-    saveSeals(seals);
-    await logMoe({ data: { kind: "telemetry", summary: "Device telemetry sealed locally." } }).catch(() => {});
-    toast.success("Telemetry sealed on this device");
+    try {
+      const fix = await readNativeGps();
+      const sealed = await encryptNote(JSON.stringify({ source: fix.source, at: new Date().toISOString() }));
+      const seals = loadSeals();
+      seals.unshift({ id: crypto.randomUUID(), kind: "telemetry", at: new Date().toISOString(), payload: sealed });
+      saveSeals(seals);
+      await logMoe({ data: { kind: "telemetry", summary: "Native GPS sealed locally. No other telemetry." } }).catch(() => {});
+      toast.success("Native GPS sealed on this device");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Native GPS was not read");
+    }
   }
 
   return (
@@ -175,7 +172,7 @@ export function MoeDock() {
             </div>
             <div className="flex items-center justify-between rounded-[var(--radius-md)] border border-border bg-elevated p-3">
               <div className="flex items-center gap-2 text-sm">
-                <Radio className="size-4" /> Telemetry {online ? "online" : "offline"}
+                <Radio className="size-4" /> Native GPS {online ? "online" : "offline"}
               </div>
               <Button size="sm" onClick={() => void sealTelemetry()}>
                 Seal now

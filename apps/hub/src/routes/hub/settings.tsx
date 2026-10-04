@@ -64,12 +64,12 @@ function SettingsPage() {
       <section className="rounded-[var(--radius-xl)] border border-border bg-card p-5">
         <h2 className="font-display text-xl">Means of Evidence</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Camera, microphone, and telemetry are yours. Encrypted locally. The
-          Sentinel Security OS requires a sealed trail to keep this node free of
-          corporate eyes — it does not upload the payload.
+          Camera and microphone stay on this device. The only telemetry is this
+          device&apos;s own GPS, exclusive to TRV. It is sealed locally. There is
+          no analytics and no other location service.
         </p>
         <label className="mt-4 flex items-center justify-between gap-3 text-sm">
-          Keep telemetry on-device
+          Keep native GPS on-device
           <Switch checked={telemetryLocal} onCheckedChange={setTelemetryLocal} />
         </label>
         <p className="mt-3 text-xs text-muted-foreground">

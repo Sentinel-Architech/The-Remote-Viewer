@@ -172,6 +172,7 @@ const grokOAuthPlugin = authConfigured
 
 export const auth = betterAuth({
   baseURL,
+  telemetry: { enabled: false },
   // Deployed apps inject BETTER_AUTH_SECRET. Preview: process-stable secret on
   // globalThis so HMR doesn't invalidate PGLite-backed sessions (see above).
   secret: env("BETTER_AUTH_SECRET") ?? previewAuthSecret(),

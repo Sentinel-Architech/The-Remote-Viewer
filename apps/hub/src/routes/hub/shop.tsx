@@ -84,7 +84,7 @@ function ShopPage() {
                   className="mt-3"
                   onClick={async () => {
                     try {
-                      const p = await buyShopItem({ data: item.id });
+                      const p = await buyShopItem({ data: { itemId: item.id, signature: profile?.handle ?? "" } });
                       if (p) setProfile(p);
                       await refresh();
                       toast.success("Purchased with native TRV");

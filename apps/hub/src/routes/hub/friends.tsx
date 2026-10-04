@@ -12,6 +12,7 @@ import {
   setWatchPresence,
 } from "@/lib/trv/commons";
 import { WATCH_MILES } from "@/lib/trv/content";
+import { readNativeGps } from "@/lib/trv/native-gps";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -79,7 +80,7 @@ function FriendsPage() {
 
   async function ensurePc(h: string) {
     if (pcRef.current) return pcRef.current;
-    const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
+    const pc = new RTCPeerConnection({ iceServers: [] });
     pcRef.current = pc;
     pc.onicecandidate = (e) => {
       if (!e.candidate) return;
@@ -110,21 +111,17 @@ function FriendsPage() {
   }
 
   async function locate() {
-    if (!navigator.geolocation) {
-      toast.error("No geolocation on this device");
-      return;
+    try {
+      const fix = await readNativeGps();
+      const p = await setWatchPresence({
+        data: { radiusOptIn: true, public: true, lat: fix.lat, lng: fix.lng },
+      });
+      if (p) setProfile(p);
+      await refresh();
+      toast.success(`Sentinel watch armed inside ${WATCH_MILES} miles. Native GPS only. Coords are coarsened.`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Location permission denied");
     }
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const p = await setWatchPresence({
-          data: { radiusOptIn: true, public: true, lat: pos.coords.latitude, lng: pos.coords.longitude },
-        });
-        if (p) setProfile(p);
-        await refresh();
-        toast.success(`Sentinel watch armed inside ${WATCH_MILES} miles. Coords are coarsened.`);
-      },
-      () => toast.error("Location permission denied"),
-    );
   }
 
   const verified = Boolean(profile?.verifiedAt);

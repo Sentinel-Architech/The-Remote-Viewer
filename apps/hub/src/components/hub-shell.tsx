@@ -37,6 +37,7 @@ import { ViewerThemeRoot } from "./viewer-theme";
 import { SkipLink } from "./skip-link";
 import { VoiceHelm } from "./voice-helm";
 import { AgeGate } from "./age-gate";
+import { CodeAcceptance } from "./code-acceptance";
 import { ViewerBriefing } from "./viewer-briefing";
 import { useViewer } from "./viewer-context";
 import { LiveBadge, ViewerMark } from "./viewer-mark";
@@ -237,6 +238,7 @@ export function HubShell() {
           </header>
           <TrialStrip />
           <DutyStrip />
+          <CodeAcceptance />
           <Outlet />
         </main>
       </div>
