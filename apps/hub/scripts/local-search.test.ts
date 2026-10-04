@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { DECLASSIFIED_TITLES } from "../src/lib/trv/declassified-titles.ts";
-import { ELECTION_INDEX, ELECTION_INDEX_POSTURE } from "../src/lib/trv/election-index.ts";
+import { ELECTION_CATALOG, ELECTION_INDEX_POSTURE } from "../src/lib/trv/election-index.ts";
 import { EPSTEIN_INDEX, EPSTEIN_INDEX_POSTURE } from "../src/lib/trv/epstein-index.ts";
 import { GATEWAY_DOCS } from "../src/lib/trv/gateway.ts";
 import { localDeclassifiedSearch } from "../src/lib/trv/local-search.ts";
@@ -90,25 +90,37 @@ test("the Epstein index is third-party titles and stays on the device", () => {
   assert.equal(source.includes("https://oversight.house.gov"), true);
 });
 
-test("the election index is unverified titles and stays on the device", () => {
-  assert.equal(ELECTION_INDEX.length, 11);
+test("the election catalog stores the named Gemini text and stays on the device", () => {
+  assert.equal(ELECTION_CATALOG.entries.length, 9);
   assert.equal(ELECTION_INDEX_POSTURE.verified, false);
-  assert.equal(ELECTION_INDEX_POSTURE.verifiedGovernmentText, false);
-  assert.equal(ELECTION_INDEX_POSTURE.documentBodyStored, false);
+  assert.equal(ELECTION_INDEX_POSTURE.governmentRecord, false);
+  assert.equal(ELECTION_INDEX_POSTURE.declassifiedBadgeVerified, false);
+  assert.equal(ELECTION_INDEX_POSTURE.source, "unverified third-party Gemini Canvas text");
   const fubar = localDeclassifiedSearch({ query: "Project FUBAR", verified: false });
   const hit = fubar.hits.find((item) => item.kind === "index");
-  assert.equal(hit?.title, "Project FUBAR / Italian election 1948 CIA");
-  assert.equal(hit?.excerpt, "");
-  assert.equal(hit?.indexMark, "unverified");
+  assert.equal(hit?.title, "Project FUBAR / Italian Election Covert Action");
+  assert.equal(hit?.years, "1948");
+  assert.equal(hit?.agency, "CIA");
+  assert.equal(
+    hit?.excerpt,
+    "Declassified CIA records detailing the agency's first major covert electoral intervention. Included million-dollar funding allocations to anti-communist parties, forged letters, and media propaganda to sway Italy's general election away from the PCI coalition.",
+  );
+  assert.equal(hit?.indexMark, "gemini-canvas");
+  assert.equal(fubar.networkRequests, 0);
+  assert.equal(fubar.sentOffDevice, false);
   const door = localDeclassifiedSearch({ query: "cisa.gov/topics/election-security", verified: false });
   assert.deepEqual(
     door.hits.filter((item) => item.kind === "index").map((item) => item.title),
     ["cisa.gov/topics/election-security"],
   );
+  assert.equal(door.hits[0]?.excerpt, "");
   assert.equal(door.networkRequests, 0);
   const source = readFileSync(new URL("../src/lib/trv/election-index.ts", import.meta.url), "utf8");
-  assert.equal(/body:|summary:|fetch\(|https?:|\d+\s+pages|\d+\s+photos/i.test(source), false);
+  assert.equal(/fetch\(|<a |href=/i.test(source), false);
+  assert.equal(source.includes("https://gemini.google.com/share/384f4c158d9d"), true);
   assert.equal(source.includes("nass.org/can-i-vote"), true);
+  assert.equal(source.includes("PAGE 1 OF 2"), true);
+  assert.equal(source.includes("PAGE 2 OF 2"), true);
 });
 
 test("the search module does not call the network", () => {

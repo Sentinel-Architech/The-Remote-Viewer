@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { DECLASSIFIED_TITLES, type DeclassifiedAgency } from "@/lib/trv/declassified-titles";
-import { ELECTION_INDEX, type ElectionIndexGroup } from "@/lib/trv/election-index";
+import { ELECTION_CATALOG, ELECTION_CATALOG_MARK } from "@/lib/trv/election-index";
 import { EPSTEIN_INDEX, type EpsteinIndexGroup } from "@/lib/trv/epstein-index";
 import { GATEWAY_DOCS } from "@/lib/trv/gateway";
 import { localDeclassifiedSearch } from "@/lib/trv/local-search";
@@ -16,12 +16,12 @@ export const Route = createFileRoute("/hub/gateway")({ component: GatewayPage })
 
 const FLASH = [0, 2, 3, 1];
 
-function indexNote(mark: "third-party" | "unverified"): string {
+function indexNote(mark: "third-party" | "gemini-canvas"): string {
   switch (mark) {
     case "third-party":
       return "Third-party index. Not verified government text. Title only.";
-    case "unverified":
-      return "Not verified. Title only.";
+    case "gemini-canvas":
+      return ELECTION_CATALOG_MARK;
     default: {
       const unseen: never = mark;
       return unseen;
@@ -86,7 +86,7 @@ function GatewayPage() {
                     {hit.kind === "title"
                       ? `${hit.agency}: ${hit.title} ${hit.years}`
                       : hit.kind === "index"
-                        ? `${hit.group}: ${hit.title}`
+                        ? `${hit.group}: ${hit.title}${hit.years ? `. ${hit.years}` : ""}${hit.agency ? `. ${hit.agency}` : ""}`
                         : hit.title}
                   </span>
                   {hit.locked ? " · sealed" : ""}
@@ -184,20 +184,33 @@ function GatewayPage() {
       </section>
 
       <section className="rounded-[var(--radius-xl)] border border-border bg-card p-5">
-        <h2 className="font-display text-xl">Election index</h2>
+        <h2 className="font-display text-xl">{ELECTION_CATALOG.documentTitle}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">{ELECTION_CATALOG_MARK} Search stays on this device.</p>
+        <p className="mt-2 text-sm text-muted-foreground">Source page, plain text: {ELECTION_CATALOG.sourcePage}</p>
+        <p className="mt-2 text-sm">{ELECTION_CATALOG.subtitle}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{ELECTION_CATALOG.archiveScope}</p>
         <p className="mt-2 text-sm text-muted-foreground">
-          Titles only. Not verified. No document body is stored. Search stays on this device.
+          On-screen text only: {ELECTION_CATALOG.footer} {ELECTION_CATALOG.pageMarkers.join(" ")}
         </p>
-        {(["Election index", "Door"] as ElectionIndexGroup[]).map((group) => (
-          <div key={group} className="mt-4">
-            <h3 className="text-sm font-medium">{group}</h3>
-            <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
-              {ELECTION_INDEX.filter((item) => item.group === group).map((item) => (
-                <li key={item.title}>{item.title}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
+        <ol className="mt-4 space-y-4 text-sm">
+          {ELECTION_CATALOG.entries.map((item, index) => (
+            <li key={item.title}>
+              <p className="font-medium">
+                {index + 1}. {item.title}. {item.when}. {item.agency}.
+              </p>
+              <p className="mt-1 text-muted-foreground">{item.blurb}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{ELECTION_CATALOG_MARK}</p>
+            </li>
+          ))}
+        </ol>
+        <div className="mt-4">
+          <h3 className="text-sm font-medium">Doors, plain text</h3>
+          <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
+            {ELECTION_CATALOG.doors.map((door) => (
+              <li key={door}>{door}</li>
+            ))}
+          </ul>
+        </div>
       </section>
 
       <div className="grid gap-3 sm:grid-cols-2">

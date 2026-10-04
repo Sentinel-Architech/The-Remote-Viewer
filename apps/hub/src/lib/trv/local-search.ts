@@ -1,5 +1,5 @@
 import { DECLASSIFIED_TITLES } from "./declassified-titles";
-import { ELECTION_INDEX } from "./election-index";
+import { ELECTION_CATALOG } from "./election-index";
 import { EPSTEIN_INDEX } from "./epstein-index";
 import { docsForTier, type GatewayDoc } from "./gateway";
 
@@ -23,7 +23,7 @@ export type LocalHit = {
   agency?: string;
   years?: string;
   group?: string;
-  indexMark?: "third-party" | "unverified";
+  indexMark?: "third-party" | "gemini-canvas";
 };
 
 export type LocalSearchResult = {
@@ -129,17 +129,52 @@ export function localDeclassifiedSearch(input: {
     });
   }
 
-  for (const named of ELECTION_INDEX) {
-    const line = `${named.group} ${named.title}`;
+  const electionHeader = [
+    ELECTION_CATALOG.documentTitle,
+    ELECTION_CATALOG.subtitle,
+    ELECTION_CATALOG.archiveScope,
+    ELECTION_CATALOG.footer,
+    ELECTION_CATALOG.sourcePage,
+    ...ELECTION_CATALOG.pageMarkers,
+  ].join("\n");
+  if (matches(electionHeader, phrase, words, query)) {
+    hits.push({
+      id: "election:catalog",
+      title: ELECTION_CATALOG.documentTitle,
+      kind: "index",
+      excerpt: ELECTION_CATALOG.archiveScope,
+      locked: false,
+      group: "Election catalog",
+      indexMark: "gemini-canvas",
+    });
+  }
+
+  for (const named of ELECTION_CATALOG.entries) {
+    const line = `${named.title}\n${named.when}\n${named.agency}\n${named.blurb}`;
     if (!matches(line, phrase, words, query)) continue;
     hits.push({
       id: `election:${named.title}`,
       title: named.title,
       kind: "index",
+      excerpt: named.blurb,
+      locked: false,
+      agency: named.agency,
+      years: named.when,
+      group: "Election catalog",
+      indexMark: "gemini-canvas",
+    });
+  }
+
+  for (const door of ELECTION_CATALOG.doors) {
+    if (!matches(door, phrase, words, query)) continue;
+    hits.push({
+      id: `election-door:${door}`,
+      title: door,
+      kind: "index",
       excerpt: "",
       locked: false,
-      group: named.group,
-      indexMark: "unverified",
+      group: "Door",
+      indexMark: "gemini-canvas",
     });
   }
 
