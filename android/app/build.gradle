@@ -1,0 +1,86 @@
+plugins {
+    id "com.android.application"
+    id "org.jetbrains.kotlin.android"
+}
+
+def keystoreFile = System.getenv("ANDROID_KEYSTORE_FILE")
+def keystorePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+def keyAliasName = System.getenv("ANDROID_KEY_ALIAS")
+def keyPasswordValue = System.getenv("ANDROID_KEY_PASSWORD")
+
+def signingReady = keystoreFile && keystorePassword && keyAliasName && keyPasswordValue
+
+android {
+    namespace "com.theremoteviewer"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.theremoteviewer"
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+        ndk {
+            abiFilters "arm64-v8a"
+        }
+    }
+
+    signingConfigs {
+        release {
+            if (signingReady) {
+                storeFile file(keystoreFile)
+                storePassword keystorePassword
+                keyAlias keyAliasName
+                keyPassword keyPasswordValue
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            if (signingReady) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    packaging {
+        jniLibs {
+            excludes += ["**/armeabi/**", "**/armeabi-v7a/**", "**/x86/**", "**/x86_64/**"]
+        }
+    }
+}
+
+gradle.taskGraph.whenReady { graph ->
+    def releaseRequested = graph.allTasks.any { task ->
+        task.name == "assembleRelease" || task.name == "packageRelease" || task.name == "bundleRelease"
+    }
+    if (!releaseRequested || signingReady) {
+        return
+    }
+    def required = [
+        "ANDROID_KEYSTORE_FILE",
+        "ANDROID_KEYSTORE_PASSWORD",
+        "ANDROID_KEY_ALIAS",
+        "ANDROID_KEY_PASSWORD",
+    ]
+    def missing = required.findAll { name ->
+        def value = System.getenv(name)
+        value == null || value.trim().isEmpty()
+    }
+    throw new GradleException(
+        "Missing signing environment: ${missing.join(', ')}. " +
+            "Refusing to invent a keystore or a password."
+    )
+}

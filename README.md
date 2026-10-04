@@ -129,6 +129,8 @@ docker run -p 3000:3000 trv-hub
 
 **This is by design.** We ship what works. Solana governance is testnet-only and requires external Anchor infrastructure. Fork us and add it if you need it.
 
+When a maintainer publishes a signed Android build, the GitHub Release asset is named `app-release.apk`. That asset is not in this repository, and this note is not a claim that an installer is done or LIVE.
+
 ---
 
 ## Economics (Locked)
