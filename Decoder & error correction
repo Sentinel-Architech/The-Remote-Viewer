@@ -1,5 +1,5 @@
 // crates/sentinel-optic/src/decoder.rs
-// Robust Soliton decoding and error correction for optical air-gap ingress streams.
+// Reads a length-prefixed chunk. This function does not open an air gap.
 
 pub struct OpticalAirGapDecoder {
     expected_chunks: usize,
@@ -24,7 +24,7 @@ impl OpticalAirGapDecoder {
         let total_chunks = u16::from_le_bytes(total_bytes) as usize;
 
         if total_chunks != self.expected_chunks {
-            return Err("Chunk count mismatch against expected air-gap session parameters.");
+            return Err("Chunk count mismatch.");
         }
 
         let payload_chunk = &frame[6..];

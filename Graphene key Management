@@ -26,10 +26,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (dest_id, _) = MeshPacketRouter::decapsulate_payload(&encapsulated)?;
     println!("[+] Mesh packet router functional. Target ID: {:016X}", dest_id);
 
-    // Initialize optical air-gap encoder
+    // Chunk a sample payload. This does not open an air gap.
     let encoder = OpticalAirGapEncoder::new(64);
     let optical_frames = encoder.encode_payload(sample_payload)?;
-    println!("[+] Optical air-gap encoder generated {} transmission frames.", optical_frames.len());
+    println!("[+] Chunked {} frames. No air gap was opened.", optical_frames.len());
 
     println!("[*] Node successfully orchestrated and locked into zero-trust execution state.");
     Ok(())

@@ -27,6 +27,10 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { assertDeckGame } from "@/lib/native-game";
+
+assertDeckGame("neural-link");
+assertDeckGame("gods-eye");
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import {

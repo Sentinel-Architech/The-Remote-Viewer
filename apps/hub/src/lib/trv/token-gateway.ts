@@ -6,6 +6,9 @@
  * do not split spend + credit across two queries.
  */
 import type { Sql } from "@/lib/db";
+import { assertSimGame } from "@/lib/trv/native-games";
+
+assertSimGame("token-gateway");
 
 export const GATEWAY_SIM = "SIM" as const;
 export const RESERVE_MS = 30_000;

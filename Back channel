@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ============================================================================
-# THE SENTINEL SECURITY PROTOCOL - PARALLEL AIR-GAPPED ORCHESTRATION SCRIPT
-# Back channels closed. Local loopback binding only. 100% Open-Source stack.
+# THE SENTINEL SECURITY PROTOCOL - LOCAL PROCESS SCRIPT
+# Back channels closed. Local loopback binding only. This script does not create an air gap.
 # ============================================================================
 
 set -euo pipefail

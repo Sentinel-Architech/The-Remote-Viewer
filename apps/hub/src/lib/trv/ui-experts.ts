@@ -10,7 +10,7 @@ export const XIAOMI_PAID = false as const;
 export const PAID_MODEL_IN_SOCIAL = { x: "Grok" } as const;
 
 export const UI_EXPERT_RULE =
-  "Higher paid tiers customize through MiMo-V2.6-Pro, free MIT weights on a TRV-owned copy. Xiaomi is not paid and receives no viewer data. A paid model is allowed only inside a social app you already use outside TRV. This screen does not send your UI there. Telemetry beyond native GPS is not collected.";
+  "Higher paid tiers open more of these controls. MiMo-V2.6-Pro is the on-box model, free MIT weights on a TRV-owned copy. If those weights are not on this box, the model does not load and does not run, and nothing is fetched. Xiaomi is not paid and receives no viewer data. A paid model is allowed only inside a social app you already use outside TRV. This screen does not send your UI there. Telemetry beyond native GPS is not collected.";
 
 const CLOSED_MODEL = /grok|openai|\bgpt\b|anthropic|claude|google|gemini|alphabet|\bmeta\b|facebook/i;
 const THIRD_PARTY = /^https?:/i;
@@ -128,4 +128,4 @@ export function exclusiveLookOpen(planId: string, look: ExclusiveLookId): boolea
 }
 
 export const EXCLUSIVE_LOOK_NOTE =
-  "TRV Token🍃 can mark an exclusive look. The amount is not set. MiMo-V2.6-Pro opens the look on the TRV-owned copy. Xiaomi is not paid. No price is invented.";
+  "TRV Token🍃 can mark an exclusive look. The amount is not set. The look opens from the paid tier. MiMo-V2.6-Pro does not run unless a TRV-owned weight copy is on this box. Xiaomi is not paid. No price is invented.";

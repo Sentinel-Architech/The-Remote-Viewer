@@ -1,5 +1,5 @@
 // tests/sovereign_integration.rs
-// Workspace integration test validating end-to-end cryptographic sealing and optical framing.
+// Seals a payload, chunks it, and reassembles the bytes. This test does not open an air gap.
 
 use sentinel_optic::{OpticalAirGapEncoder, OpticalAirGapDecoder};
 use sentinel_graphene::MobileCryptoVault;
@@ -9,7 +9,7 @@ fn test_sovereign_pipeline_integrity() {
     let vault = MobileCryptoVault::new();
     let key = vault.generate_ephemeral_key();
     
-    let plaintext = b"THE SENTINEL SECURITY PROTOCOL: AIR-GAP SOVEREIGN VERIFICATION";
+    let plaintext = b"THE SENTINEL SECURITY PROTOCOL: LOCAL FRAME CHECK";
     let ciphertext = vault.seal_payload(&key, plaintext).unwrap();
 
     let frames = OpticalAirGapEncoder::encode_to_optical_frames(&ciphertext, 16);

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { mimoLocalStatus } from "@/lib/trv/mimo-server";
 import { saveUiTheme } from "@/lib/trv/server";
 import {
   DEFAULT_THEME,
@@ -35,6 +36,21 @@ export function ViewerUiSettings({
 }) {
   const open = new Set(uiControls(planId));
   const [theme, setTheme] = useState<ViewerTheme>(() => clampThemeToPlan(parseTheme(saved), planId));
+  const [mimo, setMimo] = useState("Checking the on-box MiMo copy.");
+
+  useEffect(() => {
+    let live = true;
+    void mimoLocalStatus()
+      .then((result) => {
+        if (live) setMimo(result.reason);
+      })
+      .catch(() => {
+        if (live) setMimo("The on-box MiMo check did not finish. The model did not run.");
+      });
+    return () => {
+      live = false;
+    };
+  }, []);
 
   function preview(next: ViewerTheme) {
     const clamped = clampThemeToPlan(next, planId);
@@ -47,7 +63,7 @@ export function ViewerUiSettings({
     <section className="rounded-[var(--radius-xl)] border border-border bg-card p-5">
       <h2 className="font-display text-xl">Your UI</h2>
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-        {UI_EXPERT_RULE} Free stays the plain settings: field, accent, corners, and density. Higher paid tiers open more. No price is added here.
+        {UI_EXPERT_RULE} Free stays the plain settings: field, accent, corners, and density. Higher paid tiers open more. No price is added here. {mimo}
       </p>
       <div className="mt-4 grid gap-2 sm:grid-cols-5">
         {(Object.keys(THEME_PRESETS) as ThemePresetId[]).map((id) => (
