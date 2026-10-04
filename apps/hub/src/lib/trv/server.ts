@@ -18,6 +18,7 @@ import { classifyLure, lessonFor } from "./honeypot";
 import { assertImageData, parseLinks, sanitizeHttps } from "./profile";
 import { shopById } from "./shop";
 import { PAID_TRIAL_CREDITS, PAID_TRIAL_PLAN, paidTrialUntilIso } from "./trial";
+import { isClanPlan } from "./clan-checkout";
 import { humanCommsNeedsStripe, shouldExpireVerified } from "./human-comms-checkout";
 import type {
   ForumPost,
@@ -1096,6 +1097,9 @@ export const subscribePlan = createServerFn({ method: "POST" })
     const usd = planPriceUsd(plan, data.interval);
     if (humanCommsNeedsStripe(plan.id) && usd > 0) {
       throw new Error("Verified human comms is granted only after Stripe Checkout and a verified webhook.");
+    }
+    if (isClanPlan(plan.id)) {
+      throw new Error("Sentinel, Squad, Command, and Sovereign settle only on the native TRV path.");
     }
     const credits = planCredits(usdToCredits(plan.usdMonth, data.interval), Boolean(me.citizenAt));
     if (plan.usdMonth > 0 && me.credits < credits) throw new Error("Insufficient TRV credits");

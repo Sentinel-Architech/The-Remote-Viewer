@@ -12,6 +12,7 @@
 
 import { ml_dsa65 } from "@noble/post-quantum/ml-dsa.js";
 import { falcon512 } from "@noble/post-quantum/falcon.js";
+import { CLAN_CHARGE_PREFIX } from "./clan-checkout";
 
 const DB_NAME = "trv-wallet";
 const STORE = "vault";
@@ -424,6 +425,19 @@ export async function signHelmProof(): Promise<HelmProof> {
   }
 
   return proof;
+}
+
+/** Sign a clan charge. The seed stays in this vault. This does not encrypt the message. */
+export async function signDeviceCharge(message: string): Promise<{ message: string; signature: string; pubkey: string }> {
+  if (!message.startsWith(CLAN_CHARGE_PREFIX)) throw new Error("Refusing to sign a non-clan charge");
+  if (!sessionSeed) throw new Error("Unlock first");
+  if (sessionCurve !== "ed25519" && sessionCurve !== "hybrid") {
+    throw new Error("Unlock an Ed25519 or hybrid vault first");
+  }
+  const vault = await loadVault();
+  if (!vault) throw new Error("No wallet on this device");
+  const signature = b58(await ed25519Sign(sessionSeed, new TextEncoder().encode(message)));
+  return { message, signature, pubkey: vault.pubkey };
 }
 
 export async function connectPhantom(): Promise<string> {

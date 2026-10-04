@@ -1,5 +1,6 @@
 /** Browser twin of desktop/src/runtime — IndexedDB identity, nonce replay, linear zkML. Seed never leaves this device. */
 
+import { CLAN_CHARGE_PREFIX } from "./clan-checkout";
 import { b58, ed25519PubRaw, ed25519Sign, ed25519Verify } from "./wallet-client";
 
 const DB_NAME = "sentinel-node";
@@ -218,6 +219,16 @@ export async function attestNode(): Promise<AttestationReceipt> {
     nonce,
     verified,
   };
+}
+
+/** Co-sign a clan charge with the node key. The seed stays in IndexedDB. */
+export async function signNodeCharge(message: string): Promise<{ message: string; signature: string; pubkey: string }> {
+  if (!message.startsWith(CLAN_CHARGE_PREFIX)) throw new Error("Refusing to sign a non-clan charge");
+  if (!sessionSeed || !sessionIdentity) {
+    throw new Error("Node identity not found in local state store.");
+  }
+  const signature = b58(await ed25519Sign(sessionSeed, new TextEncoder().encode(message)));
+  return { message, signature, pubkey: sessionIdentity.pubkeyB58 };
 }
 
 export async function executeNodeAttestation(pubkeyHex: string): Promise<string> {

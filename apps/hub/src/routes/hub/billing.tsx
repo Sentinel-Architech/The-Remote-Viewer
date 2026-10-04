@@ -2,10 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useViewer } from "@/components/viewer-context";
+import { clanChargeTrv, isClanPlan, phantomClanSettlement } from "@/lib/trv/clan-checkout";
+import { quoteClanCheckout, settleClanCheckout } from "@/lib/trv/clan-settle";
 import { startHumanCommsCheckout } from "@/lib/trv/human-comms-stripe";
 import { convertToTrv, confirmPreviewOnramp, getBilling, inviteOrgSeat, startOutsideTrial, startStripeOnramp, subscribePlan } from "@/lib/trv/server";
+import { isProvisioned, peekIdentity, restoreIdentity, signNodeCharge } from "@/lib/trv/node-runtime";
 import { formatSol, usdToSolMicro, type OnrampDest } from "@/lib/trv/onramp";
-import { isUnlocked } from "@/lib/trv/wallet-client";
+import { isUnlocked, signDeviceCharge } from "@/lib/trv/wallet-client";
 import {
   ALL_PLANS,
   COMPANY_PLANS,
@@ -61,7 +64,9 @@ function BillingPage() {
   const plans = edition === "people" ? PEOPLE_PLANS : COMPANY_PLANS;
   const selected = useMemo(() => planById(planId), [planId]);
   const dueUsd = planPriceUsd(selected, interval);
-  const dueTrv = usdToCredits(selected.usdMonth, interval);
+  const dueTrv = isClanPlan(selected.id)
+    ? clanChargeTrv(selected, interval, Boolean(profile?.citizenAt))
+    : usdToCredits(selected.usdMonth, interval);
 
   useEffect(() => {
     if (search.edition) setEdition(search.edition);
@@ -164,6 +169,50 @@ function BillingPage() {
     } finally {
       setBusy(false);
     }
+  }
+
+  async function payClan() {
+    if (!isClanPlan(selected.id)) return;
+    setBusy(true);
+    try {
+      await restoreIdentity();
+      const node = peekIdentity();
+      if (!isProvisioned() || !node) {
+        throw new Error("Provision a node on this device first. These plans are for people who node together.");
+      }
+      if (!isUnlocked()) {
+        throw new Error("Unlock the on-device wallet. The seed stays on this device.");
+      }
+      const quote = await quoteClanCheckout({
+        data: { planId: selected.id, interval, nodePubkey: node.pubkeyB58 },
+      });
+      const wallet = await signDeviceCharge(quote.message);
+      const nodeSig = await signNodeCharge(quote.message);
+      const settled = await settleClanCheckout({
+        data: {
+          message: quote.message,
+          walletPubkey: wallet.pubkey,
+          walletSignature: wallet.signature,
+          nodePubkey: nodeSig.pubkey,
+          nodeSignature: nodeSig.signature,
+          orgName,
+        },
+      });
+      if (settled.profile) setProfile(settled.profile);
+      toast.success(`${selected.name} is on. ${settled.charged} TRV left the native ledger.`);
+      const b = await getBilling();
+      setInvoices(b.invoices);
+      setOrg(b.org);
+      setFeeRate(b.feeRate);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Clan checkout failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function explainPhantom() {
+    toast.error(phantomClanSettlement().reason);
   }
 
   async function checkoutHuman() {
@@ -350,6 +399,7 @@ function BillingPage() {
           Optional USD rail — not the lock, not a backdoor. Live Stripe Checkout
           is used when keys are present. This preview never collects card
           numbers. Destination: native TRV (default) or SOL toward Phantom.
+          Sentinel, Squad, Command, and Sovereign are not sold on this rail.
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <div>
@@ -427,7 +477,13 @@ function BillingPage() {
             >
               <p className="font-medium">{p.name}</p>
               <p className="mt-1 font-mono text-lg tabular-nums">
-                {p.id === "verified" ? "$10/mo · $50/yr" : p.usdMonth === 0 ? "Free" : `$${p.usdMonth}/mo`}
+                {p.id === "verified"
+                  ? "$10/mo · $50/yr"
+                  : isClanPlan(p.id)
+                    ? `${p.usdMonth * USD_TO_TRV} TRV/mo`
+                    : p.usdMonth === 0
+                      ? "Free"
+                      : `$${p.usdMonth}/mo`}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">{p.tagline}</p>
             </button>
@@ -474,6 +530,15 @@ function BillingPage() {
             <Button onClick={() => void checkoutHuman()} disabled={busy}>
               {interval === "year" ? "Checkout $50 / year" : "Checkout $10 / month"}
             </Button>
+          ) : isClanPlan(selected.id) ? (
+            <>
+              <Button onClick={() => void payClan()} disabled={busy}>
+                Sign and pay {dueTrv} TRV
+              </Button>
+              <Button variant="secondary" onClick={explainPhantom} disabled={busy}>
+                Phantom
+              </Button>
+            </>
           ) : (
             <Button onClick={() => void subscribe()} disabled={busy}>
               {dueUsd === 0 ? "Set Initiate" : `Seal ${dueTrv} TRV · $${dueUsd}`}
@@ -483,6 +548,11 @@ function BillingPage() {
         {selected.id === "verified" ? (
           <p className="text-xs text-muted-foreground">
             Card checkout is Stripe. This does not mark the plan paid. Unlimited human comms starts after the webhook verifies $10 a month or $50 a year.
+          </p>
+        ) : null}
+        {isClanPlan(selected.id) ? (
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Published price, paid in TRV on this hub’s ledger. The on-device wallet and the on-device node each sign the charge. Seeds stay in the local vault. This signature check is not an age ciphertext and not an optical transfer. Phantom does not settle these prices: no TRV mint is published. Stripe does not sell them.
           </p>
         ) : null}
         {selected.id !== "verified" && (live?.credits ?? 0) < dueTrv && dueTrv > 0 ? (
