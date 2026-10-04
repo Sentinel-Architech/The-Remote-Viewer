@@ -1,0 +1,153 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import test from "node:test";
+import { GATEWAY_DOCS } from "../src/lib/trv/gateway.ts";
+import { localDeclassifiedSearch } from "../src/lib/trv/local-search.ts";
+import { tierTokenExtra, quoteConverter } from "../src/lib/trv/rail-convert.ts";
+import { carryModelPlan, MINIMIND_PUBLISHED_BYTES, WEARABLE_SAFE_BYTES } from "../src/lib/trv/carry-model.ts";
+import { fullWeightLowerBoundBytes } from "../src/lib/trv/mimo-capacity.ts";
+import { qualifyFingerprint, qualifyNfc, qualifySelfie, FEDERAL_POSTURE } from "../src/lib/trv/digital-id.ts";
+import { viewerSeatFromUserAgent } from "../src/lib/trv/viewer-seat.ts";
+
+test("local search stays on the device and uses only existing gateway titles", () => {
+  const result = localDeclassifiedSearch({ query: "Hemi-Sync", verified: false });
+  assert.equal(result.sentOffDevice, false);
+  assert.equal(result.networkRequests, 0);
+  assert.equal(result.archiveOpened, false);
+  assert.equal(result.pdfEngine, "not-included");
+  assert.ok(result.hits.some((hit) => hit.title === "Hemi-Sync — what the document claims"));
+  const titles = new Set(GATEWAY_DOCS.map((doc) => doc.title));
+  for (const hit of result.hits) {
+    if (hit.kind !== "local-file") assert.equal(titles.has(hit.title), true);
+  }
+  assert.match(result.reason, /not sent off this device/);
+});
+
+test("a sealed method body is not opened and an unknown title is not invented", () => {
+  const result = localDeclassifiedSearch({ query: "Focus 10 entry", verified: false });
+  const method = result.hits.find((hit) => hit.id === "method-focus-10");
+  assert.ok(method);
+  assert.equal(method?.locked, true);
+  assert.match(method?.excerpt ?? "", /not opened/);
+  assert.equal(result.hits.some((hit) => hit.title === "Project Sun Streak"), false);
+});
+
+test("an empty local pdf is not given a title and is not parsed", () => {
+  const result = localDeclassifiedSearch({
+    query: "archive",
+    verified: true,
+    localFiles: [
+      { name: "", text: "archive" },
+      { name: "notes.txt", text: "local archive note" },
+      { name: "scan.pdf", text: "" },
+    ],
+  });
+  assert.deepEqual(result.unparsed, ["scan.pdf"]);
+  assert.ok(result.hits.some((hit) => hit.title === "notes.txt"));
+  assert.equal(result.hits.some((hit) => hit.title === "scan.pdf"), false);
+  assert.match(result.reason, /were not read/);
+});
+
+test("the search module does not call the network", () => {
+  const source = readFileSync(new URL("../src/lib/trv/local-search.ts", import.meta.url), "utf8");
+  assert.equal(/fetch\(|https?:|cia\.gov|xmlhttprequest/i.test(source), false);
+});
+
+test("carry seats do not run the full weights and a wearable does not fit MiniMind", () => {
+  assert.equal(viewerSeatFromUserAgent("Mozilla/5.0 (iPad)"), "tablet");
+  assert.equal(viewerSeatFromUserAgent("foldable"), "foldable");
+  assert.equal(viewerSeatFromUserAgent("Wear OS watch"), "wearable");
+  assert.equal(viewerSeatFromUserAgent("Android Auto"), "android-auto");
+  assert.equal(viewerSeatFromUserAgent("Mozilla/5.0 (X11; Linux)"), "stationary");
+  const wearable = carryModelPlan("wearable", null);
+  assert.equal(wearable.fits, false);
+  assert.equal(wearable.inferenceRan, false);
+  assert.ok(MINIMIND_PUBLISHED_BYTES > WEARABLE_SAFE_BYTES);
+  const phone = carryModelPlan("phone", null);
+  assert.equal(phone.model, "MiniMind Max2");
+  assert.equal(phone.fits, true);
+  assert.equal(phone.inferenceRan, false);
+  assert.match(phone.reason, /did not run/);
+  const huge = carryModelPlan("tablet", fullWeightLowerBoundBytes());
+  assert.equal(huge.inferenceRan, false);
+  assert.match(huge.reason, /not loaded/);
+});
+
+test("converter caps and published tier extras do not move money", () => {
+  assert.equal(tierTokenExtra("verified", null).amount, 1200);
+  assert.equal(tierTokenExtra("sentinel", null).amount, 2000);
+  assert.equal(tierTokenExtra("squad", null).amount, null);
+  assert.equal(tierTokenExtra("command", null).amount, null);
+  assert.equal(tierTokenExtra("sovereign", null).amount, null);
+  assert.equal(tierTokenExtra("sovereign", null).openToBankBalance, true);
+  const quote = quoteConverter({
+    seat: "stationary",
+    planId: "verified",
+    direction: "card-to-crypto",
+    units: 10,
+    bulk: false,
+    spentThisMonthUsd: 0,
+    newViewerQrShares: 0,
+    bulkDiscountsUsed: 0,
+  });
+  assert.equal(quote.moneyMoved, false);
+  assert.equal(quote.rate, 1);
+  assert.equal(quote.shopCredit, 10);
+  assert.equal(quote.tierExtra, 1200);
+  assert.equal(quote.cardRail, "stripe");
+  assert.equal(quote.cryptoRail, "phantom");
+  assert.throws(
+    () =>
+      quoteConverter({
+        seat: "stationary",
+        planId: "initiate",
+        direction: "crypto-to-card",
+        units: 1001,
+        bulk: false,
+        spentThisMonthUsd: 0,
+        newViewerQrShares: 0,
+        bulkDiscountsUsed: 0,
+      }),
+    /1000/,
+  );
+  const bulk = quoteConverter({
+    seat: "stationary",
+    planId: "initiate",
+    direction: "card-to-crypto",
+    units: 10,
+    bulk: true,
+    spentThisMonthUsd: 0,
+    newViewerQrShares: 1,
+    bulkDiscountsUsed: 0,
+  });
+  assert.equal(bulk.completed, false);
+  assert.equal(bulk.bulkQuantity, null);
+  assert.equal(bulk.bulkDiscount, 0.1);
+  assert.equal(bulk.moneyMoved, false);
+  assert.throws(
+    () =>
+      quoteConverter({
+        seat: "phone",
+        planId: "verified",
+        direction: "card-to-crypto",
+        units: 1,
+        bulk: false,
+        spentThisMonthUsd: 0,
+        newViewerQrShares: 0,
+        bulkDiscountsUsed: 0,
+      }),
+    /does not pay/,
+  );
+});
+
+test("digital id capture rules stay native and uncertified", () => {
+  assert.equal(FEDERAL_POSTURE.certified, false);
+  assert.equal(FEDERAL_POSTURE.federalGuarantee, false);
+  assert.equal(qualifyFingerprint({ liveSensor: false, storedPhoto: true }).counts, false);
+  assert.equal(qualifyFingerprint({ liveSensor: true, storedPhoto: false }).counts, true);
+  assert.equal(qualifySelfie({ source: "file", seconds: 20 }).counts, false);
+  assert.equal(qualifySelfie({ source: "live-camera", seconds: 20 }).counts, true);
+  assert.equal(qualifySelfie({ source: "live-camera", seconds: 10 }).counts, false);
+  assert.equal(qualifyNfc({ adapterPresent: false, tagRead: true }).read, false);
+  assert.equal(qualifyNfc({ adapterPresent: false, tagRead: true }).capable, false);
+});

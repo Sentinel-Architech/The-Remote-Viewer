@@ -675,6 +675,8 @@ export const buyNft = createServerFn({ method: "POST" })
       : { id: Number(input.id), bundle: Boolean(input.bundle), signature: String(input.signature ?? "").slice(0, 32) },
   )
   .handler(async ({ context, data }) => {
+    const { refuseCarryPaymentFromRequest } = await import("./carry-pay.server");
+    refuseCarryPaymentFromRequest();
     const sql = await getSql();
     const nfts = await sql<{ id: number; user_id: string; price_credits: number; listed: boolean; bundle_price: number | null; inspiration_data: string | null }>`
       select id, user_id, price_credits, listed, bundle_price, inspiration_data from trv_nfts where id = ${data.id} limit 1
@@ -1084,6 +1086,9 @@ export const convertToTrv = createServerFn({ method: "POST" })
     rail: input.rail.slice(0, 24),
   }))
   .handler(async ({ context, data }) => {
+    // Server-only import so the browser bundle does not load getRequest.
+    const { refuseCarryPaymentFromRequest } = await import("./carry-pay.server");
+    refuseCarryPaymentFromRequest();
     assertPreviewMintAllowed();
     const sql = await getSql();
     const credits = usdToCredits(data.usd);
@@ -1117,6 +1122,8 @@ export const subscribePlan = createServerFn({ method: "POST" })
     }
     const credits = planCredits(usdToCredits(plan.usdMonth, data.interval), Boolean(me.citizenAt));
     if (plan.usdMonth > 0) {
+      const { refuseCarryPaymentFromRequest } = await import("./carry-pay.server");
+      refuseCarryPaymentFromRequest();
       assertNativeTrvDebit({ signature: data.signature, handle: me.handle, rail: "trv-native" });
     }
     if (plan.usdMonth > 0 && me.credits < credits) throw new Error("Insufficient TRV credits");
@@ -1177,6 +1184,8 @@ export const startStripeOnramp = createServerFn({ method: "POST" })
     origin: input.origin.slice(0, 200),
   }))
   .handler(async ({ context, data }) => {
+    const { refuseCarryPaymentFromRequest } = await import("./carry-pay.server");
+    refuseCarryPaymentFromRequest();
     const key = process.env.STRIPE_SECRET_KEY;
     if (!key) return { mode: "preview" as const, url: null as string | null };
     const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
@@ -1207,6 +1216,8 @@ export const confirmPreviewOnramp = createServerFn({ method: "POST" })
     dest: input.dest === "sol" ? "sol" : "trv",
   }))
   .handler(async ({ context, data }) => {
+    const { refuseCarryPaymentFromRequest } = await import("./carry-pay.server");
+    refuseCarryPaymentFromRequest();
     assertPreviewMintAllowed();
     await settleOnramp(context.userId, data.usd, data.dest, `preview-${context.userId}-${Date.now()}`);
     const sql = await getSql();

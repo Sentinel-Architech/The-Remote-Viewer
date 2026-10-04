@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { GATEWAY_DOCS } from "@/lib/trv/gateway";
+import { localDeclassifiedSearch } from "@/lib/trv/local-search";
 import { useViewer } from "@/components/viewer-context";
 import { verifyViewer } from "@/lib/trv/server";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,11 @@ function GatewayPage() {
 
   const docs = GATEWAY_DOCS;
   const active = useMemo(() => docs.find((d) => d.id === open), [docs, open]);
+  const [query, setQuery] = useState("");
+  const found = useMemo(
+    () => localDeclassifiedSearch({ query, verified }),
+    [query, verified],
+  );
 
   async function playFlash() {
     setSeq([]);
@@ -41,8 +47,33 @@ function GatewayPage() {
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
           Documents and sources are free. Methods — the how of each activity —
           stay sealed until a Viewer passes the robot handshake and leaves
-          Initiate. Hover a card to preview whether it is document or method.
+          Initiate. Search runs on this device over the texts already here. It
+          does not send the query off the device, and it does not add a title
+          this install does not already hold.
         </p>
+        <label className="mt-4 block text-sm">
+          Local search
+          <input
+            className="mt-1.5 w-full rounded-[var(--radius-md)] border border-input bg-elevated px-3 py-2"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search the texts on this device"
+          />
+        </label>
+        {query.trim() ? (
+          <div className="mt-3 text-sm text-muted-foreground">
+            <p>{found.reason}</p>
+            <ul className="mt-2 space-y-2">
+              {found.hits.map((hit) => (
+                <li key={hit.id}>
+                  <span className="text-fg">{hit.title}</span>
+                  {hit.locked ? " · sealed" : ""}
+                  <span className="block text-xs">{hit.excerpt}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
         <div className="mt-3">
           <Badge variant={verified ? "native" : "warn"}>
             {verified ? "Verified Viewer · methods open" : "Initiate · methods sealed"}

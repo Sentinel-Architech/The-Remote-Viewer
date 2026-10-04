@@ -28,6 +28,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { isPaidTrialActive, isPaidTrialExpired, formatTrialClock, msUntil, PAID_TRIAL_HOURS } from "@/lib/trv/trial";
+import { assertCarryDeviceDoesNotPay } from "@/lib/trv/viewer-seat";
 
 type BillingSearch = { plan?: string; edition?: Edition; checkout?: "pending" | "cancel"; session_id?: string };
 
@@ -133,7 +134,18 @@ function BillingPage() {
     };
   }, [search.checkout, search.session_id, setProfile]);
 
+  function carryPays(): boolean {
+    try {
+      assertCarryDeviceDoesNotPay(typeof navigator === "undefined" ? "" : navigator.userAgent);
+      return false;
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "This device does not pay.");
+      return true;
+    }
+  }
+
   async function convert() {
+    if (carryPays()) return;
     setBusy(true);
     try {
       const r = await convertToTrv({ data: { usd, rail } });
@@ -149,6 +161,7 @@ function BillingPage() {
   }
 
   async function subscribe() {
+    if (selected.usdMonth > 0 && carryPays()) return;
     setBusy(true);
     try {
       const r = await subscribePlan({
@@ -173,6 +186,7 @@ function BillingPage() {
 
   async function payClan() {
     if (!isClanPlan(selected.id)) return;
+    if (carryPays()) return;
     setBusy(true);
     try {
       await restoreIdentity();
@@ -217,6 +231,7 @@ function BillingPage() {
 
   async function checkoutHuman() {
     if (selected.id !== "verified" || dueUsd <= 0) return;
+    if (carryPays()) return;
     setBusy(true);
     try {
       const r = await startHumanCommsCheckout({
@@ -249,6 +264,7 @@ function BillingPage() {
   }
 
   async function stripeStart() {
+    if (carryPays()) return;
     if (dest === "sol" && !isUnlocked() && !live?.phantomPubkey) {
       toast.error("Unlock your native wallet or connect Phantom before SOL.");
       return;
@@ -271,6 +287,7 @@ function BillingPage() {
   }
 
   async function stripePreviewConfirm() {
+    if (carryPays()) return;
     setBusy(true);
     try {
       const r = await confirmPreviewOnramp({ data: { usd: stripeUsd, dest } });

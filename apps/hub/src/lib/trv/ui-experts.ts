@@ -10,7 +10,7 @@ export const XIAOMI_PAID = false as const;
 export const PAID_MODEL_IN_SOCIAL = { x: "Grok" } as const;
 
 export const UI_EXPERT_RULE =
-  "Higher paid tiers open more of these controls. MiMo-V2.6-Pro is the on-box model, free MIT weights on a TRV-owned copy. If those weights are not on this box, the model does not load and does not run, and nothing is fetched. Xiaomi is not paid and receives no viewer data. A paid model is allowed only inside a social app you already use outside TRV. This screen does not send your UI there. Telemetry beyond native GPS is not collected.";
+  "This build is native and open source. Higher paid tiers open more of these controls. MiMo-V2.6-Pro runs only from a copy in this repo, on a stationary computer that has those weights. A phone, tablet, foldable, wearable, or Android Auto does not run those weights. MiniMind Max2 is the smaller open model for a carry device only when it fits. If it does not fit, or the weights are not on the device, it does not run. Nothing is fetched. Xiaomi is not paid and receives no viewer data. A paid model is allowed only inside a social app you already use outside TRV. This screen does not send your UI there. Telemetry beyond native GPS is not collected.";
 
 const CLOSED_MODEL = /grok|openai|\bgpt\b|anthropic|claude|google|gemini|alphabet|\bmeta\b|facebook/i;
 const THIRD_PARTY = /^https?:/i;

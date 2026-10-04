@@ -19,7 +19,11 @@ test("the Android install is a native screen, not a website shell", () => {
   assert.match(activity, /LocationManager\.GPS_PROVIDER/);
   assert.equal(manifest.includes("android.permission.INTERNET"), false);
   assert.equal(/com\.google|firebase|androidx|facebook|play-services/i.test(bundle), false);
-  assert.match(read("res/values/strings.xml"), /not a website/);
+  const strings = read("res/values/strings.xml");
+  assert.match(strings, /not a website/);
+  assert.match(strings, /do not run on this phone/);
+  assert.match(read("res/layout/activity_main.xml"), /mimo_phone/);
+  assert.equal(/huggingface|xiaomi\.com|loadUrl/i.test(activity), false);
 });
 
 test("telemetry allowlist is native GPS only", () => {

@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { carryModelPlan } from "@/lib/trv/carry-model";
 import { mimoLocalStatus } from "@/lib/trv/mimo-server";
+import { viewerSeatFromUserAgent } from "@/lib/trv/viewer-seat";
 import { saveUiTheme } from "@/lib/trv/server";
 import {
   DEFAULT_THEME,
@@ -39,6 +41,15 @@ export function ViewerUiSettings({
   const [mimo, setMimo] = useState("Checking the on-box MiMo copy.");
 
   useEffect(() => {
+    const seat = viewerSeatFromUserAgent(typeof navigator === "undefined" ? "" : navigator.userAgent);
+    if (seat !== "stationary") {
+      try {
+        setMimo(carryModelPlan(seat, null).reason);
+      } catch {
+        setMimo("The model check stopped. The app did not crash. The full weights were not loaded.");
+      }
+      return;
+    }
     let live = true;
     void mimoLocalStatus()
       .then((result) => {

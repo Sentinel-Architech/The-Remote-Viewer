@@ -1,11 +1,12 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, statSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
+import { join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { assertMimoLocal, UI_MODEL_NAME, XIAOMI_PAID } from "./ui-experts";
 
 const LOADER = fileURLToPath(new URL("../../../scripts/mimo-onbox.mjs", import.meta.url));
+/** Weights count only inside this repo directory. A home folder or a URL does not. */
+export const MIMO_REPO_DIR = fileURLToPath(new URL("../../../mimo/MiMo-V2.6-Pro", import.meta.url));
 const WEIGHT_FILES = ["config.json", "model.safetensors"] as const;
 
 export type MimoOnBoxStatus = "missing-weights" | "loaded" | "refused";
@@ -40,12 +41,22 @@ function base(weightsDir: string): Omit<MimoOnBoxResult, "loaded" | "processRan"
   };
 }
 
-/** Local directory only. Unset uses this machine's TRV directory and never a URL. */
+export function weightsDirInRepo(dir: string): boolean {
+  const root = resolve(MIMO_REPO_DIR);
+  const target = resolve(dir);
+  const fromRoot = relative(root, target);
+  return fromRoot === "" || (!fromRoot.startsWith("..") && !fromRoot.startsWith("/"));
+}
+
+/** Unset uses the repo directory. Any other path must still be inside that directory. */
 export function resolveMimoWeightsDir(env: NodeJS.ProcessEnv = process.env): string {
   const raw = (env.TRV_MIMO_WEIGHTS ?? "").trim();
-  if (!raw) return join(homedir(), ".trv", "mimo");
+  if (!raw) return MIMO_REPO_DIR;
   assertMimoLocal(raw);
-  return raw;
+  if (!weightsDirInRepo(raw)) {
+    throw new Error("MiMo-V2.6-Pro runs only from the weights directory in this repo. The model did not run.");
+  }
+  return resolve(raw);
 }
 
 export function mimoWeightsPresent(dir: string): boolean {
@@ -75,7 +86,7 @@ export function runMimoOnBox(env: NodeJS.ProcessEnv = process.env): MimoOnBoxRes
       processRan: false,
       status: "missing-weights",
       bytes: 0,
-      reason: "MiMo-V2.6-Pro weights are not on this box. Nothing was fetched. The model did not load and did not run.",
+      reason: "MiMo-V2.6-Pro weights are not in this repo. Nothing was fetched. The model did not load and did not run.",
     };
   }
 

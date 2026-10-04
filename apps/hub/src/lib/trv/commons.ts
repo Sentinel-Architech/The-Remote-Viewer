@@ -185,6 +185,8 @@ export const buyShopItem = createServerFn({ method: "POST" })
       : { itemId: String(input.itemId ?? "").slice(0, 40), signature: String(input.signature ?? "").slice(0, 32) },
   )
   .handler(async ({ context, data }) => {
+    const { refuseCarryPaymentFromRequest } = await import("./carry-pay.server");
+    refuseCarryPaymentFromRequest();
     const itemId = data.itemId;
     const item = shopById(itemId);
     if (!item) throw new Error("Unknown shop item");

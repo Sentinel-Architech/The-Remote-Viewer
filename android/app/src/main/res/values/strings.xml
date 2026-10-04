@@ -7,6 +7,7 @@
     <string name="free_tier">Free: this device\'s own lock plus the bare TRV layer. That does not require a purchase.</string>
     <string name="token_sim">TRV Token🍃 is a simulation only. It buys exclusive in-app customizations only. It is not money, not crypto, and not redeemable for cash. The amount is not set.</string>
     <string name="telemetry_rule">The only telemetry in this install is this phone\'s own GPS, and only when you ask. The fix stays on this phone. There is no analytics, no ad network, and no other location service.</string>
+    <string name="mimo_phone">The full MiMo-V2.6-Pro weights do not run on this phone. This install does not load them and does not run them. Nothing is sent off this phone. No paid host is used.</string>
     <string name="purchase_rails">Stripe stays the card rail only. X Money and Phantom stay the other purchase rails. They are not replaced here, and none of them is this install.</string>
     <string name="check_lock">Check device lock</string>
     <string name="read_gps">Read native GPS</string>

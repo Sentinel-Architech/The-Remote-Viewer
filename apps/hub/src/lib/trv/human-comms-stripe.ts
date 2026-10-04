@@ -246,6 +246,8 @@ export const startHumanCommsCheckout = createServerFn({ method: "POST" })
     origin: String(input.origin || "").slice(0, 200),
   }))
   .handler(async ({ context, data }) => {
+    const { refuseCarryPaymentFromRequest } = await import("./carry-pay.server");
+    refuseCarryPaymentFromRequest();
     const key = secretKey();
     const extra = extraOrigin();
     const origin = resolveCheckoutOrigin(data.origin, extra ? [extra] : []);
