@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useViewer } from "@/components/viewer-context";
+import { startHumanCommsCheckout } from "@/lib/trv/human-comms-stripe";
 import { convertToTrv, confirmPreviewOnramp, getBilling, inviteOrgSeat, startOutsideTrial, startStripeOnramp, subscribePlan } from "@/lib/trv/server";
 import { formatSol, usdToSolMicro, type OnrampDest } from "@/lib/trv/onramp";
 import { isUnlocked } from "@/lib/trv/wallet-client";
@@ -25,12 +26,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { cn } from "@/lib/utils";
 import { isPaidTrialActive, isPaidTrialExpired, formatTrialClock, msUntil, PAID_TRIAL_HOURS } from "@/lib/trv/trial";
 
-type BillingSearch = { plan?: string; edition?: Edition };
+type BillingSearch = { plan?: string; edition?: Edition; checkout?: "pending" | "cancel"; session_id?: string };
 
 export const Route = createFileRoute("/hub/billing")({
   validateSearch: (s: Record<string, unknown>): BillingSearch => ({
     plan: typeof s.plan === "string" ? s.plan : undefined,
     edition: s.edition === "company" ? "company" : s.edition === "people" ? "people" : undefined,
+    checkout: s.checkout === "pending" || s.checkout === "cancel" ? s.checkout : undefined,
+    session_id: typeof s.session_id === "string" ? s.session_id.slice(0, 80) : undefined,
   }),
   component: BillingPage,
 });
@@ -52,6 +55,8 @@ function BillingPage() {
   const [dest, setDest] = useState<OnrampDest>("trv");
   const [stripeOpen, setStripeOpen] = useState(false);
   const [stripeUsd, setStripeUsd] = useState(40);
+  const [stripeNote, setStripeNote] = useState<string | null>(null);
+  const stripeToasted = useRef(false);
 
   const plans = edition === "people" ? PEOPLE_PLANS : COMPANY_PLANS;
   const selected = useMemo(() => planById(planId), [planId]);
@@ -79,6 +84,49 @@ function BillingPage() {
       })
       .catch(() => {});
   }, [search.plan, search.edition, setProfile]);
+
+  useEffect(() => {
+    if (search.checkout === "cancel") {
+      setStripeNote("Checkout closed. No plan was granted.");
+      return;
+    }
+    if (search.checkout !== "pending" || !search.session_id) return;
+    const sessionId = search.session_id;
+    setStripeNote("Stripe has this checkout. Verified turns on after the signed webhook.");
+    let stopped = false;
+    const tick = async () => {
+      try {
+        const b = await getBilling();
+        if (stopped) return;
+        setInvoices(b.invoices);
+        setOrg(b.org);
+        setFeeRate(b.feeRate);
+        if (b.profile) setProfile(b.profile);
+        const confirmed = b.invoices.some((inv) => inv.kind === "stripe-comms" && inv.memo === sessionId);
+        if (confirmed && !stripeToasted.current) {
+          stripeToasted.current = true;
+          toast.success("Verified is on. Stripe confirmed this checkout.");
+          setStripeNote(null);
+        }
+      } catch {
+        /* keep waiting for the webhook */
+      }
+    };
+    void tick();
+    const id = window.setInterval(() => void tick(), 3000);
+    const stop = window.setTimeout(() => {
+      stopped = true;
+      window.clearInterval(id);
+      if (!stripeToasted.current) {
+        setStripeNote("Still waiting on the Stripe webhook. Verified is granted only after that signed event.");
+      }
+    }, 90000);
+    return () => {
+      stopped = true;
+      window.clearInterval(id);
+      window.clearTimeout(stop);
+    };
+  }, [search.checkout, search.session_id, setProfile]);
 
   async function convert() {
     setBusy(true);
@@ -114,6 +162,25 @@ function BillingPage() {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Subscribe failed");
     } finally {
+      setBusy(false);
+    }
+  }
+
+  async function checkoutHuman() {
+    if (selected.id !== "verified" || dueUsd <= 0) return;
+    setBusy(true);
+    try {
+      const r = await startHumanCommsCheckout({
+        data: { interval, origin: window.location.origin },
+      });
+      if (!r.url) {
+        toast.error("Stripe did not open checkout.");
+        setBusy(false);
+        return;
+      }
+      window.location.assign(r.url);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Checkout failed");
       setBusy(false);
     }
   }
@@ -195,6 +262,7 @@ function BillingPage() {
         </div>
       </div>
 
+      {stripeNote ? <p className="text-sm text-muted-foreground">{stripeNote}</p> : null}
 
       {live && planById(live.planId).usdMonth === 0 && !live.paidTrialUsed ? (
         <section className="rounded-[var(--radius-xl)] border border-accent/40 bg-card p-5">
@@ -359,7 +427,7 @@ function BillingPage() {
             >
               <p className="font-medium">{p.name}</p>
               <p className="mt-1 font-mono text-lg tabular-nums">
-                {p.usdMonth === 0 ? "Free" : `$${p.usdMonth}/mo`}
+                {p.id === "verified" ? "$10/mo · $50/yr" : p.usdMonth === 0 ? "Free" : `$${p.usdMonth}/mo`}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">{p.tagline}</p>
             </button>
@@ -379,7 +447,13 @@ function BillingPage() {
                   )}
                   onClick={() => setInterval(i)}
                 >
-                  {i === "year" ? "Year (10× month)" : "Month"}
+                  {selected.id === "verified"
+                    ? i === "year"
+                      ? "Year · $50"
+                      : "Month · $10"
+                    : i === "year"
+                      ? "Year (10× month)"
+                      : "Month"}
                 </button>
               ))}
             </div>
@@ -396,11 +470,22 @@ function BillingPage() {
               />
             </div>
           )}
-          <Button onClick={() => void subscribe()} disabled={busy}>
-            {dueUsd === 0 ? "Set Initiate" : `Seal ${dueTrv} TRV · $${dueUsd}`}
-          </Button>
+          {selected.id === "verified" && dueUsd > 0 ? (
+            <Button onClick={() => void checkoutHuman()} disabled={busy}>
+              {interval === "year" ? "Checkout $50 / year" : "Checkout $10 / month"}
+            </Button>
+          ) : (
+            <Button onClick={() => void subscribe()} disabled={busy}>
+              {dueUsd === 0 ? "Set Initiate" : `Seal ${dueTrv} TRV · $${dueUsd}`}
+            </Button>
+          )}
         </div>
-        {(live?.credits ?? 0) < dueTrv && dueTrv > 0 ? (
+        {selected.id === "verified" ? (
+          <p className="text-xs text-muted-foreground">
+            Card checkout is Stripe. This does not mark the plan paid. Unlimited human comms starts after the webhook verifies $10 a month or $50 a year.
+          </p>
+        ) : null}
+        {selected.id !== "verified" && (live?.credits ?? 0) < dueTrv && dueTrv > 0 ? (
           <p className="text-xs text-warn">
             This node holds {live?.credits ?? 0} TRV. Convert at least {dueTrv - (live?.credits ?? 0)} more.
           </p>

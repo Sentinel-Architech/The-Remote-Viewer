@@ -116,7 +116,7 @@ function PricingPage() {
 
         <p className="mt-8 flex flex-wrap items-center justify-center gap-3 text-xs text-muted-foreground">
           <Shield className="size-3.5" />
-          Annual billing is ten months of price.
+          Verified human comms is $10 a month or $50 a year.
           <Link to="/covenant" className="text-accent underline-offset-4 hover:underline">
             Read the covenant
           </Link>
@@ -141,11 +141,11 @@ function PlanCard({ plan, featured }: { plan: SaasPlan; featured?: boolean }) {
       </div>
       <p className="mt-2 min-h-10 text-sm leading-relaxed text-muted-foreground">{plan.tagline}</p>
       <p className="mt-4 font-mono text-3xl tabular-nums">
-        {plan.usdMonth === 0 ? "Free" : `$${plan.usdMonth}`}
-        {plan.usdMonth > 0 ? <span className="text-sm text-muted-foreground">/mo</span> : null}
+        {plan.id === "verified" ? "$10" : plan.usdMonth === 0 ? "Free" : `$${plan.usdMonth}`}
+        {plan.id === "verified" || plan.usdMonth > 0 ? <span className="text-sm text-muted-foreground">/mo</span> : null}
       </p>
       <p className="mt-1 text-xs text-muted-foreground">
-        {usdLine(plan)} · {fee}% mint fee
+        {plan.id === "verified" ? "$50 / year · unlimited human comms" : usdLine(plan)} · {fee}% mint fee
         {plan.seats > 1 ? ` · ${plan.seats} seats` : ""}
       </p>
       <ul className="mt-4 flex-1 space-y-2 text-sm text-muted-foreground">
@@ -156,14 +156,26 @@ function PlanCard({ plan, featured }: { plan: SaasPlan; featured?: boolean }) {
           </li>
         ))}
       </ul>
-      <Button asChild className="mt-5 w-full" variant={featured ? "default" : "secondary"}>
-        <Link
-          to={plan.id === "verified" ? "/login" : "/hub/billing"}
-          search={(plan.id === "verified" ? { trial: "verified" } : { plan: plan.id, edition: plan.edition }) as never}
-        >
-          {plan.id === "verified" ? "Start 2-day trial" : plan.usdMonth === 0 ? "Start free" : "Subscribe"}
-        </Link>
-      </Button>
+      {plan.id === "verified" ? (
+        <div className="mt-5 space-y-2">
+          <Button asChild className="w-full">
+            <Link to="/hub/billing" search={{ plan: "verified", edition: "people" }}>
+              Checkout $10 or $50
+            </Link>
+          </Button>
+          <Button asChild variant="ghost" className="w-full">
+            <Link to="/login" search={{ trial: "verified" } as never}>
+              2-day trial, no card
+            </Link>
+          </Button>
+        </div>
+      ) : (
+        <Button asChild className="mt-5 w-full" variant={featured ? "default" : "secondary"}>
+          <Link to="/hub/billing" search={{ plan: plan.id, edition: plan.edition }}>
+            {plan.usdMonth === 0 ? "Start free" : "Subscribe"}
+          </Link>
+        </Button>
+      )}
     </article>
   );
 }

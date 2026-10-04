@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { classifyStripeEvent } from "@/lib/trv/human-comms-checkout";
+import { grantHumanComms } from "@/lib/trv/human-comms-stripe";
 import { settleOnramp } from "@/lib/trv/server";
-import type { OnrampDest } from "@/lib/trv/onramp";
 
 /** Stripe replay window (seconds). */
 const MAX_AGE_SEC = 300;
@@ -24,23 +25,19 @@ export const Route = createFileRoute("/api/stripe/webhook")({
         } catch {
           return new Response("bad json", { status: 400 });
         }
-        if (event.type === "checkout.session.completed") {
-          const obj = event.data?.object ?? {};
-          const paymentStatus = typeof obj.payment_status === "string" ? obj.payment_status : "";
-          if (paymentStatus && paymentStatus !== "paid" && paymentStatus !== "no_payment_required") {
-            return new Response(JSON.stringify({ received: true, skipped: "unpaid" }), {
-              headers: { "Content-Type": "application/json" },
-            });
-          }
-          const meta = (obj.metadata ?? {}) as Record<string, string>;
-          const userId = typeof meta.userId === "string" ? meta.userId : "";
-          const dest: OnrampDest = meta.dest === "sol" ? "sol" : "trv";
-          // Trust Stripe's settled amount, never client-supplied metadata.usd.
-          const amountTotal = Number(obj.amount_total);
-          const usd = Number.isFinite(amountTotal) && amountTotal > 0 ? amountTotal / 100 : 0;
-          const sessionId = typeof obj.id === "string" ? obj.id : "";
-          if (userId && usd > 0 && sessionId) {
-            await settleOnramp(userId, usd, dest, sessionId);
+        const decision = classifyStripeEvent(event);
+        switch (decision.kind) {
+          case "human-comms":
+            await grantHumanComms(decision);
+            break;
+          case "onramp":
+            await settleOnramp(decision.userId, decision.usd, decision.dest, decision.sessionId);
+            break;
+          case "ignore":
+            break;
+          default: {
+            const _never: never = decision;
+            return _never;
           }
         }
         return new Response(JSON.stringify({ received: true }), {

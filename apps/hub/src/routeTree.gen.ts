@@ -28,6 +28,7 @@ import { Route as HubBrowserRouteImport } from './routes/hub/browser'
 import { Route as HubCitizenRouteImport } from './routes/hub/citizen'
 import { Route as HubClipsRouteImport } from './routes/hub/clips'
 import { Route as HubCreateRouteImport } from './routes/hub/create'
+import { Route as HubDeckRouteImport } from './routes/hub/deck'
 import { Route as HubForumRouteImport } from './routes/hub/forum'
 import { Route as HubFriendsRouteImport } from './routes/hub/friends'
 import { Route as HubGatewayRouteImport } from './routes/hub/gateway'
@@ -36,6 +37,7 @@ import { Route as HubHydraRouteImport } from './routes/hub/hydra'
 import { Route as HubLiveRouteImport } from './routes/hub/live'
 import { Route as HubMarketRouteImport } from './routes/hub/market'
 import { Route as HubMeshRouteImport } from './routes/hub/mesh'
+import { Route as HubNativeRouteImport } from './routes/hub/native'
 import { Route as HubNeuronRouteImport } from './routes/hub/neuron'
 import { Route as HubNodeRouteImport } from './routes/hub/node'
 import { Route as HubOsRouteImport } from './routes/hub/os'
@@ -43,6 +45,7 @@ import { Route as HubProfileRouteImport } from './routes/hub/profile'
 import { Route as HubSettingsRouteImport } from './routes/hub/settings'
 import { Route as HubShopRouteImport } from './routes/hub/shop'
 import { Route as HubThemeRouteImport } from './routes/hub/theme'
+import { Route as HubTokenGatewayRouteImport } from './routes/hub/token-gateway'
 import { Route as JournalIndexRouteImport } from './routes/journal/index'
 import { Route as JournalSlugRouteImport } from './routes/journal/$slug'
 import { Route as RHandleRouteImport } from './routes/r/$handle'
@@ -146,6 +149,11 @@ const HubCreateRoute = HubCreateRouteImport.update({
   path: '/create',
   getParentRoute: () => HubRouteRoute,
 } as any)
+const HubDeckRoute = HubDeckRouteImport.update({
+  id: '/deck',
+  path: '/deck',
+  getParentRoute: () => HubRouteRoute,
+} as any)
 const HubForumRoute = HubForumRouteImport.update({
   id: '/forum',
   path: '/forum',
@@ -186,6 +194,11 @@ const HubMeshRoute = HubMeshRouteImport.update({
   path: '/mesh',
   getParentRoute: () => HubRouteRoute,
 } as any)
+const HubNativeRoute = HubNativeRouteImport.update({
+  id: '/native',
+  path: '/native',
+  getParentRoute: () => HubRouteRoute,
+} as any)
 const HubNeuronRoute = HubNeuronRouteImport.update({
   id: '/neuron',
   path: '/neuron',
@@ -219,6 +232,11 @@ const HubShopRoute = HubShopRouteImport.update({
 const HubThemeRoute = HubThemeRouteImport.update({
   id: '/theme',
   path: '/theme',
+  getParentRoute: () => HubRouteRoute,
+} as any)
+const HubTokenGatewayRoute = HubTokenGatewayRouteImport.update({
+  id: '/token-gateway',
+  path: '/token-gateway',
   getParentRoute: () => HubRouteRoute,
 } as any)
 const JournalIndexRoute = JournalIndexRouteImport.update({
@@ -276,6 +294,7 @@ export interface FileRoutesByFullPath {
   '/hub/citizen': typeof HubCitizenRoute
   '/hub/clips': typeof HubClipsRoute
   '/hub/create': typeof HubCreateRoute
+  '/hub/deck': typeof HubDeckRoute
   '/hub/forum': typeof HubForumRoute
   '/hub/friends': typeof HubFriendsRoute
   '/hub/gateway': typeof HubGatewayRoute
@@ -284,6 +303,7 @@ export interface FileRoutesByFullPath {
   '/hub/live': typeof HubLiveRoute
   '/hub/market': typeof HubMarketRoute
   '/hub/mesh': typeof HubMeshRoute
+  '/hub/native': typeof HubNativeRoute
   '/hub/neuron': typeof HubNeuronRoute
   '/hub/node': typeof HubNodeRoute
   '/hub/os': typeof HubOsRoute
@@ -291,6 +311,7 @@ export interface FileRoutesByFullPath {
   '/hub/settings': typeof HubSettingsRoute
   '/hub/shop': typeof HubShopRoute
   '/hub/theme': typeof HubThemeRoute
+  '/hub/token-gateway': typeof HubTokenGatewayRoute
   '/journal/$slug': typeof JournalSlugRoute
   '/r/$handle': typeof RHandleRoute
   '/v/$handle': typeof VHandleRoute
@@ -318,6 +339,7 @@ export interface FileRoutesByTo {
   '/hub/citizen': typeof HubCitizenRoute
   '/hub/clips': typeof HubClipsRoute
   '/hub/create': typeof HubCreateRoute
+  '/hub/deck': typeof HubDeckRoute
   '/hub/forum': typeof HubForumRoute
   '/hub/friends': typeof HubFriendsRoute
   '/hub/gateway': typeof HubGatewayRoute
@@ -326,6 +348,7 @@ export interface FileRoutesByTo {
   '/hub/live': typeof HubLiveRoute
   '/hub/market': typeof HubMarketRoute
   '/hub/mesh': typeof HubMeshRoute
+  '/hub/native': typeof HubNativeRoute
   '/hub/neuron': typeof HubNeuronRoute
   '/hub/node': typeof HubNodeRoute
   '/hub/os': typeof HubOsRoute
@@ -333,6 +356,7 @@ export interface FileRoutesByTo {
   '/hub/settings': typeof HubSettingsRoute
   '/hub/shop': typeof HubShopRoute
   '/hub/theme': typeof HubThemeRoute
+  '/hub/token-gateway': typeof HubTokenGatewayRoute
   '/journal/$slug': typeof JournalSlugRoute
   '/r/$handle': typeof RHandleRoute
   '/v/$handle': typeof VHandleRoute
@@ -362,6 +386,7 @@ export interface FileRoutesById {
   '/hub/citizen': typeof HubCitizenRoute
   '/hub/clips': typeof HubClipsRoute
   '/hub/create': typeof HubCreateRoute
+  '/hub/deck': typeof HubDeckRoute
   '/hub/forum': typeof HubForumRoute
   '/hub/friends': typeof HubFriendsRoute
   '/hub/gateway': typeof HubGatewayRoute
@@ -370,6 +395,7 @@ export interface FileRoutesById {
   '/hub/live': typeof HubLiveRoute
   '/hub/market': typeof HubMarketRoute
   '/hub/mesh': typeof HubMeshRoute
+  '/hub/native': typeof HubNativeRoute
   '/hub/neuron': typeof HubNeuronRoute
   '/hub/node': typeof HubNodeRoute
   '/hub/os': typeof HubOsRoute
@@ -377,6 +403,7 @@ export interface FileRoutesById {
   '/hub/settings': typeof HubSettingsRoute
   '/hub/shop': typeof HubShopRoute
   '/hub/theme': typeof HubThemeRoute
+  '/hub/token-gateway': typeof HubTokenGatewayRoute
   '/journal/$slug': typeof JournalSlugRoute
   '/r/$handle': typeof RHandleRoute
   '/v/$handle': typeof VHandleRoute
@@ -407,6 +434,7 @@ export interface FileRouteTypes {
     | '/hub/citizen'
     | '/hub/clips'
     | '/hub/create'
+    | '/hub/deck'
     | '/hub/forum'
     | '/hub/friends'
     | '/hub/gateway'
@@ -415,6 +443,7 @@ export interface FileRouteTypes {
     | '/hub/live'
     | '/hub/market'
     | '/hub/mesh'
+    | '/hub/native'
     | '/hub/neuron'
     | '/hub/node'
     | '/hub/os'
@@ -422,6 +451,7 @@ export interface FileRouteTypes {
     | '/hub/settings'
     | '/hub/shop'
     | '/hub/theme'
+    | '/hub/token-gateway'
     | '/journal/$slug'
     | '/r/$handle'
     | '/v/$handle'
@@ -449,6 +479,7 @@ export interface FileRouteTypes {
     | '/hub/citizen'
     | '/hub/clips'
     | '/hub/create'
+    | '/hub/deck'
     | '/hub/forum'
     | '/hub/friends'
     | '/hub/gateway'
@@ -457,6 +488,7 @@ export interface FileRouteTypes {
     | '/hub/live'
     | '/hub/market'
     | '/hub/mesh'
+    | '/hub/native'
     | '/hub/neuron'
     | '/hub/node'
     | '/hub/os'
@@ -464,6 +496,7 @@ export interface FileRouteTypes {
     | '/hub/settings'
     | '/hub/shop'
     | '/hub/theme'
+    | '/hub/token-gateway'
     | '/journal/$slug'
     | '/r/$handle'
     | '/v/$handle'
@@ -492,6 +525,7 @@ export interface FileRouteTypes {
     | '/hub/citizen'
     | '/hub/clips'
     | '/hub/create'
+    | '/hub/deck'
     | '/hub/forum'
     | '/hub/friends'
     | '/hub/gateway'
@@ -500,6 +534,7 @@ export interface FileRouteTypes {
     | '/hub/live'
     | '/hub/market'
     | '/hub/mesh'
+    | '/hub/native'
     | '/hub/neuron'
     | '/hub/node'
     | '/hub/os'
@@ -507,6 +542,7 @@ export interface FileRouteTypes {
     | '/hub/settings'
     | '/hub/shop'
     | '/hub/theme'
+    | '/hub/token-gateway'
     | '/journal/$slug'
     | '/r/$handle'
     | '/v/$handle'
@@ -674,6 +710,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HubCreateRouteImport
       parentRoute: typeof HubRouteRoute
     }
+    '/hub/deck': {
+      id: '/hub/deck'
+      path: '/deck'
+      fullPath: '/hub/deck'
+      preLoaderRoute: typeof HubDeckRouteImport
+      parentRoute: typeof HubRouteRoute
+    }
     '/hub/forum': {
       id: '/hub/forum'
       path: '/forum'
@@ -730,6 +773,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HubMeshRouteImport
       parentRoute: typeof HubRouteRoute
     }
+    '/hub/native': {
+      id: '/hub/native'
+      path: '/native'
+      fullPath: '/hub/native'
+      preLoaderRoute: typeof HubNativeRouteImport
+      parentRoute: typeof HubRouteRoute
+    }
     '/hub/neuron': {
       id: '/hub/neuron'
       path: '/neuron'
@@ -777,6 +827,13 @@ declare module '@tanstack/react-router' {
       path: '/theme'
       fullPath: '/hub/theme'
       preLoaderRoute: typeof HubThemeRouteImport
+      parentRoute: typeof HubRouteRoute
+    }
+    '/hub/token-gateway': {
+      id: '/hub/token-gateway'
+      path: '/token-gateway'
+      fullPath: '/hub/token-gateway'
+      preLoaderRoute: typeof HubTokenGatewayRouteImport
       parentRoute: typeof HubRouteRoute
     }
     '/journal/': {
@@ -838,6 +895,7 @@ interface HubRouteRouteChildren {
   HubCitizenRoute: typeof HubCitizenRoute
   HubClipsRoute: typeof HubClipsRoute
   HubCreateRoute: typeof HubCreateRoute
+  HubDeckRoute: typeof HubDeckRoute
   HubForumRoute: typeof HubForumRoute
   HubFriendsRoute: typeof HubFriendsRoute
   HubGatewayRoute: typeof HubGatewayRoute
@@ -846,6 +904,7 @@ interface HubRouteRouteChildren {
   HubLiveRoute: typeof HubLiveRoute
   HubMarketRoute: typeof HubMarketRoute
   HubMeshRoute: typeof HubMeshRoute
+  HubNativeRoute: typeof HubNativeRoute
   HubNeuronRoute: typeof HubNeuronRoute
   HubNodeRoute: typeof HubNodeRoute
   HubOsRoute: typeof HubOsRoute
@@ -853,6 +912,7 @@ interface HubRouteRouteChildren {
   HubSettingsRoute: typeof HubSettingsRoute
   HubShopRoute: typeof HubShopRoute
   HubThemeRoute: typeof HubThemeRoute
+  HubTokenGatewayRoute: typeof HubTokenGatewayRoute
   HubIndexRoute: typeof HubIndexRoute
 }
 
@@ -863,6 +923,7 @@ const HubRouteRouteChildren: HubRouteRouteChildren = {
   HubCitizenRoute: HubCitizenRoute,
   HubClipsRoute: HubClipsRoute,
   HubCreateRoute: HubCreateRoute,
+  HubDeckRoute: HubDeckRoute,
   HubForumRoute: HubForumRoute,
   HubFriendsRoute: HubFriendsRoute,
   HubGatewayRoute: HubGatewayRoute,
@@ -871,6 +932,7 @@ const HubRouteRouteChildren: HubRouteRouteChildren = {
   HubLiveRoute: HubLiveRoute,
   HubMarketRoute: HubMarketRoute,
   HubMeshRoute: HubMeshRoute,
+  HubNativeRoute: HubNativeRoute,
   HubNeuronRoute: HubNeuronRoute,
   HubNodeRoute: HubNodeRoute,
   HubOsRoute: HubOsRoute,
@@ -878,6 +940,7 @@ const HubRouteRouteChildren: HubRouteRouteChildren = {
   HubSettingsRoute: HubSettingsRoute,
   HubShopRoute: HubShopRoute,
   HubThemeRoute: HubThemeRoute,
+  HubTokenGatewayRoute: HubTokenGatewayRoute,
   HubIndexRoute: HubIndexRoute,
 }
 

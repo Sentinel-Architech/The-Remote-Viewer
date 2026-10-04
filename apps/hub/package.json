@@ -13,7 +13,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "node --test 'scripts/**/*.test.mjs'",
+    "test": "node --experimental-strip-types --test 'scripts/**/*.test.mjs' scripts/human-comms-checkout.test.ts",
     "lint": "eslint .",
     "format": "prettier --write ."
   },

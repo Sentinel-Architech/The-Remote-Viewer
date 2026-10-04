@@ -1,24 +1,3 @@
-async function unlockWithBiometric() {
-    setBusy(true);
-    try {
-      const gate = await gateVaultUnlock("Unlock Viewer wallet");
-      if (!gate.ok) {
-        if (gate.reason === "cancelled") {
-          toast.message("Biometric cancelled.");
-        } else {
-          toast.message("Biometrics unavailable — use PIN.");
-        }
-        return;
-      }
-      // Biometric UV succeeded. PIN still decrypts the vault (current design).
-      toast.message("Biometric verified. Enter PIN to release the vault.");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Biometric unlock failed");
-    } finally {
-      setBusy(false);
-    }
-  }
-import { gateVaultUnlock } from "@/lib/trv/biometric-gate";
 import { useEffect, useState } from "react";
 import { KeyRound, Lock, Unlock, Wallet } from "lucide-react";
 import { toast } from "sonner";
