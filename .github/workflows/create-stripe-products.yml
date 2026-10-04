@@ -1,0 +1,55 @@
+name: Create Stripe products
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create monthly and yearly products
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          python3 - << 'PY'
+          import json, os, urllib.parse, urllib.request
+          key = os.environ["STRIPE_SECRET_KEY"]
+          products = [
+            ("trv_monthly", "TRV Monthly", "month", "1000", "Unlimited human comms. $10 per month."),
+            ("trv_yearly", "TRV Yearly", "year", "5000", "Unlimited human comms. $50 per year."),
+          ]
+          def call(method, path, data=None):
+              body = urllib.parse.urlencode(data).encode() if data else None
+              req = urllib.request.Request(
+                  "https://api.stripe.com" + path,
+                  data=body,
+                  method=method,
+                  headers={"Authorization": "Bearer " + key},
+              )
+              try:
+                  with urllib.request.urlopen(req) as res:
+                      return res.status, json.load(res)
+              except urllib.error.HTTPError as err:
+                  return err.code, json.load(err)
+          for pid, name, interval, amount, desc in products:
+              status, payload = call("POST", "/v1/products", {
+                  "id": pid,
+                  "name": name,
+                  "description": desc,
+                  "url": "https://the-remote-viewer.grok.me",
+                  "default_price_data[currency]": "usd",
+                  "default_price_data[unit_amount]": amount,
+                  "default_price_data[recurring][interval]": interval,
+              })
+              if status == 200:
+                  print(payload["id"], payload.get("default_price"))
+                  continue
+              err = payload.get("error", {})
+              if err.get("code") == "resource_already_exists":
+                  status, payload = call("GET", "/v1/products/" + pid)
+                  print(payload.get("id"), payload.get("default_price"), "exists")
+                  continue
+              print(err.get("code"), (err.get("message") or "")[:180])
+              raise SystemExit(1)
+          PY
