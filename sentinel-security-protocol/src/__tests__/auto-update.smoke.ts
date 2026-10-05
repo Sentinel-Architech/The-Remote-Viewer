@@ -9,6 +9,7 @@ import {
   compareVersions,
   getContinuityStatement,
 } from "../auto-update.js";
+import { ownerInkSwitch, routeCorporateAspectProfit } from "../owner-ink.js";
 
 function assert(cond: boolean, msg: string) {
   if (!cond) throw new Error(msg);
@@ -50,6 +51,20 @@ function main() {
 
   const stmt = getContinuityStatement();
   assert(stmt.includes("open source"), "continuity statement present");
+
+  const quiet = ownerInkSwitch({ photographRequired: false, record: {} });
+  assert(quiet.tripped === false, "ink switch stays quiet when no photograph is required");
+  assert(quiet.notice === null, "no OTA notice without a photograph");
+  const sent = ownerInkSwitch({ photographRequired: true, record: { purpose: "verify" } });
+  assert(sent.tripped === true, "photographing the ink trips the switch");
+  assert(
+    sent.notice?.text === "A commercial may be buying an aspect for its own use.",
+    "system-wide OTA notice",
+  );
+  assert(sent.notice?.imageStored === false, "no image stored");
+  assert(sent.notice?.corporateAspectProfits === "community pool", "profits stay with the pool");
+  const profit = routeCorporateAspectProfit(null);
+  assert(profit.destination === "community pool" && profit.keptByCommercial === 0, "commercial keeps nothing");
 
   console.log("Auto-update smoke passed.");
   console.log(stmt);

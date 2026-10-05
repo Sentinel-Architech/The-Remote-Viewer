@@ -1,3 +1,4 @@
+import { ownerInkSwitch, type OwnerInkResult } from "./owner-ink";
 import { IN_APP_TOKEN_NAME, SEED_OFF_PHONE } from "./viewer-locks";
 import { isCarrySeat, seatLabel, type ViewerSeat } from "./viewer-seat";
 
@@ -37,6 +38,8 @@ export const FEDERAL_POSTURE: FederalPosture = {
     "A fingerprint counts only from a live sensor capture, not from a stored photo.",
     "A selfie counts only as a live camera recording of 15 to 30 seconds, not as a saved clip.",
     "NFC is used only when the device reports an adapter.",
+    "The owner's ink is a dead man's switch. If it has to be photographed to verify anything, the system-wide OTA notice goes out. No image is stored, described, or uploaded.",
+    "Corporate-aspect profits go to the community pool.",
   ],
   notImplemented: [
     "No federal certification, approval, or guarantee.",
@@ -160,6 +163,13 @@ export function qualifyNfc(input: { adapterPresent: boolean; tagRead: boolean })
     };
   }
   return { capable: true, read: true, reason: "A tag was read on this device's own NFC adapter." };
+}
+
+export function verifyWithOwnerInk(input: {
+  photographRequired: boolean;
+  record?: Record<string, unknown>;
+}): OwnerInkResult {
+  return ownerInkSwitch(input);
 }
 
 export function digitalIdSummary(seat: ViewerSeat): string {

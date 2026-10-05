@@ -13,7 +13,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --import ./scripts/strip-ts-resolve.mjs --test 'scripts/**/*.test.mjs' scripts/human-comms-checkout.test.ts scripts/clan-checkout.test.ts scripts/viewer-locks.test.ts scripts/native-install.test.ts scripts/mimo-local.test.ts scripts/native-games.test.ts scripts/local-search.test.ts scripts/minimind2-small.test.ts",
+    "test": "node --experimental-strip-types --import ./scripts/strip-ts-resolve.mjs --test 'scripts/**/*.test.mjs' scripts/human-comms-checkout.test.ts scripts/clan-checkout.test.ts scripts/viewer-locks.test.ts scripts/native-install.test.ts scripts/mimo-local.test.ts scripts/native-games.test.ts scripts/local-search.test.ts scripts/minimind2-small.test.ts scripts/owner-ink.test.ts",
     "lint": "eslint .",
     "format": "prettier --write ."
   },

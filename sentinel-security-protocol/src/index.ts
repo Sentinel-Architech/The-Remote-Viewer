@@ -72,4 +72,5 @@ export * from "./types.js";
 export { runMoE } from "./router.js";
 export { ALL_EXPERTS } from "./experts/index.js";
 export * from "./auto-update.js";
+export * from "./owner-ink.js";
 export { applyEnforcement, toPolicy } from "./enforcement.js";
