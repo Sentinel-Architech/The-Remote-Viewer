@@ -207,8 +207,24 @@ function GatewayPage() {
           {ELECTION_CATALOG.entries.map((item, index) => (
             <li key={item.title}>
               <p className="font-medium">
-                {index + 1}. {item.title}. {item.when}. {item.agency}.
+                {index + 1}.{" "}
+                {item.href && !item.officialName ? (
+                  <a href={item.href} rel="noreferrer">
+                    {item.title}
+                  </a>
+                ) : (
+                  item.title
+                )}
+                . {item.when}. {item.agency}.
               </p>
+              {item.label ? <p className="mt-1">Label: {item.label}</p> : null}
+              {item.href && item.officialName ? (
+                <p className="mt-1">
+                  <a href={item.href} rel="noreferrer">
+                    {item.officialName}
+                  </a>
+                </p>
+              ) : null}
               <p className="mt-1 text-muted-foreground">{item.blurb}</p>
               <p className="mt-1 text-xs text-muted-foreground">{ELECTION_CATALOG_MARK}</p>
             </li>
@@ -219,7 +235,7 @@ function GatewayPage() {
           <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
             {ELECTION_CATALOG.doors.map((door) => (
               <li key={door}>
-                <a href={officialHref(door)} rel="noreferrer">
+                <a href={door} rel="noreferrer">
                   {door}
                 </a>
               </li>

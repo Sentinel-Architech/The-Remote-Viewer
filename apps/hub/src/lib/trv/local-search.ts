@@ -149,7 +149,9 @@ export function localDeclassifiedSearch(input: {
   }
 
   for (const named of ELECTION_CATALOG.entries) {
-    const line = `${named.title}\n${named.when}\n${named.agency}\n${named.blurb}`;
+    const line = [named.title, named.label, named.officialName, named.when, named.agency, named.blurb, named.href]
+      .filter((part) => part)
+      .join("\n");
     if (!matches(line, phrase, words, query)) continue;
     hits.push({
       id: `election:${named.title}`,

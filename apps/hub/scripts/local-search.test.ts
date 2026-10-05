@@ -109,16 +109,30 @@ test("the election catalog stores the named text and stays on the device", () =>
   assert.equal(hit?.indexMark, "unverified-catalog");
   assert.equal(fubar.networkRequests, 0);
   assert.equal(fubar.sentOffDevice, false);
-  const door = localDeclassifiedSearch({ query: "cisa.gov/topics/election-security", verified: false });
+  const fubarEntry = ELECTION_CATALOG.entries[0];
+  assert.equal(fubarEntry?.label, "Project FUBAR / Italian election 1948");
+  assert.equal(fubarEntry?.officialName, "NSC 1/3");
+  assert.equal(fubarEntry?.href, "https://history.state.gov/historicaldocuments/frus1948v03/d475");
+  const track = ELECTION_CATALOG.entries[3];
+  assert.equal(track?.label, "Operation TRACK III");
+  assert.equal(track?.officialName, "Track Two");
+  assert.equal(track?.href, "https://history.state.gov/historicaldocuments/frus1969-76v21/d107");
+  assert.equal(ELECTION_CATALOG.entries[8]?.href, undefined);
+  const cisa = localDeclassifiedSearch({ query: "https://www.cisa.gov/topics/election-security", verified: false });
+  assert.equal(
+    cisa.hits.find((item) => item.kind === "index")?.title,
+    "CISA Cyber Vulnerability Advisories & Supply Chain Reports",
+  );
+  const door = localDeclassifiedSearch({ query: "https://www.nass.org/can-i-vote", verified: false });
   assert.deepEqual(
     door.hits.filter((item) => item.kind === "index").map((item) => item.title),
-    ["cisa.gov/topics/election-security"],
+    ["https://www.nass.org/can-i-vote"],
   );
-  assert.equal(door.hits[0]?.excerpt, "");
   assert.equal(door.networkRequests, 0);
   const source = readFileSync(new URL("../src/lib/trv/election-index.ts", import.meta.url), "utf8");
   assert.equal(/gemini|google|fetch\(/i.test(source), false);
-  assert.equal(source.includes("nass.org/can-i-vote"), true);
+  assert.equal(source.includes("https://www.nass.org/can-i-vote"), true);
+  assert.equal(source.includes("https://vault.fbi.gov/cointel-pro"), true);
   assert.equal(source.includes("PAGE 1 OF 2"), true);
   assert.equal(source.includes("PAGE 2 OF 2"), true);
 });
