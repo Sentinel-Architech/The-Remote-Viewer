@@ -3,15 +3,43 @@ mod identity;
 mod merkle;
 mod p2p;
 mod token;
+mod minimind;
+mod minimind_exec;
 #[cfg(feature = "runtime")]
 mod runtime;
 
+use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use anyhow::Result;
 
+fn measure_weights_and_exit() -> Result<()> {
+    let mut args = std::env::args().skip(1);
+    let mut explicit = None;
+    while let Some(arg) = args.next() {
+        if arg == "--measure-weights" {
+            explicit = args.next().map(PathBuf::from);
+            break;
+        }
+    }
+    let measure = minimind::measure_first_present(explicit.as_deref())
+        .map_err(|err| anyhow::anyhow!(err))?;
+    println!("{}", minimind::report(&measure));
+    if !measure.matches_shipped {
+        std::process::exit(1);
+    }
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
+    if std::env::args().any(|arg| arg == "--measure-weights") {
+        return measure_weights_and_exit();
+    }
+    if std::env::args().any(|arg| arg == "--run-minimind") {
+        return minimind_exec::run_and_exit();
+    }
+
     tracing_subscriber::fmt::init();
 
     sodiumoxide::init().map_err(|_| anyhow::anyhow!("Failed to initialize sodiumoxide"))?;

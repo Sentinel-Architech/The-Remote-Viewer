@@ -11,9 +11,13 @@
 export {
   evaluateHubSecurity,
   enforceHubDecision,
+  accountRegistryGate,
+  childProtectionRule,
   type OperatingMode,
   type SecurityDecision,
   type EnforcementResult,
+  type AccountRegistryGate,
+  type ChildProtectionRule,
 } from "./sentinel";
 
 export {
@@ -26,3 +30,14 @@ export {
   publicIdentityOnly,
   assertNonExtractablePrivate,
 } from "./native-custody";
+
+export {
+  INTENT_LINE,
+  parseIntent,
+  prepareIntent,
+  intentLink,
+  passkeySignInRequest,
+  rejectSeedPhrase,
+  type PreparedIntent,
+  type PasskeySignInRequest,
+} from "./trv/intent-bar";

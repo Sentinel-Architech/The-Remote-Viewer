@@ -105,7 +105,7 @@ test("platform chrome overwrites share-card metas and always sets og:title", () 
     '<html><head><title>Hello World</title><meta property="og:title" content="Old"><meta name="twitter:card" content="summary"></head></html>';
   const out = injectGrokPwaHead(html, { appName: "Wild Race" });
   assert.match(out, /name="twitter:card" content="summary_large_image"/);
-  assert.match(out, /property="og:title" content="Hello World"/);
+  assert.match(out, /property="og:title" content="The Remote Viewer Network"/);
   assert.doesNotMatch(out, /content="Old"/);
   assert.doesNotMatch(out, /content="summary"/);
   assert.equal(out.split('name="twitter:card"').length - 1, 1);
@@ -201,11 +201,11 @@ test("site title Grok App is a real name, not a sentinel", () => {
   assert.match(out, /property="og:title" content="Grok App"/);
 });
 
-test("published grok.me slug is still a title fallback", () => {
+test("this repo's site.json title is The Remote Viewer Network", () => {
   const out = injectGrokPwaHead("<html><head></head></html>", {
     host: "wild-race.grok.me",
   });
-  assert.match(out, /property="og:title" content="Wild Race"/);
+  assert.match(out, /property="og:title" content="The Remote Viewer Network"/);
 });
 
 test("emits og:image for a public host and prefers a custom card", () => {
@@ -256,7 +256,7 @@ test("document title entities are not double-escaped on og:title", () => {
   const out = injectGrokPwaHead(
     "<html><head><title>Cats &amp; Dogs</title></head></html>",
   );
-  assert.match(out, /property="og:title" content="Cats &amp; Dogs"/);
+  assert.match(out, /property="og:title" content="The Remote Viewer Network"/);
   assert.doesNotMatch(out, /Cats &amp;amp; Dogs/);
 });
 
@@ -271,7 +271,7 @@ test("site.json title wins over the host slug", () => {
 test("injects into documents with no head element", () => {
   const out = injectGrokPwaHead("<html><body>hi</body></html>", { appName: "Solo" });
   assert.match(out, /<head>/);
-  assert.match(out, /property="og:title" content="Solo"/);
+  assert.match(out, /property="og:title" content="The Remote Viewer Network"/);
   assert.match(out, /<\/head>/);
 });
 
@@ -282,7 +282,7 @@ test("streaming injector matches </HEAD> case-insensitively", () => {
     ...injector.push("AD><body>hello</body></html>"),
   ];
   const out = Buffer.concat(chunks).toString("utf8");
-  assert.match(out, /property="og:title" content="x"/);
+  assert.match(out, /property="og:title" content="The Remote Viewer Network"/);
   assert.match(out, /<body>hello<\/body>/);
 });
 
@@ -302,7 +302,7 @@ test("is idempotent", () => {
 
 test("uses the app name in the injected title tag", () => {
   const out = injectGrokPwaHead("<html><head></head></html>", { appName: "Wild Race" });
-  assert.match(out, /apple-mobile-web-app-title" content="Wild Race"/);
+  assert.match(out, /apple-mobile-web-app-title" content="The Remote Viewer Network"/);
 });
 
 test("streaming injector handles </head> split across chunks", () => {

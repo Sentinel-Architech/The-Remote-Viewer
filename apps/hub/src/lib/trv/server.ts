@@ -20,6 +20,10 @@ import { shopById } from "./shop";
 import { PAID_TRIAL_CREDITS, PAID_TRIAL_PLAN, paidTrialUntilIso } from "./trial";
 import { isClanPlan } from "./clan-checkout";
 import { humanCommsNeedsStripe, shouldExpireVerified } from "./human-comms-checkout";
+import { assertNativeTrvDebit } from "./viewer-locks";
+import { accountRegistryGate } from "@/lib/sentinel";
+import { clampThemeToPlan } from "./ui-experts";
+import { parseTheme } from "./themes";
 import type {
   ForumPost,
   InvoiceRow,
@@ -224,6 +228,10 @@ export const ensureProfile = createServerFn({ method: "POST" })
         }
       }
       return existing;
+    }
+    const registry = accountRegistryGate();
+    if (registry.accountRefused) {
+      throw new Error(registry.reason);
     }
     let handle = slugify(data.displayName);
     for (let i = 0; i < 8; i++) {
@@ -572,7 +580,10 @@ export const saveUiTheme = createServerFn({ method: "POST" })
   .validator((raw: string) => raw.slice(0, 2000))
   .handler(async ({ context, data: raw }) => {
     const sql = await getSql();
-    await sql`update viewer_profiles set ui_theme = ${raw} where user_id = ${context.userId}`;
+    const me = await loadProfile(sql, context.userId);
+    if (!me) throw new Error("Node missing");
+    const clamped = JSON.stringify(clampThemeToPlan(parseTheme(raw), me.planId));
+    await sql`update viewer_profiles set ui_theme = ${clamped} where user_id = ${context.userId}`;
     return loadProfile(sql, context.userId);
   });
 
@@ -663,10 +674,14 @@ export const listMarket = createServerFn({ method: "GET" }).handler(async () => 
 
 export const buyNft = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator((input: number | { id: number; bundle?: boolean }) =>
-    typeof input === "number" ? { id: input, bundle: false } : { id: Number(input.id), bundle: Boolean(input.bundle) },
+  .validator((input: number | { id: number; bundle?: boolean; signature?: string }) =>
+    typeof input === "number"
+      ? { id: input, bundle: false, signature: "" }
+      : { id: Number(input.id), bundle: Boolean(input.bundle), signature: String(input.signature ?? "").slice(0, 32) },
   )
   .handler(async ({ context, data }) => {
+    const { refuseCarryPaymentFromRequest } = await import("./carry-pay.server");
+    refuseCarryPaymentFromRequest();
     const sql = await getSql();
     const nfts = await sql<{ id: number; user_id: string; price_credits: number; listed: boolean; bundle_price: number | null; inspiration_data: string | null }>`
       select id, user_id, price_credits, listed, bundle_price, inspiration_data from trv_nfts where id = ${data.id} limit 1
@@ -679,6 +694,7 @@ export const buyNft = createServerFn({ method: "POST" })
     if (!buyer || !seller) throw new Error("Profile missing");
     const extra = data.bundle ? Number(nft.bundle_price || 0) : 0;
     const price = Number(nft.price_credits) + extra;
+    assertNativeTrvDebit({ signature: data.signature, handle: buyer.handle, rail: "trv-native" });
     if (buyer.credits < price) throw new Error("Insufficient TRV credits");
     const fee = Math.round(price * effectiveFeeRate(seller.planId, seller.tier, Boolean(seller.citizenAt)));
     const net = price - fee;
@@ -1075,6 +1091,9 @@ export const convertToTrv = createServerFn({ method: "POST" })
     rail: input.rail.slice(0, 24),
   }))
   .handler(async ({ context, data }) => {
+    // Server-only import so the browser bundle does not load getRequest.
+    const { refuseCarryPaymentFromRequest } = await import("./carry-pay.server");
+    refuseCarryPaymentFromRequest();
     assertPreviewMintAllowed();
     const sql = await getSql();
     const credits = usdToCredits(data.usd);
@@ -1088,7 +1107,12 @@ export const convertToTrv = createServerFn({ method: "POST" })
 
 export const subscribePlan = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator((input: { planId: string; interval: BillingInterval; orgName?: string }) => input)
+  .validator((input: { planId: string; interval: BillingInterval; orgName?: string; signature?: string }) => ({
+    planId: input.planId,
+    interval: input.interval,
+    orgName: input.orgName,
+    signature: String(input.signature ?? "").slice(0, 32),
+  }))
   .handler(async ({ context, data }) => {
     const sql = await getSql();
     const plan = planById(data.planId);
@@ -1102,6 +1126,11 @@ export const subscribePlan = createServerFn({ method: "POST" })
       throw new Error("Sentinel, Squad, Command, and Sovereign settle only on the native TRV path.");
     }
     const credits = planCredits(usdToCredits(plan.usdMonth, data.interval), Boolean(me.citizenAt));
+    if (plan.usdMonth > 0) {
+      const { refuseCarryPaymentFromRequest } = await import("./carry-pay.server");
+      refuseCarryPaymentFromRequest();
+      assertNativeTrvDebit({ signature: data.signature, handle: me.handle, rail: "trv-native" });
+    }
     if (plan.usdMonth > 0 && me.credits < credits) throw new Error("Insufficient TRV credits");
     if (plan.usdMonth > 0) {
       await sql`update viewer_profiles set credits = credits - ${credits} where user_id = ${context.userId}`;
@@ -1160,6 +1189,8 @@ export const startStripeOnramp = createServerFn({ method: "POST" })
     origin: input.origin.slice(0, 200),
   }))
   .handler(async ({ context, data }) => {
+    const { refuseCarryPaymentFromRequest } = await import("./carry-pay.server");
+    refuseCarryPaymentFromRequest();
     const key = process.env.STRIPE_SECRET_KEY;
     if (!key) return { mode: "preview" as const, url: null as string | null };
     const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
@@ -1190,6 +1221,8 @@ export const confirmPreviewOnramp = createServerFn({ method: "POST" })
     dest: input.dest === "sol" ? "sol" : "trv",
   }))
   .handler(async ({ context, data }) => {
+    const { refuseCarryPaymentFromRequest } = await import("./carry-pay.server");
+    refuseCarryPaymentFromRequest();
     assertPreviewMintAllowed();
     await settleOnramp(context.userId, data.usd, data.dest, `preview-${context.userId}-${Date.now()}`);
     const sql = await getSql();

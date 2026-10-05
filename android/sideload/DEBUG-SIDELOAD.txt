@@ -1,0 +1,4 @@
+the-remote-viewer-debug-sideload.apk
+Debug sideload only. Signer DN: C=US, O=Android, CN=Android Debug.
+This is not a release build. No release signing key was used.
+Size: 48738371 bytes.

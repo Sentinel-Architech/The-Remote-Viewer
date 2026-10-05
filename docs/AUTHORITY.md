@@ -14,7 +14,7 @@
 ## Rules
 
 1. **Never commit** keypairs, seed phrases, or `.json` wallets.
-2. Scaffold `declare_id!` is a **placeholder** until `anchor keys list` on a dedicated build host.
+2. `declare_id!` is a compile-time program address so `anchor build` can run. The program keypair is not in git. That address is not a deployment and not an SPL mint.
 3. Devnet keys ≠ mainnet keys.
 4. Before mainnet: **2-of-3 or better** multisig (or hardware + policy) for upgrade + config authority.
 5. Path B founders remain **0** — authority is operational, not a token allocation story.

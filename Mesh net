@@ -1,6 +1,6 @@
 // ============================================================================
 // THE SENTINEL SECURITY PROTOCOL - P2P MESH NETWORK LAYER (mesh.rs)
-// Air-gapped encrypted transport using rust-libp2p (Noise + Gossipsub)
+// TCP mesh with Noise and Gossipsub. This transport is on the network. It is not an air gap.
 // ============================================================================
 
 use libp2p::{

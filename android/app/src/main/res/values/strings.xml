@@ -1,4 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">The Remote Viewer</string>
+    <string name="install_title">The Remote Viewer</string>
+    <string name="install_lead">This install is the phone itself. It is not a website in a window. It does not use an outside identity service.</string>
+    <string name="tutorial_title">Install tutorial</string>
+    <string name="seed_off_phone">Keep the passphrase and the seed off this phone. This phone unlocks with its own screen lock. It does not hold a seed or a passphrase. There is no backup location in this install.</string>
+    <string name="free_tier">Free: this device\'s own lock plus the bare TRV layer. That does not require a purchase.</string>
+    <string name="token_sim">TRV Token🍃 is a simulation only. It buys exclusive in-app customizations only. It is not money, not crypto, and not redeemable for cash. The amount is not set.</string>
+    <string name="telemetry_rule">The only telemetry in this install is this phone\'s own GPS, and only when you ask. The fix stays on this phone. There is no analytics, no ad network, and no other location service.</string>
+    <string name="mimo_phone">The full MiMo-V2.6-Pro weights do not run on this phone. MiniMind Max2 weights are not in this install and do not run. The weight file that ships is MiniMind2-Small. Nothing is sent off this phone. No paid host is used.</string>
+    <string name="weight_measured">Measured %1$s bytes of MiniMind2-Small. The model did not run.</string>
+    <string name="weight_mismatch">Counted %1$s bytes. That is not the shipped MiniMind2-Small file. The model did not run.</string>
+    <string-array name="install_tutorial">
+        <item>This install is native. It is not a website in a window. It does not use an outside identity service.</item>
+        <item>The on-device weights that ship in this repo are MiniMind2-Small from jingyaogong/MiniMind2-Small. The license is Apache-2.0. The weight file is model.safetensors. A fit check is not a run.</item>
+        <item>MiMo-V2.6-Pro weights are not in this repo and do not run. MiniMind Max2 weights are not in this repo and do not run.</item>
+        <item>GrapheneOS is extra security. It is not required.</item>
+        <item>The phone package is a sideload. It can be installed on a Pixel 7, a Pixel 6a, other Pixels, and other phones that carry a signal. It is not a release-signed build. The signing key is not available.</item>
+    </string-array>
+    <string name="purchase_rails">Stripe stays the card rail only. X Money and Phantom stay the other purchase rails. They are not replaced here, and none of them is this install.</string>
+    <string name="check_lock">Check device lock</string>
+    <string name="read_gps">Read native GPS</string>
+    <string name="lock_on">This phone unlocks with its own screen lock. That lock is free. TRV does not replace it.</string>
+    <string name="lock_off">Set a screen lock in this phone\'s settings. TRV does not store a passphrase or a seed in its place.</string>
+    <string name="gps_waiting">Native GPS has not been read.</string>
+    <string name="gps_denied">Location permission denied. This install will not use another location service.</string>
+    <string name="gps_off">This phone\'s GPS is off. Turn it on in system settings. No other provider is used.</string>
+    <string name="gps_none">No native GPS fix yet. The reading stays on this phone.</string>
+    <string name="gps_fix">Native GPS %1$.3f, %2$.3f. Exclusive to this install. Not sent anywhere.</string>
+    <string name="weight_waiting">Waiting. Weight files were not measured on this phone. The model did not run.</string>
 </resources>

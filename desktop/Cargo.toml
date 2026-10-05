@@ -35,3 +35,4 @@ tauri = { version = "2", optional = true }
 ollama-rs = { version = "0.3", optional = true }
 tokio-stream = { version = "0.1", optional = true }
 tract-onnx = { version = "0.23", optional = true }
+tokenizers = { version = "=0.22.2", default-features = false, features = ["fancy-regex"] }

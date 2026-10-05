@@ -1,7 +1,6 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import {
-  Box,
   Bug,
   Brain,
   CircleUser,
@@ -13,6 +12,7 @@ import {
   Gift,
   Globe,
   KeyRound,
+  TextCursorInput,
   Landmark,
   LayoutDashboard,
   MessageSquare,
@@ -37,6 +37,7 @@ import { ViewerThemeRoot } from "./viewer-theme";
 import { SkipLink } from "./skip-link";
 import { VoiceHelm } from "./voice-helm";
 import { AgeGate } from "./age-gate";
+import { CodeAcceptance } from "./code-acceptance";
 import { ViewerBriefing } from "./viewer-briefing";
 import { useViewer } from "./viewer-context";
 import { LiveBadge, ViewerMark } from "./viewer-mark";
@@ -47,6 +48,8 @@ import { Button } from "./ui/button";
 import { claimWatch } from "@/lib/trv/server";
 import { toast } from "sonner";
 import { TrialStrip } from "./trial-strip";
+import { InstallTutorial } from "./install-tutorial";
+import { BottomMenu } from "./bottom-menu";
 
 const NAV = [
   { to: "/hub", label: "Command", icon: LayoutDashboard },
@@ -71,13 +74,7 @@ const NAV = [
   { to: "/hub/theme", label: "Theme", icon: Palette },
   { to: "/hub/profile", label: "Profile", icon: CircleUser },
   { to: "/hub/settings", label: "Settings", icon: Settings },
-] as const;
-
-const MOBILE_NAV = [
-  { to: "/hub", label: "Home", icon: LayoutDashboard },
-  { to: "/hub/deck", label: "Deck", icon: Crosshair },
-  { to: "/hub/shop", label: "Shop", icon: Gift },
-  { to: "/hub/friends", label: "Friends", icon: Users },
+  { to: "/hub/intent", label: "Intent", icon: TextCursorInput },
 ] as const;
 
 function DutyStrip() {
@@ -196,7 +193,7 @@ export function HubShell() {
         <main
           id="hub-main"
           tabIndex={-1}
-          className="min-w-0 flex-1 pb-[calc(7.25rem+env(safe-area-inset-bottom))] outline-none md:pb-0"
+          className="min-w-0 flex-1 pb-[calc(9.5rem+env(safe-area-inset-bottom))] outline-none"
         >
           <header className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-border bg-bg/95 px-3 py-2 backdrop-blur-sm md:hidden">
             <Link to="/hub/profile" className="flex min-w-0 items-center gap-2">
@@ -236,43 +233,14 @@ export function HubShell() {
             </div>
           </header>
           <TrialStrip />
+          <InstallTutorial />
           <DutyStrip />
+          <CodeAcceptance />
           <Outlet />
         </main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-card/95 pb-[env(safe-area-inset-bottom)] md:hidden">
-        {MOBILE_NAV.map((item) => {
-          const Icon = item.icon;
-          const active = item.to === "/hub" ? pathname === "/hub" || pathname === "/hub/" : pathname.startsWith(item.to);
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              className={cn(
-                "flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px]",
-                active ? "text-fg" : "text-muted-foreground",
-              )}
-            >
-              <Icon className="size-4" />
-              {item.label}
-            </Link>
-          );
-        })}
-        <button
-          type="button"
-          className={cn(
-            "flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px]",
-            more || (pathname.startsWith("/hub/") && !MOBILE_NAV.some((n) => n.to !== "/hub" && pathname.startsWith(n.to)) && pathname !== "/hub" && pathname !== "/hub/")
-              ? "text-fg"
-              : "text-muted-foreground",
-          )}
-          onClick={() => setMore(true)}
-        >
-          <Box className="size-4" />
-          More
-        </button>
-      </nav>
+      <BottomMenu />
 
       <Sheet open={more} onOpenChange={setMore}>
         <SheetContent side="bottom">

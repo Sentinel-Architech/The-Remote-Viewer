@@ -13,13 +13,17 @@ import { AlertTriangle, Shield } from "lucide-react";
 import { NETWORK_NAME, NETWORK_TAG } from "@/lib/trv/network";
 import { PAID_TRIAL_HOURS } from "@/lib/trv/trial";
 import { pageHead } from "@/lib/trv/seo";
+import { SignupCodeFlow } from "@/components/signup-code-flow";
+import { PasskeyPanel } from "@/components/passkey-panel";
+import { claimSignupHold, redeemShareCode } from "@/lib/trv/viewer-locks-server";
 
-type LoginSearch = { tab?: string; trial?: string };
+type LoginSearch = { tab?: string; trial?: string; share?: string };
 
 export const Route = createFileRoute("/login")({
   validateSearch: (s: Record<string, unknown>): LoginSearch => ({
     tab: s.tab === "signin" ? "signin" : undefined,
     trial: s.trial === "verified" || s.trial === "1" ? "verified" : undefined,
+    share: typeof s.share === "string" ? s.share.slice(0, 32) : undefined,
   }),
   head: () =>
     pageHead({
@@ -45,6 +49,7 @@ function Login() {
   const [error, setError] = useState<string | null>(null);
   const [age18, setAge18] = useState(false);
   const [ofac, setOfac] = useState(false);
+  const [codeReady, setCodeReady] = useState(false);
 
   useEffect(() => {
     if (search.trial === "verified") {
@@ -61,9 +66,22 @@ function Login() {
     if (isPending || !userId) return;
     const paidTrial =
       typeof window !== "undefined" ? localStorage.getItem("trv-paid-trial") === "verified" : false;
-    void ensureProfile({ data: { displayName, paidTrial } })
-      .then(() => navigate({ to: "/hub" }))
-      .catch(() => navigate({ to: "/hub" }));
+    void (async () => {
+      if (search.share) {
+        try {
+          const joined = await redeemShareCode({ data: { code: search.share } });
+          toast.success(`${joined.tokenName} noted. Grand view is free for 15 days. The amount is not set.`);
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : "Share code was not accepted");
+        }
+      }
+      try {
+        await ensureProfile({ data: { displayName, paidTrial } });
+      } catch {
+        /* Hub creates the node once the session is live. */
+      }
+      navigate({ to: "/hub" });
+    })();
   }, [isPending, userId, displayName, navigate]);
 
   async function bindHub(opts: { displayName?: string; native?: boolean }) {
@@ -102,6 +120,11 @@ function Login() {
         await attestBaseline({ data: { age18: true, ofac: true } });
       } catch {
         /* Age gate in hub will catch it. */
+      }
+      try {
+        await claimSignupHold();
+      } catch {
+        /* Hold is required only after a confirmed one-time code. */
       }
       toast.success("Native TRV lock set. Welcome, Viewer.");
       navigate({ to: "/hub" });
@@ -185,9 +208,14 @@ function Login() {
         </div>
 
         <div className="rounded-[var(--radius-xl)] border border-border bg-card/90 p-6 backdrop-blur-sm">
+          <div className="mb-4">
+            <PasskeyPanel />
+          </div>
+          <p className="mb-3 text-xs text-muted-foreground">Email and password are the fallback.</p>
           {!authEnabled ? (
-            <p className="text-sm text-muted-foreground">Sign-in is disabled.</p>
+            <p className="text-sm text-muted-foreground">Email sign-in is disabled in this environment.</p>
           ) : (
+            <>
             <Tabs value={tab} onValueChange={setTab}>
               <TabsList className="w-full">
                 <TabsTrigger value="register" className="flex-1">
@@ -203,6 +231,8 @@ function Login() {
                     Outside trial · {PAID_TRIAL_HOURS} hours of Verified after this lock. No card. Handshake still required.
                   </p>
                 ) : null}
+                {codeReady ? null : <SignupCodeFlow onConfirmed={() => setCodeReady(true)} />}
+                {codeReady ? (
                 <form className="space-y-3" onSubmit={register}>
                   <div>
                     <Label htmlFor="name">Viewer name</Label>
@@ -253,6 +283,7 @@ function Login() {
                     {busy ? "Sealing lock…" : search.trial === "verified" ? "Create lock · start 2-day trial" : "Create lock · stand watch"}
                   </Button>
                 </form>
+                ) : null}
               </TabsContent>
               <TabsContent value="signin">
                 <form className="space-y-3" onSubmit={nativeSignIn}>
@@ -287,6 +318,7 @@ function Login() {
                 </form>
               </TabsContent>
             </Tabs>
+            </>
           )}
 
           {error ? (

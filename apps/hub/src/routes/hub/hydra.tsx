@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { readNativeGps } from "@/lib/trv/native-gps";
 
 export const Route = createFileRoute("/hub/hydra")({ component: HydraPage });
 
@@ -56,15 +57,15 @@ function HydraPage() {
     reader.readAsDataURL(f);
   }
 
-  function locate() {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLat(pos.coords.latitude);
-        setLng(pos.coords.longitude);
-        toast.message("Location held for this report only.");
-      },
-      () => toast.error("Location denied"),
-    );
+  async function locate() {
+    try {
+      const fix = await readNativeGps();
+      setLat(fix.lat);
+      setLng(fix.lng);
+      toast.message("Native GPS held for this report only. It stays in TRV.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Location denied");
+    }
   }
 
   return (

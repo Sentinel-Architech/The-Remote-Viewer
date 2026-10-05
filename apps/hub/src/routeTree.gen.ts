@@ -34,6 +34,7 @@ import { Route as HubFriendsRouteImport } from './routes/hub/friends'
 import { Route as HubGatewayRouteImport } from './routes/hub/gateway'
 import { Route as HubHoneypotRouteImport } from './routes/hub/honeypot'
 import { Route as HubHydraRouteImport } from './routes/hub/hydra'
+import { Route as HubIntentRouteImport } from './routes/hub/intent'
 import { Route as HubLiveRouteImport } from './routes/hub/live'
 import { Route as HubMarketRouteImport } from './routes/hub/market'
 import { Route as HubMeshRouteImport } from './routes/hub/mesh'
@@ -179,6 +180,11 @@ const HubHydraRoute = HubHydraRouteImport.update({
   path: '/hydra',
   getParentRoute: () => HubRouteRoute,
 } as any)
+const HubIntentRoute = HubIntentRouteImport.update({
+  id: '/intent',
+  path: '/intent',
+  getParentRoute: () => HubRouteRoute,
+} as any)
 const HubLiveRoute = HubLiveRouteImport.update({
   id: '/live',
   path: '/live',
@@ -300,6 +306,7 @@ export interface FileRoutesByFullPath {
   '/hub/gateway': typeof HubGatewayRoute
   '/hub/honeypot': typeof HubHoneypotRoute
   '/hub/hydra': typeof HubHydraRoute
+  '/hub/intent': typeof HubIntentRoute
   '/hub/live': typeof HubLiveRoute
   '/hub/market': typeof HubMarketRoute
   '/hub/mesh': typeof HubMeshRoute
@@ -345,6 +352,7 @@ export interface FileRoutesByTo {
   '/hub/gateway': typeof HubGatewayRoute
   '/hub/honeypot': typeof HubHoneypotRoute
   '/hub/hydra': typeof HubHydraRoute
+  '/hub/intent': typeof HubIntentRoute
   '/hub/live': typeof HubLiveRoute
   '/hub/market': typeof HubMarketRoute
   '/hub/mesh': typeof HubMeshRoute
@@ -392,6 +400,7 @@ export interface FileRoutesById {
   '/hub/gateway': typeof HubGatewayRoute
   '/hub/honeypot': typeof HubHoneypotRoute
   '/hub/hydra': typeof HubHydraRoute
+  '/hub/intent': typeof HubIntentRoute
   '/hub/live': typeof HubLiveRoute
   '/hub/market': typeof HubMarketRoute
   '/hub/mesh': typeof HubMeshRoute
@@ -440,6 +449,7 @@ export interface FileRouteTypes {
     | '/hub/gateway'
     | '/hub/honeypot'
     | '/hub/hydra'
+    | '/hub/intent'
     | '/hub/live'
     | '/hub/market'
     | '/hub/mesh'
@@ -485,6 +495,7 @@ export interface FileRouteTypes {
     | '/hub/gateway'
     | '/hub/honeypot'
     | '/hub/hydra'
+    | '/hub/intent'
     | '/hub/live'
     | '/hub/market'
     | '/hub/mesh'
@@ -531,6 +542,7 @@ export interface FileRouteTypes {
     | '/hub/gateway'
     | '/hub/honeypot'
     | '/hub/hydra'
+    | '/hub/intent'
     | '/hub/live'
     | '/hub/market'
     | '/hub/mesh'
@@ -752,6 +764,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HubHydraRouteImport
       parentRoute: typeof HubRouteRoute
     }
+    '/hub/intent': {
+      id: '/hub/intent'
+      path: '/intent'
+      fullPath: '/hub/intent'
+      preLoaderRoute: typeof HubIntentRouteImport
+      parentRoute: typeof HubRouteRoute
+    }
     '/hub/live': {
       id: '/hub/live'
       path: '/live'
@@ -901,6 +920,7 @@ interface HubRouteRouteChildren {
   HubGatewayRoute: typeof HubGatewayRoute
   HubHoneypotRoute: typeof HubHoneypotRoute
   HubHydraRoute: typeof HubHydraRoute
+  HubIntentRoute: typeof HubIntentRoute
   HubLiveRoute: typeof HubLiveRoute
   HubMarketRoute: typeof HubMarketRoute
   HubMeshRoute: typeof HubMeshRoute
@@ -929,6 +949,7 @@ const HubRouteRouteChildren: HubRouteRouteChildren = {
   HubGatewayRoute: HubGatewayRoute,
   HubHoneypotRoute: HubHoneypotRoute,
   HubHydraRoute: HubHydraRoute,
+  HubIntentRoute: HubIntentRoute,
   HubLiveRoute: HubLiveRoute,
   HubMarketRoute: HubMarketRoute,
   HubMeshRoute: HubMeshRoute,

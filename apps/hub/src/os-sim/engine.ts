@@ -4,6 +4,7 @@ import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { assertSimGame } from "@/lib/trv/native-games";
 import { emitCatalog, emitDefense } from "./hub-bridge";
 import {
   BRAIN,
@@ -20,6 +21,8 @@ import { createInput } from "./input";
 import { autoHealCount, catalogedCount } from "./save";
 import { useGameStore } from "./store";
 import type { ThreatTypeId } from "./types";
+
+assertSimGame("sentinel-os");
 
 const FIXED = 1 / 60;
 const TURN = 1.65;

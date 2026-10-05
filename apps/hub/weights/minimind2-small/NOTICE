@@ -1,0 +1,12 @@
+MiniMind2-Small
+Author: Jingyao Gong
+Source: https://huggingface.co/jingyaogong/MiniMind2-Small
+Upstream project: https://github.com/jingyaogong/minimind
+License: Apache License, Version 2.0. The license text is the LICENSE file in this directory.
+
+The Hugging Face model card names MiniMind2-Small at 26M parameters and licenses the repository under Apache-2.0.
+The file model.safetensors in this directory is the published weight file.
+Size: 51667832 bytes.
+SHA-256: 83bfe6f127c98120a3410aab65eee3b66b8301ac352c20b7efd5e2eb688f6d85
+Safetensors header: 74 float16 tensors, 25829888 parameters.
+This directory does not contain MiMo-V2.6-Pro weights or MiniMind Max2 weights.

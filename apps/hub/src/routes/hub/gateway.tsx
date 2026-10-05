@@ -1,7 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { DECLASSIFIED_TITLES, type DeclassifiedAgency } from "@/lib/trv/declassified-titles";
+import { ELECTION_CATALOG, ELECTION_CATALOG_MARK } from "@/lib/trv/election-index";
+import { EPSTEIN_INDEX, type EpsteinIndexGroup } from "@/lib/trv/epstein-index";
 import { GATEWAY_DOCS } from "@/lib/trv/gateway";
+import { localDeclassifiedSearch } from "@/lib/trv/local-search";
 import { useViewer } from "@/components/viewer-context";
 import { verifyViewer } from "@/lib/trv/server";
 import { Button } from "@/components/ui/button";
@@ -11,6 +15,23 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 export const Route = createFileRoute("/hub/gateway")({ component: GatewayPage });
 
 const FLASH = [0, 2, 3, 1];
+
+function indexNote(mark: "third-party" | "unverified-catalog"): string {
+  switch (mark) {
+    case "third-party":
+      return "Third-party index. Not verified government text. Title only.";
+    case "unverified-catalog":
+      return ELECTION_CATALOG_MARK;
+    default: {
+      const unseen: never = mark;
+      return unseen;
+    }
+  }
+}
+
+function officialHref(named: string): string {
+  return /^https:\/\//i.test(named) ? named : `https://${named}`;
+}
 
 function GatewayPage() {
   const { profile, setProfile } = useViewer();
@@ -23,6 +44,11 @@ function GatewayPage() {
 
   const docs = GATEWAY_DOCS;
   const active = useMemo(() => docs.find((d) => d.id === open), [docs, open]);
+  const [query, setQuery] = useState("");
+  const found = useMemo(
+    () => localDeclassifiedSearch({ query, verified }),
+    [query, verified],
+  );
 
   async function playFlash() {
     setSeq([]);
@@ -41,8 +67,43 @@ function GatewayPage() {
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
           Documents and sources are free. Methods — the how of each activity —
           stay sealed until a Viewer passes the robot handshake and leaves
-          Initiate. Hover a card to preview whether it is document or method.
+          Initiate. Search runs on this device over the texts already here. It
+          does not send the query off the device. Named programs below are titles
+          only. This install does not store a document body for them.
         </p>
+        <label className="mt-4 block text-sm">
+          Local search
+          <input
+            className="mt-1.5 w-full rounded-[var(--radius-md)] border border-input bg-elevated px-3 py-2"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search the texts on this device"
+          />
+        </label>
+        {query.trim() ? (
+          <div className="mt-3 text-sm text-muted-foreground">
+            <p>{found.reason}</p>
+            <ul className="mt-2 space-y-2">
+              {found.hits.map((hit) => (
+                <li key={hit.id}>
+                  <span className="text-fg">
+                    {hit.kind === "title"
+                      ? `${hit.agency}: ${hit.title} ${hit.years}`
+                      : hit.kind === "index"
+                        ? `${hit.group}: ${hit.title}${hit.years ? `. ${hit.years}` : ""}${hit.agency ? `. ${hit.agency}` : ""}`
+                        : hit.title}
+                  </span>
+                  {hit.locked ? " · sealed" : ""}
+                  {hit.kind === "title" ? <span className="block text-xs">Title only.</span> : null}
+                  {hit.kind === "index" && hit.indexMark ? (
+                    <span className="block text-xs">{indexNote(hit.indexMark)}</span>
+                  ) : null}
+                  {hit.excerpt ? <span className="block text-xs">{hit.excerpt}</span> : null}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
         <div className="mt-3">
           <Badge variant={verified ? "native" : "warn"}>
             {verified ? "Verified Viewer · methods open" : "Initiate · methods sealed"}
@@ -91,6 +152,97 @@ function GatewayPage() {
           )}
         </div>
       )}
+
+      <section className="rounded-[var(--radius-xl)] border border-border bg-card p-5">
+        <h2 className="font-display text-xl">Declassified programs</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Titles only. No document body is stored. Search stays on this device.</p>
+        {(["CIA", "NSA", "FBI", "NRO", "DIA and DOD"] as DeclassifiedAgency[]).map((agency) => (
+          <div key={agency} className="mt-4">
+            <h3 className="text-sm font-medium">{agency}</h3>
+            <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
+              {DECLASSIFIED_TITLES.filter((item) => item.agency === agency).map((item) => (
+                <li key={item.title}>
+                  {item.title} {item.years}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </section>
+
+      <section className="rounded-[var(--radius-xl)] border border-border bg-card p-5">
+        <h2 className="font-display text-xl">Epstein files index</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Third-party index. Not verified government text. Titles only. No document body is stored. Search stays on this device.
+        </p>
+        {(["DOJ data sets", "Media", "Dockets", "Official doors"] as EpsteinIndexGroup[]).map((group) => (
+          <div key={group} className="mt-4">
+            <h3 className="text-sm font-medium">{group}</h3>
+            <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
+              {EPSTEIN_INDEX.filter((item) => item.group === group).map((item) => (
+                <li key={item.title}>
+                  {item.group === "Official doors" ? (
+                    <a href={officialHref(item.title)} rel="noreferrer">
+                      {item.title}
+                    </a>
+                  ) : (
+                    item.title
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </section>
+
+      <section className="rounded-[var(--radius-xl)] border border-border bg-card p-5">
+        <h2 className="font-display text-xl">{ELECTION_CATALOG.documentTitle}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">{ELECTION_CATALOG_MARK} Search stays on this device.</p>
+        <p className="mt-2 text-sm">{ELECTION_CATALOG.subtitle}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{ELECTION_CATALOG.archiveScope}</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          On-screen text only: {ELECTION_CATALOG.footer} {ELECTION_CATALOG.pageMarkers.join(" ")}
+        </p>
+        <ol className="mt-4 space-y-4 text-sm">
+          {ELECTION_CATALOG.entries.map((item, index) => (
+            <li key={item.title}>
+              <p className="font-medium">
+                {index + 1}.{" "}
+                {item.href && !item.officialName ? (
+                  <a href={item.href} rel="noreferrer">
+                    {item.title}
+                  </a>
+                ) : (
+                  item.title
+                )}
+                . {item.when}. {item.agency}.
+              </p>
+              {item.label ? <p className="mt-1">Label: {item.label}</p> : null}
+              {item.href && item.officialName ? (
+                <p className="mt-1">
+                  <a href={item.href} rel="noreferrer">
+                    {item.officialName}
+                  </a>
+                </p>
+              ) : null}
+              <p className="mt-1 text-muted-foreground">{item.blurb}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{ELECTION_CATALOG_MARK}</p>
+            </li>
+          ))}
+        </ol>
+        <div className="mt-4">
+          <h3 className="text-sm font-medium">Official doors</h3>
+          <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
+            {ELECTION_CATALOG.doors.map((door) => (
+              <li key={door}>
+                <a href={door} rel="noreferrer">
+                  {door}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
 
       <div className="grid gap-3 sm:grid-cols-2">
         {docs.map((d) => {

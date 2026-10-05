@@ -1,11 +1,10 @@
 // crates/sentinel-optic/src/lib.rs
-// Optical air-gap framing module for offline screen-to-camera secure data transfer.
+// Chunks bytes into labeled frames. This function does not display them, capture them, or open an air gap.
 
 pub struct OpticalAirGapEncoder;
 
 impl OpticalAirGapEncoder {
-    /// Encodes a neutralized ciphertext payload into chunked ASCII/Unicode visual matrices 
-    /// for optical transmission across an air-gap (e.g., display to camera capture).
+    /// Splits a payload into labeled text frames. It does not encrypt and it does not open an air gap.
     pub fn encode_to_optical_frames(payload: &[u8], chunk_size: usize) -> Vec<String> {
         println!("[OPTIC] Initializing Robust Soliton optical frame encoder...");
         
@@ -16,7 +15,7 @@ impl OpticalAirGapEncoder {
             frames.push(frame);
         }
 
-        println!("[SUCCESS] Generated {} optical air-gap transmission frames.", frames.len());
+        println!("[SUCCESS] Generated {} text frames. No air gap was opened.", frames.len());
         frames
     }
 }

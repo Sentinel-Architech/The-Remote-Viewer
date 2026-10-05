@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useViewer } from "@/components/viewer-context";
 import { buyShopItem, equipShopItem, listMyShop } from "@/lib/trv/commons";
+import { quoteConverter } from "@/lib/trv/rail-convert";
+import { viewerSeatFromUserAgent } from "@/lib/trv/viewer-seat";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -11,6 +13,8 @@ export const Route = createFileRoute("/hub/shop")({ component: ShopPage });
 function ShopPage() {
   const { profile, setProfile } = useViewer();
   const [items, setItems] = useState<Awaited<ReturnType<typeof listMyShop>>>([]);
+  const [units, setUnits] = useState(10);
+  const [quote, setQuote] = useState<string>("");
 
   async function refresh() {
     setItems(await listMyShop());
@@ -46,6 +50,49 @@ function ShopPage() {
           </Button>
         </div>
       </div>
+      <section className="rounded-[var(--radius-xl)] border border-border bg-card p-5">
+        <h2 className="font-display text-xl">Card and crypto converter</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Stripe stays the card rail. Phantom stays the Solana rail. The rate is 1 to 1.
+          One transaction stays at 1000 TRV Token🍃. A month below the highest tier stays at $9000.
+          Bulk quantity is not set. No money moves.
+        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <input
+            type="number"
+            min={1}
+            max={1000}
+            className="h-10 w-28 rounded-[var(--radius-md)] border border-input bg-elevated px-3"
+            value={units}
+            onChange={(e) => setUnits(Number(e.target.value))}
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => {
+              try {
+                const next = quoteConverter({
+                  seat: viewerSeatFromUserAgent(typeof navigator === "undefined" ? "" : navigator.userAgent),
+                  userAgent: typeof navigator === "undefined" ? "" : navigator.userAgent,
+                  planId: profile?.planId ?? "initiate",
+                  direction: "card-to-crypto",
+                  units,
+                  bulk: false,
+                  spentThisMonthUsd: 0,
+                  newViewerQrShares: 0,
+                  bulkDiscountsUsed: 0,
+                });
+                setQuote(next.reason);
+              } catch (err) {
+                setQuote(err instanceof Error ? err.message : "The converter did not run.");
+              }
+            }}
+          >
+            Quote on this device
+          </Button>
+        </div>
+        {quote ? <p className="mt-3 text-sm text-muted-foreground">{quote}</p> : null}
+      </section>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => {
           const equipped =
@@ -84,7 +131,7 @@ function ShopPage() {
                   className="mt-3"
                   onClick={async () => {
                     try {
-                      const p = await buyShopItem({ data: item.id });
+                      const p = await buyShopItem({ data: { itemId: item.id, signature: profile?.handle ?? "" } });
                       if (p) setProfile(p);
                       await refresh();
                       toast.success("Purchased with native TRV");

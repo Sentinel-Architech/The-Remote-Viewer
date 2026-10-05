@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { announce, matchVoiceRoute } from "@/lib/trv/media";
-import { askSentinel } from "@/lib/trv/sentinel-ai";
+import { answerWakePhrase } from "@/lib/trv/sentinel-voice";
 import { Button } from "./ui/button";
 import { applyTheme, parseTheme, THEME_PRESETS } from "@/lib/trv/themes";
 
@@ -99,15 +99,9 @@ export function VoiceHelm() {
       void navigate({ to: route });
       return;
     }
-    const brief = said.replace(/hey sentinel[,.]?/i, "").trim();
-    if (/hey sentinel/i.test(said) && brief.length > 2) {
-      announce("Briefing Sentinel");
-      try {
-        const r = await askSentinel({ data: { prompt: brief } });
-        if (r.ok) announce(r.text.slice(0, 280));
-      } catch {
-        announce("Helm closed");
-      }
+    const fact = answerWakePhrase(said);
+    if (fact.wake) {
+      announce(fact.text);
     }
   }
 

@@ -1,5 +1,5 @@
 // crates/sentinel-optic/src/lib.rs
-// Optical air-gap data encoding and Robust Soliton framing for secure offline transmission.
+// Splits a payload into chunks. This function does not open an air gap.
 
 pub struct OpticalAirGapEncoder {
     chunk_size: usize,
@@ -16,7 +16,7 @@ impl OpticalAirGapEncoder {
 
     pub fn encode_payload(&self, payload: &[u8]) -> Result<Vec<Vec<u8>>, &'static str> {
         if payload.is_empty() {
-            return Err("Payload cannot be empty for optical air-gap encoding.");
+            return Err("Payload cannot be empty.");
         }
 
         let mut frames = Vec::new();

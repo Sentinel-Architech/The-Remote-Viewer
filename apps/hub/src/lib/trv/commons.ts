@@ -6,6 +6,7 @@ import { shopById, SHOP_ITEMS } from "./shop";
 import { effectiveFeeRate } from "./saas";
 import { shopPrice } from "./citizen";
 import { loadProfile } from "./server";
+import { assertNativeTrvDebit } from "./viewer-locks";
 
 async function requireMutualVerified(
   sql: Awaited<ReturnType<typeof getSql>>,
@@ -178,8 +179,15 @@ export const listNearby = createServerFn({ method: "GET" })
 
 export const buyShopItem = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator((itemId: string) => itemId.slice(0, 40))
-  .handler(async ({ context, data: itemId }) => {
+  .validator((input: string | { itemId?: string; signature?: string }) =>
+    typeof input === "string"
+      ? { itemId: input.slice(0, 40), signature: "" }
+      : { itemId: String(input.itemId ?? "").slice(0, 40), signature: String(input.signature ?? "").slice(0, 32) },
+  )
+  .handler(async ({ context, data }) => {
+    const { refuseCarryPaymentFromRequest } = await import("./carry-pay.server");
+    refuseCarryPaymentFromRequest();
+    const itemId = data.itemId;
     const item = shopById(itemId);
     if (!item) throw new Error("Unknown shop item");
     const sql = await getSql();
@@ -190,6 +198,7 @@ export const buyShopItem = createServerFn({ method: "POST" })
     `;
     if ((owned[0]?.n ?? 0) > 0) throw new Error("Already owned");
     const price = shopPrice(item.price, Boolean(me.citizenAt));
+    assertNativeTrvDebit({ signature: data.signature, handle: me.handle, rail: "trv-native" });
     if (me.credits < price) throw new Error("Need more TRV. Convert FDIC-backed funds in Billing.");
     await sql`update viewer_profiles set credits = credits - ${price} where user_id = ${context.userId}`;
     await sql`

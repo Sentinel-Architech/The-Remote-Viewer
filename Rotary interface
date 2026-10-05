@@ -25,7 +25,7 @@ impl RotaryDisplayInterface {
         if self.active_node_state {
             "[DISPLAY] STATUS: SECURE // SOVEREIGN MESH ONLINE"
         } else {
-            "[DISPLAY] STATUS: AIR-GAP ISOLATED // STANDBY"
+            "[DISPLAY] STATUS: STANDBY // NODE QUIET"
         }
     }
 }

@@ -21,6 +21,11 @@ export interface ExpertInput {
   opticalStatus?: string | null;
   localEvents?: unknown[];
   timestamp?: string;
+  /**
+   * Boolean only. A true value means child sexual exploitation was signaled.
+   * No description, search, contact method, or harm method is stored here.
+   */
+  childSexualExploitation?: boolean;
 }
 
 export interface ExpertOutput {

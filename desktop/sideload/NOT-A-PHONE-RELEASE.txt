@@ -1,0 +1,17 @@
+the-remote-viewer-desktop-not-a-phone-release.tar.gz
+Linux x86-64 desktop package. This is not a phone release.
+No Android release signing key was used.
+The earlier package only measured the weight file. It is kept at
+desktop/sideload/archive/the-remote-viewer-desktop-measure-only.tar.gz
+(48774200 bytes).
+Binary: remote-viewer, ELF 64-bit x86-64, 8071792 bytes.
+Weights beside the binary: MiniMind2-Small model.safetensors, 51667832 bytes.
+SHA-256: 83bfe6f127c98120a3410aab65eee3b66b8301ac352c20b7efd5e2eb688f6d85
+./remote-viewer --measure-weights checks that file and does not execute the network.
+./remote-viewer --run-minimind weights/minimind2-small/model.safetensors executes it.
+A build-machine run of that command on the shipped file exited 0.
+prompt_token_ids: [1, 85, 736, 201, 59, 292, 389, 260, 3836, 1861, 501, 2, 201, 1, 320, 275, 201, 3526, 370, 730, 13, 19, 33, 2, 201, 1, 1078, 538, 501, 201]
+new_token_ids: [19, 13, 19, 370, 260, 3717, 349, 370, 3030, 1824, 730, 16, 637, 370, 4242, 730, 13, 19, 370, 260, 3717, 349, 370, 3030]
+decoded_new_tokens: 1+1 is a number that is less than 1. This is because 1+1 is a number that is less
+The model network was executed.
+The phone package still only counts the weight file. It does not execute the network.

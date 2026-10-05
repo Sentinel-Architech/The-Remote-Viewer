@@ -1,0 +1,4 @@
+anchor-syn 0.30.1
+Upstream: https://github.com/coral-xyz/anchor
+License: Apache License, Version 2.0. The license text is LICENSE-APACHE in this directory.
+Local change: SeedPath::new trims token-stream whitespace when splitting PDA seed paths.

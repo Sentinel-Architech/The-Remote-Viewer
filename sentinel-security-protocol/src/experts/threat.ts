@@ -1,6 +1,35 @@
 import type { Expert, ExpertInput, ExpertOutput } from "../types.js";
 
 /**
+ * Hydra child-protection rule. It lives in this threat expert.
+ * Defense only: block the signaled case. No search, contact, or harm method.
+ * No description is stored. No notice is sent.
+ */
+export type ChildProtectionRule = {
+  place: "native-security-stack";
+  name: "hydra-child-protection";
+  blocked: boolean;
+  search: false;
+  contact: false;
+  harm: false;
+  noticeSent: false;
+  descriptionStored: false;
+};
+
+export function childProtectionRule(signaled: boolean | undefined): ChildProtectionRule {
+  return {
+    place: "native-security-stack",
+    name: "hydra-child-protection",
+    blocked: signaled === true,
+    search: false,
+    contact: false,
+    harm: false,
+    noticeSent: false,
+    descriptionStored: false,
+  };
+}
+
+/**
  * ThreatExpert
  * Lightweight native behavioral and contextual rules.
  * Can later host an on-device model while remaining fully local.
@@ -10,6 +39,23 @@ export const threatExpert: Expert = {
 
   async evaluate(input: ExpertInput): Promise<ExpertOutput> {
     const reasons: string[] = [];
+    const childProtection = childProtectionRule(input.childSexualExploitation);
+    if (childProtection.blocked) {
+      return {
+        expert: "threat",
+        score: 0,
+        level: "unknown",
+        reasons: ["Child sexual exploitation is blocked. No notice was sent."],
+        evidence: {
+          opticalStatus: input.opticalStatus ?? null,
+          handlePresent: Boolean(input.handle && input.handle.length >= 2),
+          eventCount: Array.isArray(input.localEvents) ? input.localEvents.length : 0,
+          childProtection,
+        },
+        timestamp: new Date().toISOString(),
+      };
+    }
+
     let score = 0.84;
 
     const optical = (input.opticalStatus || "").toLowerCase();
@@ -48,6 +94,7 @@ export const threatExpert: Expert = {
         opticalStatus: input.opticalStatus ?? null,
         handlePresent: Boolean(input.handle && input.handle.length >= 2),
         eventCount: events.length,
+        childProtection,
       },
       timestamp: new Date().toISOString(),
     };

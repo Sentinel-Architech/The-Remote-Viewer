@@ -3,6 +3,18 @@
  * 100% native. Dual-mode. No external services required.
  */
 
+import {
+  accountRegistryGate,
+  type AccountRegistryGate,
+} from "../../../../sentinel-security-protocol/src/experts/identity.ts";
+import {
+  childProtectionRule,
+  type ChildProtectionRule,
+} from "../../../../sentinel-security-protocol/src/experts/threat.ts";
+
+export { accountRegistryGate, type AccountRegistryGate };
+export { childProtectionRule, type ChildProtectionRule };
+
 export type OperatingMode = "individual" | "enhanced" | "whole-network";
 
 export interface SecurityDecision {
@@ -13,6 +25,8 @@ export interface SecurityDecision {
   nativeStack: true;
   generatedAt: string;
   expertSummary?: string[];
+  registry: AccountRegistryGate;
+  childProtection: ChildProtectionRule;
 }
 
 export interface EnforcementResult {
@@ -56,6 +70,7 @@ export async function evaluateHubSecurity(params: {
   opticalStatus?: string | null;
   mode?: OperatingMode;
   localEventCount?: number;
+  childSexualExploitation?: boolean;
 }): Promise<SecurityDecision> {
   const mode = params.mode ?? "individual";
   const handle = (params.handle ?? "").trim();
@@ -86,10 +101,11 @@ export async function evaluateHubSecurity(params: {
   else if (eventCount > 5) network = 0.62;
   else if (eventCount === 0) network = 0.82;
 
-  let threat = 0.84;
-  if (optical === "failed" || optical === "critical") threat -= 0.35;
-  if (handle.length < 2) threat -= 0.12;
-  if (eventCount > 25) threat -= 0.15;
+  const childProtection = childProtectionRule(params.childSexualExploitation);
+  let threat = childProtection.blocked ? 0 : 0.84;
+  if (!childProtection.blocked && (optical === "failed" || optical === "critical")) threat -= 0.35;
+  if (!childProtection.blocked && handle.length < 2) threat -= 0.12;
+  if (!childProtection.blocked && eventCount > 25) threat -= 0.15;
   threat = clamp(threat);
 
   const weights = {
@@ -100,22 +116,24 @@ export async function evaluateHubSecurity(params: {
     threat: 0.15,
   };
 
-  const overallScore = clamp(
+  const weighted = clamp(
     integrity * weights.integrity +
       identity * weights.identity +
       posture * weights.posture +
       network * weights.network +
       threat * weights.threat
   );
-
-  const overallLevel = levelFromScore(overallScore);
+  const overallScore = childProtection.blocked ? 0 : weighted;
+  const overallLevel = childProtection.blocked ? "unknown" : levelFromScore(overallScore);
 
   return {
     overallScore,
     overallLevel,
-    recommendation: recommendationFromLevel(overallLevel),
+    recommendation: childProtection.blocked ? "isolate" : recommendationFromLevel(overallLevel),
     systemwide: true,
     nativeStack: true,
+    registry: accountRegistryGate(),
+    childProtection,
     generatedAt: new Date().toISOString(),
     expertSummary: [
       `integrity=${integrity.toFixed(2)}`,
@@ -132,15 +150,17 @@ export function enforceHubDecision(
   decision: SecurityDecision,
   mode: OperatingMode = "individual"
 ): EnforcementResult {
+  const childBlocked = decision.childProtection.blocked;
   const allowed =
-    decision.recommendation === "allow" ||
-    decision.recommendation === "monitor" ||
-    (decision.recommendation === "restrict" && mode === "individual");
+    !childBlocked &&
+    (decision.recommendation === "allow" ||
+      decision.recommendation === "monitor" ||
+      (decision.recommendation === "restrict" && mode === "individual"));
 
   return {
     allowed,
     action: decision.recommendation,
     mode,
-    localOverrideAvailable: true,
+    localOverrideAvailable: !childBlocked,
   };
 }

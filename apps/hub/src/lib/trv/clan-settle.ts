@@ -48,6 +48,8 @@ export const quoteClanCheckout = createServerFn({ method: "POST" })
     return { planId: input.planId, interval, nodePubkey };
   })
   .handler(async ({ context, data }) => {
+    const { refuseCarryPaymentFromRequest } = await import("./carry-pay.server");
+    refuseCarryPaymentFromRequest();
     const sql = await getSql();
     const me = await loadProfile(sql, context.userId);
     if (!me) throw new Error("Node missing");
@@ -96,6 +98,8 @@ export const settleClanCheckout = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ context, data }) => {
+    const { refuseCarryPaymentFromRequest } = await import("./carry-pay.server");
+    refuseCarryPaymentFromRequest();
     const fields = parseClanCharge(data.message);
     if (!fields || buildClanChargeMessage(fields) !== data.message) {
       throw new Error("Charge is not a native TRV clan quote");

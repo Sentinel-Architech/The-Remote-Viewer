@@ -112,7 +112,7 @@ function AuditPage() {
         <p className="mt-3 text-xs text-muted-foreground">
           Live probes are six short questions, one per super, only when you click.
           If the helm is dark, doctrine and edge still score — the written skill
-          must be up to par even when Grok is silent.
+          must be up to par even when the helm is silent.
         </p>
       </section>
 

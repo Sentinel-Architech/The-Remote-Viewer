@@ -53,14 +53,19 @@ export async function runMoE(
     totalWeight += w;
   }
 
-  const overallScore = totalWeight > 0 ? weightedSum / totalWeight : 0;
-  const overallLevel = levelFromScore(overallScore);
+  const childBlocked = outputs.some((out) => {
+    const rule = out.evidence?.childProtection as { blocked?: boolean } | undefined;
+    return rule?.blocked === true;
+  });
+
+  const overallScore = childBlocked ? 0 : totalWeight > 0 ? weightedSum / totalWeight : 0;
+  const overallLevel = childBlocked ? "unknown" : levelFromScore(overallScore);
 
   return {
     overallScore,
     overallLevel,
     expertOutputs: outputs,
-    recommendation: recommendationFromLevel(overallLevel),
+    recommendation: childBlocked ? "isolate" : recommendationFromLevel(overallLevel),
     systemwide: true,
     nativeStack: true,
     generatedAt: new Date().toISOString(),
