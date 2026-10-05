@@ -28,3 +28,14 @@ export {
   publicIdentityOnly,
   assertNonExtractablePrivate,
 } from "./native-custody";
+
+export {
+  INTENT_LINE,
+  parseIntent,
+  prepareIntent,
+  intentLink,
+  passkeySignInRequest,
+  rejectSeedPhrase,
+  type PreparedIntent,
+  type PasskeySignInRequest,
+} from "./trv/intent-bar";

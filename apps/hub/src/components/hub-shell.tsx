@@ -13,6 +13,7 @@ import {
   Gift,
   Globe,
   KeyRound,
+  TextCursorInput,
   Landmark,
   LayoutDashboard,
   MessageSquare,
@@ -73,6 +74,7 @@ const NAV = [
   { to: "/hub/theme", label: "Theme", icon: Palette },
   { to: "/hub/profile", label: "Profile", icon: CircleUser },
   { to: "/hub/settings", label: "Settings", icon: Settings },
+  { to: "/hub/intent", label: "Intent", icon: TextCursorInput },
 ] as const;
 
 const MOBILE_NAV = [

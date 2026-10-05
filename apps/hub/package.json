@@ -13,13 +13,14 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --import ./scripts/strip-ts-resolve.mjs --test 'scripts/**/*.test.mjs' scripts/human-comms-checkout.test.ts scripts/clan-checkout.test.ts scripts/viewer-locks.test.ts scripts/native-install.test.ts scripts/mimo-local.test.ts scripts/native-games.test.ts scripts/local-search.test.ts scripts/minimind2-small.test.ts scripts/owner-ink.test.ts scripts/registry-gate.test.ts",
+    "test": "node --experimental-strip-types --import ./scripts/strip-ts-resolve.mjs --test 'scripts/**/*.test.mjs' scripts/human-comms-checkout.test.ts scripts/clan-checkout.test.ts scripts/viewer-locks.test.ts scripts/native-install.test.ts scripts/mimo-local.test.ts scripts/native-games.test.ts scripts/local-search.test.ts scripts/minimind2-small.test.ts scripts/owner-ink.test.ts scripts/registry-gate.test.ts scripts/intent-bar.test.ts",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.4",
     "@hookform/resolvers": "^5.7.0",
+    "@noble/hashes": "2.3.0",
     "@noble/post-quantum": "^0.6.1",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -95,5 +96,5 @@
     "typescript-eslint": "^8.56.1",
     "vite": "^8.2.0"
   },
-  "description": "The Remote Viewer \u2014 hosted Viewer Hub DApp (Command, daily watch, SENTINEL OS jack-in, profile vault, mandatory briefing)."
+  "description": "The Remote Viewer — hosted Viewer Hub DApp (Command, daily watch, SENTINEL OS jack-in, profile vault, mandatory briefing)."
 }

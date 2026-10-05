@@ -4,6 +4,7 @@ mod merkle;
 mod p2p;
 mod token;
 mod minimind;
+mod minimind_exec;
 #[cfg(feature = "runtime")]
 mod runtime;
 
@@ -34,6 +35,9 @@ fn measure_weights_and_exit() -> Result<()> {
 async fn main() -> Result<()> {
     if std::env::args().any(|arg| arg == "--measure-weights") {
         return measure_weights_and_exit();
+    }
+    if std::env::args().any(|arg| arg == "--run-minimind") {
+        return minimind_exec::run_and_exit();
     }
 
     tracing_subscriber::fmt::init();
