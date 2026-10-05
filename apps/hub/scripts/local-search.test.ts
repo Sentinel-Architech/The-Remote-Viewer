@@ -13,6 +13,25 @@ import { fullWeightLowerBoundBytes } from "../src/lib/trv/mimo-capacity.ts";
 import { qualifyFingerprint, qualifyNfc, qualifySelfie, FEDERAL_POSTURE } from "../src/lib/trv/digital-id.ts";
 import { viewerSeatFromUserAgent } from "../src/lib/trv/viewer-seat.ts";
 
+function listedUrls(source: string): URL[] {
+  const urls: URL[] = [];
+  for (const match of source.matchAll(/https?:\/\/[^\s"'`<>)]+/g)) {
+    try {
+      urls.push(new URL(match[0]));
+    } catch {
+      continue;
+    }
+  }
+  return urls;
+}
+
+function sourceListsUrl(source: string, expected: string): boolean {
+  const want = new URL(expected);
+  return listedUrls(source).some(
+    (url) => url.origin === want.origin && url.pathname === want.pathname,
+  );
+}
+
 test("local search stays on the device and uses only existing gateway titles", () => {
   const result = localDeclassifiedSearch({ query: "Hemi-Sync", verified: false });
   assert.equal(result.sentOffDevice, false);
@@ -87,8 +106,8 @@ test("the Epstein index is third-party titles and stays on the device", () => {
   assert.equal(flight.sentOffDevice, false);
   const source = readFileSync(new URL("../src/lib/trv/epstein-index.ts", import.meta.url), "utf8");
   assert.equal(/body:|summary:|fetch\(|\d+\s+pages|\d+\s+photos/i.test(source), false);
-  assert.equal(source.includes("https://www.justice.gov/epstein"), true);
-  assert.equal(source.includes("https://oversight.house.gov"), true);
+  assert.equal(sourceListsUrl(source, "https://www.justice.gov/epstein"), true);
+  assert.equal(sourceListsUrl(source, "https://oversight.house.gov"), true);
 });
 
 test("the election catalog stores the named text and stays on the device", () => {
@@ -130,9 +149,11 @@ test("the election catalog stores the named text and stays on the device", () =>
   );
   assert.equal(door.networkRequests, 0);
   const source = readFileSync(new URL("../src/lib/trv/election-index.ts", import.meta.url), "utf8");
-  assert.equal(/gemini|google|fetch\(/i.test(source), false);
-  assert.equal(source.includes("https://www.nass.org/can-i-vote"), true);
-  assert.equal(source.includes("https://vault.fbi.gov/cointel-pro"), true);
+  assert.equal(/fetch\(/i.test(source), false);
+  assert.equal(source.toLowerCase().split("gemini").length, 1);
+  assert.equal(source.toLowerCase().split("google").length, 1);
+  assert.equal(sourceListsUrl(source, "https://www.nass.org/can-i-vote"), true);
+  assert.equal(sourceListsUrl(source, "https://vault.fbi.gov/cointel-pro"), true);
   assert.equal(source.includes("PAGE 1 OF 2"), true);
   assert.equal(source.includes("PAGE 2 OF 2"), true);
 });
