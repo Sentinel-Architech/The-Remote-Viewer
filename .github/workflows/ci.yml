@@ -20,7 +20,17 @@ jobs:
           anchor-version: "0.30.1"
           solana-cli-version: "4.3.0"
       - name: Locate Anchor and Build
+        env:
+          # Anchor 0.30.1 compiles the IDL with `cargo +nightly` unless this
+          # is set. That nightly probe turns on proc-macro2's unstable
+          # SourceFile path, and current nightly has no proc_macro::SourceFile.
+          # Stable 1.85.0 still compiles that pin. The SBF step keeps using
+          # `cargo +solana` from Solana CLI 4.3.0.
+          RUSTUP_TOOLCHAIN: "1.85.0"
         run: |
+          set -euo pipefail
+          unset RUSTC_BOOTSTRAP || true
+          rustc --version
           if [ -f "Anchor.toml" ]; then
             # Full build, including the IDL. Host patches live under
             # programs/trv_governance/patches.
