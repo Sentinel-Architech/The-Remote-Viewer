@@ -6,10 +6,10 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-trv_governance = "TRVg0v3rnance11111111111111111111111111111"
+trv_governance = "83RMs5U655EEPk1WMwq5JFQojKS6kxAESSoWwH8CmUJi"
 
 [programs.devnet]
-trv_governance = "TRVg0v3rnance11111111111111111111111111111"
+trv_governance = "83RMs5U655EEPk1WMwq5JFQojKS6kxAESSoWwH8CmUJi"
 
 [registry]
 url = "https://api.apr.dev"

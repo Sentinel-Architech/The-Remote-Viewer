@@ -11,13 +11,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@1.85.0
       - uses: metadaoproject/setup-anchor@v3.4
+        with:
+          # npm @coral-xyz/anchor-cli@0.31.1 exits without compiling.
+          # Agave 2.2 platform-tools cargo is 1.84 and cannot parse edition2024 crates.
+          # 4.3.0 ships platform-tools v1.57 (Rust 1.95) and matches this build.
+          anchor-version: "0.30.1"
+          solana-cli-version: "4.3.0"
       - name: Locate Anchor and Build
         run: |
           if [ -f "Anchor.toml" ]; then
-            anchor build --ignore-keys
+            # IDL build hits ark-bn254 MontFp on the host toolchain.
+            # --no-idl still compiles the program and writes the .so.
+            anchor build --no-idl
           elif [ -f "solana/Anchor.toml" ]; then
-            cd solana && anchor build --ignore-keys
+            cd solana && anchor build --no-idl
           else
             cargo build-sbf --release
           fi

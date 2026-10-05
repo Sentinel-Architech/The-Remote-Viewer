@@ -6,7 +6,7 @@ pub mod errors;
 
 use instructions::*;
 
-declare_id!("TRVg0v3rnance11111111111111111111111111111"); // Placeholder – replace after `anchor keys list`
+declare_id!("83RMs5U655EEPk1WMwq5JFQojKS6kxAESSoWwH8CmUJi");
 
 #[program]
 pub mod trv_governance {
