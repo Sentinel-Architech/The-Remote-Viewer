@@ -11,9 +11,11 @@
 export {
   evaluateHubSecurity,
   enforceHubDecision,
+  accountRegistryGate,
   type OperatingMode,
   type SecurityDecision,
   type EnforcementResult,
+  type AccountRegistryGate,
 } from "./sentinel";
 
 export {

@@ -4,7 +4,7 @@
  *   or: npx tsx src/__tests__/moe.smoke.ts
  */
 
-import { evaluateSecurity, enforce } from "../index.js";
+import { accountRegistryGate, evaluateSecurity, enforce } from "../index.js";
 
 async function main() {
   console.log("=== Sentinel Security Protocol – Smoke Test ===\n");
@@ -35,6 +35,24 @@ async function main() {
 
   if (individual.nativeStack !== true || enhanced.systemwide !== true) {
     throw new Error("Protocol invariants violated");
+  }
+
+  const gate = accountRegistryGate();
+  const identity = individual.expertOutputs.find((output) => output.expert === "identity");
+  const recorded = identity?.evidence?.registry as ReturnType<typeof accountRegistryGate> | undefined;
+  if (
+    gate.wired !== false ||
+    gate.queried !== false ||
+    gate.source !== null ||
+    gate.match !== null ||
+    gate.notice !== null ||
+    gate.noticeSent !== false ||
+    gate.accountRefused !== false ||
+    recorded?.wired !== false ||
+    recorded?.notice !== null ||
+    recorded?.noticeSent !== false
+  ) {
+    throw new Error("Registry check must stay unwired inside the identity expert");
   }
 
   console.log("Smoke test passed. Native MoE operational.");

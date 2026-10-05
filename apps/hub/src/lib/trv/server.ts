@@ -21,6 +21,7 @@ import { PAID_TRIAL_CREDITS, PAID_TRIAL_PLAN, paidTrialUntilIso } from "./trial"
 import { isClanPlan } from "./clan-checkout";
 import { humanCommsNeedsStripe, shouldExpireVerified } from "./human-comms-checkout";
 import { assertNativeTrvDebit } from "./viewer-locks";
+import { accountRegistryGate } from "@/lib/sentinel";
 import { clampThemeToPlan } from "./ui-experts";
 import { parseTheme } from "./themes";
 import type {
@@ -227,6 +228,10 @@ export const ensureProfile = createServerFn({ method: "POST" })
         }
       }
       return existing;
+    }
+    const registry = accountRegistryGate();
+    if (registry.accountRefused) {
+      throw new Error(registry.reason);
     }
     let handle = slugify(data.displayName);
     for (let i = 0; i < 8; i++) {

@@ -74,3 +74,8 @@ export { ALL_EXPERTS } from "./experts/index.js";
 export * from "./auto-update.js";
 export * from "./owner-ink.js";
 export { applyEnforcement, toPolicy } from "./enforcement.js";
+export {
+  accountRegistryGate,
+  REGISTRY_CHECK_REASON,
+  type AccountRegistryGate,
+} from "./experts/identity.js";

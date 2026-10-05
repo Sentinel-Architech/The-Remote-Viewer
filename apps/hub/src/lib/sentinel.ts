@@ -3,6 +3,13 @@
  * 100% native. Dual-mode. No external services required.
  */
 
+import {
+  accountRegistryGate,
+  type AccountRegistryGate,
+} from "../../../../sentinel-security-protocol/src/experts/identity.ts";
+
+export { accountRegistryGate, type AccountRegistryGate };
+
 export type OperatingMode = "individual" | "enhanced" | "whole-network";
 
 export interface SecurityDecision {
@@ -13,6 +20,7 @@ export interface SecurityDecision {
   nativeStack: true;
   generatedAt: string;
   expertSummary?: string[];
+  registry: AccountRegistryGate;
 }
 
 export interface EnforcementResult {
@@ -116,6 +124,7 @@ export async function evaluateHubSecurity(params: {
     recommendation: recommendationFromLevel(overallLevel),
     systemwide: true,
     nativeStack: true,
+    registry: accountRegistryGate(),
     generatedAt: new Date().toISOString(),
     expertSummary: [
       `integrity=${integrity.toFixed(2)}`,
