@@ -3,6 +3,8 @@ import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { HubShell } from "@/components/hub-shell";
 import { IntentBar } from "@/components/intent-bar";
+import { PasskeyPanel } from "@/components/passkey-panel";
+import { WakePhrase } from "@/components/wake-phrase";
 import { ViewerProvider } from "@/components/viewer-context";
 
 export const Route = createFileRoute("/hub")({
@@ -28,7 +30,11 @@ function HubLayout() {
     const want = new URLSearchParams(searchStr).get("want") ?? "";
     return (
       <div className="min-h-dvh bg-bg p-5 text-fg md:p-8">
-        <IntentBar initialWant={want} />
+        <div className="space-y-6 pb-40">
+          <IntentBar initialWant={want} />
+          <PasskeyPanel />
+          <WakePhrase />
+        </div>
       </div>
     );
   }

@@ -12,10 +12,12 @@ export {
   evaluateHubSecurity,
   enforceHubDecision,
   accountRegistryGate,
+  childProtectionRule,
   type OperatingMode,
   type SecurityDecision,
   type EnforcementResult,
   type AccountRegistryGate,
+  type ChildProtectionRule,
 } from "./sentinel";
 
 export {

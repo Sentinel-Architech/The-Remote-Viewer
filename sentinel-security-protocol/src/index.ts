@@ -79,3 +79,7 @@ export {
   REGISTRY_CHECK_REASON,
   type AccountRegistryGate,
 } from "./experts/identity.js";
+export {
+  childProtectionRule,
+  type ChildProtectionRule,
+} from "./experts/threat.js";

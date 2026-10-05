@@ -1,4 +1,7 @@
 /**
+ * Archived sketch. The live path is passkey.ts and passkey-plugin.ts.
+ * The rpID below, the-remote-viewer.grok.me, is not used.
+ *
  * Phase 2 — Viewer Hub Passkey Primary (starter notes + integration sketch)
  *
  * Current auth: better-auth.
@@ -6,8 +9,8 @@
  * secondary during transition.
  *
  * This file is documentation + type-safe sketch only.
- * Wire into the real better-auth config after verifying the plugin API
- * for the installed better-auth version (~1.6).
+ * better-auth 1.6.30 does not export a passkey plugin, so the live flow
+ * is the native WebAuthn plugin instead of this sketch.
  *
  * Never store biometric templates. Store only credential ID, public key,
  * AAGUID, signCount, transports.

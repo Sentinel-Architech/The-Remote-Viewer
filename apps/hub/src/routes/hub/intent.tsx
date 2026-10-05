@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { IntentBar } from "@/components/intent-bar";
+import { PasskeyPanel } from "@/components/passkey-panel";
+import { WakePhrase } from "@/components/wake-phrase";
 
 type IntentSearch = { want: string };
 
@@ -14,7 +16,11 @@ function IntentPage() {
   const { want } = Route.useSearch();
   return (
     <div className="p-5 md:p-8">
-      <IntentBar initialWant={want} />
+      <div className="space-y-6 pb-40">
+        <IntentBar initialWant={want} />
+        <PasskeyPanel />
+        <WakePhrase />
+      </div>
     </div>
   );
 }

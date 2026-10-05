@@ -14,6 +14,7 @@ import { NETWORK_NAME, NETWORK_TAG } from "@/lib/trv/network";
 import { PAID_TRIAL_HOURS } from "@/lib/trv/trial";
 import { pageHead } from "@/lib/trv/seo";
 import { SignupCodeFlow } from "@/components/signup-code-flow";
+import { PasskeyPanel } from "@/components/passkey-panel";
 import { claimSignupHold, redeemShareCode } from "@/lib/trv/viewer-locks-server";
 
 type LoginSearch = { tab?: string; trial?: string; share?: string };
@@ -207,9 +208,14 @@ function Login() {
         </div>
 
         <div className="rounded-[var(--radius-xl)] border border-border bg-card/90 p-6 backdrop-blur-sm">
+          <div className="mb-4">
+            <PasskeyPanel />
+          </div>
+          <p className="mb-3 text-xs text-muted-foreground">Email and password are the fallback.</p>
           {!authEnabled ? (
-            <p className="text-sm text-muted-foreground">Sign-in is disabled.</p>
+            <p className="text-sm text-muted-foreground">Email sign-in is disabled in this environment.</p>
           ) : (
+            <>
             <Tabs value={tab} onValueChange={setTab}>
               <TabsList className="w-full">
                 <TabsTrigger value="register" className="flex-1">
@@ -312,6 +318,7 @@ function Login() {
                 </form>
               </TabsContent>
             </Tabs>
+            </>
           )}
 
           {error ? (

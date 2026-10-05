@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Mic, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { askSentinel, speakSentinel } from "@/lib/trv/sentinel-ai";
+import { answerWakePhrase } from "@/lib/trv/sentinel-voice";
 import { announce } from "@/lib/trv/media";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent } from "./ui/sheet";
@@ -150,6 +151,12 @@ export function SentinelDock() {
     setBusy(true);
     setTurns((t) => [...t, { role: "user", content: text }]);
     setInput("");
+    const fact = answerWakePhrase(text);
+    if (fact.wake) {
+      setTurns((t) => [...t, { role: "assistant", content: fact.text }]);
+      setBusy(false);
+      return;
+    }
     try {
       const r = await askSentinel({
         data: { prompt: text, history: turnsRef.current.slice(-6) },
