@@ -5,8 +5,8 @@
 
 export const OWNER_INK_ROLE = "dead man's switch" as const;
 
-export const COMMERCIAL_ASPECT_OTA_NOTICE =
-  "A commercial may be buying an aspect for its own use." as const;
+export const COMMERCIAL_ASPECT_WARNING =
+  "A commercial may be buying an aspect of The Remote Viewer for its own use." as const;
 
 export const CORPORATE_ASPECT_PROFITS = "community pool" as const;
 
@@ -15,20 +15,24 @@ const REFUSED = "The owner's ink is not stored, described, or uploaded.";
 const REFUSED_KEY =
   /image|photo|photograph|picture|pixel|upload|dataurl|base64|blob|tattoo|description|depict/i;
 
-export type OwnerInkNotice = {
+export type CorporateAspectSale = {
+  profits: typeof CORPORATE_ASPECT_PROFITS;
+  payout: null;
+  buyer: null;
+};
+
+export type OwnerInkWarning = {
   scope: "system-wide";
-  channel: "ota";
-  text: typeof COMMERCIAL_ASPECT_OTA_NOTICE;
+  text: typeof COMMERCIAL_ASPECT_WARNING;
   imageStored: false;
-  imageDescribed: false;
   imageUploaded: false;
-  corporateAspectProfits: typeof CORPORATE_ASPECT_PROFITS;
+  sale: CorporateAspectSale;
 };
 
 export type OwnerInkResult = {
   role: typeof OWNER_INK_ROLE;
   tripped: boolean;
-  notice: OwnerInkNotice | null;
+  warning: OwnerInkWarning | null;
 };
 
 function refuseInkPayload(value: unknown): void {
@@ -60,34 +64,25 @@ export function ownerInkSwitch(input: {
 }): OwnerInkResult {
   assertNoInkImage(input.record ?? {});
   if (!input.photographRequired) {
-    return { role: OWNER_INK_ROLE, tripped: false, notice: null };
+    return { role: OWNER_INK_ROLE, tripped: false, warning: null };
   }
   return {
     role: OWNER_INK_ROLE,
     tripped: true,
-    notice: {
+    warning: {
       scope: "system-wide",
-      channel: "ota",
-      text: COMMERCIAL_ASPECT_OTA_NOTICE,
+      text: COMMERCIAL_ASPECT_WARNING,
       imageStored: false,
-      imageDescribed: false,
       imageUploaded: false,
-      corporateAspectProfits: CORPORATE_ASPECT_PROFITS,
+      sale: corporateAspectSale(),
     },
   };
 }
 
-export function routeCorporateAspectProfit(amount: number | null): {
-  destination: typeof CORPORATE_ASPECT_PROFITS;
-  amount: number | null;
-  keptByCommercial: 0;
-} {
-  if (amount !== null && (!Number.isFinite(amount) || amount < 0)) {
-    throw new Error("A corporate-aspect profit amount has to be a non-negative number or unset.");
-  }
+export function corporateAspectSale(): CorporateAspectSale {
   return {
-    destination: CORPORATE_ASPECT_PROFITS,
-    amount,
-    keptByCommercial: 0,
+    profits: CORPORATE_ASPECT_PROFITS,
+    payout: null,
+    buyer: null,
   };
 }

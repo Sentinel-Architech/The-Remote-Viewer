@@ -9,7 +9,7 @@ import {
   compareVersions,
   getContinuityStatement,
 } from "../auto-update.js";
-import { ownerInkSwitch, routeCorporateAspectProfit } from "../owner-ink.js";
+import { corporateAspectSale, ownerInkSwitch } from "../owner-ink.js";
 
 function assert(cond: boolean, msg: string) {
   if (!cond) throw new Error(msg);
@@ -54,17 +54,17 @@ function main() {
 
   const quiet = ownerInkSwitch({ photographRequired: false, record: {} });
   assert(quiet.tripped === false, "ink switch stays quiet when no photograph is required");
-  assert(quiet.notice === null, "no OTA notice without a photograph");
+  assert(quiet.warning === null, "no warning without a photograph");
   const sent = ownerInkSwitch({ photographRequired: true, record: { purpose: "verify" } });
-  assert(sent.tripped === true, "photographing the ink trips the switch");
+  assert(sent.tripped === true, "photographing to verify raises the warning");
   assert(
-    sent.notice?.text === "A commercial may be buying an aspect for its own use.",
-    "system-wide OTA notice",
+    sent.warning?.text ===
+      "A commercial may be buying an aspect of The Remote Viewer for its own use.",
+    "system-wide warning",
   );
-  assert(sent.notice?.imageStored === false, "no image stored");
-  assert(sent.notice?.corporateAspectProfits === "community pool", "profits stay with the pool");
-  const profit = routeCorporateAspectProfit(null);
-  assert(profit.destination === "community pool" && profit.keptByCommercial === 0, "commercial keeps nothing");
+  assert(sent.warning?.imageStored === false && sent.warning?.imageUploaded === false, "no image");
+  const sale = corporateAspectSale();
+  assert(sale.profits === "community pool" && sale.payout === null && sale.buyer === null, "no payout and no buyer");
 
   console.log("Auto-update smoke passed.");
   console.log(stmt);

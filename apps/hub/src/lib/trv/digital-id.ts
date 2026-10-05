@@ -38,8 +38,8 @@ export const FEDERAL_POSTURE: FederalPosture = {
     "A fingerprint counts only from a live sensor capture, not from a stored photo.",
     "A selfie counts only as a live camera recording of 15 to 30 seconds, not as a saved clip.",
     "NFC is used only when the device reports an adapter.",
-    "The owner's ink is a dead man's switch. If it has to be photographed to verify anything, the system-wide OTA notice goes out. No image is stored, described, or uploaded.",
-    "Corporate-aspect profits go to the community pool.",
+    "If a private tattoo has to be photographed to verify anything, the app raises a system-wide warning that a commercial may be buying an aspect of The Remote Viewer for its own use. No image is stored or uploaded.",
+    "If a corporation buys an aspect, all profits from that sale go to the community pool.",
   ],
   notImplemented: [
     "No federal certification, approval, or guarantee.",
