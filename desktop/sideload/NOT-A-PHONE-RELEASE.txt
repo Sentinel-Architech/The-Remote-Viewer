@@ -1,0 +1,9 @@
+the-remote-viewer-desktop-not-a-phone-release.tar.gz
+Linux x86-64 desktop package. This is not a phone release.
+No Android release signing key was used.
+Archive size: 48774200 bytes.
+Binary: remote-viewer, ELF 64-bit x86-64, 2831064 bytes.
+Weights beside the binary: MiniMind2-Small model.safetensors, 51667832 bytes.
+SHA-256: 83bfe6f127c98120a3410aab65eee3b66b8301ac352c20b7efd5e2eb688f6d85
+./remote-viewer --measure-weights checks that file. The model network was not executed.
+The daemon starts with no arguments and stays up until interrupted.

@@ -22,11 +22,11 @@ jobs:
       - name: Locate Anchor and Build
         run: |
           if [ -f "Anchor.toml" ]; then
-            # IDL build hits ark-bn254 MontFp on the host toolchain.
-            # --no-idl still compiles the program and writes the .so.
-            anchor build --no-idl
+            # Full build, including the IDL. Host patches live under
+            # programs/trv_governance/patches.
+            anchor build
           elif [ -f "solana/Anchor.toml" ]; then
-            cd solana && anchor build --no-idl
+            cd solana && anchor build
           else
             cargo build-sbf --release
           fi
