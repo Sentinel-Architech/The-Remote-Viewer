@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { carryModelPlan, type CarryModelPlan } from "@/lib/trv/carry-model";
 import { buildProgress, type BuildStep } from "@/lib/trv/build-progress";
-import { mimoLocalStatus } from "@/lib/trv/mimo-server";
+import { minimindLocalStatus } from "@/lib/trv/minimind2-server";
 import { viewerSeatFromUserAgent } from "@/lib/trv/viewer-seat";
 import { saveUiTheme } from "@/lib/trv/server";
 import {
@@ -85,7 +85,7 @@ export function ViewerUiSettings({
       return;
     }
     let live = true;
-    void mimoLocalStatus()
+    void minimindLocalStatus()
       .then((result) => {
         if (!live) return;
         setMimo(result.reason);
@@ -96,7 +96,7 @@ export function ViewerUiSettings({
             filesFound: result.filesFound,
             filesRequired: result.filesRequired,
             headerBytes: result.headerBytes,
-            fileBytes: result.processRan ? result.bytes : null,
+            fileBytes: result.fileBytes,
           }),
         );
       })

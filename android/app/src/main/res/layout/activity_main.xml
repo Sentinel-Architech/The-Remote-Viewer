@@ -27,6 +27,21 @@
             android:textSize="16sp" />
 
         <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/tutorial_title"
+            android:textColor="@color/fg"
+            android:textSize="20sp" />
+
+        <LinearLayout
+            android:id="@+id/tutorial_steps"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="vertical" />
+
+        <TextView
             android:id="@+id/lock_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -51,6 +66,16 @@
             android:text="@string/weight_waiting"
             android:textColor="@color/muted"
             android:textSize="15sp" />
+
+        <ProgressBar
+            android:id="@+id/weight_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:max="1"
+            android:progress="0"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/check_lock"

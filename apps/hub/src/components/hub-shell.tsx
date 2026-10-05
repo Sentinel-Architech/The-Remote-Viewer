@@ -48,6 +48,7 @@ import { Button } from "./ui/button";
 import { claimWatch } from "@/lib/trv/server";
 import { toast } from "sonner";
 import { TrialStrip } from "./trial-strip";
+import { InstallTutorial } from "./install-tutorial";
 
 const NAV = [
   { to: "/hub", label: "Command", icon: LayoutDashboard },
@@ -237,6 +238,7 @@ export function HubShell() {
             </div>
           </header>
           <TrialStrip />
+          <InstallTutorial />
           <DutyStrip />
           <CodeAcceptance />
           <Outlet />

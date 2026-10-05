@@ -8,7 +8,7 @@ import { EPSTEIN_INDEX, EPSTEIN_INDEX_POSTURE } from "../src/lib/trv/epstein-ind
 import { GATEWAY_DOCS } from "../src/lib/trv/gateway.ts";
 import { localDeclassifiedSearch } from "../src/lib/trv/local-search.ts";
 import { tierTokenExtra, quoteConverter } from "../src/lib/trv/rail-convert.ts";
-import { carryModelPlan, MINIMIND_PUBLISHED_BYTES, WEARABLE_SAFE_BYTES } from "../src/lib/trv/carry-model.ts";
+import { carryModelPlan, SHIPPED_WEIGHT_BYTES, WEARABLE_SAFE_BYTES } from "../src/lib/trv/carry-model.ts";
 import { fullWeightLowerBoundBytes } from "../src/lib/trv/mimo-capacity.ts";
 import { qualifyFingerprint, qualifyNfc, qualifySelfie, FEDERAL_POSTURE } from "../src/lib/trv/digital-id.ts";
 import { viewerSeatFromUserAgent } from "../src/lib/trv/viewer-seat.ts";
@@ -183,9 +183,13 @@ test("carry seats do not run the full weights and a wearable does not fit MiniMi
   const wearable = carryModelPlan("wearable", null);
   assert.equal(wearable.fits, false);
   assert.equal(wearable.inferenceRan, false);
-  assert.ok(MINIMIND_PUBLISHED_BYTES > WEARABLE_SAFE_BYTES);
+  assert.ok(SHIPPED_WEIGHT_BYTES > WEARABLE_SAFE_BYTES);
   const phone = carryModelPlan("phone", null);
-  assert.equal(phone.model, "MiniMind Max2");
+  assert.equal(phone.model, "MiniMind2-Small");
+  const desk = carryModelPlan("stationary", null);
+  assert.equal(desk.model, "MiniMind2-Small");
+  assert.equal(desk.inferenceRan, false);
+  assert.match(desk.reason, /did not run/);
   assert.equal(phone.fits, true);
   assert.equal(phone.inferenceRan, false);
   assert.match(phone.reason, /did not run/);

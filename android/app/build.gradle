@@ -55,6 +55,12 @@ android {
         jvmTarget = "17"
     }
 
+    sourceSets {
+        main {
+            assets.srcDirs += ["${rootDir}/../apps/hub/weights/minimind2-small"]
+        }
+    }
+
     packaging {
         jniLibs {
             excludes += ["**/armeabi/**", "**/armeabi-v7a/**", "**/x86/**", "**/x86_64/**"]

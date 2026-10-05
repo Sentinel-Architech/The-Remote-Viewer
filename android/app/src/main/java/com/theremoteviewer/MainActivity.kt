@@ -9,9 +9,13 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.os.Looper
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
+import java.io.IOException
 
 /**
  * Native install. Platform widgets and the device GPS provider only.
@@ -20,6 +24,8 @@ import android.widget.TextView
 class MainActivity : Activity() {
     private lateinit var lockStatus: TextView
     private lateinit var lockProgress: ProgressBar
+    private lateinit var weightStatus: TextView
+    private lateinit var weightProgress: ProgressBar
     private lateinit var gpsStatus: TextView
     private var gpsListener: LocationListener? = null
 
@@ -28,10 +34,68 @@ class MainActivity : Activity() {
         setContentView(R.layout.activity_main)
         lockStatus = findViewById(R.id.lock_status)
         lockProgress = findViewById(R.id.lock_progress)
+        weightStatus = findViewById(R.id.weight_status)
+        weightProgress = findViewById(R.id.weight_progress)
         gpsStatus = findViewById(R.id.gps_status)
+        showInstallTutorial()
         findViewById<Button>(R.id.check_lock).setOnClickListener { showDeviceLock() }
         findViewById<Button>(R.id.read_gps).setOnClickListener { askForNativeGps() }
         showDeviceLock()
+        measureShippedWeight()
+    }
+
+    private fun showInstallTutorial() {
+        val host = findViewById<LinearLayout>(R.id.tutorial_steps)
+        val steps = resources.getStringArray(R.array.install_tutorial)
+        for (step in steps) {
+            val line = TextView(this)
+            line.text = step
+            line.setTextColor(getColor(R.color.muted))
+            line.textSize = 15f
+            val params = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            )
+            params.topMargin = (8 * resources.displayMetrics.density).toInt()
+            line.layoutParams = params
+            host.addView(line)
+        }
+    }
+
+    /** Count packaged weight bytes. The bar moves only after that count matches the shipped file. */
+    private fun measureShippedWeight() {
+        Thread {
+            val counted = countAssetBytes(SHIPPED_WEIGHT_NAME)
+            runOnUiThread {
+                if (isDestroyed) return@runOnUiThread
+                if (counted == SHIPPED_WEIGHT_BYTES) {
+                    weightStatus.text = getString(R.string.weight_measured, counted.toString())
+                    weightProgress.visibility = View.VISIBLE
+                    weightProgress.progress = 1
+                } else if (counted == null) {
+                    weightStatus.text = getString(R.string.weight_waiting)
+                } else {
+                    weightStatus.text = getString(R.string.weight_mismatch, counted.toString())
+                }
+            }
+        }.start()
+    }
+
+    private fun countAssetBytes(name: String): Long? {
+        return try {
+            assets.open(name).use { input ->
+                val buf = ByteArray(64 * 1024)
+                var total = 0L
+                while (true) {
+                    val n = input.read(buf)
+                    if (n < 0) break
+                    total += n
+                }
+                total
+            }
+        } catch (_: IOException) {
+            null
+        }
     }
 
     override fun onDestroy() {
@@ -119,5 +183,7 @@ class MainActivity : Activity() {
 
     companion object {
         private const val GPS_REQUEST = 41
+        private const val SHIPPED_WEIGHT_NAME = "model.safetensors"
+        private const val SHIPPED_WEIGHT_BYTES = 51667832L
     }
 }

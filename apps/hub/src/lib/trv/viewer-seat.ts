@@ -43,6 +43,6 @@ export function assertCarryDeviceDoesNotPay(ua: string): void {
   const seat = viewerSeatFromUserAgent(ua);
   if (!isCarrySeat(seat)) return;
   throw new Error(
-    `A ${seatLabel(seat)} does not pay. MiMo-V2.6-Pro stays on a stationary computer you own.`,
+    `A ${seatLabel(seat)} does not pay. The on-device weights that ship are MiniMind2-Small.`,
   );
 }

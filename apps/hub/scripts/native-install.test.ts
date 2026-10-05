@@ -26,7 +26,18 @@ test("the Android install is a native screen, not a website shell", () => {
   assert.match(read("res/layout/activity_main.xml"), /lock_progress/);
   assert.match(strings, /Waiting\. Weight files were not measured/);
   assert.match(activity, /lockProgress\.progress = 1/);
-  assert.equal(/gemini/i.test(`${activity}\n${strings}`), false);
+  assert.match(activity, /showInstallTutorial/);
+  assert.match(activity, /model\.safetensors/);
+  assert.match(activity, /weightProgress\.progress = 1/);
+  assert.match(strings, /MiniMind2-Small/);
+  assert.match(strings, /GrapheneOS is extra security/);
+  assert.match(strings, /Pixel 7/);
+  assert.match(strings, /Pixel 6a/);
+  assert.match(strings, /sideload/);
+  assert.match(strings, /signing key is not available/);
+  assert.match(strings, /A fit check is not a run/);
+  assert.match(gradle, /minimind2-small/);
+  assert.equal(/gemini|google|alphabet/i.test(`${activity}\n${strings}`), false);
   assert.equal(/huggingface|xiaomi\.com|loadUrl/i.test(activity), false);
 });
 

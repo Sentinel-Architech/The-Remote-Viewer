@@ -1,22 +1,18 @@
 import { fullWeightLowerBoundBytes, phoneMimoRefusal } from "./mimo-capacity";
+import { SHIPPED_MODEL_LICENSE, SHIPPED_MODEL_NAME, SHIPPED_WEIGHT_BYTES } from "./minimind2-small";
 import { isCarrySeat, seatLabel, type ViewerSeat } from "./viewer-seat";
 
-/** Architect-stated size of MiniMind Max2 max2-nano. Not a file measured in this repo. */
-export const MINIMIND_NAME = "MiniMind Max2" as const;
-export const MINIMIND_VARIANT = "max2-nano" as const;
-export const MINIMIND_LICENSE = "Apache-2.0" as const;
-export const MINIMIND_PUBLISHED_BYTES = 247 * 1024 * 1024;
-
-/** A carry seat can hold the stated MiniMind file. The MiMo floor cannot. */
+/** A carry seat can hold the shipped MiniMind2-Small file. The MiMo floor cannot. */
 export const CARRY_SAFE_BYTES = 512 * 1024 * 1024;
 
-/** A wearable process that maps the stated MiniMind file is not treated as safe. */
+/** A wearable process that maps the shipped file is not treated as safe. */
 export const WEARABLE_SAFE_BYTES = 48 * 1024 * 1024;
+
+export { SHIPPED_WEIGHT_BYTES };
 
 export type CarryModelPlan = {
   seat: ViewerSeat;
-  model: "MiMo-V2.6-Pro" | "MiniMind Max2";
-  variant: "max2-nano" | null;
+  model: typeof SHIPPED_MODEL_NAME;
   fits: boolean;
   loaded: false;
   inferenceRan: false;
@@ -28,19 +24,14 @@ export type CarryModelPlan = {
   reason: string;
 };
 
-function minimindFits(seat: ViewerSeat): boolean {
-  if (seat === "wearable") return MINIMIND_PUBLISHED_BYTES <= WEARABLE_SAFE_BYTES;
-  if (seat === "stationary") return false;
-  return MINIMIND_PUBLISHED_BYTES <= CARRY_SAFE_BYTES && MINIMIND_PUBLISHED_BYTES < fullWeightLowerBoundBytes();
-}
-
 /**
- * Choose the model for this seat. Missing local bytes never count as a run.
- * A file at or above the MiMo floor is refused on every carry seat.
+ * The weights that ship for a phone and a desktop are MiniMind2-Small.
+ * Missing local bytes never count as a run. A file at or above the MiMo floor is refused.
  */
 export function carryModelPlan(seat: ViewerSeat, localBytes: number | null): CarryModelPlan {
   const common = {
     seat,
+    model: SHIPPED_MODEL_NAME,
     loaded: false as const,
     inferenceRan: false as const,
     fetched: false as const,
@@ -49,61 +40,40 @@ export function carryModelPlan(seat: ViewerSeat, localBytes: number | null): Car
     sendsViewerData: false as const,
     googleAutoHost: false as const,
   };
-
-  if (!isCarrySeat(seat)) {
-    return {
-      ...common,
-      model: "MiMo-V2.6-Pro",
-      variant: null,
-      fits: true,
-      reason:
-        "MiMo-V2.6-Pro is the model on a stationary computer you own. It runs only from a copy in this repo. If those weights are not in the repo, it does not load and does not run.",
-    };
-  }
-
   const label = seatLabel(seat);
   const mimo = phoneMimoRefusal(label);
   const tooBig = localBytes != null && (localBytes >= fullWeightLowerBoundBytes() || localBytes > CARRY_SAFE_BYTES);
   if (tooBig) {
     return {
       ...common,
-      model: MINIMIND_NAME,
-      variant: MINIMIND_VARIANT,
       fits: false,
-      reason: `${mimo.reason} A file that large was not loaded. MiniMind Max2 was not run in its place.`,
+      reason: `${mimo.reason} A file that large was not loaded. MiniMind2-Small was not run in its place. MiniMind Max2 weights are not in this repo and did not run.`,
     };
   }
 
-  const fits = minimindFits(seat);
+  const budget = seat === "wearable" ? WEARABLE_SAFE_BYTES : CARRY_SAFE_BYTES;
+  const fits = SHIPPED_WEIGHT_BYTES <= budget && SHIPPED_WEIGHT_BYTES < fullWeightLowerBoundBytes();
   if (!fits) {
     return {
       ...common,
-      model: MINIMIND_NAME,
-      variant: MINIMIND_VARIANT,
       fits: false,
-      reason: `MiniMind Max2 (${MINIMIND_VARIANT}) is about 247 MB. It does not fit on this ${label}, so it was not loaded and did not run. ${mimo.reason}`,
+      reason: `MiniMind2-Small is ${SHIPPED_WEIGHT_BYTES} bytes. It does not fit on this ${label}, so it was not loaded and did not run. A fit check is not a run. ${mimo.reason}`,
     };
   }
 
-  const auto =
-    seat === "android-auto"
-      ? " This install does not attach an outside car host. "
-      : " ";
+  const auto = seat === "android-auto" ? " This install does not attach an outside car host." : "";
+  const pay = isCarrySeat(seat) ? ` This ${label} does not pay.` : "";
   if (localBytes == null || localBytes < 1) {
     return {
       ...common,
-      model: MINIMIND_NAME,
-      variant: MINIMIND_VARIANT,
       fits: true,
-      reason: `MiniMind Max2 (${MINIMIND_VARIANT}, ${MINIMIND_LICENSE}) is the model for this ${label}.${auto}The weights are not on this device. Nothing was fetched. The model did not run. The app did not crash. This ${label} does not pay. ${mimo.reason}`,
+      reason: `MiniMind2-Small (${SHIPPED_MODEL_LICENSE}) is the weight that ships for this ${label}.${auto} This check did not measure the file. The model did not run. A fit check is not a run. MiMo-V2.6-Pro weights are not in this repo and did not run. MiniMind Max2 weights are not in this repo and did not run.${pay}`,
     };
   }
 
   return {
     ...common,
-    model: MINIMIND_NAME,
-    variant: MINIMIND_VARIANT,
     fits: true,
-    reason: `Read ${localBytes} local bytes named for MiniMind Max2. The network was not executed. This is not MiMo-V2.6-Pro. Nothing left the device. This ${label} does not pay.`,
+    reason: `Measured ${localBytes} local bytes of MiniMind2-Small. The model was not executed. A fit check is not a run.${auto}${pay}`,
   };
 }
