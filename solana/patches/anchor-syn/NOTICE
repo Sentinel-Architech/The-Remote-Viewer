@@ -1,0 +1,8 @@
+anchor-syn 0.32.2
+Upstream: https://github.com/otter-sec/anchor
+License: Apache License, Version 2.0. The license text is LICENSE-APACHE in this directory.
+Local changes:
+- defined.rs calls local_file() on proc_macro2::Span. The published 0.32.2 call uses Span::unwrap(), which yields proc_macro::Span and does not compile.
+- SeedPath::new trims token-stream whitespace when splitting PDA seed paths.
+
+The published crate remains the upstream source. This directory is the copy this workspace builds.
