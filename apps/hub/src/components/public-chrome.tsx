@@ -112,6 +112,11 @@ export function PublicChrome({
                 RSS
               </a>
             </li>
+            <li>
+              <a href="/quiet-architecture.html" className="text-accent underline-offset-4 hover:underline">
+                Quiet Architecture
+              </a>
+            </li>
           </ul>
         </footer>
       </div>

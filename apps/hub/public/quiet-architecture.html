@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>The Quiet Architecture · The Remote Viewer</title>
+    <meta
+      name="description"
+      content="The Quiet Architecture — a still film for The Remote Viewer Network."
+    />
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        background: #07080b;
+        color: #e8e4dc;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+      }
+      main {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 28px 16px 48px;
+      }
+      p.kicker {
+        margin: 0;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: #9a9488;
+      }
+      h1 {
+        margin: 12px 0 8px;
+        font-weight: 500;
+        font-size: clamp(28px, 5vw, 44px);
+        letter-spacing: -0.02em;
+      }
+      p.note {
+        margin: 0 0 20px;
+        max-width: 42rem;
+        color: #9a9488;
+        font-size: 14px;
+        line-height: 1.55;
+      }
+      video {
+        width: 100%;
+        aspect-ratio: 1;
+        background: #000;
+        border-radius: 12px;
+      }
+      a {
+        color: #d7c4a3;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="kicker">The Remote Viewer · film</p>
+      <h1>The Quiet Architecture</h1>
+      <p class="note">
+        Canon still for the network. Square frame, held, then the seal.
+        File lives with the hub at <code>/media/the-quiet-architecture.mp4</code>.
+      </p>
+      <video
+        controls
+        playsinline
+        preload="metadata"
+        src="/media/the-quiet-architecture.mp4"
+      ></video>
+      <p class="note" style="margin-top: 16px">
+        <a href="/">Return to the network</a>
+      </p>
+    </main>
+  </body>
+</html>
