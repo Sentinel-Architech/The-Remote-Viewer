@@ -1,19 +1,16 @@
 #!/usr/bin/env python3
-"""Desktop GUI for host enablement and local Windows/macOS builds.
+"""Standalone GUI for Windows, macOS, Linux, Android, and iOS builds.
 
-No remote binary is downloaded. No master private key is read or stored.
-Viewer ids are generated locally and are not an API backdoor.
+HarmonyOS and KaiOS are not offered. Buttons build locally and do not download binaries.
 """
 
 from __future__ import annotations
 
+import os
 import platform
 import shutil
 import subprocess
 import threading
-import uuid
-import webbrowser
-import zipfile
 from pathlib import Path
 
 try:
@@ -23,37 +20,27 @@ except ImportError:
     raise SystemExit("Tkinter is required.")
 
 ROOT = Path(__file__).resolve().parents[1]
-RELEASE = "https://github.com/Sentinel-Architech/The-Remote-Viewer/releases"
-
-
-def host_entry() -> str:
-    system = platform.system().lower()
-    if system == "windows":
-        return "trv_hologram_init_win32"
-    if system == "darwin":
-        return "trv_hologram_init_ios"
-    if system == "linux":
-        return "trv_hologram_init_wayland"
-    return "unsupported host"
 
 
 class App(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
-        self.title("The Remote Viewer")
-        self.geometry("760x520")
-        tk.Label(self, text="Master verifier is in the repository. Master seed stays off GitHub.").pack(anchor="w", padx=12, pady=(12, 0))
-        tk.Label(self, text=f"This host entry: {host_entry()}").pack(anchor="w", padx=12)
+        self.title("The Remote Viewer installer")
+        self.geometry("720x460")
+        tk.Label(self, text="Supported: Windows, macOS, Linux, Android, iOS.").pack(anchor="w", padx=12, pady=(12, 0))
         row = tk.Frame(self)
         row.pack(fill="x", padx=12, pady=8)
-        tk.Button(row, text="Build Windows on this PC", command=lambda: self.build("windows")).pack(side="left")
-        tk.Button(row, text="Build macOS on this Mac", command=lambda: self.build("darwin")).pack(side="left", padx=8)
-        tk.Button(row, text="Open release page", command=lambda: webbrowser.open(RELEASE)).pack(side="left")
-        tk.Button(row, text="New viewer id", command=self.new_viewer).pack(side="left", padx=8)
-        tk.Button(row, text="Package KaiOS", command=self.package_kaios).pack(side="left")
-        self.log = scrolledtext.ScrolledText(self, height=20, state="disabled")
+        for label, script in (
+            ("Windows", "install-windows.ps1"),
+            ("macOS", "install-macos.command"),
+            ("Linux", "install-linux.sh"),
+            ("Android", "install-android.sh"),
+            ("iOS", "install-ios.sh"),
+        ):
+            tk.Button(row, text=label, command=lambda s=script: self.run(s)).pack(side="left", padx=4)
+        self.log = scrolledtext.ScrolledText(self, height=18, state="disabled")
         self.log.pack(fill="both", expand=True, padx=12, pady=12)
-        self.write("Download buttons build locally. They do not fetch an executable.")
+        self.write("Each button runs the matching local installer.")
 
     def write(self, line: str) -> None:
         self.log.configure(state="normal")
@@ -61,43 +48,34 @@ class App(tk.Tk):
         self.log.see("end")
         self.log.configure(state="disabled")
 
-    def build(self, expected: str) -> None:
+    def run(self, script: str) -> None:
         system = platform.system().lower()
-        if expected == "windows" and system != "windows":
-            messagebox.showinfo("Wrong host", "A Windows build must be made on Windows. No cross-binary is downloaded.")
+        if script.endswith(".ps1") and system != "windows":
+            messagebox.showinfo("Wrong host", "Run the Windows installer on Windows.")
             return
-        if expected == "darwin" and system != "darwin":
-            messagebox.showinfo("Wrong host", "A macOS build must be made on a Mac. No cross-binary is downloaded.")
+        if script.endswith(".command") and system != "darwin":
+            messagebox.showinfo("Wrong host", "Run the macOS installer on a Mac.")
+            return
+        if script == "install-ios.sh" and system != "darwin":
+            messagebox.showinfo("Wrong host", "The iOS installer must run on a Mac.")
+            return
+        if script == "install-android.sh" and not (os.environ.get("ANDROID_NDK_HOME") or os.environ.get("ANDROID_NDK_ROOT")):
+            messagebox.showerror("NDK missing", "Set ANDROID_NDK_HOME. The NDK is not downloaded.")
             return
         if shutil.which("cargo") is None:
             messagebox.showerror("Rust missing", "Install Rust from https://rustup.rs first.")
             return
-        self.write("cargo build -p trv-holographic-ui --release")
-        threading.Thread(target=self._build, daemon=True).start()
+        path = ROOT / "installers" / script
+        self.write(f"Running {path.name}")
+        threading.Thread(target=self._run, args=(path,), daemon=True).start()
 
-    def _build(self) -> None:
-        result = subprocess.run(
-            ["cargo", "build", "-p", "trv-holographic-ui", "--release"],
-            cwd=ROOT,
-            capture_output=True,
-            text=True,
-        )
-        self.after(0, lambda: self.write((result.stdout + result.stderr).strip() or "build finished"))
-
-    def new_viewer(self) -> None:
-        member = uuid.uuid4().hex
-        self.write(f"viewer id {member}")
-        self.write("Sign it with scripts/issue-viewer-license.py and TRV_MASTER_KEY_FILE outside the repo.")
-
-    def package_kaios(self) -> None:
-        source = ROOT / "platforms" / "kaios"
-        target = ROOT / "dist" / "trv-kaios.zip"
-        target.parent.mkdir(exist_ok=True)
-        with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as archive:
-            for path in source.rglob("*"):
-                if path.is_file():
-                    archive.write(path, path.relative_to(source))
-        self.write(f"KaiOS package: {target}")
+    def _run(self, path: Path) -> None:
+        if path.suffix == ".ps1":
+            command = ["powershell", "-File", str(path)]
+        else:
+            command = ["sh", str(path)]
+        result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
+        self.after(0, lambda: self.write((result.stdout + result.stderr).strip() or f"status {result.returncode}"))
 
 
 if __name__ == "__main__":
