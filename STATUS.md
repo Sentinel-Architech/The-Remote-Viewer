@@ -2,7 +2,7 @@
 
 **Open Source** · **Native Stack 100%** · **No Blockchain Lock-in**
 
-**Updated:** 2026-09-27  
+**Updated:** 2026-10-09  
 **Authority:** [`AGENTS.md`](AGENTS.md) · [`docs/REALITY.md`](docs/REALITY.md) · [`docs/SCAFFOLD-HOLD.md`](docs/SCAFFOLD-HOLD.md)
 
 ---
@@ -75,6 +75,14 @@ npm run dev
 6. **Git vs host:** `/hub/node` in source ≠ automatically live on grok.me until republish.
 7. **Port is 8080**, not 3000.
 8. **Optical air-gap stays PROVEN** and is not rewritten from Hub edits.
+
+---
+
+## Recorded 2026-10-09
+
+Commits through `182f49db` (2026-10-08) are recorded in [`docs/STATUS-2026-10-09.md`](docs/STATUS-2026-10-09.md). They add the Quiet Architecture film, passkey sign-in, a wake phrase, a bottom menu, child protection, measured-check progress, and on-device catalog tiering. None of those commits republished the canon host.
+
+`modules/defense/sentinel-shield.sh` is a gate over [`modules/defense/POLICY.md`](modules/defense/POLICY.md). It is not a separate protocol and does not change the HOST PARTIAL claim.
 
 ---
 
