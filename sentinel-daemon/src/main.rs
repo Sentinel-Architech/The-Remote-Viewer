@@ -3,8 +3,8 @@ use ethers::{
     types::transaction::eip712::Eip712,
     utils::keccak256,
 };
-use pqcrypto_mldsa::mldsa65::{detached_sign, keypair};
-use pqcrypto_traits::sign::{PublicKey as _, DetachedSignature as _};
+use fips204::mldsa65;
+use fips204::traits::{SerDes, Signer};
 
 #[derive(Eip712, EthAbiType, Clone, Debug)]
 #[eip712(
@@ -22,15 +22,16 @@ struct SentinelAction {
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
-    println!(" [Sentinel Daemon] Initializing Hybrid ECDSA + Post-Quantum (ML-DSA-65) Engine...");
+    println!(" [Sentinel Daemon] Initializing Pure-Rust ML-DSA-65 Engine...");
 
     let ecdsa_key = "0x00000000000000000000000000000000000000000000000000000000000a11ce";
     let ecdsa_wallet: LocalWallet = ecdsa_key.parse::<LocalWallet>()?.with_chain_id(1u64);
 
-    let (pqc_pk, pqc_sk) = keypair();
+    // Generate ML-DSA-65 Keypair natively
+    let (pk, sk) = mldsa65::try_keygen()?;
 
     println!(" [Sentinel Daemon] ECDSA Signer: {:?}", ecdsa_wallet.address());
-    println!(" [Sentinel Daemon] PQC Public Key Bytes: {}", pqc_pk.as_bytes().len());
+    println!(" [Sentinel Daemon] PQC Public Key Bytes: {}", pk.into_bytes().len());
 
     let action = SentinelAction {
         target: "0x1111111111111111111111111111111111111111".parse()?,
@@ -41,11 +42,11 @@ async fn main() -> eyre::Result<()> {
 
     let ecdsa_sig = ecdsa_wallet.sign_typed_data(&action).await?;
     let eip712_digest = action.encode_eip712()?;
-    let pqc_sig = detached_sign(&eip712_digest, &pqc_sk);
+    let pqc_sig = sk.try_sign(&eip712_digest)?;
 
     println!(" [Sentinel Daemon] Hybrid Signatures Generated Successfully!");
     println!("    ECDSA Sig: 0x{}", hex::encode(ecdsa_sig.to_vec()));
-    println!("    PQC (ML-DSA-65) Sig Bytes: {}", pqc_sig.as_bytes().len());
+    println!("    PQC (ML-DSA-65) Sig Bytes: {}", pqc_sig.len());
 
     Ok(())
 }
