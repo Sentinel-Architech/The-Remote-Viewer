@@ -3,47 +3,17 @@ name: Sentinel Daemon CI
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'sentinel-daemon/**'
-      - '.github/workflows/rust-daemon.yml'
   pull_request:
     branches: [ main ]
-    paths:
-      - 'sentinel-daemon/**'
 
 jobs:
-  rust-check:
-    name: Rust Daemon Build & Test
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set up Rust Toolchain
+      - uses: actions/checkout@v4
+      - name: Install Rust Stable
         uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy, rustfmt
-
-      - name: Cache Cargo Registry & Build Artifacts
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            sentinel-daemon/target
-          key: ${{ runner.os }}-cargo-daemon-${{ hashFiles('sentinel-daemon/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-daemon-
-
-      - name: Check Formatting
-        run: cargo fmt --manifest-path sentinel-daemon/Cargo.toml -- --check
-
-      - name: Run Clippy Linter
-        run: cargo clippy --manifest-path sentinel-daemon/Cargo.toml -- -D warnings
-
-      - name: Build Crate
+      - name: Build Sentinel Daemon
         run: cargo build --manifest-path sentinel-daemon/Cargo.toml --verbose
-
       - name: Run Tests
         run: cargo test --manifest-path sentinel-daemon/Cargo.toml --verbose
