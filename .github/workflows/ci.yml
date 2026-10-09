@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: dtolnay/rust-toolchain@1.85.0
+      - uses: dtolnay/rust-toolchain@1.120.0
       - uses: metadaoproject/setup-anchor@v3.4
         with:
           # npm @coral-xyz/anchor-cli@0.31.1 exits without compiling.
