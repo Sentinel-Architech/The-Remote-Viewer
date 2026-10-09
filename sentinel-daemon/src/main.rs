@@ -1,46 +1,43 @@
 use ethers::{
-    prelude::*,
-    utils::keccak256,
+    contract::abigen,
+    providers::{Provider, StreamExt, Ws},
+    types::Address,
 };
+use std::sync::Arc;
 
-#[derive(Eip712, EthAbiType, Clone, Debug)]
-#[eip712(
-    name = "TheSentinelSecurityProtocol",
-    version = "1.0.0",
-    chain_id = 1,
-    verifying_contract = "0x0000000000000000000000000000000000000000"
-)]
-struct SentinelAction {
-    target: Address,
-    payload_hash: [u8; 32],
-    nonce: U256,
-    deadline: U256,
-}
+// Generate type-safe bindings for The Sentinel Protocol event interface
+abigen!(
+    TheSentinelProtocol,
+    r#"[
+        event EmergencyPauseTriggered(address indexed reporter)
+        event EmergencyUnpaused(address indexed admin)
+    ]"#
+);
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
-    println!(" [Sentinel Daemon] Starting zero-trust authorization service...");
+    println!(" [Sentinel Daemon] Initializing real-time WebSocket event listener...");
 
-    let signer_key = "0x00000000000000000000000000000000000000000000000000000000000a11ce";
-    let wallet: LocalWallet = signer_key.parse::<LocalWallet>()?.with_chain_id(1u64);
+    // Replace with your local or remote EVM WebSocket RPC endpoint
+    let wss_url = "wss://eth-mainnet.g.alchemy.com/v2/your-api-key";
+    let provider = Provider::<Ws>::connect(wss_url).await?;
+    let client = Arc::new(provider);
 
-    println!(" [Sentinel Daemon] Signer Address: {:?}", wallet.address());
+    // Target deployed Sentinel Security Protocol address
+    let sentinel_address: Address = "0x0000000000000000000000000000000000000000".parse()?;
+    let contract = TheSentinelProtocol::new(sentinel_address, client);
 
-    let target_vault: Address = "0x1111111111111111111111111111111111111111".parse()?;
-    let action_payload = keccak256(b"DEPOSIT_WETH_1000");
-    let nonce = U256::from(1);
-    let deadline = U256::from(1700000000u64);
+    println!(" [Sentinel Daemon] Monitoring contract events at: {:?}", sentinel_address);
 
-    let action = SentinelAction {
-        target: target_vault,
-        payload_hash: action_payload,
-        nonce,
-        deadline,
-    };
+    // Subscribe to EmergencyPauseTriggered events
+    let events = contract.event::<EmergencyPauseTriggeredFilter>();
+    let mut stream = events.stream().await?;
 
-    let signature = wallet.sign_typed_data(&action).await?;
-    println!(" [Sentinel Daemon] Signed Action Payload Successfully!");
-    println!("    Signature: 0x{}", hex::encode(signature.to_vec()));
+    while let Some(Ok(log)) = stream.next().await {
+        println!(" [ALERT] Emergency Pause Triggered!");
+        println!("    Reporter Address: {:?}", log.reporter);
+        // Trigger local zero-trust revocation / shutdown sequence here
+    }
 
     Ok(())
 }
