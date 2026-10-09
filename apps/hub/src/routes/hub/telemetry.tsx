@@ -16,7 +16,7 @@ function TelemetryPage() {
       <div>
         <h1 className="font-display text-3xl">On-device sensors</h1>
         <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-          Proximity, camera focus, and LiDAR stay on this device. A missing sensor fails closed. No frame is stored or sent.
+          LiDAR is native only. The browser cannot supply it. A missing device fails closed.
         </p>
       </div>
       <section className="rounded-[var(--radius-xl)] border border-border bg-card p-5">
@@ -36,7 +36,8 @@ function TelemetryPage() {
       <section className="rounded-[var(--radius-xl)] border border-border bg-card p-5">
         <h2 className="font-display text-xl">LiDAR</h2>
         <p className="mt-2 text-sm">{lidar}</p>
-        <Button className="mt-4" variant="secondary" onClick={() => void readLidar().then((reading) => setLidar(reading.reason))}>
+        <p className="mt-2 text-xs text-muted-foreground">Native gate: modules/defense/lidar-native.sh</p>
+        <Button className="mt-4" variant="secondary" onClick={() => setLidar(readLidar().reason)}>
           Check LiDAR
         </Button>
       </section>
