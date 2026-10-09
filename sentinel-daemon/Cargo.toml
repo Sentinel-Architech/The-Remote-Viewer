@@ -12,3 +12,6 @@ serde_json = "1.0"
 hex = "0.4"
 pqcrypto-mldsa = "0.1"
 pqcrypto-traits = "0.3"
+
+[patch.crates-io]
+h2 = { git = "https://github.com/hyperium/h2", tag = "v0.4.16" }

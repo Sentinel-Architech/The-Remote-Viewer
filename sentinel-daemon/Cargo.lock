@@ -4051,3 +4051,8 @@ dependencies = [
  "cc",
  "pkg-config",
 ]
+
+[[patch.unused]]
+name = "h2"
+version = "0.4.16"
+source = "git+https://github.com/hyperium/h2?tag=v0.4.16#b84b96cdcb15fb5190c151aaf7273c7986e22976"
