@@ -8,6 +8,8 @@ import { JOURNAL } from "@/lib/trv/journal";
 import { pageHead, SEO_DEFAULT_DESC, orgJsonLd, webSiteJsonLd, softwareJsonLd } from "@/lib/trv/seo";
 import { JsonLd } from "@/components/json-ld";
 import { PAID_TRIAL_HOURS } from "@/lib/trv/trial";
+import { XStationLink } from "@/components/x-station";
+import { X_STATION_NOTE } from "@/lib/trv/x-surface";
 
 export const Route = createFileRoute("/")({
   head: () =>
@@ -24,6 +26,9 @@ function Landing() {
 
   return (
     <main className="relative min-h-dvh overflow-x-clip bg-black text-white">
+      <a href="#station" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-20 focus:bg-black focus:px-3 focus:py-2">
+        Skip to station
+      </a>
       <JsonLd data={orgJsonLd()} />
       <JsonLd data={webSiteJsonLd()} />
       <JsonLd data={softwareJsonLd()} />
@@ -48,13 +53,14 @@ function Landing() {
             {NETWORK_NAME}
           </span>
         </div>
-        <nav className="flex shrink-0 items-center gap-1 sm:gap-2">
+        <nav className="flex shrink-0 items-center gap-1 sm:gap-2" aria-label="Primary">
+          <XStationLink compact />
           {isPending ? (
             <div className="h-11 w-24 animate-pulse rounded-[var(--radius-sm)] bg-white/10" />
           ) : (
             <>
               <SignedOut>
-                <Button asChild variant="ghost" size="sm" className="hidden text-white/80 hover:text-white md:inline-flex">
+                <Button asChild variant="ghost" size="sm" className="text-white/80 hover:text-white">
                   <Link to="/viewers">Network</Link>
                 </Button>
                 <Button asChild size="sm">
@@ -62,7 +68,7 @@ function Landing() {
                 </Button>
               </SignedOut>
               <SignedIn>
-                <Button asChild variant="ghost" size="sm" className="hidden text-white/80 hover:text-white md:inline-flex">
+                <Button asChild variant="ghost" size="sm" className="text-white/80 hover:text-white">
                   <Link to="/viewers">Network</Link>
                 </Button>
                 <Button asChild size="sm">
@@ -74,7 +80,7 @@ function Landing() {
         </nav>
       </header>
 
-      <section className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-4 pb-16 pt-16 text-center md:px-6 md:pt-24">
+      <section id="station" className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-4 pb-16 pt-16 text-center md:px-6 md:pt-24">
         <p className="mb-4 text-[11px] font-medium tracking-[0.28em] uppercase text-accent">
           {NETWORK_SHORT} · public mesh
         </p>
@@ -85,6 +91,7 @@ function Landing() {
           {NETWORK_TAG} Public cards. Live marks. Forum and friends after you lock a node.
           Google and X are not the door.
         </p>
+        <p className="mt-3 max-w-xl text-xs leading-relaxed text-white/60">{X_STATION_NOTE}</p>
 
         <div className="mt-8 flex w-full max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
           <Button asChild size="lg" className="w-full sm:w-auto">
