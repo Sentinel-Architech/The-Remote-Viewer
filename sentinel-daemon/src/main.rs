@@ -1,10 +1,11 @@
 use ethers::{
     prelude::*,
+    signers::Signer,
     types::transaction::eip712::Eip712,
     utils::keccak256,
 };
-use fips204::mldsa65;
-use fips204::traits::{SerDes, Signer};
+use fips204::ml_dsa_65;
+use fips204::traits::{SerDes, Signer as PqcSigner};
 
 #[derive(Eip712, EthAbiType, Clone, Debug)]
 #[eip712(
@@ -27,7 +28,7 @@ async fn main() -> eyre::Result<()> {
     let ecdsa_key = "0x00000000000000000000000000000000000000000000000000000000000a11ce";
     let ecdsa_wallet: LocalWallet = ecdsa_key.parse::<LocalWallet>()?.with_chain_id(1u64);
 
-    let (pk, sk) = mldsa65::try_keygen()?;
+    let (pk, sk) = ml_dsa_65::try_keygen()?;
 
     println!(" [Sentinel Daemon] ECDSA Signer: {:?}", ecdsa_wallet.address());
     println!(" [Sentinel Daemon] PQC Public Key Bytes: {}", pk.into_bytes().len());
