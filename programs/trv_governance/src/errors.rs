@@ -10,4 +10,10 @@ pub enum TrvError {
     ProposalNotFound,
     #[msg("Already voted")]
     AlreadyVoted,
+    #[msg("Proposal text outside the bound")]
+    Unbounded,
+    #[msg("Empty proof rejected")]
+    EmptyProof,
+    #[msg("Arithmetic overflow")]
+    Overflow,
 }

@@ -25,6 +25,15 @@ pub struct Proposal {
 
 #[account]
 #[derive(InitSpace)]
+pub struct VoteRecord {
+    pub proposal: Pubkey,
+    pub voter: Pubkey,
+    pub support: bool,
+    pub bump: u8,
+}
+
+#[account]
+#[derive(InitSpace)]
 pub struct PostureRecord {
     pub user: Pubkey,
     pub proof_hash: [u8; 32],

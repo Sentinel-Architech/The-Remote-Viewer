@@ -22,14 +22,12 @@ pub struct SubmitPostureProof<'info> {
 pub fn handler(
     ctx: Context<SubmitPostureProof>,
     proof_hash: [u8; 32],
-    _signature: [u8; 64],
+    signature: [u8; 64],
 ) -> Result<()> {
-    // Native-first design note:
-    // Ultimate verification remains the optical air-gap + local Ed25519 path.
-    // This on-chain instruction is an optional parallel signal only.
-    // Full Ed25519 / SIWS signature verification against the native identity
-    // will be added when the Solana track is promoted from scaffold.
-    // Until then the proof is recorded for testnet signaling.
+    // Scaffold only. An empty hash or an empty signature is rejected.
+    // This instruction does not verify the signature. Optical air-gap remains the proof.
+    require!(proof_hash != [0u8; 32], TrvError::EmptyProof);
+    require!(signature != [0u8; 64], TrvError::InvalidProofSignature);
 
     let record = &mut ctx.accounts.posture_record;
     record.user = ctx.accounts.user.key();

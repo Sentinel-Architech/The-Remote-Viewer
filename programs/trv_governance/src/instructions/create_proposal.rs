@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 use crate::state::{GovernanceState, Proposal};
+use crate::errors::TrvError;
 
 #[derive(Accounts)]
 #[instruction(title: String, description: String)]
@@ -27,6 +28,9 @@ pub struct CreateProposal<'info> {
 }
 
 pub fn handler(ctx: Context<CreateProposal>, title: String, description: String) -> Result<()> {
+    require!(!title.is_empty() && title.len() <= 64, TrvError::Unbounded);
+    require!(description.len() <= 256, TrvError::Unbounded);
+
     let governance = &mut ctx.accounts.governance;
     let proposal = &mut ctx.accounts.proposal;
 
@@ -39,7 +43,7 @@ pub fn handler(ctx: Context<CreateProposal>, title: String, description: String)
     proposal.created_at = Clock::get()?.unix_timestamp;
     proposal.bump = ctx.bumps.proposal;
 
-    governance.proposal_count = governance.proposal_count.checked_add(1).unwrap();
+    governance.proposal_count = governance.proposal_count.checked_add(1).ok_or(TrvError::Overflow)?;
 
     Ok(())
 }
