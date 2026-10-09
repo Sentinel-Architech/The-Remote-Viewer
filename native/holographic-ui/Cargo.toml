@@ -1,0 +1,18 @@
+[package]
+name = "trv-holographic-ui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Sovereign native holographic UI engine for every non-browser mobile OS"
+repository = "https://github.com/Sentinel-Architech/The-Remote-Viewer"
+
+[lib]
+name = "trv_holographic_ui"
+crate-type = ["lib", "staticlib", "cdylib"]
+
+[dependencies]
+bytemuck = { version = "1", features = ["derive"] }
+ed25519-dalek = "2"
+pollster = "0.4"
+raw-window-handle = "0.6"
+wgpu = { version = "23", default-features = false, features = ["vulkan", "metal", "dx12", "gles"] }

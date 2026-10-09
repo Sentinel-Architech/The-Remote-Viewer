@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "desktop",
     "optical-airgap/rust",
+    "native/holographic-ui",
 ]
 
 [workspace.package]
