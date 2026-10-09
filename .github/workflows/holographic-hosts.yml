@@ -1,0 +1,17 @@
+name: holographic-hosts
+on:
+  push:
+    branches: [TheRemoteViewer]
+  workflow_dispatch:
+jobs:
+  host:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Check holographic crate on this host
+        run: cargo check -p trv-holographic-ui
