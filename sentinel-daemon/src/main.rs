@@ -27,7 +27,6 @@ async fn main() -> eyre::Result<()> {
     let ecdsa_key = "0x00000000000000000000000000000000000000000000000000000000000a11ce";
     let ecdsa_wallet: LocalWallet = ecdsa_key.parse::<LocalWallet>()?.with_chain_id(1u64);
 
-    // Generate ML-DSA-65 Keypair natively
     let (pk, sk) = mldsa65::try_keygen()?;
 
     println!(" [Sentinel Daemon] ECDSA Signer: {:?}", ecdsa_wallet.address());
