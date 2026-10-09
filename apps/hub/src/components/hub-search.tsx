@@ -13,6 +13,7 @@ export const HUB_STATIONS = [
   { to: "/hub/live", label: "Live" },
   { to: "/hub/clips", label: "Clips" },
   { to: "/hub/friends", label: "Friends" },
+  { to: "/hub/telemetry", label: "Sensors" },
   { to: "/hub/hydra", label: "Hydra" },
   { to: "/hub/forum", label: "Forum" },
   { to: "/hub/create", label: "Studio" },
@@ -31,42 +32,18 @@ export function HubSearch() {
   const [query, setQuery] = useState("");
   const needle = query.trim().toLowerCase();
   const matches = useMemo(
-    () =>
-      needle
-        ? HUB_STATIONS.filter((station) => station.label.toLowerCase().includes(needle) || station.to.includes(needle))
-        : [],
+    () => (needle ? HUB_STATIONS.filter((station) => station.label.toLowerCase().includes(needle) || station.to.includes(needle)) : []),
     [needle],
   );
-
   return (
     <div className="relative">
       <label htmlFor="hub-search" className="sr-only">Search stations</label>
-      <input
-        id="hub-search"
-        type="search"
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-        placeholder="Search stations"
-        autoComplete="off"
-        className="h-11 w-full rounded-[var(--radius-sm)] border border-border bg-bg px-3 text-sm text-fg"
-      />
+      <input id="hub-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search stations" autoComplete="off" className="h-11 w-full rounded-[var(--radius-sm)] border border-border bg-bg px-3 text-sm text-fg" />
       {needle ? (
         <ul className="absolute z-30 mt-1 max-h-64 w-full overflow-auto rounded-[var(--radius-sm)] border border-border bg-card">
-          {matches.length === 0 ? (
-            <li className="px-3 py-2 text-sm text-muted-foreground">No station</li>
-          ) : (
-            matches.map((station) => (
-              <li key={station.to}>
-                <Link
-                  to={station.to}
-                  onClick={() => setQuery("")}
-                  className="flex min-h-11 items-center px-3 text-sm hover:bg-elevated"
-                >
-                  {station.label}
-                </Link>
-              </li>
-            ))
-          )}
+          {matches.length === 0 ? <li className="px-3 py-2 text-sm text-muted-foreground">No station</li> : matches.map((station) => (
+            <li key={station.to}><Link to={station.to} onClick={() => setQuery("")} className="flex min-h-11 items-center px-3 text-sm hover:bg-elevated">{station.label}</Link></li>
+          ))}
         </ul>
       ) : null}
     </div>
