@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useViewer } from "@/components/viewer-context";
+import { FriendFinder } from "@/components/friend-finder";
 import {
   followViewer,
   listNearby,
@@ -51,18 +52,13 @@ function FriendsPage() {
       void drainRtc(peer);
     }, 1500);
     return () => window.clearInterval(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [peer]);
 
   async function drainRtc(h: string) {
     const payloads = await listRtc({ data: h }).catch(() => []);
     for (const raw of payloads) {
       let msg: { type?: string; sdp?: RTCSessionDescriptionInit; candidate?: RTCIceCandidateInit };
-      try {
-        msg = JSON.parse(raw) as typeof msg;
-      } catch {
-        continue;
-      }
+      try { msg = JSON.parse(raw) as typeof msg; } catch { continue; }
       const pc = pcRef.current;
       if (!pc) continue;
       if (msg.type === "offer" && msg.sdp) {
@@ -84,9 +80,7 @@ function FriendsPage() {
     pcRef.current = pc;
     pc.onicecandidate = (e) => {
       if (!e.candidate) return;
-      void sendMessage({
-        data: { handle: h, kind: "rtc", body: JSON.stringify({ candidate: e.candidate }) },
-      });
+      void sendMessage({ data: { handle: h, kind: "rtc", body: JSON.stringify({ candidate: e.candidate }) } });
     };
     pc.ontrack = (e) => {
       if (remoteRef.current) remoteRef.current.srcObject = e.streams[0] ?? null;
@@ -113,9 +107,7 @@ function FriendsPage() {
   async function locate() {
     try {
       const fix = await readNativeGps();
-      const p = await setWatchPresence({
-        data: { radiusOptIn: true, public: true, lat: fix.lat, lng: fix.lng },
-      });
+      const p = await setWatchPresence({ data: { radiusOptIn: true, public: true, lat: fix.lat, lng: fix.lng } });
       if (p) setProfile(p);
       await refresh();
       toast.success(`Sentinel watch armed inside ${WATCH_MILES} miles. Native GPS only. Coords are coarsened.`);
@@ -129,39 +121,32 @@ function FriendsPage() {
   return (
     <div className="space-y-6 p-5 md:p-8">
       <div>
-        <h1 className="font-display text-3xl">Friends & watch</h1>
+        <h1 className="font-display text-3xl">Friends and watch</h1>
         <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-          Follow anyone. Mutual follow + handshake unlocks unlimited text and
-          video. Public nodes that opt into radius can be found within {WATCH_MILES}{" "}
-          miles — Sentinel keeps watch, exact coordinates stay coarsened.
+          Follow anyone. Mutual follow and handshake unlock text and video. The finder stays closed until enough Viewers opt in.
         </p>
       </div>
 
+      <FriendFinder
+        optedIn={Boolean(profile?.radiusOptIn)}
+        nodes={nearby?.nodes ?? []}
+        onHandshake={(next) => {
+          setPeer(next);
+          toast.success("Handshake offered. They must accept.");
+        }}
+      />
+
       <section className="rounded-[var(--radius-xl)] border border-border bg-card p-5">
-        <h2 className="font-display text-xl">100-mile Sentinel watch</h2>
+        <h2 className="font-display text-xl">{WATCH_MILES}-mile Sentinel watch</h2>
         <div className="mt-3 flex items-center justify-between gap-3 text-sm">
           <span>Profile public</span>
-          <Switch
-            checked={profile?.isPublic ?? true}
-            onCheckedChange={async (v) => {
-              const p = await setWatchPresence({ data: { public: v } });
-              if (p) setProfile(p);
-            }}
-          />
+          <Switch checked={profile?.isPublic ?? true} onCheckedChange={async (v) => { const p = await setWatchPresence({ data: { public: v } }); if (p) setProfile(p); }} />
         </div>
         <div className="mt-3 flex items-center justify-between gap-3 text-sm">
           <span>Opt into {WATCH_MILES}-mile radius</span>
-          <Switch
-            checked={profile?.radiusOptIn ?? false}
-            onCheckedChange={async (v) => {
-              const p = await setWatchPresence({ data: { radiusOptIn: v } });
-              if (p) setProfile(p);
-            }}
-          />
+          <Switch checked={profile?.radiusOptIn ?? false} onCheckedChange={async (v) => { const p = await setWatchPresence({ data: { radiusOptIn: v } }); if (p) setProfile(p); }} />
         </div>
-        <Button className="mt-4" variant="secondary" onClick={() => void locate()}>
-          Share coarsened location
-        </Button>
+        <Button className="mt-4" variant="secondary" onClick={() => void locate()}>Share coarsened location</Button>
         <ul className="mt-4 space-y-1 text-sm">
           {nearby?.ready === false ? (
             <li className="text-muted-foreground">Opt in and share location to see the mesh around you.</li>
@@ -169,10 +154,7 @@ function FriendsPage() {
             <li className="text-muted-foreground">No public Viewers in range.</li>
           ) : (
             nearby?.nodes.map((n) => (
-              <li key={n.handle} className="flex justify-between gap-2">
-                <span>@{n.handle}</span>
-                <span className="font-mono text-xs text-muted-foreground">~{n.miles} mi</span>
-              </li>
+              <li key={n.handle} className="flex justify-between gap-2"><span>@{n.handle}</span><span className="font-mono text-xs text-muted-foreground">~{n.miles} mi</span></li>
             ))
           )}
         </ul>
@@ -180,20 +162,11 @@ function FriendsPage() {
 
       <section className="rounded-[var(--radius-xl)] border border-border bg-card p-5">
         <h2 className="font-display text-xl">Follow</h2>
-        <form
-          className="mt-3 flex gap-2"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            try {
-              await followViewer({ data: handle });
-              setHandle("");
-              await refresh();
-              toast.success("Following");
-            } catch (err) {
-              toast.error(err instanceof Error ? err.message : "Follow failed");
-            }
-          }}
-        >
+        <form className="mt-3 flex gap-2" onSubmit={async (e) => {
+          e.preventDefault();
+          try { await followViewer({ data: handle }); setHandle(""); await refresh(); toast.success("Following"); }
+          catch (err) { toast.error(err instanceof Error ? err.message : "Follow failed"); }
+        }}>
           <Input placeholder="handle" value={handle} onChange={(e) => setHandle(e.target.value)} />
           <Button type="submit">Follow</Button>
         </form>
@@ -210,9 +183,7 @@ function FriendsPage() {
             <h2 className="font-display text-xl">@{peer}</h2>
             <div className="flex gap-2">
               <Badge variant={verified ? "native" : "warn"}>{verified ? "You verified" : "Handshake to talk"}</Badge>
-              <Button size="sm" variant="secondary" onClick={() => void call()} disabled={!verified}>
-                Video
-              </Button>
+              <Button size="sm" variant="secondary" onClick={() => void call()} disabled={!verified}>Video</Button>
             </div>
           </div>
           <div className="mt-3 grid gap-2 md:grid-cols-2">
@@ -221,25 +192,15 @@ function FriendsPage() {
           </div>
           <div className="mt-3 max-h-56 space-y-2 overflow-y-auto">
             {thread.map((m) => (
-              <p key={m.id} className={`text-sm ${m.mine ? "text-right" : "text-muted-foreground"}`}>
-                {m.body}
-              </p>
+              <p key={m.id} className={`text-sm ${m.mine ? "text-right" : "text-muted-foreground"}`}>{m.body}</p>
             ))}
           </div>
-          <form
-            className="mt-3 flex gap-2"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              try {
-                await sendMessage({ data: { handle: peer, body: text } });
-                setText("");
-                setThread(await listThread({ data: peer }));
-              } catch (err) {
-                toast.error(err instanceof Error ? err.message : "Not sent");
-              }
-            }}
-          >
-            <Input value={text} onChange={(e) => setText(e.target.value)} placeholder="Unlimited text after mutual verify" />
+          <form className="mt-3 flex gap-2" onSubmit={async (e) => {
+            e.preventDefault();
+            try { await sendMessage({ data: { handle: peer, body: text } }); setText(""); setThread(await listThread({ data: peer })); }
+            catch (err) { toast.error(err instanceof Error ? err.message : "Not sent"); }
+          }}>
+            <Input value={text} onChange={(e) => setText(e.target.value)} placeholder="Text after mutual verify" />
             <Button type="submit">Send</Button>
           </form>
         </section>
@@ -248,35 +209,19 @@ function FriendsPage() {
   );
 }
 
-function List({
-  title,
-  rows,
-  onOpen,
-}: {
-  title: string;
-  rows: { handle: string; displayName: string; avatarData?: string | null; liveNow?: boolean }[];
-  onOpen: (h: string) => void;
-}) {
+function List({ title, rows, onOpen }: { title: string; rows: { handle: string; displayName: string; avatarData?: string | null; liveNow?: boolean }[]; onOpen: (h: string) => void }) {
   return (
     <div>
       <p className="text-xs uppercase tracking-wide text-muted-foreground">{title}</p>
       <ul className="mt-2 space-y-1">
-        {rows.length === 0 ? (
-          <li className="text-sm text-muted-foreground">None yet</li>
-        ) : (
-          rows.map((r) => (
-            <li key={r.handle}>
-              <button
-                type="button"
-                className="flex min-h-11 w-full items-center gap-2 text-left text-sm hover:underline"
-                onClick={() => onOpen(r.handle)}
-              >
-                <ViewerMark name={r.displayName || r.handle} src={r.avatarData} live={r.liveNow} size="sm" />
-                <span className="min-w-0 truncate">@{r.handle}</span>
-              </button>
-            </li>
-          ))
-        )}
+        {rows.length === 0 ? <li className="text-sm text-muted-foreground">None yet</li> : rows.map((r) => (
+          <li key={r.handle}>
+            <button type="button" className="flex min-h-11 w-full items-center gap-2 text-left text-sm hover:underline" onClick={() => onOpen(r.handle)}>
+              <ViewerMark name={r.displayName || r.handle} src={r.avatarData} live={r.liveNow} size="sm" />
+              <span className="min-w-0 truncate">@{r.handle}</span>
+            </button>
+          </li>
+        ))}
       </ul>
     </div>
   );
