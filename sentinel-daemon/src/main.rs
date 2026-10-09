@@ -1,43 +1,56 @@
 use ethers::{
-    contract::abigen,
-    providers::{Provider, StreamExt, Ws},
-    types::Address,
+    prelude::*,
+    utils::keccak256,
 };
-use std::sync::Arc;
+use pqcrypto_dilithium::dilithium3::{detached_sign, keypair};
+use pqcrypto_traits::sign::{PublicKey as _, SecretKey as _, DetachedSignature as _};
 
-// Generate type-safe bindings for The Sentinel Protocol event interface
-abigen!(
-    TheSentinelProtocol,
-    r#"[
-        event EmergencyPauseTriggered(address indexed reporter)
-        event EmergencyUnpaused(address indexed admin)
-    ]"#
-);
+#[derive(Eip712, EthAbiType, Clone, Debug)]
+#[eip712(
+    name = "TheSentinelSecurityProtocol",
+    version = "1.0.0",
+    chain_id = 1,
+    verifying_contract = "0x0000000000000000000000000000000000000000"
+)]
+struct SentinelAction {
+    target: Address,
+    payload_hash: [u8; 32],
+    nonce: U256,
+    deadline: U256,
+}
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
-    println!(" [Sentinel Daemon] Initializing real-time WebSocket event listener...");
+    println!(" [Sentinel Daemon] Initializing Hybrid ECDSA + Post-Quantum (Dilithium3) Engine...");
 
-    // Replace with your local or remote EVM WebSocket RPC endpoint
-    let wss_url = "wss://eth-mainnet.g.alchemy.com/v2/your-api-key";
-    let provider = Provider::<Ws>::connect(wss_url).await?;
-    let client = Arc::new(provider);
+    // 1. Classic ECDSA Setup
+    let ecdsa_key = "0x00000000000000000000000000000000000000000000000000000000000a11ce";
+    let ecdsa_wallet: LocalWallet = ecdsa_key.parse::<LocalWallet>()?.with_chain_id(1u64);
 
-    // Target deployed Sentinel Security Protocol address
-    let sentinel_address: Address = "0x0000000000000000000000000000000000000000".parse()?;
-    let contract = TheSentinelProtocol::new(sentinel_address, client);
+    // 2. Post-Quantum Keypair Generation (Dilithium3)
+    let (pqc_pk, pqc_sk) = keypair();
 
-    println!(" [Sentinel Daemon] Monitoring contract events at: {:?}", sentinel_address);
+    println!(" [Sentinel Daemon] ECDSA Signer: {:?}", ecdsa_wallet.address());
+    println!(" [Sentinel Daemon] PQC Public Key (Bytes): {}", pqc_pk.as_bytes().len());
 
-    // Subscribe to EmergencyPauseTriggered events
-    let events = contract.event::<EmergencyPauseTriggeredFilter>();
-    let mut stream = events.stream().await?;
+    // 3. Construct Authorization Action
+    let action = SentinelAction {
+        target: "0x1111111111111111111111111111111111111111".parse()?,
+        payload_hash: keccak256(b"EMERGENCY_PAUSE_DEPOSIT_VAULT"),
+        nonce: U256::from(1),
+        deadline: U256::from(1700000000u64),
+    };
 
-    while let Some(Ok(log)) = stream.next().await {
-        println!(" [ALERT] Emergency Pause Triggered!");
-        println!("    Reporter Address: {:?}", log.reporter);
-        // Trigger local zero-trust revocation / shutdown sequence here
-    }
+    // 4. Generate Classic ECDSA EIP-712 Signature
+    let ecdsa_sig = ecdsa_wallet.sign_typed_data(&action).await?;
+
+    // 5. Generate Quantum-Resistant Detached Signature over EIP-712 Digest
+    let eip712_digest = action.encode_eip712()?;
+    let pqc_sig = detached_sign(&eip712_digest, &pqc_sk);
+
+    println!(" [Sentinel Daemon] Hybrid Signatures Generated Successfully!");
+    println!("    ECDSA Sig: 0x{}", hex::encode(ecdsa_sig.to_vec()));
+    println!("    PQC (Dilithium3) Sig Bytes: {}", pqc_sig.as_bytes().len());
 
     Ok(())
 }
