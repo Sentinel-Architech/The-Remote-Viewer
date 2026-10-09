@@ -1,9 +1,10 @@
 use ethers::{
     prelude::*,
+    types::transaction::eip712::Eip712,
     utils::keccak256,
 };
 use pqcrypto_dilithium::dilithium3::{detached_sign, keypair};
-use pqcrypto_traits::sign::{PublicKey as _, SecretKey as _, DetachedSignature as _};
+use pqcrypto_traits::sign::{PublicKey as _, DetachedSignature as _};
 
 #[derive(Eip712, EthAbiType, Clone, Debug)]
 #[eip712(
