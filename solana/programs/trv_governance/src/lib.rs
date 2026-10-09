@@ -1,11 +1,11 @@
 //! TRV Governance — Solana Anchor SCAFFOLD.
 //! Not audited. Not mainnet. No production security claims.
+//! Program id matches Anchor.toml. This copy is not a second deployed program.
 
 use anchor_lang::prelude::*;
 use anchor_spl::token::TokenAccount;
 
-// Scaffold program id (valid base58 Pubkey). Replace via `anchor keys list` before deploy.
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("83RMs5U655EEPk1WMwq5JFQojKS6kxAESSoWwH8CmUJi");
 
 /// VALUE.md splits (basis points / 10_000). Platform fee = 0.
 pub const DIGITAL_CREATOR_BPS: u16 = 9500;
@@ -75,6 +75,8 @@ pub mod trv_governance {
         let node = &mut ctx.accounts.node;
         require!(node.active, TrvError::NodeInactive);
         node.active = false;
+        let cfg = &mut ctx.accounts.config;
+        cfg.node_count = cfg.node_count.checked_sub(1).ok_or(TrvError::Overflow)?;
         msg!("TRV node deactivated {}", node.operator);
         Ok(())
     }
@@ -316,6 +318,8 @@ pub struct RegisterNode<'info> {
 
 #[derive(Accounts)]
 pub struct DeactivateNode<'info> {
+    #[account(mut, seeds = [b"trv-config"], bump = config.bump)]
+    pub config: Account<'info, GovernanceConfig>,
     #[account(
         mut,
         seeds = [b"trv-node", operator.key().as_ref()],
