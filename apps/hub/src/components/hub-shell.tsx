@@ -1,32 +1,9 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import {
-  Bug,
-  Brain,
-  CircleUser,
-  Cpu,
-  Crosshair,
-  Film,
-  Fingerprint,
-  Gauge,
-  Gift,
-  Globe,
-  KeyRound,
-  TextCursorInput,
-  Landmark,
-  LayoutDashboard,
-  MessageSquare,
-  Mic,
-  Palette,
-  Radio,
-  ScrollText,
-  Settings,
-  Shield,
-  ShieldAlert,
-  ShieldCheck,
-  Store,
-  Users,
-  Wand2,
+  Bug, Brain, CircleUser, Cpu, Crosshair, Film, Fingerprint, Gauge, Gift, Globe, KeyRound,
+  TextCursorInput, Landmark, LayoutDashboard, MessageSquare, Mic, Palette, Radio, ScrollText,
+  Settings, Shield, ShieldAlert, ShieldCheck, Store, Users, Wand2,
 } from "lucide-react";
 import { UserButton } from "@/lib/auth/gates";
 import { VortexTransition } from "./vortex-transition";
@@ -50,6 +27,7 @@ import { toast } from "sonner";
 import { TrialStrip } from "./trial-strip";
 import { InstallTutorial } from "./install-tutorial";
 import { BottomMenu } from "./bottom-menu";
+import { HubSearch } from "./hub-search";
 
 const NAV = [
   { to: "/hub", label: "Command", icon: LayoutDashboard },
@@ -82,47 +60,30 @@ function DutyStrip() {
   const { watch, setProfile, refreshWatch } = useViewer();
   const [busy, setBusy] = useState(false);
   const onField =
-    pathname === "/hub" ||
-    pathname === "/hub/" ||
-    pathname.startsWith("/hub/neuron") ||
-    pathname.startsWith("/hub/mesh") ||
-    pathname.startsWith("/hub/honeypot") ||
-    pathname.startsWith("/hub/deck");
+    pathname === "/hub" || pathname === "/hub/" || pathname.startsWith("/hub/neuron") ||
+    pathname.startsWith("/hub/mesh") || pathname.startsWith("/hub/honeypot") || pathname.startsWith("/hub/deck");
   if (!watch || watch.claimed || onField) return null;
-
   return (
     <div className="sticky top-[3.25rem] z-10 border-b border-warn/30 bg-card/95 px-3 py-2 backdrop-blur-sm md:top-0 md:px-5">
       <div className="flex flex-wrap items-center gap-2">
         <Shield className="size-4 shrink-0 text-warn" />
         <p className="min-w-0 flex-1 text-sm text-fg">
-          {watch.defended
-            ? `Duty ready · claim ${watch.nextCredits} TRV for keeping The Sentinel safe`
-            : `Daily duty · defend The Sentinel · ${watch.nextCredits} TRV on claim`}
+          {watch.defended ? `Duty ready \u00b7 claim ${watch.nextCredits} TRV for keeping The Sentinel safe` : `Daily duty \u00b7 defend The Sentinel \u00b7 ${watch.nextCredits} TRV on claim`}
         </p>
         {watch.defended ? (
-          <Button
-            size="sm"
-            disabled={busy}
-            onClick={async () => {
-              setBusy(true);
-              try {
-                const p = await claimWatch();
-                if (p) setProfile(p);
-                await refreshWatch();
-                toast.success(`Watch claimed · ${watch.nextCredits} TRV`);
-              } catch (e) {
-                toast.error(e instanceof Error ? e.message : "Watch failed");
-              } finally {
-                setBusy(false);
-              }
-            }}
-          >
-            Claim {watch.nextCredits} TRV
-          </Button>
+          <Button size="sm" disabled={busy} onClick={async () => {
+            setBusy(true);
+            try {
+              const p = await claimWatch();
+              if (p) setProfile(p);
+              await refreshWatch();
+              toast.success(`Watch claimed \u00b7 ${watch.nextCredits} TRV`);
+            } catch (e) {
+              toast.error(e instanceof Error ? e.message : "Watch failed");
+            } finally { setBusy(false); }
+          }}>Claim {watch.nextCredits} TRV</Button>
         ) : (
-          <Button asChild size="sm">
-            <Link to="/hub">Stand watch</Link>
-          </Button>
+          <Button asChild size="sm"><Link to="/hub">Stand watch</Link></Button>
         )}
       </div>
     </div>
@@ -136,7 +97,6 @@ export function HubShell() {
   const brand = company ? profile.orgName || "Company cell" : "We The People";
   const [more, setMore] = useState(false);
   const lockBriefing = false;
-
   return (
     <ViewerThemeRoot>
     <div className="min-h-dvh overflow-x-clip bg-bg text-fg">
@@ -145,10 +105,9 @@ export function HubShell() {
       <VortexTransition />
       <div className="mx-auto flex max-w-[1400px]">
         <aside className="sticky top-0 hidden h-dvh w-56 shrink-0 flex-col overflow-y-auto border-r border-border px-3 py-5 md:flex">
-          <Link to="/" className="mb-1 px-2 text-[11px] tracking-[0.2em] uppercase text-muted-foreground">
-            {NETWORK_NAME}
-          </Link>
-          <p className="mb-6 px-2 text-[10px] uppercase tracking-wide text-accent">{brand}</p>
+          <Link to="/" className="mb-1 px-2 text-[11px] tracking-[0.2em] uppercase text-muted-foreground">{NETWORK_NAME}</Link>
+          <p className="mb-3 px-2 text-[10px] uppercase tracking-wide text-accent">{brand}</p>
+          <div className="mb-4"><HubSearch /></div>
           {profile ? (
             <Link to="/hub/profile" className="mb-4 flex items-center gap-2 rounded-[var(--radius-sm)] px-2 py-1.5 hover:bg-elevated/60">
               <ViewerMark name={profile.displayName || profile.handle} src={profile.avatarData} live={profile.liveNow} size="sm" />
@@ -158,79 +117,35 @@ export function HubShell() {
               </span>
             </Link>
           ) : null}
-          {profile?.liveNow ? (
-            <Link to="/hub/live" className="mb-3 px-2">
-              <LiveBadge title={profile.liveTitle} />
-            </Link>
-          ) : null}
+          {profile?.liveNow ? <Link to="/hub/live" className="mb-3 px-2"><LiveBadge title={profile.liveTitle} /></Link> : null}
           <nav className="flex flex-1 flex-col gap-0.5">
             {NAV.map((item) => {
               const active = pathname === item.to;
               const Icon = item.icon;
               return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={cn(
-                    "flex h-11 items-center gap-2 rounded-[var(--radius-sm)] px-3 text-sm",
-                    active ? "bg-elevated text-fg" : "text-muted-foreground hover:bg-elevated/60 hover:text-fg",
-                  )}
-                >
-                  <Icon className="size-4" />
-                  {item.label}
-                  {item.to === "/hub/profile" && profile?.liveNow ? (
-                    <Radio className="ml-auto size-3 text-ok trv-live-dot" aria-label="Live" />
-                  ) : null}
+                <Link key={item.to} to={item.to} className={cn("flex h-11 items-center gap-2 rounded-[var(--radius-sm)] px-3 text-sm", active ? "bg-elevated text-fg" : "text-muted-foreground hover:bg-elevated/60 hover:text-fg")}>
+                  <Icon className="size-4" />{item.label}
                 </Link>
               );
             })}
           </nav>
-          <div className="mt-4 border-t border-border pt-4">
-            <UserButton />
-          </div>
+          <div className="mt-4 border-t border-border pt-4"><UserButton /></div>
         </aside>
-
-        <main
-          id="hub-main"
-          tabIndex={-1}
-          className="min-w-0 flex-1 pb-[calc(9.5rem+env(safe-area-inset-bottom))] outline-none"
-        >
-          <header className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-border bg-bg/95 px-3 py-2 backdrop-blur-sm md:hidden">
-            <Link to="/hub/profile" className="flex min-w-0 items-center gap-2">
-              {profile ? (
-                <ViewerMark name={profile.displayName || profile.handle} src={profile.avatarData} live={profile.liveNow} size="sm" />
-              ) : null}
-              <span className="min-w-0 truncate text-[11px] tracking-[0.18em] uppercase text-muted-foreground">
-                {company ? "Company" : NETWORK_SHORT}
-              </span>
-            </Link>
-            <div className="flex shrink-0 items-center gap-1">
-              <button
-                type="button"
-                className="grid h-11 w-11 place-items-center rounded-[var(--radius-sm)] text-muted-foreground"
-                aria-label="Wallet"
-                onClick={() => window.dispatchEvent(new Event("trv-open-wallet"))}
-              >
-                <KeyRound className="size-4" />
-              </button>
-              <button
-                type="button"
-                className="grid h-11 w-11 place-items-center rounded-[var(--radius-sm)] text-muted-foreground"
-                aria-label="Means of Evidence"
-                onClick={() => window.dispatchEvent(new Event("trv-open-moe"))}
-              >
-                <ShieldCheck className="size-4" />
-              </button>
-              <button
-                type="button"
-                className="grid h-11 w-11 place-items-center rounded-[var(--radius-sm)] text-muted-foreground"
-                aria-label="Speak to Sentinel"
-                onClick={() => window.dispatchEvent(new Event("trv-open-sentinel"))}
-              >
-                <Mic className="size-4" />
-              </button>
-              <UserButton />
+        <main id="hub-main" tabIndex={-1} className="min-w-0 flex-1 pb-[calc(9.5rem+env(safe-area-inset-bottom))] outline-none">
+          <header className="sticky top-0 z-20 border-b border-border bg-bg/95 px-3 py-2 backdrop-blur-sm md:hidden">
+            <div className="flex items-center justify-between gap-2">
+              <Link to="/hub/profile" className="flex min-w-0 items-center gap-2">
+                {profile ? <ViewerMark name={profile.displayName || profile.handle} src={profile.avatarData} live={profile.liveNow} size="sm" /> : null}
+                <span className="min-w-0 truncate text-[11px] tracking-[0.18em] uppercase text-muted-foreground">{company ? "Company" : NETWORK_SHORT}</span>
+              </Link>
+              <div className="flex shrink-0 items-center gap-1">
+                <button type="button" className="grid h-11 w-11 place-items-center rounded-[var(--radius-sm)] text-muted-foreground" aria-label="Wallet" onClick={() => window.dispatchEvent(new Event("trv-open-wallet"))}><KeyRound className="size-4" /></button>
+                <button type="button" className="grid h-11 w-11 place-items-center rounded-[var(--radius-sm)] text-muted-foreground" aria-label="Means of Evidence" onClick={() => window.dispatchEvent(new Event("trv-open-moe"))}><ShieldCheck className="size-4" /></button>
+                <button type="button" className="grid h-11 w-11 place-items-center rounded-[var(--radius-sm)] text-muted-foreground" aria-label="Speak to Sentinel" onClick={() => window.dispatchEvent(new Event("trv-open-sentinel"))}><Mic className="size-4" /></button>
+                <UserButton />
+              </div>
             </div>
+            <div className="mt-2"><HubSearch /></div>
           </header>
           <TrialStrip />
           <InstallTutorial />
@@ -239,34 +154,23 @@ export function HubShell() {
           <Outlet />
         </main>
       </div>
-
       <BottomMenu />
-
       <Sheet open={more} onOpenChange={setMore}>
         <SheetContent side="bottom">
           <h2 className="font-display text-xl">Hub</h2>
+          <div className="mt-4"><HubSearch /></div>
           <div className="mt-4 grid grid-cols-3 gap-2">
             {NAV.map((item) => {
               const Icon = item.icon;
               return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setMore(false)}
-                  className="flex min-h-16 flex-col items-center justify-center gap-1 rounded-[var(--radius-md)] border border-border bg-elevated px-2 py-3 text-center text-[11px]"
-                >
-                  <Icon className="size-4" />
-                  {item.label}
-                  {item.to === "/hub/profile" && profile?.liveNow ? (
-                    <Radio className="size-3 text-ok trv-live-dot" aria-label="Live" />
-                  ) : null}
+                <Link key={item.to} to={item.to} onClick={() => setMore(false)} className="flex min-h-16 flex-col items-center justify-center gap-1 rounded-[var(--radius-md)] border border-border bg-elevated px-2 py-3 text-center text-[11px]">
+                  <Icon className="size-4" />{item.label}
                 </Link>
               );
             })}
           </div>
         </SheetContent>
       </Sheet>
-
       <MoeDock />
       <WalletDock />
       <SentinelDock />
