@@ -15,6 +15,8 @@ import { SKILL_PAR } from "@/lib/trv/skill-audit";
 import { openBriefing } from "@/lib/trv/briefing";
 import { ShareBroadcast } from "@/components/share-broadcast";
 import { isMonthlySubscriber, subscribedReward } from "@/lib/trv/viewer-locks";
+import { XStationLink } from "@/components/x-station";
+import { X_STATION_NOTE } from "@/lib/trv/x-surface";
 
 export const Route = createFileRoute("/hub/")({ component: Command });
 
@@ -71,6 +73,16 @@ function Command() {
       <p className="text-sm leading-relaxed text-muted-foreground">{subscribedReward(profile.planId).note}</p>
       <ShareBroadcast monthly={isMonthlySubscriber(profile.planId, profile.billingInterval)} />
 
+      <Card>
+        <CardHeader>
+          <CardTitle>X station</CardTitle>
+          <CardDescription>{X_STATION_NOTE}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <XStationLink />
+        </CardContent>
+      </Card>
+
       {watch?.claimed && !profile.tutorialAt ? (
         <Card>
           <CardHeader>
@@ -110,7 +122,6 @@ function Command() {
           </CardContent>
         </Card>
       ) : null}
-
 
       {!profile.citizenAt && (
         <Card className="border-warn/40">
