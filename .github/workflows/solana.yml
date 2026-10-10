@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: dtolnay/rust-toolchain@1.85.0
+      - uses: dtolnay/rust-toolchain@1.120.0
 
       # The solanafoundation/anchor:v0.32.1 image ships Cargo 1.84.0 inside
       # cargo-build-sbf. That Cargo cannot parse edition2024 manifests
