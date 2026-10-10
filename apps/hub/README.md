@@ -3,6 +3,7 @@
 Hosted Remote Viewer command surface.
 
 **Live:** [the-remote-viewer.grok.me](https://the-remote-viewer.grok.me)  
+**Local:** [http://127.0.0.1:3000/](http://127.0.0.1:3000/) (or http://localhost:3000)  
 **Branch:** [`TheRemoteViewer`](https://github.com/Sentinel-Architech/The-Remote-Viewer/tree/TheRemoteViewer)  
 **Status (2026-08-22):** **LIVE** hosted DApp — not a scaffold. OS jack-in is in this folder; grok.me picks it up on republish.
 
@@ -58,7 +59,7 @@ npm install
 npm run dev
 ```
 
-Dev server binds `0.0.0.0:8080`. Without `DATABASE_URL`, PGLite (WASM Postgres) boots in-process so the hub is usable. Set `DATABASE_URL` (Neon or any Postgres) for a durable deploy.
+Local dev server: **http://127.0.0.1:3000/** (or http://localhost:3000). Without `DATABASE_URL`, PGLite (WASM Postgres) boots in-process so the hub is usable. Set `DATABASE_URL` (Neon or any Postgres) for a durable deploy.
 
 ```bash
 npm run typecheck
