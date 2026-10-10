@@ -1,7 +1,14 @@
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use axum::{routing::get, Router, extract::State, response::Html};
-use std::io::{self, Write};
+use axum::{
+    routing::{get, post},
+    Router,
+    extract::State,
+    response::Html,
+    Json,
+};
+use serde::{Deserialize, Serialize};
+use std::path::Path;
 
 mod storage;
 mod identity;
@@ -15,16 +22,54 @@ pub mod migration;
 #[derive(Clone)]
 struct AppState {
     coordinator: Arc<agent::AgentCoordinator>,
+    posts: Arc<Mutex<Vec<migration::parser::LegacyPost>>>,
 }
 
-async fn dapp_ui_handler(State(_state): State<AppState>) -> Html<&'static str> {
+#[derive(Deserialize)]
+struct ImportPayload {
+    content: String,
+    author_handle: String,
+}
+
+#[derive(Serialize)]
+struct ApiResponse {
+    status: String,
+    count: usize,
+}
+
+async fn get_posts_handler(State(state): State<AppState>) -> Json<Vec<migration::parser::LegacyPost>> {
+    let posts = state.posts.lock().await;
+    Json(posts.clone())
+}
+
+async fn add_post_handler(
+    State(state): State<AppState>,
+    Json(payload): Json<ImportPayload>,
+) -> Json<ApiResponse> {
+    let mut posts = state.posts.lock().await;
+    let new_post = migration::parser::LegacyPost {
+        timestamp: std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs(),
+        content: payload.content,
+        author_handle: payload.author_handle,
+    };
+    posts.insert(0, new_post);
+    ApiResponse {
+        status: "success".to_string(),
+        count: posts.len(),
+    }.into()
+}
+
+async fn dapp_ui_handler() -> Html<&'static str> {
     Html(r#"
     <!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>The Remote Viewer | Native DApp</title>
+        <title>The Remote Viewer | Interactive Node</title>
         <style>
             :root {
                 --bg: #0d1117;
@@ -41,61 +86,75 @@ async fn dapp_ui_handler(State(_state): State<AppState>) -> Html<&'static str> {
                 margin: 0;
                 padding: 20px;
             }
-            .container {
-                max-width: 800px;
-                margin: 0 auto;
-            }
-            .header {
-                border-bottom: 1px solid var(--border);
-                padding-bottom: 10px;
-                margin-bottom: 20px;
-            }
-            .status {
-                color: var(--green);
-                font-weight: bold;
-                font-size: 0.9em;
-            }
-            .card {
-                background: var(--card);
-                border: 1px solid var(--border);
-                border-radius: 6px;
-                padding: 16px;
-                margin-bottom: 16px;
-            }
+            .container { max-width: 800px; margin: 0 auto; }
+            .header { border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 20px; }
+            .status { color: var(--green); font-weight: bold; font-size: 0.9em; }
+            .card { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 16px; margin-bottom: 16px; }
             h1 { font-size: 1.5em; color: var(--accent); margin: 0 0 8px 0; }
-            p { margin: 4px 0; font-size: 0.95em; }
-            .badge {
-                display: inline-block;
-                background: #21262d;
-                border: 1px solid var(--border);
-                padding: 2px 8px;
-                border-radius: 12px;
-                font-size: 0.8em;
-                color: var(--accent);
+            input, textarea, button {
+                width: 100%; box-sizing: border-box; background: #0d1117; border: 1px solid var(--border);
+                color: var(--text); padding: 10px; border-radius: 4px; margin-top: 8px; font-family: inherit;
             }
+            button { background: #238636; color: white; font-weight: bold; cursor: pointer; border: none; margin-top: 12px; }
+            button:hover { background: #2ea043; }
+            .post-item { background: #21262d; border: 1px solid var(--border); border-radius: 4px; padding: 10px; margin-top: 8px; }
+            .author { color: var(--accent); font-size: 0.85em; font-weight: bold; }
         </style>
     </head>
     <body>
         <div class="container">
             <div class="header">
                 <h1>The Remote Viewer</h1>
-                <span class="status">● Node Active & Local-First</span>
-            </div>
-            
-            <div class="card">
-                <h3>Subsystem Architecture</h3>
-                <p><span class="badge">Encryption</span> ChaCha20-Poly1305 Local Storage</p>
-                <p><span class="badge">Network</span> P2P Gossip & Merkle State Sync</p>
-                <p><span class="badge">Migration</span> Offline Web2 Import & Bridge Engine</p>
-                <p><span class="badge">Agent</span> Dynamic Reasoning & Memory Recall</p>
+                <span class="status">● Interactive Node Active</span>
             </div>
 
             <div class="card">
-                <h3>Node Intelligence State</h3>
-                <p>Local loopback endpoint connected to <code>127.0.0.1:3000</code>.</p>
-                <p>Use your local agent terminal CLI to query or cache new intelligence.</p>
+                <h3>Local Web2 Migration Console</h3>
+                <input type="text" id="author" placeholder="Author Handle (e.g. Architech)" value="Architech">
+                <textarea id="content" rows="3" placeholder="Enter social post content to migrate..."></textarea>
+                <button onclick="submitPost()">Ingest to Local Zero-Trust Feed</button>
+            </div>
+
+            <div class="card">
+                <h3>Migrated Social Feed</h3>
+                <div id="feed"><p style="color: #8b949e;">Loading local feed...</p></div>
             </div>
         </div>
+
+        <script>
+            async function loadFeed() {
+                const res = await fetch('/api/posts');
+                const posts = await res.json();
+                const feedEl = document.getElementById('feed');
+                if (posts.length === 0) {
+                    feedEl.innerHTML = '<p style="color: #8b949e;">No local posts ingested yet.</p>';
+                    return;
+                }
+                feedEl.innerHTML = posts.map(p => `
+                    <div class="post-item">
+                        <div class="author">@${p.author_handle}</div>
+                        <div>${p.content}</div>
+                    </div>
+                `).join('');
+            }
+
+            async function submitPost() {
+                const author = document.getElementById('author').value;
+                const content = document.getElementById('content').value;
+                if (!content) return;
+
+                await fetch('/api/ingest', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ author_handle: author, content: content })
+                });
+
+                document.getElementById('content').value = '';
+                loadFeed();
+            }
+
+            loadFeed();
+        </script>
     </body>
     </html>
     "#)
@@ -105,61 +164,27 @@ async fn dapp_ui_handler(State(_state): State<AppState>) -> Html<&'static str> {
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
-    tracing::info!("[*] Initializing The Remote Viewer");
-
     let storage = Arc::new(storage::StorageEngine::new()?);
-    let mut wot = identity::WebOfTrust::new();
-    wot.provision_node(&[0u8; 32]);
-
     let coordinator = Arc::new(agent::AgentCoordinator::new(Arc::clone(&storage)));
-    let app_state = AppState { coordinator: Arc::clone(&coordinator) };
 
-    // 1. Spawn Local DApp HTTP Server with HTML UI
+    let initial_posts = migration::parser::MigrationParser::parse_json_export(Path::new("test_export.json"))
+        .unwrap_or_default();
+
+    let app_state = AppState {
+        coordinator,
+        posts: Arc::new(Mutex::new(initial_posts)),
+    };
+
     let app = Router::new()
         .route("/", get(dapp_ui_handler))
+        .route("/api/posts", get(get_posts_handler))
+        .route("/api/ingest", post(add_post_handler))
         .with_state(app_state);
 
-    tokio::spawn(async {
-        let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await.unwrap();
-        tracing::info!("[+] Native DApp active at http://127.0.0.1:3000");
-        axum::serve(listener, app).await.unwrap();
-    });
-
-    // 2. Start P2P Gossip Daemon background worker
-    let merkle_tree = Arc::new(Mutex::new(merkle::StateMerkleTree::new()));
-    let merkle_for_p2p = Arc::clone(&merkle_tree);
-    tokio::spawn(async move {
-        if let Err(e) = p2p::start_gossip_daemon(merkle_for_p2p).await {
-            tracing::error!("P2P gossip failed: {}", e);
-        }
-    });
-
-    println!("\n=== The Remote Viewer Agent Online ===");
-    println!("DApp UI active locally at http://127.0.0.1:3000");
-    println!("Type an objective/query and press Enter (or type 'exit' to quit):\n");
-
-    loop {
-        print!("agent> ");
-        io::stdout().flush()?;
-
-        let mut input = String::new();
-        io::stdin().read_line(&mut input)?;
-        let query = input.trim();
-
-        if query.eq_ignore_ascii_case("exit") {
-            println!("[*] Shutting down gracefully");
-            break;
-        }
-
-        if query.is_empty() {
-            continue;
-        }
-
-        match coordinator.execute_loop(query).await {
-            Ok(response) => println!("\n{}\n", response),
-            Err(e) => eprintln!("[-] Execution error: {}\n", e),
-        }
-    }
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    tracing::info!("[+] Interactive DApp active on 0.0.0.0:3000");
+    
+    axum::serve(listener, app).await.unwrap();
 
     Ok(())
 }
