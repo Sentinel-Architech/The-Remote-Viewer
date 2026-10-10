@@ -5,16 +5,18 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "1.0", features = ["full"] }
+axum = "0.7"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
 tracing = "0.1"
 tracing-subscriber = "0.3"
-anyhow = "1.0"
-ed25519-dalek = "2.1"
+futures = "0.3"
+libp2p-identity = "0.2"
+libp2p = { version = "0.53", features = ["tokio", "tcp", "noise", "yamux", "gossipsub", "kad", "identify", "dcutr", "autonat", "dns"] }
 chacha20poly1305 = "0.10"
 reqwest = { version = "0.11", features = ["json"] }
 scraper = "0.18"
 urlencoding = "2.1"
-hex = "0.4"
 rand = "0.8"
-axum = "0.7"
-serde = { version = "1.0.229", features = ["derive"] }
-serde_json = "1.0.151"
+hex = "0.4"

@@ -97,15 +97,25 @@ async fn dapp_ui_handler() -> Html<&'static str> {
             }
             button { background: #238636; color: white; font-weight: bold; cursor: pointer; border: none; margin-top: 12px; }
             button:hover { background: #2ea043; }
+            .btn-secondary { background: #30363d; }
+            .btn-secondary:hover { background: #8b949e; }
             .post-item { background: #21262d; border: 1px solid var(--border); border-radius: 4px; padding: 10px; margin-top: 8px; }
             .author { color: var(--accent); font-size: 0.85em; font-weight: bold; }
+            .url-display { font-family: monospace; background: #0d1117; padding: 8px; border: 1px solid var(--border); border-radius: 4px; color: var(--accent); word-break: break-all; }
         </style>
     </head>
     <body>
         <div class="container">
             <div class="header">
                 <h1>The Remote Viewer</h1>
-                <span class="status">● Interactive Node Active</span>
+                <span class="status">● Decentralized Node Active</span>
+            </div>
+
+            <div class="card">
+                <h3>Node Sharing & Network Access</h3>
+                <p style="font-size: 0.85em; color: #8b949e;">Share your local node address with peers on your network:</p>
+                <div class="url-display" id="node-url">Loading address...</div>
+                <button class="btn-secondary" onclick="copyNodeUrl()">Copy Share Link</button>
             </div>
 
             <div class="card">
@@ -122,6 +132,14 @@ async fn dapp_ui_handler() -> Html<&'static str> {
         </div>
 
         <script>
+            const hostUrl = window.location.protocol + '//' + window.location.host;
+            document.getElementById('node-url').innerText = hostUrl;
+
+            function copyNodeUrl() {
+                navigator.clipboard.writeText(hostUrl);
+                alert('Node URL copied to clipboard: ' + hostUrl);
+            }
+
             async function loadFeed() {
                 const res = await fetch('/api/posts');
                 const posts = await res.json();
