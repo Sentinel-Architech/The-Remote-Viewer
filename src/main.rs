@@ -10,6 +10,7 @@ mod p2p;
 mod token;
 mod search;
 mod agent;
+pub mod migration;
 
 #[derive(Clone)]
 struct AppState {
@@ -85,6 +86,7 @@ async fn dapp_ui_handler(State(_state): State<AppState>) -> Html<&'static str> {
                 <h3>Subsystem Architecture</h3>
                 <p><span class="badge">Encryption</span> ChaCha20-Poly1305 Local Storage</p>
                 <p><span class="badge">Network</span> P2P Gossip & Merkle State Sync</p>
+                <p><span class="badge">Migration</span> Offline Web2 Import & Bridge Engine</p>
                 <p><span class="badge">Agent</span> Dynamic Reasoning & Memory Recall</p>
             </div>
 
